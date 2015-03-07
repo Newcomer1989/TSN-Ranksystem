@@ -1,0 +1,65 @@
+<?php
+require_once('dbconfig.php');
+$mysqlprob=true;
+if(!$mysqlcon=mysqli_connect($db['host'], $db['user'], $db['pass'], $db['dbname']))
+{
+	$mysqlprob=false;
+}
+if($mysqlprob==false || !$config=$mysqlcon->query("SELECT * FROM config"))
+{
+	$bgcolor='#101010';
+	$hdcolor='#909090';
+	$txcolor='#707070';
+	$hvcolor='#FFFFFF';
+	$ifcolor='#3366CC';
+	$wncolor='#CC0000';
+	$sccolor='#008000';
+	$showgen='1';
+}
+else
+{
+	$config=$config->fetch_row();
+	$ts['host']=$config[2];
+	$ts['query']=$config[3];
+	$ts['voice']=$config[4];
+	$ts['user']=$config[5];
+	$ts['pass']=$config[6];
+	$language=$config[7];
+	$queryname=$config[8];
+	$queryname2=$config[9];
+	$grouptimearr=explode(',',$config[10]);
+	foreach($grouptimearr as $entry)
+	{
+		list($key,$value)=explode('=>',$entry);
+		$grouptime[$key]=$value;
+	}
+	$resetbydbchange=$config[11];
+	$msgtouser=$config[12];
+	$update=$config[13];
+	$uniqueid=explode(',',$config[14]);
+	$updateinfotime=$config[15];
+	$currvers=$config[16];
+	$substridle=$config[17];
+	$exceptuuid=explode(',',$config[18]);
+	$exceptgroup=explode(',',$config[19]);
+	$timeformat=$config[20];
+	$showexgrp=$config[21];
+	$showexcld=$config[22];
+	$showcolcld=$config[23];
+	$showcoluuid=$config[24];
+	$showcoldbid=$config[25];
+	$showcolot=$config[26];
+	$showcolit=$config[27];
+	$showcolat=$config[28];
+	$showcolnx=$config[29];
+	$showcolsg=$config[30];
+	$bgcolor=$config[31];
+	$hdcolor=$config[32];
+	$txcolor=$config[33];
+	$hvcolor=$config[34];
+	$ifcolor=$config[35];
+	$wncolor=$config[36];
+	$sccolor=$config[37];
+	$showgen=$config[38];
+}
+?>
