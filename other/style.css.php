@@ -1,22 +1,20 @@
-<?php
-	header('Content-type: text/css');
-	require_once('config.php');
+<?PHP
+header('Content-type: text/css');
+require_once('config.php');
 ?>
 
-body{font-family:Century Gothic,sans-serif;font-size:15px;color:<?=$txcolor?>;background-color:<?=$bgcolor?>;}
+body{font-family:Century Gothic,sans-serif;font-size:15px;color:<?= $txcolor ?>;background-color:<?= $bgcolor ?>;}
 
-a:link{text-decoration:none;color:<?=$txcolor?>;}
-a:visited{text-decoration:none;color:<?=$txcolor?>;}
-a:hover{text-decoration:none;color:<?=$hvcolor?>;}
+a:link{text-decoration:none;color:<?= $txcolor ?>;}
+a:visited{text-decoration:none;color:<?= $txcolor ?>;}
+a:hover{text-decoration:none;color:<?= $hvcolor ?>;}
 
-th{font-weight:bold;text-align:center;}
+.hdcolor{color:<?= $hdcolor ?>;}
+.ifcolor{color:<?= $ifcolor ?>;}
+.wncolor{color:<?= $wncolor ?>;}
+.sccolor{color:<?= $sccolor ?>;}
 
-hdcolor{color:<?=$hdcolor?>;}
-ifcolor{color:<?=$ifcolor?>;}
-wncolor{color:<?=$wncolor?>;}
-sccolor{color:<?=$sccolor?>;}
-
-.tabledefault{width:95%;top:10;left:10;border:0;text-align:center;font-family:Verdana;font-size:10pt;margin:0 auto;}
+.tabledefault{width:95%;top:10;left:10;border:1;text-align:center;font-family:Verdana;font-size:10pt;margin:0 auto;}
 .tablefunction{max-width:500px;width:100%;top:10;left:10;border:0;text-align:center;font-family:Verdana;font-size:10pt;margin:0 auto;}
 .tablelogin{position:fixed;top:50%;left:50%;margin-top:-40px;margin-left:-150px;}
 .tdleft{width:55%;text-align:left;}
@@ -27,12 +25,19 @@ sccolor{color:<?=$sccolor?>;}
 
 .tdheadline{text-align:center;background-color:#0A1B2A;}
 .tdheadline:hover{text-align:center;background-color:#0B243B;}
+.tdheadlineimp{text-align:center;background-color:#003300;}
+.tdheadlineimp:hover{text-align:center;background-color:#006600;}
 
 .center{text-align:center;}
 .right{text-align:right;}
 
-size1{font-size:24px;font-weight:bold;}
-size2{font-size:16px;font-weight:bold;}
+.opacity{opacity:0.1;}
+
+.size1{font-size:24px;font-weight:bold;}
+.size2{font-size:16px;font-weight:bold;}
+.width{width:95%;box-sizing:border-box;}
+
+th{font-weight:bold;text-align:center;color:<?= $hdcolor ?>;}
 
 select{width:140px;}
 input.switch:empty {margin-left:-9999px;}
@@ -42,7 +47,7 @@ input.switch:empty ~ label:after{width:1.2em;top:0.1em;bottom:0.1em;margin-left:
 input.switch:checked ~ label:before{background-color:green;}
 input.switch:checked ~ label:after{margin-left:1.5em;}
 
-tooltip {position:relative;display:inline;}
-tooltip span{width:350px;position:absolute;color:#000;background:#CCCCCC;padding:10px 10px 10px 10px;line-height:16px;text-align:center;visibility:hidden;border-radius:5px;box-shadow:0px 1px 2px #0B243B;}
-tooltip span:after{content:'';position:absolute;top:7px;left:100%;width:0;height:0;border-left:12px solid #CCCCCC;border-top:12px solid transparent;border-bottom:12px solid transparent;}
-tooltip:hover span{visibility:visible;right:110%;margin-top:-10px;margin-right:15px;z-index:999;}
+.tooltip {position:relative;display:inline;}
+.tooltip span{width:350px;position:absolute;color:#000;background:#CCCCCC;padding:10px 10px 10px 10px;line-height:16px;text-align:center;visibility:hidden;border-radius:5px;box-shadow:0px 1px 2px #0B243B;}
+.tooltip span:after{content:'';position:absolute;top:7px;left:100%;width:0;height:0;border-left:12px solid #CCCCCC;border-top:12px solid transparent;border-bottom:12px solid transparent;}
+.tooltip:hover span{visibility:visible;right:110%;margin-top:-10px;margin-right:15px;z-index:999;}

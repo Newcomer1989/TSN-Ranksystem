@@ -1,65 +1,83 @@
-<?php
+<?PHP
 require_once('dbconfig.php');
-$mysqlprob=true;
-if(!$mysqlcon=mysqli_connect($db['host'], $db['user'], $db['pass'], $db['dbname']))
-{
-	$mysqlprob=false;
+$mysqlprob = true;
+if(isset($db['type']) === false) {
+	$db['type']="mysql";
 }
-if($mysqlprob==false || !$config=$mysqlcon->query("SELECT * FROM config"))
-{
-	$bgcolor='#101010';
-	$hdcolor='#909090';
-	$txcolor='#707070';
-	$hvcolor='#FFFFFF';
-	$ifcolor='#3366CC';
-	$wncolor='#CC0000';
-	$sccolor='#008000';
-	$showgen='1';
+$dbname = $db['dbname'];
+$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'];
+if ($db['type'] == 'mysql') {
+	$dboptions = array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8');
+} else {
+	$dboptions = array();
 }
-else
-{
-	$config=$config->fetch_row();
-	$ts['host']=$config[2];
-	$ts['query']=$config[3];
-	$ts['voice']=$config[4];
-	$ts['user']=$config[5];
-	$ts['pass']=$config[6];
-	$language=$config[7];
-	$queryname=$config[8];
-	$queryname2=$config[9];
-	$grouptimearr=explode(',',$config[10]);
-	foreach($grouptimearr as $entry)
-	{
-		list($key,$value)=explode('=>',$entry);
-		$grouptime[$key]=$value;
+
+try {
+	$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
+} catch (PDOException $e) {
+	$sqlconerr = 'SQL Connection failed: '.$e->getMessage();
+    $mysqlprob = false;
+}
+if ($mysqlprob === false || !$config = $mysqlcon->query("SELECT * FROM config")) {
+    $bgcolor = '#101010';
+    $hdcolor = '#909090';
+    $txcolor = '#707070';
+    $hvcolor = '#FFFFFF';
+    $ifcolor = '#3366CC';
+    $wncolor = '#CC0000';
+    $sccolor = '#008000';
+    $showgen = '1';
+} else {
+    $config       = $config->fetchAll();
+    $ts['host']   = $config[0]['tshost'];
+    $ts['query']  = $config[0]['tsquery'];
+    $ts['voice']  = $config[0]['tsvoice'];
+    $ts['user']   = $config[0]['tsuser'];
+    $ts['pass']   = $config[0]['tspass'];
+	$webuser      = $config[0]['webuser'];
+	$webpass      = $config[0]['webpass'];
+    $language     = $config[0]['language'];
+    $queryname    = $config[0]['queryname'];
+    $queryname2   = $config[0]['queryname2'];
+	if(empty($config[0]['grouptime'])) {
+		$grouptime == $config[0]['grouptime'];
+	} else {
+		$grouptimearr = explode(',', $config[0]['grouptime']);
+		foreach ($grouptimearr as $entry) {
+			list($key, $value) = explode('=>', $entry);
+			$grouptime[$key] = $value;
+		}
 	}
-	$resetbydbchange=$config[11];
-	$msgtouser=$config[12];
-	$update=$config[13];
-	$uniqueid=explode(',',$config[14]);
-	$updateinfotime=$config[15];
-	$currvers=$config[16];
-	$substridle=$config[17];
-	$exceptuuid=explode(',',$config[18]);
-	$exceptgroup=explode(',',$config[19]);
-	$timeformat=$config[20];
-	$showexgrp=$config[21];
-	$showexcld=$config[22];
-	$showcolcld=$config[23];
-	$showcoluuid=$config[24];
-	$showcoldbid=$config[25];
-	$showcolot=$config[26];
-	$showcolit=$config[27];
-	$showcolat=$config[28];
-	$showcolnx=$config[29];
-	$showcolsg=$config[30];
-	$bgcolor=$config[31];
-	$hdcolor=$config[32];
-	$txcolor=$config[33];
-	$hvcolor=$config[34];
-	$ifcolor=$config[35];
-	$wncolor=$config[36];
-	$sccolor=$config[37];
-	$showgen=$config[38];
+    $resetbydbchange = $config[0]['resetbydbchange'];
+    $msgtouser       = $config[0]['msgtouser'];
+    $update          = $config[0]['upcheck'];
+    $uniqueid        = explode(',', $config[0]['uniqueid']);
+    $updateinfotime  = $config[0]['updateinfotime'];
+    $currvers        = $config[0]['currvers'];
+    $substridle      = $config[0]['substridle'];
+    $exceptuuid      = explode(',', $config[0]['exceptuuid']);
+    $exceptgroup     = explode(',', $config[0]['exceptgroup']);
+    $timeformat      = $config[0]['dateformat'];
+    $showexgrp       = $config[0]['showexgrp'];
+    $showexcld       = $config[0]['showexcld'];
+    $showcolcld      = $config[0]['showcolcld'];
+    $showcoluuid     = $config[0]['showcoluuid'];
+    $showcoldbid     = $config[0]['showcoldbid'];
+    $showcolot       = $config[0]['showcolot'];
+    $showcolit       = $config[0]['showcolit'];
+    $showcolat       = $config[0]['showcolat'];
+    $showcolnx       = $config[0]['showcolnx'];
+    $showcolsg       = $config[0]['showcolsg'];
+    $bgcolor         = $config[0]['bgcolor'];
+    $hdcolor         = $config[0]['hdcolor'];
+    $txcolor         = $config[0]['txcolor'];
+    $hvcolor         = $config[0]['hvcolor'];
+    $ifcolor         = $config[0]['ifcolor'];
+    $wncolor         = $config[0]['wncolor'];
+    $sccolor         = $config[0]['sccolor'];
+    $showgen         = $config[0]['showgen'];
+    $showcolrg       = $config[0]['showcolrg'];
+	$showcolls       = $config[0]['showcolls'];
+	$slowmode        = $config[0]['slowmode'];
 }
 ?>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * TeamSpeak 3 PHP Framework

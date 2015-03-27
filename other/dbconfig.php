@@ -1,4 +1,5 @@
 <?php
+$db['type']="type";
 $db['host']="hostname";
 $db['user']="dbuser";
 $db['pass']="dbpass";
