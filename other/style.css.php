@@ -36,8 +36,10 @@ a:hover{text-decoration:none;color:<?= $hvcolor ?>;}
 .size1{font-size:24px;font-weight:bold;}
 .size2{font-size:16px;font-weight:bold;}
 .width{width:95%;box-sizing:border-box;}
+.elevated{vertical-align:super;}
 
 th{font-weight:bold;text-align:center;color:<?= $hdcolor ?>;}
+img{margin-bottom:-3;}
 
 select{width:140px;}
 input.switch:empty {margin-left:-9999px;}

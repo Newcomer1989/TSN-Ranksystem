@@ -50,10 +50,7 @@ if(isset($_POST['confweb']))
 		echo'<span class="wncolor">'.sprintf($lang['isntwidel'],"<a href=\"webinterface.php\">webinterface.php</a>").'</span>';
 	}
 }
-elseif($db['host']!='hostname')
-{
-	echo'<span class="wncolor">'.sprintf($lang['isntwidel'],"<a href=\"webinterface.php\">webinterface.php</a>").'</span>';
-}
+
 else
 {
 	if(isset($_POST['installdb']))
@@ -216,8 +213,8 @@ $db[\'dbname\']="'.$dbname.'";
 			}
 			fclose($handle);
 		}
-	} elseif (!is_writable('./other/dbconfig.php')) {
-		echo '<span class="wncolor">',$lang['isntwicfg'],'</span>';
+	} elseif (!is_writable('./other/dbconfig.php') || substr(sprintf('%o', fileperms('./icons/')), -4)!='0777') {
+		echo '<span class="wncolor">',$lang['isntwichm'],'</span>';
 	} else {
 		echo '<form name="form" method="post">
 		<table class="tabledefault">

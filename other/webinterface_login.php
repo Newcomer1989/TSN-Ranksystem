@@ -1,7 +1,7 @@
 <?PHP
 echo '<form name="form" method="post">
 <table class="tablelogin">';
-if (showerrlogin == 1) {
+if (isset($showerrlogin)) {
     echo '<tr><td colspan="2" class="center">' , $lang['errlogin'] , '<br><br></td></tr>';
 }
 echo '<tr><td class="center">' , $lang['user'] , '</td><td class="center"><input type="text" name="username"></td></tr>

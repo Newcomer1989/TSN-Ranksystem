@@ -128,6 +128,13 @@ if (isset($_POST['updatecore'])) {
     } else {
         $msgtouser = 0;
     }
+	$cleanclients = $_POST['cleanclients'];
+    if ($cleanclients == "on") {
+        $cleanclients = 1;
+    } else {
+        $cleanclients = 0;
+    }
+	$cleanperiod = $_POST['cleanperiod'];
     $upcheck = $_POST['upcheck'];
     if ($upcheck == "on") {
         $upcheck = 1;
@@ -144,7 +151,7 @@ if (isset($_POST['updatecore'])) {
     }
     $exceptuuid  = $_POST['exceptuuid'];
     $exceptgroup = $_POST['exceptgroup'];
-    if ($mysqlcon->exec("UPDATE config set grouptime='$grouptime',resetbydbchange='$resetbydbchange',msgtouser='$msgtouser',upcheck='$upcheck',uniqueid='$uniqueid',updateinfotime='$updateinfotime',substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup'") === false) {
+    if ($mysqlcon->exec("UPDATE config set grouptime='$grouptime',resetbydbchange='$resetbydbchange',msgtouser='$msgtouser',cleanclients='$cleanclients',cleanperiod='$cleanperiod',upcheck='$upcheck',uniqueid='$uniqueid',updateinfotime='$updateinfotime',substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup'") === false) {
         $alert = '<span class="wncolor">' . $mysqlcon->errorCode() . '</span><br>';
     } else {
         $alert = '<span class="sccolor">' . $lang['wisvsuc'] . '</span>';
@@ -165,6 +172,12 @@ if (isset($_POST['updatestyle'])) {
         $showexcld = 1;
     } else {
         $showexcld = 0;
+    }
+	$showhighest = $_POST['showhighest'];
+    if ($showhighest == "on") {
+        $showhighest = 1;
+    } else {
+        $showhighest = 0;
     }
     $showcolrg = $_POST['showcolrg'];
     if ($showcolrg == "on") {
@@ -240,7 +253,7 @@ if (isset($_POST['updatestyle'])) {
         $showgen = 0;
     }
     include('lang.php');
-    if ($mysqlcon->exec("UPDATE config set language='$language',dateformat='$dateformat',showexgrp='$showexgrp',showexcld='$showexcld',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolnx='$showcolnx',showcolsg='$showcolsg',bgcolor='$bgcolor',hdcolor='$hdcolor',txcolor='$txcolor',hvcolor='$hvcolor',ifcolor='$ifcolor',wncolor='$wncolor',sccolor='$sccolor',showgen='$showgen'") === false) {
+    if ($mysqlcon->exec("UPDATE config set language='$language',dateformat='$dateformat',showexgrp='$showexgrp',showexcld='$showexcld',showhighest='$showhighest',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolnx='$showcolnx',showcolsg='$showcolsg',bgcolor='$bgcolor',hdcolor='$hdcolor',txcolor='$txcolor',hvcolor='$hvcolor',ifcolor='$ifcolor',wncolor='$wncolor',sccolor='$sccolor',showgen='$showgen'") === false) {
         $alert = '<span class="wncolor">' . $mysqlcon->errorCode() . '</span><br>';
     } else {
         $alert = '<span class="sccolor">' . $lang['wisvsuc'] . '</span>';

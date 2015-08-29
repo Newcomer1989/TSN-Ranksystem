@@ -79,6 +79,11 @@ $dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups");
 $servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
 foreach($servergroups as $servergroup) {
 	$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
+	if(file_exists('icons/'.$servergroup['sgid'].'.png')) {
+		$sqlhisgroup_file[$servergroup['sgid']] = true;
+	} else {
+		$sqlhisgroup_file[$servergroup['sgid']] = false;
+	}
 }
 if($adminlogin == 1) {
 	switch ($keyorder) {
@@ -125,8 +130,10 @@ ksort($grouptime);
 $countgrp = count($grouptime);
 if ($countentries > 0) {
 	$countrank=0;
-	$except=0;
+	$exceptgrp=0;
+	$exceptcld=0;
 	$highest=0;
+	$countallsum=0;
     foreach ($uidarr as $uid) {
         $cldgroup = $sqlhis[$uid]['cldgroup'];
 		$lastseen =	$sqlhis[$uid]['lastseen'];
@@ -142,19 +149,19 @@ if ($countentries > 0) {
             $activetime = $count;
         }
 		$grpcount=0;
-		$highest++;
+		$countallsum++;
         foreach ($grouptime as $time => $groupid) {
 			$grpcount++;
             if (array_intersect($sgroups, $exceptgroup) && $showexgrp != 1 && $adminlogin != 1) {
-                $except++;
+                $exceptgrp++;
 				break;
             }
             if (in_array($uid, $exceptuuid) && $showexcld != 1 && $adminlogin != 1) {
-				$except++;
+				$exceptcld++;
                 break;
             }
-            if ($activetime < $time || ($grpcount == $countgrp && $adminlogin == 1 && $nextup == 0)) {
-                if($nextup == 0 && $grpcount == $countgrp) {
+            if ($activetime < $time || $grpcount == $countgrp && $nextup == 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
+				if($nextup == 0 && $grpcount == $countgrp) {
 					$neededtime = 0;
 				} elseif ($status == 1) {
                     $neededtime = $time - $activetime - $livetime;
@@ -220,17 +227,22 @@ if ($countentries > 0) {
                     } elseif (array_intersect($sgroups, $exceptgroup)) {
                         echo $lang['listexgrp'] , '</td>';
                     } else {
-                        echo $lang['errukwn'];
+                        echo $lang['errukwn'], '</td>';
                     }
                 }
-                if ($grpcount == $countgrp && $neededtime == 0) {
-					echo '<td class="center">highest rank reached</td>';
-				} elseif ($showcolsg == 1 || $adminlogin == 1) {
-                    echo '<td class="center">' , $sqlhisgroup[$groupid] , '</td>';
+				if ($grpcount == $countgrp && $nextup == 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
+					echo '<td class="center">',$lang['highest'],'</td>';
+					$highest++;
+				} elseif ($sqlhisgroup_file[$groupid]==true) {
+					echo '<td class="center"><img src="icons/'.$groupid.'.png">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
+				} else {
+					echo '<td class="center">' , $sqlhisgroup[$groupid] , '</td>';
 				}
-                echo '</tr>';
+				echo '</tr>';
                 break;
-            }
+            } elseif ($grpcount == $countgrp && $nextup == 0) {
+				$highest++;
+			}
         }
     }
 } else {
@@ -238,9 +250,14 @@ if ($countentries > 0) {
 }
 echo '</table>';
 if ($showgen == 1 || $adminlogin == 1) {
-	$reached = $highest - $countrank;
+	$except = $exceptgrp + $exceptcld;
+	$notvisible = 0;
+	if ($showexgrp != 1) { $notvisible = $exceptgrp; }
+	if ($showexcld != 1) { $notvisible = $notvisible + $exceptcld; }
+	if ($showhighest != 1) { $notvisible = $notvisible + $highest; }
+	$displayed = $countallsum - $notvisible;
     $buildtime = microtime(true) - $starttime;
-    echo '<span class="tabledefault">' , sprintf($lang['sitegen'], $buildtime, $sumentries) , ' (',$countrank,' showing; ',$except,' exceptions; ',$reached,' highest rank)</span>';
+    echo '<span class="tabledefault">' , sprintf($lang['sitegenl'], $buildtime, $sumentries, $displayed, $except, $highest) , '</span>';
 }
 ?>
 </body>

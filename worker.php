@@ -1,6 +1,6 @@
-<?PHP
+﻿<?PHP
 $starttime = microtime(true);
-set_time_limit(20);
+set_time_limit(600);
 ?>
 <!doctype html>
 <html>
@@ -95,8 +95,8 @@ try {
         if ($mysqlcon->exec("UPDATE $dbname.lastscan SET timestamp='$nowtime'") === false) {
             echo '<span class="wncolor">',$mysqlcon->errorCode(),'</span><br>';
         }
-		$dbdata = $mysqlcon->query("SELECT * FROM $dbname.user");
-		$uuids = $dbdata->fetchAll();
+		$dbuserdata = $mysqlcon->query("SELECT * FROM $dbname.user");
+		$uuids = $dbuserdata->fetchAll();
         foreach($uuids as $uuid) {
             $sqlhis[$uuid['uuid']] = array(
                 "cldbid" => $uuid['cldbid'],
@@ -315,8 +315,8 @@ try {
     $dbdata = $mysqlcon->query("SELECT * FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime");
     if ($dbdata->rowCount() != 0) {
 		
-		$uuids = $dbdata->fetchAll(PDO::FETCH_ASSOC);
-        foreach($uuids as $uuid) {
+		$uuidsoff = $dbdata->fetchAll(PDO::FETCH_ASSOC);
+        foreach($uuidsoff as $uuid) {
             $idle     = $uuid['idle'];
             $count    = $uuid['count'];
             $grpid    = $uuid['grpid'];
@@ -333,7 +333,7 @@ try {
             }
             foreach ($grouptime as $time => $groupid) {
                 if ($activetime > $time) {
-                    break;
+                    $nextup = 0;
                 } else {
                     $nextup = $time - $activetime;
                 }
@@ -345,7 +345,7 @@ try {
         }
     }
 	
-    if ($updatenextup != 0) {
+    if (isset($updatenextup)) {
         $allupdateuuid   = '';
         $allupdatenextup = '';
         foreach ($updatenextup as $updatedata) {
@@ -377,6 +377,10 @@ try {
         $gefunden = 2;
         $iconid   = $servergroup['iconid'];
         $iconid   = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
+		$iconfile = 0;
+		if($iconid > 300) {
+			$iconfile = $servergroup->iconDownload();
+		}
         $sgname   = str_replace('\\', '\\\\', htmlspecialchars($servergroup['name'], ENT_QUOTES));
         if ($sqlhisgroup != "empty") {
             foreach ($sqlhisgroup as $sgid => $sname) {
@@ -385,7 +389,8 @@ try {
                     $updategroups[] = array(
                         "sgid" => $servergroup['sgid'],
                         "sgidname" => $sgname,
-                        "iconid" => $iconid
+                        "iconid" => $iconid,
+						"icon" => $iconfile
                     );
                     break;
                 }
@@ -394,25 +399,32 @@ try {
                 $insertgroups[] = array(
                     "sgid" => $servergroup['sgid'],
                     "sgidname" => $sgname,
-                    "iconid" => $iconid
+                    "iconid" => $iconid,
+					"icon" => $iconfile
                 );
             }
         } else {
             $insertgroups[] = array(
                 "sgid" => $servergroup['sgid'],
                 "sgidname" => $sgname,
-                "iconid" => $iconid
+                "iconid" => $iconid,
+				"icon" => $iconfile
             );
         }
     }
 
     if ($debug == 'on') {
-        echo '<br>insertgroups:<br><pre>', $insertgroups, '</pre><br>';
+        echo '<br>insertgroups:<br><pre>', print_r($insertgroups), '</pre><br>';
     }
     if (isset($insertgroups)) {
         $allinsertdata = '';
+		$path_part = pathinfo($_SERVER['PATH_TRANSLATED']);
+		$icon_path = $path_part['dirname'];
         foreach ($insertgroups as $insertarr) {
             $allinsertdata = $allinsertdata . "('" . $insertarr['sgid'] . "', '" . $insertarr['sgidname'] . "', '" . $insertarr['iconid'] . "'),";
+			if($insertarr['iconid']!=0 && $updatedata['iconid']>300) {
+				file_put_contents($icon_path . "/icons/" . $insertarr['sgid'] . ".png", $insertarr['icon']);
+			}
         }
         $allinsertdata = substr($allinsertdata, 0, -1);
         if ($allinsertdata != '') {
@@ -425,16 +437,26 @@ try {
     if ($debug == 'on') {
         echo '<br>allinsertdata:<br>', $allinsertdata, '<br>';
     }
+	
     unset($insertgroups);
     unset($allinsertdata);
+	
+	if ($debug == 'on') {
+        echo '<br>updategroups:<br><pre>', print_r($updategroups), '</pre><br>';
+    }
+	
     if (isset($updategroups)) {
         $allsgids        = '';
         $allupdatesgid   = '';
 		$allupdateiconid = '';
+		$path_part = pathinfo($_SERVER['PATH_TRANSLATED']);
         foreach ($updategroups as $updatedata) {
             $allsgids        = $allsgids . "'" . $updatedata['sgid'] . "',";
             $allupdatesgid   = $allupdatesgid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['sgidname'] . "' ";
             $allupdateiconid = $allupdateiconid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['iconid'] . "' ";
+			if($updatedata['iconid']!=0 && $updatedata['iconid']>300) {
+				file_put_contents("./icons/" . $updatedata['sgid'] . ".png", $updatedata['icon']);
+			}
         }
         $allsgids = substr($allsgids, 0, -1);
         if ($mysqlcon->exec("UPDATE $dbname.groups set sgidname = CASE sgid $allupdatesgid END, iconid = CASE sgid $allupdateiconid END WHERE sgid IN ($allsgids)") === false) {
@@ -442,8 +464,77 @@ try {
         }
     }
 
+    if ($debug == 'on') {
+		echo '<br>updategroups:<br><pre>', print_r($updategroups), '</pre><br>';
+	}
+
     unset($allsgids);
     unset($allupdatesgid);
+	
+	if ($cleanclients == 1 && $slowmode != 1) {
+		$cleantime = $nowtime - $cleanperiod;
+		$lastclean = $mysqlcon->query("SELECT * FROM $dbname.cleanclients");
+		$lastclean = $lastclean->fetchAll();
+		$countrs = $dbuserdata->rowCount();
+		if ($lastclean[0]['timestamp'] < $cleantime) {
+			echo '<br><br><span class="hdcolor"><b>', $lang['clean'], '</b></span><br>';
+			$start=0;
+			$break=200;
+			$clientdblist=array();
+			$countdel=0;
+			$countts=0;
+			while($getclientdblist=$ts3_VirtualServer->clientListDb($start, $break)) {
+				$clientdblist=array_merge($clientdblist, $getclientdblist);
+				$start=$start+$break;
+				if ($start == 50000 || array_shift(array_values($getclientdblist))['count'] <= $start) {
+					break;
+				}
+			}
+			foreach($clientdblist as $uuidts) {
+				$uidarrts[] = $uuidts['client_unique_identifier'];
+			}
+			foreach($uidarr as $uuid) {
+				if ($countdel + $countts == 25000) {
+					break;
+				}
+				if (in_array($uuid, $uidarrts)) {
+					$countts++;
+				} else {
+					$deleteuuids[] = $uuid;
+					$countdel++;
+				}
+			}
+			echo sprintf($lang['cleants'], $countts, array_shift(array_values($getclientdblist))['count']),'<br>';
+			echo sprintf($lang['cleanrs'], $countrs),'<br>';
+			if ($debug == 'on') {
+				echo '<br>deleteclients:<br><pre>', print_r($deleteuuids), '</pre><br>';
+			}
+			if (isset($deleteuuids)) {
+				$alldeldata = '';
+				foreach ($deleteuuids as $dellarr) {
+					$alldeldata = $alldeldata . "'" . $dellarr . "',";
+				}
+				$alldeldata = substr($alldeldata, 0, -1);
+				$alldeldata = "(".$alldeldata.")";
+				if ($alldeldata != '') {
+					if ($mysqlcon->exec("DELETE FROM $dbname.user WHERE uuid IN $alldeldata") === false) {
+						echo '<span class="wncolor">',$mysqlcon->errorCode(),'</span><br>';
+					} else {
+						echo '<span class="sccolor">',sprintf($lang['cleandel'], $countdel),'</span><br>';
+						if ($mysqlcon->exec("UPDATE $dbname.cleanclients SET timestamp='$nowtime'") === false) {
+							echo '<span class="wncolor">',$mysqlcon->errorCode(),'</span><br>';
+						}
+					}
+					
+				}
+			} else {
+				echo '<span class="ifcolor">',$lang['cleanno'],'</span><br>';
+				if ($mysqlcon->exec("UPDATE $dbname.cleanclients SET timestamp='$nowtime'") === false) {
+					echo '<span class="wncolor">',$mysqlcon->errorCode(),'</span><br>';
+				}
+			}
+		}
+	}
 }
 catch (Exception $e) {
     echo $lang['error'] . $e->getCode() . ': ' . $e->getMessage();
