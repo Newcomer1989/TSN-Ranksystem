@@ -79,5 +79,8 @@ if ($mysqlprob === false || !$config = $mysqlcon->query("SELECT * FROM config"))
     $showcolrg       = $config[0]['showcolrg'];
 	$showcolls       = $config[0]['showcolls'];
 	$slowmode        = $config[0]['slowmode'];
+	$cleanclients    = $config[0]['cleanclients'];
+	$cleanperiod     = $config[0]['cleanperiod'];
+	$showhighest     = $config[0]['showhighest'];
 }
 ?>

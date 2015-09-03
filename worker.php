@@ -455,7 +455,7 @@ try {
             $allupdatesgid   = $allupdatesgid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['sgidname'] . "' ";
             $allupdateiconid = $allupdateiconid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['iconid'] . "' ";
 			if($updatedata['iconid']!=0 && $updatedata['iconid']>300) {
-				file_put_contents("./icons/" . $updatedata['sgid'] . ".png", $updatedata['icon']);
+				file_put_contents(dirname(__FILE__) . "/icons/" . $updatedata['sgid'] . ".png", $updatedata['icon']);
 			}
         }
         $allsgids = substr($allsgids, 0, -1);
@@ -486,7 +486,8 @@ try {
 			while($getclientdblist=$ts3_VirtualServer->clientListDb($start, $break)) {
 				$clientdblist=array_merge($clientdblist, $getclientdblist);
 				$start=$start+$break;
-				if ($start == 50000 || array_shift(array_values($getclientdblist))['count'] <= $start) {
+				$count_tsuser=array_shift($getclientdblist);
+				if ($start == 50000 || $count_tsuser['count'] <= $start) {
 					break;
 				}
 			}
@@ -504,7 +505,7 @@ try {
 					$countdel++;
 				}
 			}
-			echo sprintf($lang['cleants'], $countts, array_shift(array_values($getclientdblist))['count']),'<br>';
+			echo sprintf($lang['cleants'], $countts, $count_tsuser['count']),'<br>';
 			echo sprintf($lang['cleanrs'], $countrs),'<br>';
 			if ($debug == 'on') {
 				echo '<br>deleteclients:<br><pre>', print_r($deleteuuids), '</pre><br>';
