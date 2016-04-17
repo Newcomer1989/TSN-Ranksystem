@@ -8,8 +8,8 @@ session_start();
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" type="text/css" href="other/style.css.php" />
 	<link rel="stylesheet" type="text/css" href="jquerylib/jquery.autocomplete.css" />
-	<script type="text/javascript" src="jquerylib/jquery.js"></script>
-	<script type='text/javascript' src='jquerylib/jquery.autocomplete.js'></script>
+	<script type="text/javascript" src="jquerylib/jquery-1.2.6.pack.js"></script>
+	<script type='text/javascript' src='jquerylib/jquery.autocomplete.pack.js'></script>
 	<script type="text/javascript">
 	function disablediv(div)
 	{
@@ -80,11 +80,6 @@ session_start();
 echo '</head><body>';
 $starttime = microtime(true);
 require_once('other/config.php');
-if ($mysqlprob === false) {
-	echo '<span class="wncolor">',$sqlconerr,'</span><br>';
-	exit;
-}
-require_once('lang.php');
 $alert = "&nbsp;";
 if (isset($_POST['changeclients'])) {
     $selectedclients = $_POST['selectedclients'];
@@ -101,59 +96,35 @@ if (isset($_POST['updatets'])) {
     $tspass     = $_POST['tspass'];
     $queryname  = $_POST['queryname'];
     $queryname2 = $_POST['queryname2'];
-    $slowmode   = $_POST['slowmode'];
-    if ($slowmode == "on") {
-        $slowmode = 1;
-    } else {
-        $slowmode = 0;
-    }
-    if ($mysqlcon->exec("UPDATE config set tshost='$tshost',tsquery='$tsquery',tsvoice='$tsvoice',tsuser='$tsuser',tspass='$tspass',queryname='$queryname',queryname2='$queryname2',slowmode='$slowmode'") === false) {
+    $defchid = $_POST['defchid'];
+    $timezone = $_POST['timezone'];
+	$slowmode = $_POST['slowmode'];
+    if ($mysqlcon->exec("UPDATE config set tshost='$tshost',tsquery='$tsquery',tsvoice='$tsvoice',tsuser='$tsuser',tspass='$tspass',queryname='$queryname',queryname2='$queryname2',slowmode='$slowmode',defchid='$defchid',timezone='$timezone'") === false) {
         $alert = '<span class="wncolor">' . $mysqlcon->errorCode() . '</span><br>';
     } else {
+		exec("php ".__DIR__."/worker.php restart");
         $alert = '<span class="sccolor">' . $lang['wisvsuc'] . '</span>';
     }
     require_once('other/webinterface_list.php');
 }
 if (isset($_POST['updatecore'])) {
     $grouptime       = $_POST['grouptime'];
-    $resetbydbchange = $_POST['resetbydbchange'];
-    if ($resetbydbchange == "on") {
-        $resetbydbchange = 1;
-    } else {
-        $resetbydbchange = 0;
-    }
-    $msgtouser = $_POST['msgtouser'];
-    if ($msgtouser == "on") {
-        $msgtouser = 1;
-    } else {
-        $msgtouser = 0;
-    }
-	$cleanclients = $_POST['cleanclients'];
-    if ($cleanclients == "on") {
-        $cleanclients = 1;
-    } else {
-        $cleanclients = 0;
-    }
+    if (isset($_POST['resetbydbchange'])) $resetbydbchange = 1; else $resetbydbchange = 0;
+	if (isset($_POST['msgtouser'])) $msgtouser = 1; else $msgtouser = 0;
+	if (isset($_POST['cleanclients'])) $cleanclients = 1; else $cleanclients = 0;
+	if (isset($_POST['upcheck'])) $upcheck = 1; else $upcheck = 0;
 	$cleanperiod = $_POST['cleanperiod'];
-    $upcheck = $_POST['upcheck'];
-    if ($upcheck == "on") {
-        $upcheck = 1;
-    } else {
-        $upcheck = 0;
-    }
     $uniqueid       = $_POST['uniqueid'];
+    $boost          = $_POST['boost'];
     $updateinfotime = $_POST['updateinfotime'];
-    $substridle     = $_POST['substridle'];
-    if ($substridle == "on") {
-        $substridle = 1;
-    } else {
-        $substridle = 0;
-    }
+    $logpath		= addslashes($_POST['logpath']);
+	if (isset($_POST['substridle'])) $substridle = 1; else $substridle = 0;
     $exceptuuid  = $_POST['exceptuuid'];
     $exceptgroup = $_POST['exceptgroup'];
-    if ($mysqlcon->exec("UPDATE config set grouptime='$grouptime',resetbydbchange='$resetbydbchange',msgtouser='$msgtouser',cleanclients='$cleanclients',cleanperiod='$cleanperiod',upcheck='$upcheck',uniqueid='$uniqueid',updateinfotime='$updateinfotime',substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup'") === false) {
+    if ($mysqlcon->exec("UPDATE config set grouptime='$grouptime',resetbydbchange='$resetbydbchange',msgtouser='$msgtouser',cleanclients='$cleanclients',cleanperiod='$cleanperiod',upcheck='$upcheck',uniqueid='$uniqueid',updateinfotime='$updateinfotime',substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',boost='$boost',logpath='$logpath'") === false) {
         $alert = '<span class="wncolor">' . $mysqlcon->errorCode() . '</span><br>';
     } else {
+		exec("php ".__DIR__."/worker.php restart");
         $alert = '<span class="sccolor">' . $lang['wisvsuc'] . '</span>';
     }
     require_once('other/webinterface_list.php');
@@ -161,84 +132,20 @@ if (isset($_POST['updatecore'])) {
 if (isset($_POST['updatestyle'])) {
     $language   = $_POST['languagedb'];
     $dateformat = $_POST['dateformat'];
-    $showexgrp  = $_POST['showexgrp'];
-    if ($showexgrp == "on") {
-        $showexgrp = 1;
-    } else {
-        $showexgrp = 0;
-    }
-    $showexcld = $_POST['showexcld'];
-    if ($showexcld == "on") {
-        $showexcld = 1;
-    } else {
-        $showexcld = 0;
-    }
-	$showhighest = $_POST['showhighest'];
-    if ($showhighest == "on") {
-        $showhighest = 1;
-    } else {
-        $showhighest = 0;
-    }
-    $showcolrg = $_POST['showcolrg'];
-    if ($showcolrg == "on") {
-        $showcolrg = 1;
-    } else {
-        $showcolrg = 0;
-    }
-    $showcolcld = $_POST['showcolcld'];
-    if ($showcolcld == "on") {
-        $showcolcld = 1;
-    } else {
-        $showcolcld = 0;
-    }
-    $showcoluuid = $_POST['showcoluuid'];
-    if ($showcoluuid == "on") {
-        $showcoluuid = 1;
-    } else {
-        $showcoluuid = 0;
-    }
-    $showcoldbid = $_POST['showcoldbid'];
-    if ($showcoldbid == "on") {
-        $showcoldbid = 1;
-    } else {
-        $showcoldbid = 0;
-    }
-    $showcolls = $_POST['showcolls'];
-    if ($showcolls == "on") {
-        $showcolls = 1;
-    } else {
-        $showcolls = 0;
-    }
-    $showcolot = $_POST['showcolot'];
-    if ($showcolot == "on") {
-        $showcolot = 1;
-    } else {
-        $showcolot = 0;
-    }
-    $showcolit = $_POST['showcolit'];
-    if ($showcolit == "on") {
-        $showcolit = 1;
-    } else {
-        $showcolit = 0;
-    }
-    $showcolat = $_POST['showcolat'];
-    if ($showcolat == "on") {
-        $showcolat = 1;
-    } else {
-        $showcolat = 0;
-    }
-    $showcolnx = $_POST['showcolnx'];
-    if ($showcolnx == "on") {
-        $showcolnx = 1;
-    } else {
-        $showcolnx = 0;
-    }
-    $showcolsg = $_POST['showcolsg'];
-    if ($showcolsg == "on") {
-        $showcolsg = 1;
-    } else {
-        $showcolsg = 0;
-    }
+    if (isset($_POST['showexgrp'])) $showexgrp = 1; else $showexgrp = 0;
+	if (isset($_POST['showexcld'])) $showexcld = 1; else $showexcld = 0;
+    if (isset($_POST['showhighest'])) $showhighest = 1; else $showhighest = 0;
+    if (isset($_POST['showcolrg'])) $showcolrg = 1; else $showcolrg = 0;
+    if (isset($_POST['showcolcld'])) $showcolcld = 1; else $showcolcld = 0;
+    if (isset($_POST['showcoluuid'])) $showcoluuid = 1; else $showcoluuid = 0;
+    if (isset($_POST['showcoldbid'])) $showcoldbid = 1; else $showcoldbid = 0;
+    if (isset($_POST['showcolls'])) $showcolls = 1; else $showcolls = 0;
+	if (isset($_POST['showcolot'])) $showcolot = 1; else $showcolot = 0;
+    if (isset($_POST['showcolit'])) $showcolit = 1; else $showcolit = 0;
+	if (isset($_POST['showcolat'])) $showcolat = 1; else $showcolat = 0;
+	if (isset($_POST['showcolas'])) $showcolas = 1; else $showcolas = 0;
+	if (isset($_POST['showcolnx'])) $showcolnx = 1; else $showcolnx = 0;
+	if (isset($_POST['showcolsg'])) $showcolsg = 1; else $showcolsg = 0;
     $bgcolor = $_POST['bgcolor'];
     $hdcolor = $_POST['hdcolor'];
     $txcolor = $_POST['txcolor'];
@@ -246,14 +153,9 @@ if (isset($_POST['updatestyle'])) {
     $ifcolor = $_POST['ifcolor'];
     $wncolor = $_POST['wncolor'];
     $sccolor = $_POST['sccolor'];
-    $showgen = $_POST['showgen'];
-    if ($showgen == "on") {
-        $showgen = 1;
-    } else {
-        $showgen = 0;
-    }
+	if (isset($_POST['showgen'])) $showgen = 1; else $showgen = 0;
     include('lang.php');
-    if ($mysqlcon->exec("UPDATE config set language='$language',dateformat='$dateformat',showexgrp='$showexgrp',showexcld='$showexcld',showhighest='$showhighest',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolnx='$showcolnx',showcolsg='$showcolsg',bgcolor='$bgcolor',hdcolor='$hdcolor',txcolor='$txcolor',hvcolor='$hvcolor',ifcolor='$ifcolor',wncolor='$wncolor',sccolor='$sccolor',showgen='$showgen'") === false) {
+    if ($mysqlcon->exec("UPDATE config set language='$language',dateformat='$dateformat',showexgrp='$showexgrp',showexcld='$showexcld',showhighest='$showhighest',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolas='$showcolas',showcolnx='$showcolnx',showcolsg='$showcolsg',bgcolor='$bgcolor',hdcolor='$hdcolor',txcolor='$txcolor',hvcolor='$hvcolor',ifcolor='$ifcolor',wncolor='$wncolor',sccolor='$sccolor',showgen='$showgen'") === false) {
         $alert = '<span class="wncolor">' . $mysqlcon->errorCode() . '</span><br>';
     } else {
         $alert = '<span class="sccolor">' . $lang['wisvsuc'] . '</span>';
@@ -264,7 +166,7 @@ if (isset($_POST['selectivclients'])) {
     $seluuid   = $_POST['selecteduuids'];
     $uuidarr   = explode(',', $seluuid);
     $counttime = $_POST['counttime'];
-    if ($_POST['delclients'] == "on" && $seluuid != '' && $counttime == 0) {
+    if (isset($_POST['delclients']) && $seluuid != '' && $counttime == 0) {
         require_once('ts3_lib/TeamSpeak3.php');
         $ts3_VirtualServer = TeamSpeak3::factory("serverquery://" . $ts['user'] . ":" . $ts['pass'] . "@" . $ts['host'] . ":" . $ts['query'] . "/?server_port=" . $ts['voice']);
         try {
@@ -283,7 +185,7 @@ if (isset($_POST['selectivclients'])) {
             }
         }
         foreach ($uuidarr as $uuid) {
-            if ($_POST['delsrvgrp'] == "on") {
+            if (isset($_POST['delsrvgrp'])) {
                 $dbremsgrp = $mysqlcon->query("SELECT cldbid,grpid from user where uuid='$uuid'");
                 while ($remsgrp = $dbremsgrp->fetch(PDO::FETCH_ASSOC)) {
                     if ($remsgrp['grpid'] != 0) {
@@ -320,7 +222,7 @@ if (isset($_POST['selectivclients'])) {
     require_once('other/webinterface_list.php');
 }
 if (isset($_POST['globalclients'])) {
-	if($_POST['delcldgrps'] == "on") {
+	if(isset($_POST['delcldgrps'])) {
 		$selectbefore = $mysqlcon->query("SELECT * FROM user WHERE grpid!='0'");
 		$before       = $selectbefore->rowCount();
 		if($mysqlcon->exec("UPDATE user SET grpid='0'") && $selectbefore->rowCount() != 0) {
@@ -334,7 +236,7 @@ if (isset($_POST['globalclients'])) {
 		$selectbefore = $mysqlcon->query("SELECT * FROM user");
 		$before       = $selectbefore->rowCount();
 		$cleantime    = time() - $_POST['cleantime'];
-		if ($_POST['delsrvgrp'] == "on") {
+		if (isset($_POST['delsrvgrp'])) {
 			require_once('ts3_lib/TeamSpeak3.php');
 			$ts3_VirtualServer = TeamSpeak3::factory("serverquery://" . $ts['user'] . ":" . $ts['pass'] . "@" . $ts['host'] . ":" . $ts['query'] . "/?server_port=" . $ts['voice']);
 			try {
@@ -392,6 +294,7 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 		{
 			$alert = '<span class="wncolor">' . sprintf($lang['widbcfgerr']) . '</span>';
 		} else {
+			exec("php ".__DIR__."/worker.php restart");
 			$alert = '<span class="sccolor">' . sprintf($lang['widbcfgsuc']) . '</span>';
 		}
 		fclose($handle);
@@ -400,7 +303,7 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 	}
 	require_once('other/webinterface_list.php');
 }
-if (is_file('install.php') || is_file('update_0-02.php') || is_file('update_0-10.php')) {
+if (file_exists('install.php') || file_exists('update_0-02.php') || file_exists('update_0-10.php')) {
     echo sprintf($lang['isntwidel'], "<a href=\"webinterface.php\">webinterface.php</a>");
 } else {
     if (isset($_GET['logout']) == "true") {
