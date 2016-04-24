@@ -44,7 +44,7 @@ foreach ($db_arr as $client) {
 
 for($count10 = $count10; $count10 <= 10; $count10++) {
 	$client_data[$count10] = array(
-		'name'		=>	"<i>unkown</i>",
+		'name'		=>	"<i>unknown</i>",
 		'count'		=>	"0",
 		'online'	=>	"0"
 	);
