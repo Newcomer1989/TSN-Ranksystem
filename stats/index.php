@@ -368,11 +368,11 @@ require_once('nav.php');
 		});
 		Morris.Donut({
 			element: 'user-descent-donut', data: [
-				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_1']]) ? $nation[$sql_res[0]['country_nation_name_1']] : "unkown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_1']) ? $sql_res[0]['country_nation_1'] : "0" ?>},
-				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_2']]) ? $nation[$sql_res[0]['country_nation_name_2']] : "unkown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_2']) ? $sql_res[0]['country_nation_2'] : "0"; ?>},
-				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_3']]) ? $nation[$sql_res[0]['country_nation_name_3']] : "unkown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_3']) ? $sql_res[0]['country_nation_3'] : "0"; ?>},
-				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_4']]) ? $nation[$sql_res[0]['country_nation_name_4']] : "unkown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_4']) ? $sql_res[0]['country_nation_4'] : "0"; ?>},
-				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_5']]) ? $nation[$sql_res[0]['country_nation_name_5']] : "unkown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_5']) ? $sql_res[0]['country_nation_5'] : "0"; ?>},
+				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_1']]) ? $nation[$sql_res[0]['country_nation_name_1']] : "unknown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_1']) ? $sql_res[0]['country_nation_1'] : "0" ?>},
+				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_2']]) ? $nation[$sql_res[0]['country_nation_name_2']] : "unknown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_2']) ? $sql_res[0]['country_nation_2'] : "0"; ?>},
+				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_3']]) ? $nation[$sql_res[0]['country_nation_name_3']] : "unknown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_3']) ? $sql_res[0]['country_nation_3'] : "0"; ?>},
+				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_4']]) ? $nation[$sql_res[0]['country_nation_name_4']] : "unknown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_4']) ? $sql_res[0]['country_nation_4'] : "0"; ?>},
+				{label: "<?PHP echo isset($nation[$sql_res[0]['country_nation_name_5']]) ? $nation[$sql_res[0]['country_nation_name_5']] : "unknown"; ?>", value: <?PHP echo isset($sql_res[0]['country_nation_5']) ? $sql_res[0]['country_nation_5'] : "0"; ?>},
 				{label: "Others", value: <?PHP echo $sql_res[0]['country_nation_other'] ?>}
 			],
 			colors: [
