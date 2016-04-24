@@ -14,7 +14,7 @@ function set_session_ts3($hpclientip, $voiceport, $mysqlcon, $dbname) {
 			$_SESSION['tscldbid']				= $client['cldbid'];
 			$_SESSION['tsname']					= $client['name'];
 			if ($client['firstcon'] == 0) {
-				$_SESSION['tscreated']			= "unkown";
+				$_SESSION['tscreated']			= "unknown";
 			} else {
 				$_SESSION['tscreated']				= date('d-m-Y',$client['firstcon']);
 			}
