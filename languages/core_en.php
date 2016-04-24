@@ -1,6 +1,6 @@
 <?PHP
 $lang = array();
-$lang['adduser']          = "User %s (unique Client-ID: %s; Client-database-ID %s) is unkown -> added to the Ranksystem now.";
+$lang['adduser']          = "User %s (unique Client-ID: %s; Client-database-ID %s) is unknown -> added to the Ranksystem now.";
 $lang['alrup']            = "You already updated your database. Please delete this file from your webspace!";
 $lang['changedbid']       = "User %s (unique Client-ID: %s) got a new TeamSpeak Client-database-ID (%s). Update the old Client-database-ID (%s) and reset collected times!";
 $lang['crawl']            = "Scan for connected user and count the activity...";
@@ -24,7 +24,7 @@ $lang['error']            = "Error ";
 $lang['errremgrp']        = "Error by removing user with unique Client-ID %s out of the servergroup with servergroup-database-ID %s!";
 $lang['errremdb']         = "Error by removing user with unique Client-ID % out of the Ranksystem database!";
 $lang['errsel']           = "Error by choosing the selections with<br>selected client: %s<br>option 'delete clients': %s<br>option 'sum. online time': %s";
-$lang['errukwn']          = "Unkown error happens!";
+$lang['errukwn']          = "Unknown error happens!";
 $lang['errupcount']       = "Error by renewing the summary online time of %s by user with the unique Client-ID %s";
 $lang['firstuse']         = "Seems to be the first run. Start logging the Userhistory...";
 $lang['highest']          = "highest rank reached";
