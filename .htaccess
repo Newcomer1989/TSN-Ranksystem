@@ -1,0 +1,5 @@
+#.htaccess file to automaticly open the webinterface.php
+
+<IfModule mod_dir.c>
+  DirectoryIndex webinterface.php
+</IfModule>

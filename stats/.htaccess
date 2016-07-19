@@ -1,0 +1,5 @@
+#.htaccess file to automatically open the index.php file
+
+<IfModule mod_dir.c>
+  DirectoryIndex index.php
+</IfModule>
