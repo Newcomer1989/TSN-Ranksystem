@@ -37,7 +37,7 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleancli
 		$countrs = $dbuserdata->rowCount();
 		$uuids = $dbuserdata->fetchAll();
 		if ($lastclean[0]['timestamp'] < $cleantime) {
-			enter_logfile($logpath,$timezone,5,$lang['clean']);
+			enter_logfile($logpath,$timezone,4,$lang['clean']);
 			$start=0;
 			$break=200;
 			$clientdblist=array();
@@ -50,7 +50,7 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleancli
 				if ($start == 100000 || $count_tsuser['count'] <= $start) {
 					break;
 				}
-				check_shutdown($timezone); usleep($slowmode);
+				check_shutdown($timezone,$logpath); usleep($slowmode);
 			}
 			foreach($clientdblist as $uuidts) {
 				$single_uuid = $uuidts['client_unique_identifier']->toString();
@@ -68,8 +68,8 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleancli
 			}
 
 			unset($uidarrts);
-			enter_logfile($logpath,$timezone,5,"  ".sprintf($lang['cleants'], $countts, $count_tsuser['count']));
-			enter_logfile($logpath,$timezone,5,"  ".sprintf($lang['cleanrs'], $countrs));
+			enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['cleants'], $countts, $count_tsuser['count']));
+			enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['cleanrs'], $countrs));
 
 			if(isset($deleteuuids)) {
 				$alldeldata = '';
@@ -84,7 +84,7 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleancli
 						$sqlmsg .= print_r($mysqlcon->errorInfo());
 						$sqlerr++;
 					} else {
-						enter_logfile($logpath,$timezone,5,"  ".sprintf($lang['cleandel'], $countdel));
+						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['cleandel'], $countdel));
 						if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='check_clean'") === false) {
 							enter_logfile($logpath,$timezone,2,"clean 6:".print_r($mysqlcon->errorInfo()));
 							$sqlmsg .= print_r($mysqlcon->errorInfo());
@@ -93,7 +93,7 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleancli
 					}
 				}
 			} else {
-				enter_logfile($logpath,$timezone,2,"  ".$lang['cleanno']);
+				enter_logfile($logpath,$timezone,4,"  ".$lang['cleanno']);
 				if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='check_clean'") === false) {
 					enter_logfile($logpath,$timezone,2,"clean 7:".print_r($mysqlcon->errorInfo()));
 					$sqlmsg .= print_r($mysqlcon->errorInfo());

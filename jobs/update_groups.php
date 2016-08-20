@@ -5,7 +5,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 	$sqlerr = 0;
 	
 	try {
-		check_shutdown($timezone); usleep($slowmode);
+		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$iconlist = $ts3->channelFileList($cid="0", $cpw="", $path="/icons/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
@@ -21,7 +21,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 	}
 	
 	try {
-		check_shutdown($timezone); usleep($slowmode);
+		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$ts3->serverGroupListReset();
 		$ts3groups = $ts3->serverGroupList();
 	} catch (Exception $e) {
@@ -56,7 +56,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 	if (!isset($sqlhisgroup['0']) || $sqlhisgroup['0']['iconid'] != $sIconId || $iconarr["i".$sIconId] > $sqlhisgroup['0']['icondate']) {
 		if($sIconId > 600) {
 			try {
-				check_shutdown($timezone); usleep($slowmode);
+				check_shutdown($timezone,$logpath); usleep($slowmode);
 				enter_logfile($logpath,$timezone,5,"Download new ServerIcon");
 				$sIconFile = $ts3->iconDownload();
 				if(file_put_contents(substr(dirname(__FILE__),0,-4) . "icons/servericon.png", $sIconFile) === false) {
@@ -71,7 +71,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 		if (!isset($sqlhisgroup['0'])) {
 			$insertgroups[] = array(
 				"sgid" => "0",
-				"sgidname" => "ServerIcon",
+				"sgidname" => $mysqlcon->quote("ServerIcon", ENT_QUOTES),
 				"iconid" => $sIconId,
 				"icon" => $sIconFile,
 				"icondate" => $iconarr["i".$sIconId]
@@ -79,7 +79,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 		} else {
 			$updategroups[] = array(
 				"sgid" => "0",
-				"sgidname" => "ServerIcon",
+				"sgidname" => $mysqlcon->quote("ServerIcon", ENT_QUOTES),
 				"iconid" => $sIconId,
 				"icon" => $sIconFile,
 				"icondate" => $iconarr["i".$sIconId]
@@ -91,7 +91,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
     foreach ($ts3groups as $servergroup) {
 		$tsgroupids[] = $servergroup['sgid'];
 		$sgid = $servergroup['sgid'];
-		$sgname   = str_replace('\\', '\\\\', htmlspecialchars($servergroup['name'], ENT_QUOTES));
+		$sgname   = $mysqlcon->quote($servergroup['name'], ENT_QUOTES);
         $gefunden = 2;
         $iconid   = $servergroup['iconid'];
         $iconid   = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
@@ -148,7 +148,11 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
     if (isset($insertgroups)) {
         $allinsertdata = '';
         foreach ($insertgroups as $insertarr) {
-			$allinsertdata = $allinsertdata . "('" . $insertarr['sgid'] . "', '" . $insertarr['sgidname'] . "', '" . $insertarr['iconid'] . "', '" . $insertarr['icondate'] . "'),";
+			if( $insertarr['iconid'] == 0) {
+				//enter_logfile($logpath,$timezone,6,"IconID is 0 for (servergroup) ".$insertarr['sgidname']." (".$insertarr['sgid'].")");
+				continue;
+			}
+			$allinsertdata = $allinsertdata . "('" . $insertarr['sgid'] . "', " . $insertarr['sgidname'] . ", '" . $insertarr['iconid'] . "', '" . $insertarr['icondate'] . "'),";
         }
         $allinsertdata = substr($allinsertdata, 0, -1);
         if ($allinsertdata != '') {
@@ -167,7 +171,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 		$allupdatedate   = '';
         foreach ($updategroups as $updatedata) {
             $allsgids        = $allsgids . "'" . $updatedata['sgid'] . "',";
-            $allupdatesgid   = $allupdatesgid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['sgidname'] . "' ";
+            $allupdatesgid   = $allupdatesgid . "WHEN '" . $updatedata['sgid'] . "' THEN " . $updatedata['sgidname'] . " ";
             $allupdateiconid = $allupdateiconid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['iconid'] . "' ";
             $allupdatedate   = $allupdatedate . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['icondate'] . "' ";
         }

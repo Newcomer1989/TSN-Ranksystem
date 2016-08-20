@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.0.2-dev';
+	$newversion = '1.1.0';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -10,20 +10,20 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			exit;
 		} else {
 			$currvers = $newversion;
-			enter_logfile($logpath,$timezone,5,"  Database successfully updated!");
+			enter_logfile($logpath,$timezone,4,"  Database successfully updated!");
 			return $currvers;
 		}
 	}
 	
 	function check_chmod($timezone) {
 		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'icons/')), -4)!='0777') {
-			enter_logfile($logpath,$timezone,2,"Write Permissions failed on folder \"icons\". Please give them a chmod 777 and try to start the Ranksystem again.");
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'icons'));
 		}
 		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'logs/')), -4)!='0777') {
-			enter_logfile($logpath,$timezone,2,"Write Permissions failed on folder \"logs\". Please give them a chmod 777 and try to start the Ranksystem again.");
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'logs'));
 		}
 		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'avatars/')), -4)!='0777') {
-			enter_logfile($logpath,$timezone,2,"Write Permissions failed on folder \"avatars\". Please give them a chmod 777 and try to start the Ranksystem again.");
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'avatars'));
 		}
 	}
 
@@ -88,6 +88,31 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/thickbox-compressed.js");
 			}
 		}
+		if(is_file(substr(__DIR__,0,-4).'other/webinterface_list.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'other/webinterface_list.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/webinterface_list.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'other/webinterface_login.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'other/webinterface_login.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/webinterface_login.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'webinterface.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'webinterface.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: webinterface.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'other/style.css.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'other/style.css.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/style.css.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'bootstrap/js/_bootstrap.js')) {
+			if(!unlink(substr(__DIR__,0,-4).'bootstrap/js/_bootstrap.js')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: bootstrap/js/_bootstrap.js");
+			}
+		}
 	}
 	
 	if($currvers==$newversion) {
@@ -95,7 +120,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		old_files($timezone);
 		check_chmod($timezone);
 	} elseif($currvers=="0.13-beta") {
-		enter_logfile($logpath,$timezone,5,"  Update the Ranksystem Database to version 1.01.");
+		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to version 1.0.1");
 		
 		$errcount=1;
 		
@@ -230,6 +255,26 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		}
 	} else {
 		if($mysqlcon->exec("CREATE INDEX serverusage_timestamp ON $dbname.server_usage (timestamp)") === false) { }
+		if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else { 
+			enter_logfile($logpath,$timezone,4,"  Adjusted table config successfully.");
+		}
+		if($mysqlcon->exec("UPDATE $dbname.config set ignoreidle='600', rankupmsg='\\nHey, you got a rank up, cause you reached an activity of %s days, %s hours, %s minutes and %s seconds.', newversion='1.1.0'") === false) { } else {
+			enter_logfile($logpath,$timezone,4,"  Set default values to new fields in table config.");
+		}
+		if($mysqlcon->exec("INSERT INTO $dbname.job_check (job_name) VALUES ('get_version')") === false) { } else {
+			enter_logfile($logpath,$timezone,4,"  Set new values to table job_check.");
+		}
+		if(($password = $mysqlcon->query("SELECT webpass FROM $dbname.config")) === false) { }
+		$password = $password->fetchAll();
+		if(strlen($password[0]['webpass']) != 60) {
+			$newwebpass = password_hash($password[0]['webpass'], PASSWORD_DEFAULT);
+			if($mysqlcon->exec("UPDATE $dbname.config set webpass='$newwebpass'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"  Encrypted password for the webinterface and wrote hash to database.");
+			}
+		}
+		if($mysqlcon->exec("ALTER TABLE $dbname.config DROP COLUMN showexgrp, DROP COLUMN showgen, DROP COLUMN bgcolor, DROP COLUMN hdcolor, DROP COLUMN txcolor, DROP COLUMN hvcolor, DROP COLUMN ifcolor, DROP COLUMN wncolor, DROP COLUMN sccolor") === false) { } else {
+			enter_logfile($logpath,$timezone,4,"  Delete old configs, which are no more needed.");
+		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone);
 		check_chmod($timezone);

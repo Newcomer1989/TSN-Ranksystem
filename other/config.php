@@ -13,25 +13,14 @@ if ($db['type'] == 'mysql') {
 } else {
 	$dboptions = array();
 }
-
 try {
 	$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
 } catch (PDOException $e) {
-	$sqlconerr = "SQL Connection failed: ".$e->getMessage()."\n";
-	echo $sqlconerr;
-	// open function mail here and try to ts3 msg (perhaps uuid out of text file; mysqlconf?)
-	exit;
+	$err_msg = "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
+	$language = "en";
 }
-if (($config = $mysqlcon->query("SELECT * FROM config"))  === false) {
-    $bgcolor         = '#101010';
-    $hdcolor         = '#909090';
-    $txcolor         = '#707070';
-    $hvcolor         = '#FFFFFF';
-    $ifcolor         = '#3366CC';
-    $wncolor         = '#CC0000';
-    $sccolor         = '#008000';
-    $showgen         = '1';
-} else {
+
+if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
     $config          = $config->fetchAll();
     $ts['host']      = $config[0]['tshost'];
     $ts['query']     = $config[0]['tsquery'];
@@ -46,15 +35,21 @@ if (($config = $mysqlcon->query("SELECT * FROM config"))  === false) {
 		} else {
 			$language = $config[0]['language'];
 		}
+	} elseif($_GET["lang"] == "ar") {
+		$language = "ar";
+		$_SESSION['language'] = "ar";
 	} elseif($_GET["lang"] == "de") {
 		$language = "de";
 		$_SESSION['language'] = "de";
-	} elseif($_GET["lang"] == "ru") {
-		$language = "ru";
-		$_SESSION['language'] = "ru";
 	} elseif($_GET["lang"] == "it") {
 		$language = "it";
 		$_SESSION['language'] = "it";
+	} elseif($_GET["lang"] == "ro") {
+		$language = "ro";
+		$_SESSION['language'] = "ro";
+	} elseif($_GET["lang"] == "ru") {
+		$language = "ru";
+		$_SESSION['language'] = "ru";
 	} else {
 		$language = "en";
 		$_SESSION['language'] = "en";
@@ -89,8 +84,8 @@ if (($config = $mysqlcon->query("SELECT * FROM config"))  === false) {
     $substridle      = $config[0]['substridle'];
     $exceptuuid      = explode(',', $config[0]['exceptuuid']);
     $exceptgroup     = explode(',', $config[0]['exceptgroup']);
+	$exceptcid		 = explode(',', $config[0]['exceptcid']);
     $timeformat      = $config[0]['dateformat'];
-    $showexgrp       = $config[0]['showexgrp'];
     $showexcld       = $config[0]['showexcld'];
 	$showhighest     = $config[0]['showhighest'];
 	$showcolrg       = $config[0]['showcolrg'];
@@ -104,14 +99,6 @@ if (($config = $mysqlcon->query("SELECT * FROM config"))  === false) {
 	$showcolas       = $config[0]['showcolas'];
     $showcolnx       = $config[0]['showcolnx'];
     $showcolsg       = $config[0]['showcolsg'];
-    $bgcolor         = $config[0]['bgcolor'];
-    $hdcolor         = $config[0]['hdcolor'];
-    $txcolor         = $config[0]['txcolor'];
-    $hvcolor         = $config[0]['hvcolor'];
-    $ifcolor         = $config[0]['ifcolor'];
-    $wncolor         = $config[0]['wncolor'];
-    $sccolor         = $config[0]['sccolor'];
-    $showgen         = $config[0]['showgen'];
 	$cleanclients    = $config[0]['cleanclients'];
 	$cleanperiod     = $config[0]['cleanperiod'];
 	$defchid         = $config[0]['defchid'];
@@ -122,14 +109,24 @@ if (($config = $mysqlcon->query("SELECT * FROM config"))  === false) {
 		$timezone    = $config[0]['timezone'];
 	}
 	date_default_timezone_set($timezone);
+	$advancemode	 = $config[0]['advancemode'];
+	$count_access	 = $config[0]['count_access'];
+	$last_access	 = $config[0]['last_access'];
+	$ignoreidle		 = $config[0]['ignoreidle'];
+	$rankupmsg		 = $config[0]['rankupmsg'];
+	$newversion		 = $config[0]['newversion'];
 }
 if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_en.php');
+} elseif($language == "ar") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
 } elseif($language == "de") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
-} elseif($language == "ru") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
 } elseif($language == "it") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
+} elseif($language == "ro") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
+} elseif($language == "ru") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
 }
 ?>

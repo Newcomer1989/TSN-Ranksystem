@@ -44,6 +44,11 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 
 require_once(substr(__DIR__,0,-4).'other/config.php');
 
+if(version_compare(phpversion(), '5.5.0', '<')) {
+	enter_logfile($logpath,$timezone,1,"Your PHP version (".phpversion().") is below 5.5.0. Update of PHP needed! Shuttin down!\n\n");
+	exit;
+}
+
 enter_logfile($logpath,$timezone,5,"Initialize Bot...");
 require_once(substr(__DIR__,0,-4).'ts3_lib/TeamSpeak3.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
@@ -54,7 +59,7 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 
-function log_mysql($jobname,$mysqlcon,$timezone) {
+function log_mysql($jobname,$mysqlcon,$timezone,$dbname) {
 	$timestamp = time();
 	if($mysqlcon->exec("INSERT INTO $dbname.job_log (timestamp,job_name,status) VALUES ('$timestamp','$jobname','9')") === false) {
 		enter_logfile($logpath,$timezone,2,print_r($mysqlcon->errorInfo()));
@@ -127,26 +132,24 @@ try {
 		if($defchid != 0) {
 			try { usleep($slowmode); $ts3->clientMove($whoami['client_id'],$defchid); } catch (Exception $e) {}
 		}
-		$jobid = log_mysql('calc_user',$mysqlcon,$timezone);
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$showgen,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath);
+		$jobid = log_mysql('calc_user',$mysqlcon,$timezone,$dbname);
+		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('get_avatars',$mysqlcon,$timezone);
+		$jobid = log_mysql('get_avatars',$mysqlcon,$timezone,$dbname);
 		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('update_groups',$mysqlcon,$timezone);
+		$jobid = log_mysql('update_groups',$mysqlcon,$timezone,$dbname);
 		update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$serverinfo,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('calc_serverstats',$mysqlcon,$timezone);
+		$jobid = log_mysql('calc_serverstats',$mysqlcon,$timezone,$dbname);
 		calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$serverinfo,$substridle,$grouptime,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('calc_userstats',$mysqlcon,$timezone);
+		$jobid = log_mysql('calc_userstats',$mysqlcon,$timezone,$dbname);
 		calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('clean',$mysqlcon,$timezone);
+		$jobid = log_mysql('clean',$mysqlcon,$timezone,$dbname);
 		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleanclients,$cleanperiod,$logpath);
-		//check auf fehler in job_log
 		$looptime = microtime(true) - $starttime;
-		//echo DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u "),"Loop: ",$looptime,"\n";
 	}
 }
 catch (Exception $e) {

@@ -1,32 +1,61 @@
 <?PHP
-function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$showgen,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath) {
+function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid) {
 	$starttime = microtime(true);
 	$nowtime = time();
 	$sqlmsg = '';
 	$sqlerr = 0;
 
+	
+	if(($getversion = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='get_version'")) === false) {
+		enter_logfile($logpath,$timezone,2,"calc_user -3:".print_r($mysqlcon->errorInfo()));
+		$sqlmsg .= print_r($mysqlcon->errorInfo());
+		$sqlerr++;
+	} else {
+		$getversion = $getversion->fetchAll();
+		$updatetime = $nowtime - 43200;
+		if ($getversion[0]['timestamp'] < $updatetime) {
+			set_error_handler(function() { });
+			$newversion = file_get_contents('http://ts-n.net/ranksystem/version');
+			restore_error_handler();
+			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'") === false) {
+				enter_logfile($logpath,$timezone,2,"calc_user -2:".print_r($mysqlcon->errorInfo()));
+				$sqlmsg .= print_r($mysqlcon->errorInfo());
+				$sqlerr++;
+			}
+			if($mysqlcon->exec("UPDATE $dbname.config SET newversion='$newversion'") === false) {
+				enter_logfile($logpath,$timezone,2,"calc_user -1:".print_r($mysqlcon->errorInfo()));
+				$sqlmsg .= print_r($mysqlcon->errorInfo());
+				$sqlerr++;
+			}
+		}
+	}
+	
 	if ($update == 1) {
 		$updatetime = $nowtime - $updateinfotime;
 		if(($lastupdate = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='check_update'")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_user 0:".print_r($mysqlcon->errorInfo()));
 			$sqlmsg .= print_r($mysqlcon->errorInfo());
 			$sqlerr++;
 		}
 		$lastupdate = $lastupdate->fetchAll();
 		if ($lastupdate[0]['timestamp'] < $updatetime) {
-			set_error_handler(function() { });
-			$newversion = file_get_contents('http://ts-n.net/ranksystem/version');
-			restore_error_handler();
-			if (substr($newversion, 0, 4) != substr($currvers, 0, 4) && $newversion != '') {
+			if(($getversion = $mysqlcon->query("SELECT newversion FROM $dbname.config")) === false) {
+				enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo()));
+				$sqlmsg .= print_r($mysqlcon->errorInfo());
+				$sqlerr++;
+			}
+			$getversion = $getversion->fetchAll();
+			$newversion = $getversion[0];
+			if(version_compare(substr($newversion, 0, 5), substr($currvers, 0, 5), '>') && $newversion != '') {
 				enter_logfile($logpath,$timezone,4,$lang['upinf']);
 				foreach ($uniqueid as $clientid) {
-					check_shutdown($timezone); usleep($slowmode);
+					check_shutdown($timezone,$logpath); usleep($slowmode);
 					try {
 						$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $currvers, $newversion));
-						enter_logfile($logpath,$timezone,5,"  ".sprintf($lang['upusrinf'], $clientid));
+						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
 					}
 					catch (Exception $e) {
-						enter_logfile($logpath,$timezone,2,"  ".sprintf($lang['upusrerr'], $clientid));
+						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrerr'], $clientid));
 						$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
 						$sqlerr++;
 					}
@@ -80,7 +109,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 	}
 	unset($uuids);
 
-	check_shutdown($timezone); usleep($slowmode);
+	check_shutdown($timezone,$logpath); usleep($slowmode);
 	$yetonline[] = '';
 	$insertdata  = '';
 	if(empty($grouptime)) {
@@ -103,8 +132,12 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 		$nation=$client['client_country'];
 		$version=$client['client_version'];
 		$firstconnect=$client['client_created'];
+		$channel=$client['cid'];
 		if (!in_array($uid, $yetonline) && $client['client_version'] != "ServerQuery") {
 			$clientidle  = floor($client['client_idle_time'] / 1000);
+			if(isset($ignoreidle) && $clientidle < $ignoreidle) {
+				$clientidle = 0;
+			}
 			$yetonline[] = $uid;
 			if(in_array($uid, $exceptuuid) || array_intersect($sgroups, $exceptgroup)) {
 				$except = 1;
@@ -130,7 +163,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 									$boosttime = $nowtime;
 								} else {
 									if ($nowtime > $sqlhis[$uid]['boosttime'] + $boost['time']) {
-										check_shutdown($timezone); usleep($slowmode);
+										check_shutdown($timezone,$logpath); usleep($slowmode);
 										try {
 											$ts3->serverGroupClientDel($boost['group'], $cldbid);
 											$boosttime = 0;
@@ -173,10 +206,14 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 				$grpcount=0;
 				foreach ($grouptime as $time => $groupid) {
 					$grpcount++;
-					if ($activetime > $time && !in_array($uid, $exceptuuid) && !array_intersect($sgroups, $exceptgroup)) {
+					if(in_array($channel, $exceptcid)) {
+						$count = $sqlhis[$uid]['count'];
+						$idle = $sqlhis[$uid]['idle'];
+						$except = 1;
+					} elseif ($activetime > $time && !in_array($uid, $exceptuuid) && !array_intersect($sgroups, $exceptgroup)) {
 						if ($sqlhis[$uid]['grpid'] != $groupid) {
 							if ($sqlhis[$uid]['grpid'] != 0 && in_array($sqlhis[$uid]['grpid'], $sgroups)) {
-								check_shutdown($timezone); usleep($slowmode);
+								check_shutdown($timezone,$logpath); usleep($slowmode);
 								try {
 									$ts3->serverGroupClientDel($sqlhis[$uid]['grpid'], $cldbid);
 									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrprm'], $sqlhis[$uid]['grpid'], $name, $uid, $cldbid));
@@ -188,7 +225,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 								}
 							}
 							if (!in_array($groupid, $sgroups)) {
-								check_shutdown($timezone); usleep($slowmode);
+								check_shutdown($timezone,$logpath); usleep($slowmode);
 								try {
 									$ts3->serverGroupClientAdd($groupid, $cldbid);
 									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $groupid, $name, $uid, $cldbid));
@@ -206,22 +243,12 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$show
 								$hours = $dtF->diff($dtT)->format('%h');
 								$mins  = $dtF->diff($dtT)->format('%i');
 								$secs  = $dtF->diff($dtT)->format('%s');
-								if ($substridle == 1) {
-									try {
-										$ts3->clientGetByUid($uid)->message(sprintf($lang['usermsgactive'], $days, $hours, $mins, $secs));
-									} catch (Exception $e) {
-										enter_logfile($logpath,$timezone,2,"calc_user 11:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-										$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-										$sqlerr++;
-									}
-								} else {
-									try {
-										$ts3->clientGetByUid($uid)->message(sprintf($lang['usermsgonline'], $days, $hours, $mins, $secs));
-									} catch (Exception $e) {
-										enter_logfile($logpath,$timezone,2,"calc_user 12:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-										$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-										$sqlerr++;
-									}
+								try {
+									$ts3->clientGetByUid($uid)->message(sprintf($rankupmsg, $days, $hours, $mins, $secs));
+								} catch (Exception $e) {
+									enter_logfile($logpath,$timezone,2,"calc_user 12:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
+									$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
+									$sqlerr++;
 								}
 							}
 						}

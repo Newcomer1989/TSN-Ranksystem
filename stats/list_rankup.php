@@ -5,9 +5,25 @@ $starttime = microtime(true);
 require_once('../other/config.php');
 require_once('../other/session.php');
 
+function getclientip() {
+	if (!empty($_SERVER['HTTP_CLIENT_IP']))
+		return $_SERVER['HTTP_CLIENT_IP'];
+	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+		return $_SERVER['HTTP_X_FORWARDED_FOR'];
+	elseif(!empty($_SERVER['HTTP_X_FORWARDED']))
+		return $_SERVER['HTTP_X_FORWARDED'];
+	elseif(!empty($_SERVER['HTTP_FORWARDED_FOR']))
+		return $_SERVER['HTTP_FORWARDED_FOR'];
+	elseif(!empty($_SERVER['HTTP_FORWARDED']))
+		return $_SERVER['HTTP_FORWARDED'];
+	elseif(!empty($_SERVER['REMOTE_ADDR']))
+		return $_SERVER['REMOTE_ADDR'];
+	else
+		return false;
+}
+
 if(!isset($_SESSION['tsuid'])) {
-	$hpclientip = ip2long($_SERVER['REMOTE_ADDR']);
-	set_session_ts3($hpclientip, $ts['voice'], $mysqlcon, $dbname);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname);
 }
 
 if(isset($_POST['username'])) {
@@ -31,6 +47,9 @@ if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 	$filter .= " AND except='0'";
 } else {
 	$searchstring = $getstring;
+	if($showexcld == 0) {
+		$filter .= " AND except='0'";
+	}
 }
 if(isset($getstring) && strstr($getstring, 'filter:online:')) {
 	$searchstring = preg_replace('/filter\:online\:/','',$searchstring);
@@ -43,6 +62,32 @@ if(isset($getstring) && strstr($getstring, 'filter:actualgroup:')) {
 	preg_match('/filter\:actualgroup\:(.*)\:/',$searchstring,$grpvalue);
 	$searchstring = preg_replace('/filter\:actualgroup\:(.*)\:/','',$searchstring);
 	$filter .= " AND grpid='".$grpvalue[1]."'";
+}
+if(isset($getstring) && strstr($getstring, 'filter:country:')) {
+	preg_match('/filter\:country\:(.*)\:/',$searchstring,$grpvalue);
+	$searchstring = preg_replace('/filter\:country\:(.*)\:/','',$searchstring);
+	$filter .= " AND nation='".$grpvalue[1]."'";
+}
+if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
+	preg_match('/filter\:lastseen\:(.*)\:(.*)\:/',$searchstring,$seenvalue);
+	$searchstring = preg_replace('/filter\:lastseen\:(.*)\:(.*)\:/','',$searchstring);
+	if(is_numeric($seenvalue[2])) {
+		$lastseen = $seenvalue[2];
+	} else {
+		$r = date_parse_from_format("Y-m-d H-i",$seenvalue[2]);
+		$d = mktime($r['hour'], $r['minute'], $r['second'], $r['month'], $r['day'], $r['year']);
+		$lastseen = $d;
+	}
+	if($seenvalue[1] == '&lt;') {
+		$operator = '<';
+	} elseif($seenvalue[1] == '&gt;') {
+		$operator = '>';
+	} elseif($seenvalue[1] == '!=') {
+		$operator = '!=';
+	} else {
+		$operator = '=';
+	}
+	$filter .= " AND lastseen".$operator."'".$lastseen."'";
 }
 
 if(isset($getstring)) {
@@ -73,7 +118,7 @@ if (isset($_GET['order'])) {
 }
 $keyorder = ($keyorder == 'desc' ? 'desc' : 'asc');
 if (isset($_GET['admin'])) {
-	if($_GET['admin'] == "true" && isset($_SESSION['username'])) {
+	if($_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
 		$adminlogin = 1;
 	}
 }
@@ -267,14 +312,6 @@ if($adminlogin == 1) {
 						$countallsum++;
 						foreach ($grouptime as $time => $groupid) {
 							$grpcount++;
-							if (array_intersect($sgroups, $exceptgroup) && $showexgrp != 1 && $adminlogin != 1) {
-								$exceptgrp++;
-								break;
-							}
-							if (in_array($uid, $exceptuuid) && $showexcld != 1 && $adminlogin != 1) {
-								$exceptcld++;
-								break;
-							}
 							if ($activetime < $time || $grpcount == $countgrp && $nextup == 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
 								if($nextup == 0 && $grpcount == $countgrp) {
 									$neededtime = 0;
@@ -382,32 +419,10 @@ if($adminlogin == 1) {
 				if($user_pro_seite != "all") {
 					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
-				if ($showgen == 1 || $adminlogin == 1) {
-					$except = $exceptgrp + $exceptcld;
-					$notvisible = 0;
-					if ($showexgrp != 1) { $notvisible = $exceptgrp; }
-					if ($showexcld != 1) { $notvisible = $notvisible + $exceptcld; }
-					if ($showhighest != 1) { $notvisible = $notvisible + $highest; }
-					$displayed = $countallsum - $notvisible;
-					$buildtime = microtime(true) - $starttime;
-					?>
-					<nav>
-						<ul class="pager">
-							<li class="previous"><span class="glyphicon glyphicon-chevron-up up scrollMore" aria-hidden="true"></span></li>
-							<li class="next"><span class="glyphicon glyphicon-chevron-up up scrollMore" aria-hidden="true"></span></li>
-						</ul>
-					</nav>
-					<?PHP
-				}
 				?>
 			</div>
-			<!-- /.container-fluid -->
-
 		</div>
-		<!-- /#page-wrapper -->
-
 	</div>
-	<!-- /#wrapper -->
 	<script src="../jquerylib/jquery.js"></script>
 	<script type="text/javascript">
 	;(function($) {
