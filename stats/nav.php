@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
@@ -9,28 +9,17 @@
 
 	<title>TS-N.NET Ranksystem</title>
 
-	<!-- Bootstrap Core CSS -->
 	<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-	<!-- Custom CSS -->
 	<link href="../bootstrap/addons/sb-admin.css" rel="stylesheet">
-
-	<!-- Morris Charts CSS -->
 	<link href="../bootstrap/addons/morris/morris.css" rel="stylesheet">
-
-	<!-- Custom Fonts -->
 	<link href="../bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	
-	<!-- Flag icon css -->
 	<link href="../bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
 
-	<!-- jQuery -->
 	<script src="../jquerylib/jquery.js"></script>
 
-	<!-- Bootstrap Core JavaScript -->
 	<script src="../bootstrap/js/bootstrap.min.js"></script>
 
-	<!-- Morris Charts JavaScript -->
 	<script src="../bootstrap/addons/morris/raphael.min.js"></script>
 	<script src="../bootstrap/addons/morris/morris.min.js"></script>
 	<script src="../bootstrap/addons/morris/morris-data.js"></script>
@@ -132,18 +121,56 @@
 			</div>
 		</div>
 	</div>
-
+	<div id="filteroptions" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Filter options - Search function</h4>
+				</div>
+				<div class="modal-body">
+					<p><?PHP echo $lang['stnv0031']; ?></p>
+					<p><?PHP echo $lang['stnv0032']; ?></p>
+					<p><?PHP echo $lang['stnv0033']; ?></p>
+					<p><?PHP echo $lang['stnv0034']; ?></p>
+					<p><?PHP echo $lang['stnv0035']; ?></p>
+					<p><br></p>
+					<p><b>filter:excepted:</b></p>
+					<p><?PHP echo $lang['stnv0036']; ?></p>
+					<p><b>filter:nonexcepted:</b></p>
+					<p><?PHP echo $lang['stnv0037']; ?></p>
+					<p><b>filter:online:</b></p>
+					<p><?PHP echo $lang['stnv0038']; ?></p>
+					<p><b>filter:nononline:</b></p>
+					<p><?PHP echo $lang['stnv0039']; ?></p>
+					<p><b>filter:actualgroup:<i>GROUPID</i>:</b></p>
+					<p><?PHP echo $lang['stnv0040']; ?></p>
+					<p><b>filter:country:<i>TS3-COUNTRY-CODE</i>:</b></p>
+					<p><?PHP echo $lang['stnv0042']; ?></p>
+					<p><b>filter:lastseen:<i>OPERATOR</i>:<i>TIME</i>:</b></p>
+					<p><?PHP echo $lang['stnv0041']; ?></p>
+					<br>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div id="wrapper">
-		
-		<!-- Navigation -->
 		<nav class="navbar navbar-inverse navbar-fixed-top">
-			<!-- Brand and toggle get grouped for better mobile display -->
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php"><?PHP echo $lang['stnv0024']; ?></a>
 			</div>
-			<!-- Top Menu Items -->
 			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "list_rankup.php") { ?>
 			<ul class="nav navbar-left top-nav">
+				<li class="navbar-form navbar-left dropdown">
+					<div class="btn-group">
+						<a href="#filteroptions" data-toggle="modal" class="btn btn-primary">
+							<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+						</a>
+					</div>
+				</li>
 				<li class="navbar-form navbar-right dropdown">
 					<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
 						<?PHP echo $lang['stnv0025']; ?>
@@ -199,21 +226,26 @@
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li>
-							<a href="?lang=de" data-toggle="modal"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;<?PHP echo $lang['stnv0031']; ?></a>
+							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
 						</li>
 						<li>
-							<a href="?lang=en" data-toggle="modal"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;<?PHP echo $lang['stnv0032']; ?></a>
+							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
 						</li>
 						<li>
-							<a href="?lang=it" data-toggle="modal"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;<?PHP echo $lang['stnv0034']; ?></a>
+							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
-							<a href="?lang=ru" data-toggle="modal"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;<?PHP echo $lang['stnv0033']; ?></a>
+							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+						</li>
+						<li>
+							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>
+						</li>
+						<li>
+							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - русский</a>
 						</li>
 					</ul>
 				</li>
 			</ul>
-			<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "index.php" ? ' class="active">' : '>'); ?>
@@ -248,7 +280,6 @@
 					</li>
 				</ul>
 			</div>
-			<!-- /.navbar-collapse -->
 		</nav>
 <?PHP
 function error_handling($msg,$type = NULL) {

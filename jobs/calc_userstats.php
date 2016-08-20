@@ -117,7 +117,7 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,
 					$count_month = 0;
 					$idle_month = 0;
 				}
-				$clientdesc = str_replace('\\', '\\\\', htmlspecialchars($clientinfo['client_description'], ENT_QUOTES));
+				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);;
 				if(isset($uidarrstats[$userstats['uuid']])) {
 					$allupdateuuid = $allupdateuuid . "'" . $userstats['uuid'] . "',";
 					$allupdaterank = $allupdaterank . "WHEN '" . $userstats['uuid'] . "' THEN '" . $userstats['rank'] . "' ";
@@ -129,9 +129,9 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,
 					$allupdatebase64 = $allupdatebase64 . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_base64HashClientUID'] . "' ";
 					$allupdatecldtup = $allupdatecldtup . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_total_bytes_uploaded'] . "' ";
 					$allupdatecldtdo = $allupdatecldtdo . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_total_bytes_downloaded'] . "' ";
-					$allupdateclddes = $allupdateclddes . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientdesc . "' ";
+					$allupdateclddes = $allupdateclddes . "WHEN '" . $userstats['uuid'] . "' THEN " . $clientdesc . " ";
 				} else {
-					$allinsertuserstats = $allinsertuserstats . "('" . $userstats['uuid'] . "', '" .$userstats['rank'] . "', '" . $count_week . "', '" . $count_month . "', '" . $idle_week . "', '" . $idle_month . "', '" . $clientinfo['client_totalconnections'] . "', '" . $clientinfo['client_base64HashClientUID'] . "', '" . $clientinfo['client_total_bytes_uploaded'] . "', '" . $clientinfo['client_total_bytes_downloaded'] . "', '" . $clientdesc . "'),";
+					$allinsertuserstats = $allinsertuserstats . "('" . $userstats['uuid'] . "', '" .$userstats['rank'] . "', '" . $count_week . "', '" . $count_month . "', '" . $idle_week . "', '" . $idle_month . "', '" . $clientinfo['client_totalconnections'] . "', '" . $clientinfo['client_base64HashClientUID'] . "', '" . $clientinfo['client_total_bytes_uploaded'] . "', '" . $clientinfo['client_total_bytes_downloaded'] . "', " . $clientdesc . "),";
 				}
 			} catch (Exception $e) {
 				//error would be, when client is missing in ts db

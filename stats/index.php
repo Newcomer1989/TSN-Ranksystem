@@ -3,19 +3,22 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
 
-if($language == "de") {
+if($language == "ar") {
+	require_once('../languages/nations_en.php');
+} elseif($language == "de") {
 	require_once('../languages/nations_de.php');
 } elseif($language == "en") {
 	require_once('../languages/nations_en.php');
 } elseif($language == "it") {
 	require_once('../languages/nations_it.php');
+} elseif($language == "ro") {
+	require_once('../languages/nations_en.php');
 } elseif($language == "ru") {
 	require_once('../languages/nations_ru.php');
 }
 
 if(!isset($_SESSION['tsuid'])) {
-	$hpclientip = ip2long($_SERVER['REMOTE_ADDR']);
-	set_session_ts3($hpclientip, $ts['voice'], $mysqlcon, $dbname);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname);
 }
 
 function human_readable_size($bytes) {
@@ -54,7 +57,7 @@ require_once('nav.php');
 					<div class="col-lg-12">
 						<h1 class="page-header">
 							<?PHP echo $lang['stix0001']; ?>
-							<a href="#infoModal" data-toggle="modal" class="btn btn-primary">
+							<a href="#filteroptions" data-toggle="modal" class="btn btn-primary">
 								<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
 							</a>
 						</h1>
@@ -91,7 +94,7 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo round(($sql_res[0]['total_online_time'] / 86400)). ' <small>'.$lang['days'].'</small>';?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_time'] / 86400))); ?></div>
 										<div><?PHP echo $lang['stix0004']; ?></div>
 									</div>
 								</div>
@@ -113,7 +116,7 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo round(($sql_res[0]['total_online_month'] / 86400)). ' <small>'.$lang['days'].'</small>';?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_month'] / 86400))) ?></div>
 										<div><?PHP if($sql_res[0]['total_online_month'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0049']; } ?></div>
 									</div>
 								</div>
@@ -135,7 +138,7 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo round(($sql_res[0]['total_online_week'] / 86400)). ' <small>'.$lang['days'].'</small>';?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_week'] / 86400))) ?></div>
 										<div><?PHP if ($sql_res[0]['total_online_week'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0050']; } ?></div>
 									</div>
 								</div>
@@ -318,7 +321,7 @@ require_once('nav.php');
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0045']; ?></td>
-										<td><?PHP if ($sql_res[0]['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
+										<td><?PHP if ($sql_res[0]['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost' || $ts['host']=='127.0.0.1') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
 									</tr>
 								</tbody>
 							</table>

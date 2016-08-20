@@ -6,7 +6,7 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$lo
 	$count = 0;
 
 	try {
-		check_shutdown($timezone); usleep($slowmode);
+		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$tsfilelist = $ts3->channelFileList($cid="0", $cpw="", $path="/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
@@ -29,7 +29,7 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$lo
 			if (!isset($fsfilelistarray[$uuidasbase16.'.png']) || $tsfile['datetime']>$fsfilelistarray[$uuidasbase16.'.png']) {
 				if (substr($tsfile['name'],0,7) == 'avatar_') {
 					try {
-						check_shutdown($timezone); usleep($slowmode);
+						check_shutdown($timezone,$logpath); usleep($slowmode);
 						$avatar = $ts3->transferInitDownload($clientftfid="5",$cid="0",$name=$fullfilename,$cpw="", $seekpos=0);
 						$transfer = TeamSpeak3::factory("filetransfer://" . $avatar["host"] . ":" . $avatar["port"]);
 						$tsfile = $transfer->download($avatar["ftkey"], $avatar["size"]);
