@@ -1,0 +1,9 @@
+# htaccess
+
+#redirect to stats
+RedirectMatch ^/$ /stats/
+
+<IfModule mod_dir.c>
+  DirectoryIndex index.php index.html
+</IfModule>
+
