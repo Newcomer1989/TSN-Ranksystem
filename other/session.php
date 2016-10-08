@@ -3,8 +3,7 @@ if (isset($_POST['refresh'])) {
     $_SESSION = array();
     session_destroy();
 }
-function set_session_ts3($voiceport, $mysqlcon, $dbname)
-{
+function set_session_ts3($voiceport, $mysqlcon, $dbname, $language) {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		$hpclientip = $_SERVER['HTTP_CLIENT_IP'];
 	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -20,7 +19,7 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname)
 	else
 		$hpclientip = 0;
 	
-	$hpclientip = ip2long($hpclientip);
+	$hpclientip = inet_pton($hpclientip);
 
     $allclients = $mysqlcon->query("SELECT u.uuid,u.cldbid,u.name,u.ip,u.firstcon,s.total_connections FROM $dbname.user as u LEFT JOIN $dbname.stats_user as s ON u.uuid=s.uuid WHERE online='1';")->fetchAll();
     $_SESSION['connected']  = 0;

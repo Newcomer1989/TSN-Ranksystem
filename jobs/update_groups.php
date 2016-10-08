@@ -1,17 +1,12 @@
 <?PHP
-function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$serverinfo,$logpath) {
-	$starttime = microtime(true);
-	$sqlmsg = '';
-	$sqlerr = 0;
-	
+function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath) {
+
 	try {
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$iconlist = $ts3->channelFileList($cid="0", $cpw="", $path="/icons/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
 			enter_logfile($logpath,$timezone,2,"update_groups 1:".$e->getCode().': '."Error while getting servergrouplist: ".$e->getMessage());
-			$sqlmsg .= $e->getCode() . ': ' . "Error by getting servergrouplist: " . $e->getMessage();
-			$sqlerr++;
 		}
 	}
 
@@ -26,14 +21,10 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 		$ts3groups = $ts3->serverGroupList();
 	} catch (Exception $e) {
 		enter_logfile($logpath,$timezone,2,"update_groups 2:".$e->getCode().': '."Error while getting servergrouplist: ".$e->getMessage());
-		$sqlmsg .= $e->getCode() . ': ' . "Error by getting servergrouplist: " . $e->getMessage();
-		$sqlerr++;
 	}
 	
     if(($dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups")) === false) {
 		enter_logfile($logpath,$timezone,2,"update_groups 3:".print_r($mysqlcon->errorInfo()));
-		$sqlmsg .= print_r($mysqlcon->errorInfo());
-		$sqlerr++;
 	}
     if ($dbgroups->rowCount() == 0) {
         $sqlhisgroup = "empty";
@@ -64,8 +55,6 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 				}
 			} catch (Exception $e) {
 				enter_logfile($logpath,$timezone,2,"update_groups 4:".$e->getCode().': '."Error while downloading servericon: ".$e->getMessage());
-				$sqlmsg .= $e->getCode() . ': ' . "Error while downloading servericon: " . $e->getMessage();
-				$sqlerr++;
 			}
 		}
 		if (!isset($sqlhisgroup['0'])) {
@@ -99,17 +88,23 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 		if($iconid > 600) {
 			if (!isset($sqlhisgroup[$sgid]) || $sqlhisgroup[$sgid]['iconid'] != $iconid || $iconarr["i".$iconid] > $sqlhisgroup[$sgid]['icondate']) {
 				try {
+					check_shutdown($timezone,$logpath); usleep($slowmode);
 					enter_logfile($logpath,$timezone,5,"Download new ServerGroupIcon for group ".$sgname." with ID: ".$sgid);
-					$iconfile = $servergroup->iconDownload();
+					try {
+						$iconfile = $servergroup->iconDownload();
+					} catch (Exception $e) {
+						enter_logfile($logpath,$timezone,2,"update_groups 5:".$e->getCode().': '."Error while downloading servericon: ".$e->getMessage());
+					}
 					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "icons/" . $sgid . ".png", $iconfile) === false) {
 						enter_logfile($logpath,$timezone,2,"Error while writing out the servergroup icon. Please check the permission for the folder 'icons'");
 					}
 				} catch (Exception $e) {
-					enter_logfile($logpath,$timezone,2,"update_groups 5:".$e->getCode().': '."Error while downloading servergroup icon: ".$e->getMessage());
-					$sqlmsg .= $e->getCode() . ': ' . "Error while downloading servergroup icon: " . $e->getMessage();
-					$sqlerr++;
+					enter_logfile($logpath,$timezone,2,"update_groups 6:".$e->getCode().': '."Error while downloading servergroup icon: ".$e->getMessage());
 				}
 			}
+		}
+		if(!isset($iconarr["i".$iconid])) {
+			$iconarr["i".$iconid] = 0;
 		}
 		if ($sqlhisgroup != "empty") {
 			foreach ($sqlhisgroup as $groups) {
@@ -120,7 +115,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 						"sgidname" => $sgname,
 						"iconid" => $iconid,
 						"icon" => $iconfile,
-						"icondate" => $iconarr["i".$iconid]
+						"icondate" => $groups['icondate']
 					);
 					break;
 				}
@@ -148,7 +143,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
     if (isset($insertgroups)) {
         $allinsertdata = '';
         foreach ($insertgroups as $insertarr) {
-			if( $insertarr['iconid'] == 0) {
+			if( $insertarr['iconid'] == 0 || $insertarr['icondate'] == null || $insertarr['icondate'] == 0) {
 				//enter_logfile($logpath,$timezone,6,"IconID is 0 for (servergroup) ".$insertarr['sgidname']." (".$insertarr['sgid'].")");
 				continue;
 			}
@@ -157,9 +152,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
         $allinsertdata = substr($allinsertdata, 0, -1);
         if ($allinsertdata != '') {
             if($mysqlcon->exec("INSERT INTO $dbname.groups (sgid, sgidname, iconid, icondate) VALUES $allinsertdata") === false) {
-				enter_logfile($logpath,$timezone,2,"update_groups 6:".$allinsertdata.print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
+				enter_logfile($logpath,$timezone,2,"update_groups 7:".$allinsertdata.print_r($mysqlcon->errorInfo()));
 			}
         }
     }
@@ -177,9 +170,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
         }
         $allsgids = substr($allsgids, 0, -1);
         if($mysqlcon->exec("UPDATE $dbname.groups set sgidname = CASE sgid $allupdatesgid END, iconid = CASE sgid $allupdateiconid END, icondate = CASE sgid $allupdatedate END WHERE sgid IN ($allsgids)") === false) {
-			enter_logfile($logpath,$timezone,2,"update_groups 7:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
+			enter_logfile($logpath,$timezone,2,"update_groups 8:".print_r($mysqlcon->errorInfo()));
 		}
     }
 	
@@ -193,23 +184,8 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$
 	
 	if(isset($delsgroupids)) {
 		$delsgroupids = substr($delsgroupids, 0, -1);
-		if($mysqlcon->exec("DELETE FROM groups WHERE sgid IN ($delsgroupids)") === false) {
-			enter_logfile($logpath,$timezone,2,"update_groups 8:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
-		}
-	}
-	
-	$buildtime = microtime(true) - $starttime;
-	if ($buildtime < 0) { $buildtime = 0; }
-
-	if ($sqlerr == 0) {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='0', runtime='$buildtime' WHERE id='$jobid'") === false) {
+		if($mysqlcon->exec("DELETE FROM $dbname.groups WHERE sgid IN ($delsgroupids)") === false) {
 			enter_logfile($logpath,$timezone,2,"update_groups 9:".print_r($mysqlcon->errorInfo()));
-		}
-	} else {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='1', err_msg='$sqlmsg', runtime='$buildtime' WHERE id='$jobid'") === false) {
-			enter_logfile($logpath,$timezone,2,"update_groups 10:".print_r($mysqlcon->errorInfo()));
 		}
 	}
 }

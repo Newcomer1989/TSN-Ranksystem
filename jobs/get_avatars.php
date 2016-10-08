@@ -1,8 +1,5 @@
 <?PHP
-function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$logpath) {
-	$starttime = microtime(true);
-	$sqlmsg = '';
-	$sqlerr = 0;
+function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath) {
 	$count = 0;
 
 	try {
@@ -11,8 +8,6 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$lo
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
 			enter_logfile($logpath,$timezone,2,"get_avatars 1:".$e->getCode().': '."Error while getting avatarlist: ".$e->getMessage());
-			$sqlmsg .= $e->getCode() . ': ' . "Error while getting avatarlist: " . $e->getMessage();
-			$sqlerr++;
 		}
 	}
 	$fsfilelist = opendir(substr(__DIR__,0,-4).'avatars/');
@@ -42,24 +37,9 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$lo
 					}
 					catch (Exception $e) {
 						enter_logfile($logpath,$timezone,2,"get_avatars 2:".$e->getCode().': '."Error while downloading avatar: ".$e->getMessage());
-						$sqlmsg .= $e->getCode() . ': ' . "Error while downloading avatar: " . $e->getMessage();
-						$sqlerr++;
 					}
 				}
 			}
-		}
-	}
-	
-	$buildtime = microtime(true) - $starttime;
-	if ($buildtime < 0) { $buildtime = 0; }
-
-	if ($sqlerr == 0) {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='0', runtime='$buildtime' WHERE id='$jobid'") === false) {
-			enter_logfile($logpath,$timezone,2,"get_avatars 3:".print_r($mysqlcon->errorInfo()));
-		}
-	} else {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='1', err_msg='$sqlmsg', runtime='$buildtime' WHERE id='$jobid'") === false) {
-			enter_logfile($logpath,$timezone,2,"get_avatars 4:".print_r($mysqlcon->errorInfo()));
 		}
 	}
 }

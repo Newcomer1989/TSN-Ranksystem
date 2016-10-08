@@ -4,12 +4,17 @@ require_once(__DIR__.'/other/config.php');
 $GLOBALS['exec'] = FALSE;
 if($logpath == NULL) { $logpath = "./logs/"; }
 $GLOBALS['logfile'] = $logpath.'ranksystem.log';
-$GLOBALS['pidfile'] = __DIR__.'/logs/pid';
+
+if (substr(php_uname(), 0, 7) == "Windows") {
+	$GLOBALS['pidfile'] = __DIR__.'\logs\pid';
+} else {
+	$GLOBALS['pidfile'] = __DIR__.'/logs/pid';
+}
 
 function checkProcess($pid = null) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if(!empty($pid)) {
-			exec("wmic process where 'Name='php.exe' and processid='".$pid."'' get processid 2>nul", $result);
+			exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid."\"\" get processid 2>nul", $result);
 			if(isset($result[1]) && is_numeric($result[1])) {
 				return TRUE;
 			} else {
@@ -18,7 +23,7 @@ function checkProcess($pid = null) {
 		} else {
 			if (file_exists($GLOBALS['pidfile'])) {
 				preg_match_all('!\d+!', file_get_contents($GLOBALS['pidfile']), $pid);
-				exec("wmic process where 'Name='php.exe' and processid='".$pid[0][0]."'' get processid", $result);
+				exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid[0][0]."\"\" get processid", $result);
 				if(isset($result[1]) && is_numeric($result[1])) {
 					return TRUE;
 				} else {
@@ -58,8 +63,8 @@ function start() {
 		if (checkProcess() == FALSE) {
 			echo "Starting the Ranksystem Bot.";
 			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".__DIR__."\jobs\bot.php >/dev/null 2>&1", 0, false);
-			exec("wmic process where 'Name='php.exe' and commandline LIKE '%jobs\\\\bot.php%'' get processid", $pid);
+			$oExec = $WshShell->Run("cmd /C php ".__DIR__."\jobs\bot.php", 0, false);
+			exec("wmic process WHERE \"Name=\"php.exe\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
 			if(isset($pid[1]) && is_numeric($pid[1])) {
 				exec("echo ".$pid[1]." > ".$GLOBALS['pidfile']);
 				echo " [OK]\n";

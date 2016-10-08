@@ -1,15 +1,9 @@
 <?PHP
-function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid) {
-	$starttime = microtime(true);
+function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid) {
 	$nowtime = time();
-	$sqlmsg = '';
-	$sqlerr = 0;
 
-	
 	if(($getversion = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='get_version'")) === false) {
 		enter_logfile($logpath,$timezone,2,"calc_user -3:".print_r($mysqlcon->errorInfo()));
-		$sqlmsg .= print_r($mysqlcon->errorInfo());
-		$sqlerr++;
 	} else {
 		$getversion = $getversion->fetchAll();
 		$updatetime = $nowtime - 43200;
@@ -19,13 +13,9 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 			restore_error_handler();
 			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user -2:".print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
 			}
 			if($mysqlcon->exec("UPDATE $dbname.config SET newversion='$newversion'") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user -1:".print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
 			}
 		}
 	}
@@ -34,18 +24,14 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 		$updatetime = $nowtime - $updateinfotime;
 		if(($lastupdate = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='check_update'")) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 0:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
 		}
 		$lastupdate = $lastupdate->fetchAll();
 		if ($lastupdate[0]['timestamp'] < $updatetime) {
 			if(($getversion = $mysqlcon->query("SELECT newversion FROM $dbname.config")) === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
 			}
-			$getversion = $getversion->fetchAll();
-			$newversion = $getversion[0];
+			$getversion = $getversion->fetch(PDO::FETCH_ASSOC);
+			$newversion = $getversion['newversion'];
 			if(version_compare(substr($newversion, 0, 5), substr($currvers, 0, 5), '>') && $newversion != '') {
 				enter_logfile($logpath,$timezone,4,$lang['upinf']);
 				foreach ($uniqueid as $clientid) {
@@ -56,15 +42,11 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 					}
 					catch (Exception $e) {
 						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrerr'], $clientid));
-						$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-						$sqlerr++;
 					}
 				}
 			}
 			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp=$nowtime WHERE job_name='check_update'") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user 3:".print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
 			}
 		}
 	}
@@ -85,15 +67,11 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 	if ($dbdata->rowCount() != 0) {
 		if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_user_lastscan'") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 5:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
 		}
 		if(($dbuserdata = $mysqlcon->query("SELECT uuid,cldbid,count,grpid,nextup,idle,boosttime FROM $dbname.user")) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 6:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
 		}
-		$uuids = $dbuserdata->fetchAll();
+		$uuids = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
 		foreach($uuids as $uuid) {
 			$sqlhis[$uuid['uuid']] = array(
 				"uuid" => $uuid['uuid'],
@@ -122,18 +100,22 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 
 	foreach ($allclients as $client) {
 		$sumentries++;
-		$cldbid   = $client['client_database_id'];
-		$ip	   = ip2long($client['connection_client_ip']);
-		$name	 = str_replace('\\', '\\\\', htmlspecialchars($client['client_nickname'], ENT_QUOTES));
-		$uid	  = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
+		$cldbid = $client['client_database_id'];
+		$name = $mysqlcon->quote($client['client_nickname'], ENT_QUOTES);
+		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$cldgroup = $client['client_servergroups'];
-		$sgroups  = explode(",", $cldgroup);
-		$platform=$client['client_platform'];
-		$nation=$client['client_country'];
-		$version=$client['client_version'];
-		$firstconnect=$client['client_created'];
-		$channel=$client['cid'];
+		$sgroups = explode(",", $cldgroup);
+		$platform = $client['client_platform'];
+		$nation = $client['client_country'];
+		$version = $client['client_version'];
+		$firstconnect = $client['client_created'];
+		$channel = $client['cid'];
 		if (!in_array($uid, $yetonline) && $client['client_version'] != "ServerQuery") {
+			if(strstr($client['connection_client_ip'], '[')) {
+				$ip = $mysqlcon->quote(inet_pton(str_replace(array('[',']'),'',$client['connection_client_ip'])), ENT_QUOTES);
+			} else {
+				$ip = $mysqlcon->quote(inet_pton($client['connection_client_ip']), ENT_QUOTES);
+			}
 			$clientidle  = floor($client['client_idle_time'] / 1000);
 			if(isset($ignoreidle) && $clientidle < $ignoreidle) {
 				$clientidle = 0;
@@ -171,8 +153,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 										}
 										catch (Exception $e) {
 											enter_logfile($logpath,$timezone,2,"calc_user 8:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-											$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-											$sqlerr++;
 										}
 									}
 								}
@@ -220,8 +200,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 9:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-									$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-									$sqlerr++;
 								}
 							}
 							if (!in_array($groupid, $sgroups)) {
@@ -232,8 +210,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 10:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-									$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-									$sqlerr++;
 								}
 							}
 							$grpid = $groupid;
@@ -247,8 +223,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 									$ts3->clientGetByUid($uid)->message(sprintf($rankupmsg, $days, $hours, $mins, $secs));
 								} catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 12:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
-									$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-									$sqlerr++;
 								}
 							}
 						}
@@ -261,7 +235,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 					}
 				}
 				$updatedata[] = array(
-					"uuid" => $uid,
+					"uuid" => $mysqlcon->quote($client['client_unique_identifier'], ENT_QUOTES),
 					"cldbid" => $cldbid,
 					"count" => $count,
 					"ip" => $ip,
@@ -286,7 +260,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 					}
 				}
 				$insertdata[] = array(
-					"uuid" => $uid,
+					"uuid" => $mysqlcon->quote($client['client_unique_identifier'], ENT_QUOTES),
 					"cldbid" => $cldbid,
 					"ip" => $ip,
 					"name" => $name,
@@ -308,21 +282,17 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 
 	if($mysqlcon->exec("UPDATE $dbname.user SET online='0'") === false) {
 		enter_logfile($logpath,$timezone,2,"calc_user 13:".print_r($mysqlcon->errorInfo()));
-		$sqlmsg .= print_r($mysqlcon->errorInfo());
-		$sqlerr++;
 	}
 
 	if ($insertdata != '') {
 		$allinsertdata = '';
 		foreach ($insertdata as $insertarr) {
-			$allinsertdata = $allinsertdata . "('" . $insertarr['uuid'] . "', '" . $insertarr['cldbid'] . "', '1', '" . $insertarr['ip'] . "', '" . $insertarr['name'] . "', '" . $insertarr['lastseen'] . "', '" . $insertarr['grpid'] . "', '" . $insertarr['nextup'] . "', '" . $insertarr['cldgroup'] . "', '" . $insertarr['platform'] . "', '" . $insertarr['nation'] . "', '" . $insertarr['version'] . "', '" . $insertarr['firstcon'] . "', '" . $insertarr['except'] . "','1'),";
+			$allinsertdata = $allinsertdata . "(" . $insertarr['uuid'] . ", '" . $insertarr['cldbid'] . "', '1', " . $insertarr['ip'] . ", " . $insertarr['name'] . ", '" . $insertarr['lastseen'] . "', '" . $insertarr['grpid'] . "', '" . $insertarr['nextup'] . "', '" . $insertarr['cldgroup'] . "', '" . $insertarr['platform'] . "', '" . $insertarr['nation'] . "', '" . $insertarr['version'] . "', '" . $insertarr['firstcon'] . "', '" . $insertarr['except'] . "','1'),";
 		}
 		$allinsertdata = substr($allinsertdata, 0, -1);
 		if ($allinsertdata != '') {
 			if($mysqlcon->exec("INSERT INTO $dbname.user (uuid, cldbid, count, ip, name, lastseen, grpid, nextup, cldgroup, platform, nation, version, firstcon, except, online) VALUES $allinsertdata") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user 14:".print_r($mysqlcon->errorInfo()));
-				$sqlmsg .= print_r($mysqlcon->errorInfo());
-				$sqlerr++;
 			}
 		}
 	}
@@ -346,40 +316,25 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$upda
 		$allupdateversion = '';
 		$allupdateexcept = '';
 		foreach ($updatedata as $updatearr) {
-			$allupdateuuid	 = $allupdateuuid . "'" . $updatearr['uuid'] . "',";
-			$allupdatecldbid   = $allupdatecldbid . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['cldbid'] . "' ";
-			$allupdatecount	= $allupdatecount . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['count'] . "' ";
-			$allupdateip	   = $allupdateip . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['ip'] . "' ";
-			$allupdatename	 = $allupdatename . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['name'] . "' ";
-			$allupdatelastseen = $allupdatelastseen . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['lastseen'] . "' ";
-			$allupdategrpid	= $allupdategrpid . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['grpid'] . "' ";
-			$allupdatenextup   = $allupdatenextup . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['nextup'] . "' ";
-			$allupdateidle	 = $allupdateidle . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['idle'] . "' ";
-			$allupdatecldgroup = $allupdatecldgroup . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['cldgroup'] . "' ";
-			$allupdateboosttime = $allupdateboosttime . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['boosttime'] . "' ";
-			$allupdateplatform = $allupdateplatform . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['platform'] . "' ";
-			$allupdatenation = $allupdatenation . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['nation'] . "' ";
-			$allupdateversion = $allupdateversion . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['version'] . "' ";
-			$allupdateexcept = $allupdateexcept . "WHEN '" . $updatearr['uuid'] . "' THEN '" . $updatearr['except'] . "' ";
+			$allupdateuuid	 = $allupdateuuid . $updatearr['uuid'] . ",";
+			$allupdatecldbid   = $allupdatecldbid . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['cldbid'] . "' ";
+			$allupdatecount	= $allupdatecount . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['count'] . "' ";
+			$allupdateip	   = $allupdateip . "WHEN " . $updatearr['uuid'] . " THEN " . $updatearr['ip'] . " ";
+			$allupdatename	 = $allupdatename . "WHEN " . $updatearr['uuid'] . " THEN " . $updatearr['name'] . " ";
+			$allupdatelastseen = $allupdatelastseen . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['lastseen'] . "' ";
+			$allupdategrpid	= $allupdategrpid . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['grpid'] . "' ";
+			$allupdatenextup   = $allupdatenextup . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['nextup'] . "' ";
+			$allupdateidle	 = $allupdateidle . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['idle'] . "' ";
+			$allupdatecldgroup = $allupdatecldgroup . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['cldgroup'] . "' ";
+			$allupdateboosttime = $allupdateboosttime . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['boosttime'] . "' ";
+			$allupdateplatform = $allupdateplatform . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['platform'] . "' ";
+			$allupdatenation = $allupdatenation . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['nation'] . "' ";
+			$allupdateversion = $allupdateversion . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['version'] . "' ";
+			$allupdateexcept = $allupdateexcept . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['except'] . "' ";
 		}
 		$allupdateuuid = substr($allupdateuuid, 0, -1);
 		if($mysqlcon->exec("UPDATE $dbname.user set cldbid = CASE uuid $allupdatecldbid END, count = CASE uuid $allupdatecount END, ip = CASE uuid $allupdateip END, name = CASE uuid $allupdatename END, lastseen = CASE uuid $allupdatelastseen END, grpid = CASE uuid $allupdategrpid END, nextup = CASE uuid $allupdatenextup END, idle = CASE uuid $allupdateidle END, cldgroup = CASE uuid $allupdatecldgroup END, boosttime = CASE uuid $allupdateboosttime END, platform = CASE uuid $allupdateplatform END, nation = CASE uuid $allupdatenation END, version = CASE uuid $allupdateversion END, except = CASE uuid $allupdateexcept END, online = 1 WHERE uuid IN ($allupdateuuid)") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 15:".print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
-		}
-	}
-
-	$buildtime = microtime(true) - $starttime;
-	if ($buildtime < 0) { $buildtime = 0; }
-
-	if ($sqlerr == 0) {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='0', runtime='$buildtime' WHERE id='$jobid'") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_user 16:".print_r($mysqlcon->errorInfo()));
-		}
-	} else {
-		if($mysqlcon->exec("UPDATE $dbname.job_log SET status='1', err_msg='$sqlmsg', runtime='$buildtime' WHERE id='$jobid'") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_user 17:".print_r($mysqlcon->errorInfo()));
 		}
 	}
 }

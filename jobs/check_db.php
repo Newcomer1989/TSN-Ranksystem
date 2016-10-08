@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.1.0';
+	$newversion = '1.1.1';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -27,7 +27,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		}
 	}
 
-	function old_files($timezone) {
+	function old_files($timezone,$logpath) {
 		if(is_file(substr(__DIR__,0,-4).'install.php')) {
 			if(!unlink('install.php')) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: install.php");
@@ -113,11 +113,16 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: bootstrap/js/_bootstrap.js");
 			}
 		}
+		if(is_file(substr(__DIR__,0,-4).'server-news')) {
+			if(!unlink(substr(__DIR__,0,-4).'server-news')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: server-news");
+			}
+		}
 	}
 	
 	if($currvers==$newversion) {
 		enter_logfile($logpath,$timezone,5,"  No newer version detected; Database check finished.");
-		old_files($timezone);
+		old_files($timezone,$logpath);
 		check_chmod($timezone);
 	} elseif($currvers=="0.13-beta") {
 		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to version 1.0.1");
@@ -246,7 +251,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		
 		if ($errcount == 1) {
 			$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
-			old_files($timezone);
+			old_files($timezone,$logpath);
 			check_chmod($timezone);
 		} else {
 			enter_logfile($logpath,$timezone,1,"An error happens due updating the Ranksystem Database!");
@@ -254,29 +259,66 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			exit;
 		}
 	} else {
+		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to new version...");
 		if($mysqlcon->exec("CREATE INDEX serverusage_timestamp ON $dbname.server_usage (timestamp)") === false) { }
 		if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else { 
-			enter_logfile($logpath,$timezone,4,"  Adjusted table config successfully.");
+			enter_logfile($logpath,$timezone,4,"    [1.1.0] Adjusted table config successfully.");
 		}
-		if($mysqlcon->exec("UPDATE $dbname.config set ignoreidle='600', rankupmsg='\\nHey, you got a rank up, cause you reached an activity of %s days, %s hours, %s minutes and %s seconds.', newversion='1.1.0'") === false) { } else {
-			enter_logfile($logpath,$timezone,4,"  Set default values to new fields in table config.");
+		if(version_compare($currvers, '1.1.0', '<')) {
+			if($mysqlcon->exec("UPDATE $dbname.config set ignoreidle='600', rankupmsg='\\nHey, you got a rank up, cause you reached an activity of %s days, %s hours, %s minutes and %s seconds.', newversion='1.1.0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.1.0] Set default values to new fields in table config.");
+			}
 		}
 		if($mysqlcon->exec("INSERT INTO $dbname.job_check (job_name) VALUES ('get_version')") === false) { } else {
-			enter_logfile($logpath,$timezone,4,"  Set new values to table job_check.");
+			enter_logfile($logpath,$timezone,4,"    [1.1.0] Set new values to table job_check.");
 		}
 		if(($password = $mysqlcon->query("SELECT webpass FROM $dbname.config")) === false) { }
 		$password = $password->fetchAll();
 		if(strlen($password[0]['webpass']) != 60) {
 			$newwebpass = password_hash($password[0]['webpass'], PASSWORD_DEFAULT);
 			if($mysqlcon->exec("UPDATE $dbname.config set webpass='$newwebpass'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"  Encrypted password for the webinterface and wrote hash to database.");
+				enter_logfile($logpath,$timezone,4,"    [1.1.0] Encrypted password for the webinterface and wrote hash to database.");
 			}
 		}
 		if($mysqlcon->exec("ALTER TABLE $dbname.config DROP COLUMN showexgrp, DROP COLUMN showgen, DROP COLUMN bgcolor, DROP COLUMN hdcolor, DROP COLUMN txcolor, DROP COLUMN hvcolor, DROP COLUMN ifcolor, DROP COLUMN wncolor, DROP COLUMN sccolor") === false) { } else {
-			enter_logfile($logpath,$timezone,4,"  Delete old configs, which are no more needed.");
+			enter_logfile($logpath,$timezone,4,"    [1.1.0] Delete old configs, which are no more needed.");
+		}
+		if(version_compare($currvers, '1.1.0', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE $dbname.user CHANGE ip clientip bigint(11) NOT NULL default '0'") === false) { }
+			if($mysqlcon->exec("ALTER TABLE $dbname.user ADD ip VARBINARY(16) DEFAULT NULL") === false) { } else { 
+				enter_logfile($logpath,$timezone,4,"    [1.1.1] Adjusted table user successfully.");
+			}
+			if(($dbuserdata = $mysqlcon->query("SELECT uuid,clientip FROM $dbname.user")) === false) { }
+			$uuids = $dbuserdata->fetchAll();
+			foreach($uuids as $uuid) {
+				$sqlhis[$uuid['uuid']] = array(
+					"uuid" => $uuid['uuid'],
+					"ip" => $mysqlcon->quote(inet_pton(long2ip($uuid['clientip'])), ENT_QUOTES)
+				);
+			}
+			foreach ($sqlhis as $updatearr) {
+				$allupdateuuid = $allupdateuuid . "'" . $updatearr['uuid'] . "',";
+				$allupdateip = $allupdateip . "WHEN '" . $updatearr['uuid'] . "' THEN " . $updatearr['ip'] . " ";
+			}
+			$allupdateuuid = substr($allupdateuuid, 0, -1);
+			if($mysqlcon->exec("UPDATE $dbname.user set ip = CASE uuid $allupdateip END WHERE uuid IN ($allupdateuuid)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.1.1] Converted client IP successfully for IPv6 support.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.user DROP COLUMN clientip") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.1.1] Delete unconverted IP(v4), which are no more needed.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (servernews text CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else { 
+				$servernews = $mysqlcon->quote(file_get_contents('../server-news'));
+				if($mysqlcon->exec("INSERT INTO $dbname.config (servernews) VALUES ($servernews)") === false) { } else {
+					enter_logfile($logpath,$timezone,4,"    [1.1.1] Adjusted table config successfully.");
+				}
+			}
+			if($mysqlcon->exec("DROP TABLE $dbname.job_log") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.1.1] Drop table job_log, which is no more needed.");
+			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
-		old_files($timezone);
+		old_files($timezone,$logpath);
 		check_chmod($timezone);
 	}
 	return $currvers;

@@ -75,7 +75,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#witimedesc"><?php echo $lang['witime']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#witimedesc"><?php echo $lang['witime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" data-live-search="true" name="timezone">
 									<?PHP
@@ -92,20 +92,20 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#widaformdesc"><?php echo $lang['widaform']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#widaformdesc"><?php echo $lang['widaform']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="dateformat" value="<?php echo $timeformat; ?>">
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wivlangdesc"><?php echo $lang['wilog']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wilogdesc"><?php echo $lang['wilog']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8 required-field-block">
 									<input type="text" class="form-control" name="logpath" value="<?php echo $logpath; ?>" required>
 									<div class="required-icon"><div class="text">*</div></div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wivlangdesc"><?php echo $lang['wivlang']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wivlangdesc"><?php echo $lang['wivlang']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" name="languagedb">
 									<?PHP
@@ -113,6 +113,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									echo '<option data-subtext="Deutsch" value="de"'.($language === 'de' ? ' selected="selected"' : '').'>DE</option>';
 									echo '<option data-subtext="english" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
 									echo '<option data-subtext="italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
+									echo '<option data-subtext="românesc" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';
 									echo '<option data-subtext="русский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
 									?>
 									</select>
@@ -123,7 +124,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupcheckdesc"><?php echo $lang['wiupcheck']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupcheckdesc"><?php echo $lang['wiupcheck']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($update == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="upcheck" value="',$update,'">';
@@ -133,7 +134,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiuptimedesc"><?php echo $lang['wiuptime']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiuptimedesc"><?php echo $lang['wiuptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control" name="updateinfotime" value="<?php echo $updateinfotime; ?>">
 											<script>
@@ -147,7 +148,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupuiddesc"><?php echo $lang['wiupuid']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupuiddesc"><?php echo $lang['wiupuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="uniqueid"><?php echo $config[0]['uniqueid']; ?></textarea>
 											<div class="help-block with-errors"></div>

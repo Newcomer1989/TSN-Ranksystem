@@ -82,14 +82,14 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="tshost" value="<?php echo $ts['host']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
 											<input type="text" class="form-control" name="tsquery" value="<?php echo $ts['query']; ?>" required>
 											<script>
@@ -104,7 +104,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3voicedesc"><?php echo $lang['wits3voice']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3voicedesc"><?php echo $lang['wits3voice']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
 											<input type="text" class="form-control" name="tsvoice" value="<?php echo $ts['voice']; ?>" required>
 											<script>
@@ -124,14 +124,14 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querusrdesc"><?php echo $lang['wits3querusr']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querusrdesc"><?php echo $lang['wits3querusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="tsuser" value="<?php echo $ts['user']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querpwdesc"><?php echo $lang['wits3querpw']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querpwdesc"><?php echo $lang['wits3querpw']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="password" class="form-control" name="tspass" id="tspass" value="<?php echo $ts['pass']; ?>" data-toggle="password" data-placement="before" required>
 											<div class="required-icon"><div class="text">*</div></div>
@@ -144,14 +144,14 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="queryname" value="<?php echo $queryname; ?>" maxlength="30" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnm2desc"><?php echo $lang['wits3qnm2']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnm2desc"><?php echo $lang['wits3qnm2']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="queryname2" value="<?php echo $queryname2; ?>" maxlength="30" required>
 											<div class="required-icon"><div class="text">*</div></div>
@@ -161,7 +161,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="defchid" value="<?php echo $defchid; ?>">
 									<script>
@@ -176,7 +176,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" id="basic" name="slowmode">
 									<?PHP

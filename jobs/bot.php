@@ -1,5 +1,7 @@
 #!/usr/bin/php
 <?PHP
+if(isset($_SERVER['HTTP_HOST'])) exit;
+if(isset($_SERVER['REMOTE_ADDR'])) exit;
 set_time_limit(0);
 ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
@@ -22,6 +24,7 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 	$input = DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n";
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, $input);
+	fclose($loghandle);
 	if (filesize($file) > 5242880) {
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Restart Bot to continue with new log file...\n");
@@ -59,15 +62,6 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 
-function log_mysql($jobname,$mysqlcon,$timezone,$dbname) {
-	$timestamp = time();
-	if($mysqlcon->exec("INSERT INTO $dbname.job_log (timestamp,job_name,status) VALUES ('$timestamp','$jobname','9')") === false) {
-		enter_logfile($logpath,$timezone,2,print_r($mysqlcon->errorInfo()));
-	} else {
-		return $jobid = $mysqlcon->lastInsertId();
-	}
-}
-
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
 		enter_logfile($logpath,$timezone,5,"Received signal to stop. Shutting down!\n\n");
@@ -81,7 +75,7 @@ enter_logfile($logpath,$timezone,5,"  Ranksystem Version: ".$currvers);
 enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\").");
 try {
     $ts3 = TeamSpeak3::factory("serverquery://" . $ts['user'] . ":" . $ts['pass'] . "@" . $ts['host'] . ":" . $ts['query'] . "/?server_port=" . $ts['voice'] . "&blocking=0");
-	enter_logfile($logpath,$timezone,5,"  Conenction to TS3 Server established.");
+	enter_logfile($logpath,$timezone,5,"  Connection to TS3 Server established.");
 	
     try {
 		usleep($slowmode);
@@ -112,14 +106,16 @@ try {
 			}
 		}
 	} else {
-		enter_logfile($logpath,$timezone,4,"  No channel defined where the Ranksystem should be entered.");
+		enter_logfile($logpath,$timezone,4,"  No channel defined where the Ranksystem Bot should be entered.");
 	}
 
 	enter_logfile($logpath,$timezone,5,"Bot starts now his work!");
 	$looptime = 1;
+	usleep(5000000);
 	while(1) {
 		if($looptime<1) {
-			$loopsleep = 1 - $looptime;
+			$loopsleep = (1 - $looptime) * 1000000;
+			//enter_logfile($logpath,$timezone,6,"  Sleep for ".(1 - $looptime)." seconds till next loop starts.");
 			check_shutdown($timezone,$logpath); usleep($loopsleep);
 		}
 		$starttime = microtime(true);
@@ -132,23 +128,17 @@ try {
 		if($defchid != 0) {
 			try { usleep($slowmode); $ts3->clientMove($whoami['client_id'],$defchid); } catch (Exception $e) {}
 		}
-		$jobid = log_mysql('calc_user',$mysqlcon,$timezone,$dbname);
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid);
+		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('get_avatars',$mysqlcon,$timezone,$dbname);
-		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$logpath);
+		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('update_groups',$mysqlcon,$timezone,$dbname);
-		update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$serverinfo,$logpath);
+		update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('calc_serverstats',$mysqlcon,$timezone,$dbname);
-		calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$serverinfo,$substridle,$grouptime,$logpath);
+		calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('calc_userstats',$mysqlcon,$timezone,$dbname);
-		calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$logpath);
+		calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$jobid = log_mysql('clean',$mysqlcon,$timezone,$dbname);
-		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$jobid,$timezone,$cleanclients,$cleanperiod,$logpath);
+		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath);
 		$looptime = microtime(true) - $starttime;
 	}
 }
@@ -158,11 +148,7 @@ catch (Exception $e) {
 	if(in_array($e->getCode(), $offline_status)) {
 		if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
 			enter_logfile($logpath,$timezone,2,$lang['error'].print_r($mysqlcon->errorInfo()));
-			$sqlmsg .= print_r($mysqlcon->errorInfo());
-			$sqlerr++;
 		}
 	}
-	$sqlmsg .= $e->getCode() . ': ' . $e->getMessage();
-	$sqlerr++;
 }
 ?>

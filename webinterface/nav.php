@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
@@ -50,11 +50,14 @@
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $currvers;?></a>
+				<?PHP if(isset($_SESSION['newversion']) && version_compare(substr($_SESSION['newversion'], 0, 5), substr($currvers, 0, 5), '>') && $_SESSION['newversion'] != '') {
+					echo '<a class="navbar-brand" href="http://ts-n.net/ranksystem.php" target="_blank">'.$lang['winav9'].' ['.$_SESSION['newversion'].']</a>';
+				} ?>
 			</div>
 			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "stats.php") { ?>
 			<ul class="nav navbar-left top-nav">
 				<li class="navbar-form navbar-right">
-					<button onclick="window.location.href='../stats/list_rankup.php?admin=true'; return false;" class="btn btn-primary" name="restart">
+					<button onclick="window.open('../stats/list_rankup.php?admin=true','_blank'); return false;" class="btn btn-primary" name="adminlist">
 						<i class="fa fa-fw fa-list"></i>&nbsp;<?PHP echo $lang['wihladm']; ?>
 					</button>
 				</li>
@@ -126,10 +129,6 @@
 			</div>
 		</nav>
 <?PHP
-if(isset($_SESSION['newversion']) && version_compare(substr($_SESSION['newversion'], 0, 5), substr($currvers, 0, 5), '>') && $_SESSION['newversion'] != '') {
-	$err_msg = '<a href="http://ts-n.net/ranksystem.php" target="_blank"><span class="ifcolor">'.$lang['winav9'].'</span></a>'; $err_lvl = 1;
-}
-
 if(!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
 	$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."\">";
 	$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;

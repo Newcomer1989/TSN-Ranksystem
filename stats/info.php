@@ -6,7 +6,7 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 
 if(!isset($_SESSION['tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language);
 }
 require_once('nav.php');
 ?>
@@ -54,7 +54,7 @@ require_once('nav.php');
 						<p><a href="//fontawesome.io" target="_blank">Font Awesome 4.6.3</a> - Copyright &copy; davegandy</p>
 						<p><a href="//flag-icon-css.lip.is/" target="_blank">flag-icon-css</a> - Copyright &copy; 2016 lipis</p>
 						<p><a href="//jquery.com/plugins/project/ajaxqueue" target="_blank">Ajax Queue Plugin</a> - Copyright &copy; 2013 Corey Frang</p> 
-						<p><a href="//planetteamspeak.com/" target="_blank">TeamSpeak 3 PHP Framework 1.1.23</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
+						<p><a href="//planetteamspeak.com/" target="_blank">TeamSpeak 3 PHP Framework 1.1.24</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
 						<p><a href="//getbootstrap.com/" target="_blank">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2016 Twitter, Inc.</p>
 						<p><a href="//morrisjs.github.io/morris.js/" target="_blank">morris.js</a> - Copyright &copy; 2013 Olly Smith</p>
 						<p><a href="//raphaeljs.com" target="_blank">Rapha&euml;l 2.1.4 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>

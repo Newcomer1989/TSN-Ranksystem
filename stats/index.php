@@ -18,7 +18,7 @@ if($language == "ar") {
 }
 
 if(!isset($_SESSION['tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language);
 }
 
 function human_readable_size($bytes) {
@@ -57,7 +57,7 @@ require_once('nav.php');
 					<div class="col-lg-12">
 						<h1 class="page-header">
 							<?PHP echo $lang['stix0001']; ?>
-							<a href="#filteroptions" data-toggle="modal" class="btn btn-primary">
+							<a href="#infoModal" data-toggle="modal" class="btn btn-primary">
 								<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
 							</a>
 						</h1>

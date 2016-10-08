@@ -115,6 +115,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 	$ignoreidle		 = $config[0]['ignoreidle'];
 	$rankupmsg		 = $config[0]['rankupmsg'];
 	$newversion		 = $config[0]['newversion'];
+	$servernews		 = $config[0]['servernews'];
 }
 if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_en.php');

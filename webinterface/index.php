@@ -57,7 +57,7 @@ function getclientip() {
 }
 
 if(($last_access = $mysqlcon->query("SELECT last_access,count_access FROM $dbname.config")) === false) {
-	$sqlmsg .= print_r($mysqlcon->errorInfo());
+	$err_msg .= print_r($mysqlcon->errorInfo());
 }
 $last_access = $last_access->fetchAll();
 

@@ -22,7 +22,7 @@
 
 	<script src="../bootstrap/addons/morris/raphael.min.js"></script>
 	<script src="../bootstrap/addons/morris/morris.min.js"></script>
-	<script src="../bootstrap/addons/morris/morris-data.js"></script>
+	<!--<script src="../bootstrap/addons/morris/morris-data.js"></script>-->
 </head>
 <body>
 	<div id="myModal" class="modal fade">
@@ -33,7 +33,7 @@
 					<h4 class="modal-title"><?PHP echo $lang['stnv0001']; ?></h4>
 				</div>
 				<div class="modal-body">
-					<p><?PHP include('../server-news'); ?></p>
+					<p><?PHP echo $servernews; ?></p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -61,7 +61,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="myModal3" class="modal fade">
+	<div id="battlesystem" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">

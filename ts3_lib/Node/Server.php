@@ -4,7 +4,7 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Server.php 10/11/2013 11:35:21 scp@orilla $
+ * $Id: Server.php 06/06/2016 22:27:13 scp@Svens-iMac $
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.23
+ * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
  * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
  */
@@ -159,7 +159,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     $cid = $this->execute("channelcreate", $properties)->toList();
     $this->channelListReset();
 
-    if(!isset($properties["client_flag_permanent"]) && !isset($properties["client_flag_semi_permanent"]))
+    if(!isset($properties["channel_flag_permanent"]) && !isset($properties["channel_flag_semi_permanent"]))
     {
       $this->getParent()->whoamiSet("client_channel_id", $cid["cid"]);
     }
@@ -1753,7 +1753,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     if($this->iconIsLocal("virtualserver_icon_id") || $this["virtualserver_icon_id"] == 0) return;
 
     $download = $this->transferInitDownload(rand(0x0000, 0xFFFF), 0, $this->iconGetName("virtualserver_icon_id"));
-    $transfer = TeamSpeak3::factory("filetransfer://" . $download["host"] . ":" . $download["port"]);
+    $transfer = TeamSpeak3::factory("filetransfer://" . (strstr($download["host"], ":") !== FALSE ? "[" . $download["host"] . "]" : $download["host"]) . ":" . $download["port"]);
 
     return $transfer->download($download["ftkey"], $download["size"]);
   }
@@ -1770,7 +1770,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     $size = strlen($data);
 
     $upload   = $this->transferInitUpload(rand(0x0000, 0xFFFF), 0, "/icon_" . $crc, $size);
-    $transfer = TeamSpeak3::factory("filetransfer://" . $upload["host"] . ":" . $upload["port"]);
+    $transfer = TeamSpeak3::factory("filetransfer://" . (strstr($upload["host"], ":") !== FALSE ? "[" . $upload["host"] . "]" : $upload["host"]) . ":" . $upload["port"]);
 
     $transfer->upload($upload["ftkey"], $upload["seekpos"], $data);
 

@@ -82,7 +82,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishexclddesc"><?php echo $lang['wishexcld']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishexclddesc"><?php echo $lang['wishexcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<?PHP if ($showexcld == 1) {
 										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showexcld" value="',$showexcld,'">';
@@ -94,7 +94,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolrgdesc"><?php echo $lang['wishcolrg']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolrgdesc"><?php echo $lang['wishcolrg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolrg == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolrg" value="',$showcolrg,'">';
@@ -104,7 +104,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolclddesc"><?php echo $lang['wishcolcld']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolclddesc"><?php echo $lang['wishcolcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolcld == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolcld" value="',$showcolcld,'">';
@@ -114,7 +114,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoluuiddesc"><?php echo $lang['wishcoluuid']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoluuiddesc"><?php echo $lang['wishcoluuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcoluuid == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcoluuid" value="',$showcoluuid,'">';
@@ -124,7 +124,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldbiddesc"><?php echo $lang['wishcoldbid']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldbiddesc"><?php echo $lang['wishcoldbid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcoldbid == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcoldbid" value="',$showcoldbid,'">';
@@ -134,7 +134,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcollsdesc"><?php echo $lang['wishcolls']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcollsdesc"><?php echo $lang['wishcolls']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolls == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolls" value="',$showcolls,'">';
@@ -144,7 +144,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolotdesc"><?php echo $lang['wishcolot']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolotdesc"><?php echo $lang['wishcolot']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolot == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolot" value="',$showcolot,'">';
@@ -154,7 +154,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolitdesc"><?php echo $lang['wishcolit']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolitdesc"><?php echo $lang['wishcolit']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolit == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolit" value="',$showcolit,'">';
@@ -164,7 +164,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolatdesc"><?php echo $lang['wishcolat']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolatdesc"><?php echo $lang['wishcolat']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolat == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolat" value="',$showcolat,'">';
@@ -174,7 +174,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolasdesc"><?php echo $lang['wishcolas']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolasdesc"><?php echo $lang['wishcolas']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolas == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolas" value="',$showcolas,'">';
@@ -184,7 +184,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolnxdesc"><?php echo $lang['wishcolnx']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolnxdesc"><?php echo $lang['wishcolnx']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolnx == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolnx" value="',$showcolnx,'">';
@@ -194,7 +194,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolsgdesc"><?php echo $lang['wishcolsg']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolsgdesc"><?php echo $lang['wishcolsg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolsg == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolsg" value="',$showcolsg,'">';
@@ -207,7 +207,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishhiclddesc"><?php echo $lang['wishhicld']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishhiclddesc"><?php echo $lang['wishhicld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<?PHP if ($showhighest == 1) {
 										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showhighest" value="',$showhighest,'">';

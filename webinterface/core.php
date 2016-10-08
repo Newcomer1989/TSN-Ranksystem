@@ -79,7 +79,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" id="basic" name="substridle">
 									<?PHP
@@ -92,21 +92,21 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="exceptuuid"><?php echo $config[0]['exceptuuid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup"><?php echo $config[0]['exceptgroup']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid"><?php echo $config[0]['exceptcid']; ?></textarea>
 											<div class="help-block with-errors"></div>
@@ -116,7 +116,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group required-field-block">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<textarea class="form-control" data-pattern="^([0-9]+=>[0-9]+,)*[0-9]+=>[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" required><?php echo $config[0]['grouptime']; ?></textarea>
 									<div class="required-icon"><div class="text">*</div></div>
@@ -126,7 +126,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 						</div>
 						<div class="col-md-6 ">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="ignoreidle" value="<?php echo $ignoreidle; ?>">
 									<script>
@@ -140,7 +140,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-lg-8">
 									<?PHP if ($resetbydbchange == 1) {
 											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="resetbydbchange" value="',$resetbydbchange,'">';
@@ -153,7 +153,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleancdesc"><?php echo $lang['cleanc']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleancdesc"><?php echo $lang['cleanc']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 										<?PHP if ($cleanclients == 1) {
 											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="cleanclients" value="',$cleanclients,'">';
@@ -164,7 +164,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									</div>
 									<div class="row">&nbsp;</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleanpdesc"><?php echo $lang['cleanp']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleanpdesc"><?php echo $lang['cleanp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control" name="cleanperiod" value="<?php echo $cleanperiod; ?>">
 											<script>
@@ -180,9 +180,10 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([0-9]+=>[1-9][0-9]{0,9}=>[0-9]+,)*[0-9]+=>[1-9][0-9]{0,9}=>[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending! rows="5" name="boost"><?php echo $config[0]['boost']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[1-9][0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[1-9][0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost"><?php echo $config[0]['boost']; ?></textarea>
+									<div class="help-block with-errors"></div>
 								</div>
 							</div>
 						</div>

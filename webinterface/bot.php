@@ -20,14 +20,19 @@ function getclientip() {
 		return false;
 }
 
-function getlog($logpath,$number_lines) {	
+function getlog($logpath,$number_lines,$filters) {
 	$lines=array();
 	if(file_exists($logpath."ranksystem.log")) {
 		$fp = fopen($logpath."ranksystem.log", "r");
 		while(!feof($fp)) {
 			$line = fgets($fp, 4096);
-			array_push($lines, $line);
-			if (count($lines)>$number_lines) array_shift($lines);
+			foreach($filters as $filter) {
+				if($filter != NULL && strstr($line, $filter)) {
+					array_push($lines, $line);
+					if (count($lines)>$number_lines) array_shift($lines);
+					continue;
+				}
+			}
 		}
 		fclose($fp);
 	} else {
@@ -55,6 +60,33 @@ if (isset($_POST['number'])) {
 		$number_lines = 20;
 	}
 }
+
+$filters = '';
+if (isset($_POST['logfilter']) && in_array('critical', $_POST['logfilter'])) {
+	$filters .= "CRITICAL,";
+}
+if (isset($_POST['logfilter']) && in_array('error', $_POST['logfilter'])) {
+	$filters .= "ERROR,";
+}
+if (isset($_POST['logfilter']) && in_array('warning', $_POST['logfilter'])) {
+	$filters .= "WARNING,";
+}
+if (isset($_POST['logfilter']) && in_array('notice', $_POST['logfilter'])) {
+	$filters .= "NOTICE,";
+}
+if (isset($_POST['logfilter']) && in_array('info', $_POST['logfilter'])) {
+	$filters .= "INFO,";
+}
+if (isset($_POST['logfilter']) && in_array('debug', $_POST['logfilter'])) {
+	$filters .= "DEBUG,";
+}
+
+if (!isset($_POST['logfilter'])) {
+	$filters = "CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG";
+}
+
+$filters = explode(',', $filters);
+
 if (isset($_POST['logout'])) {
 	echo "logout";
     $_SESSION = array();
@@ -77,7 +109,7 @@ if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESS
 }
 
 require_once('nav.php');
-$logoutput = getlog($logpath,$number_lines);
+$logoutput = getlog($logpath,$number_lines,$filters);
 
 if (isset($_POST['start']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
@@ -89,7 +121,7 @@ if (isset($_POST['start']) && $_SESSION['username'] == $webuser && $_SESSION['pa
 	$err_msg = $lang['wibot2'];
 	$err_lvl = 1;
 	usleep(80000);
-	$logoutput = getlog($logpath,$number_lines);
+	$logoutput = getlog($logpath,$number_lines,$filters);
 }
 
 if (isset($_POST['stop']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
@@ -102,7 +134,7 @@ if (isset($_POST['stop']) && $_SESSION['username'] == $webuser && $_SESSION['pas
 	$err_msg = $lang['wibot1'];
 	$err_lvl = 1;
 	usleep(80000);
-	$logoutput = getlog($logpath,$number_lines);
+	$logoutput = getlog($logpath,$number_lines,$filters);
 }
 
 if (isset($_POST['restart']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
@@ -115,7 +147,7 @@ if (isset($_POST['restart']) && $_SESSION['username'] == $webuser && $_SESSION['
 	$err_msg = $lang['wibot3'];
 	$err_lvl = 1;
 	usleep(80000);
-	$logoutput = getlog($logpath,$number_lines);
+	$logoutput = getlog($logpath,$number_lines,$filters);
 }
 
 $disabled = '';
@@ -170,13 +202,55 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 				</form>
 				<div class="row">&nbsp;</div>
 				<div class="row">
-					<div class="col-lg-10">
+					<div class="col-lg-4">
 						<h4>
 							<?PHP echo $lang['wibot8']; ?>
 						</h4>
 					</div>
+					<form class="form-horizontal" name="logfilter" method="POST">
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="critical" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('CRITICAL', $filters)) { echo "checked"; } ?>
+							>Critical</label>
+						</div>
+					</div>
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="error" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('ERROR', $filters)) { echo "checked"; } ?>
+							>Error</label>
+						</div>
+					</div>
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="warning" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('WARNING', $filters)) { echo "checked"; } ?>
+							>Warning</label>
+						</div>
+					</div>
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="notice" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('NOTICE', $filters)) { echo "checked"; } ?>
+							>Notice</label>
+						</div>
+					</div>
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="info" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('INFO', $filters)) { echo "checked"; } ?>
+							>Info</label>
+						</div>
+					</div>
+					<div class="col-lg-1">
+						<div class="checkbox">
+							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="debug" data-switch-no-init onchange="this.form.submit();"
+							<?PHP if(in_array('DEBUG', $filters)) { echo "checked"; } ?>
+							>Debug</label>
+						</div>
+					</div>
 					<div class="col-lg-2">
-						<form class="form-horizontal" name="lines" method="POST">
 						<div class="col-sm-8 pull-right">
 							<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 							<?PHP
@@ -189,8 +263,8 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 							?>
 							</select>
 						</div>
-						</form>
 					</div>
+					</form>
 				</div>
 				<div class="row">
 					<div class="col-lg-12">

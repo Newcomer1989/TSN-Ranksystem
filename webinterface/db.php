@@ -92,7 +92,7 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbtypedesc"><?php echo $lang['isntwidbtype']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbtypedesc"><?php echo $lang['isntwidbtype']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control" id="basic" name="dbtype" required>
 											<option disabled value=""> -- select database -- </option>
@@ -114,14 +114,14 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbhostdesc"><?php echo $lang['isntwidbhost']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbhostdesc"><?php echo $lang['isntwidbhost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="dbhost" value="<?php echo $db['host']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbnamedesc"><?php echo $lang['isntwidbname']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbnamedesc"><?php echo $lang['isntwidbname']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="dbname" value="<?php echo $dbname; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
@@ -133,14 +133,14 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbusrdesc"><?php echo $lang['isntwidbusr']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbusrdesc"><?php echo $lang['isntwidbusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="text" class="form-control" name="dbuser" value="<?php echo $db['user']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbpassdesc"><?php echo $lang['isntwidbpass']; ?></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbpassdesc"><?php echo $lang['isntwidbpass']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
 											<input type="password" class="form-control" name="dbpass" value="<?php echo $db['pass']; ?>" data-toggle="password" data-placement="before" required>
 											<div class="required-icon"><div class="text">*</div></div>
