@@ -24,7 +24,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 	}
 	
     if(($dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups")) === false) {
-		enter_logfile($logpath,$timezone,2,"update_groups 3:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"update_groups 3:".print_r($mysqlcon->errorInfo(), true));
 	}
     if ($dbgroups->rowCount() == 0) {
         $sqlhisgroup = "empty";
@@ -93,7 +93,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 					try {
 						$iconfile = $servergroup->iconDownload();
 					} catch (Exception $e) {
-						enter_logfile($logpath,$timezone,2,"update_groups 5:".$e->getCode().': '."Error while downloading servericon: ".$e->getMessage());
+						enter_logfile($logpath,$timezone,2,"update_groups 5:".$e->getCode().': '."Error while downloading servergroupicon: ".$e->getMessage());
 					}
 					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "icons/" . $sgid . ".png", $iconfile) === false) {
 						enter_logfile($logpath,$timezone,2,"Error while writing out the servergroup icon. Please check the permission for the folder 'icons'");
@@ -103,6 +103,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 				}
 			}
 		}
+
 		if(!isset($iconarr["i".$iconid])) {
 			$iconarr["i".$iconid] = 0;
 		}
@@ -115,7 +116,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 						"sgidname" => $sgname,
 						"iconid" => $iconid,
 						"icon" => $iconfile,
-						"icondate" => $groups['icondate']
+						"icondate" => $iconarr["i".$iconid]
 					);
 					break;
 				}
@@ -143,16 +144,12 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
     if (isset($insertgroups)) {
         $allinsertdata = '';
         foreach ($insertgroups as $insertarr) {
-			if( $insertarr['iconid'] == 0 || $insertarr['icondate'] == null || $insertarr['icondate'] == 0) {
-				//enter_logfile($logpath,$timezone,6,"IconID is 0 for (servergroup) ".$insertarr['sgidname']." (".$insertarr['sgid'].")");
-				continue;
-			}
 			$allinsertdata = $allinsertdata . "('" . $insertarr['sgid'] . "', " . $insertarr['sgidname'] . ", '" . $insertarr['iconid'] . "', '" . $insertarr['icondate'] . "'),";
         }
         $allinsertdata = substr($allinsertdata, 0, -1);
         if ($allinsertdata != '') {
             if($mysqlcon->exec("INSERT INTO $dbname.groups (sgid, sgidname, iconid, icondate) VALUES $allinsertdata") === false) {
-				enter_logfile($logpath,$timezone,2,"update_groups 7:".$allinsertdata.print_r($mysqlcon->errorInfo()));
+				enter_logfile($logpath,$timezone,2,"update_groups 7:".$allinsertdata.print_r($mysqlcon->errorInfo(), true));
 			}
         }
     }
@@ -170,7 +167,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
         }
         $allsgids = substr($allsgids, 0, -1);
         if($mysqlcon->exec("UPDATE $dbname.groups set sgidname = CASE sgid $allupdatesgid END, iconid = CASE sgid $allupdateiconid END, icondate = CASE sgid $allupdatedate END WHERE sgid IN ($allsgids)") === false) {
-			enter_logfile($logpath,$timezone,2,"update_groups 8:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"update_groups 8:".print_r($mysqlcon->errorInfo(), true));
 		}
     }
 	
@@ -185,7 +182,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 	if(isset($delsgroupids)) {
 		$delsgroupids = substr($delsgroupids, 0, -1);
 		if($mysqlcon->exec("DELETE FROM $dbname.groups WHERE sgid IN ($delsgroupids)") === false) {
-			enter_logfile($logpath,$timezone,2,"update_groups 9:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"update_groups 9:".print_r($mysqlcon->errorInfo(), true));
 		}
 	}
 }

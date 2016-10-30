@@ -15,6 +15,7 @@
 	<link href="../bootstrap/addons/morris/morris.css" rel="stylesheet">
 	<link href="../bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 	<link href="../bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
+	<link href="../bootstrap/css/custom.css" rel="stylesheet">
 
 	<script src="../jquerylib/jquery.js"></script>
 
@@ -22,7 +23,13 @@
 
 	<script src="../bootstrap/addons/morris/raphael.min.js"></script>
 	<script src="../bootstrap/addons/morris/morris.min.js"></script>
-	<!--<script src="../bootstrap/addons/morris/morris-data.js"></script>-->
+<?PHP
+	if(isset($shownav) && $shownav == 0) { ?>
+	<style>
+		body{margin-top:0px!important}
+		.fixed{top:0px!important;width:calc(100% - 50px)!important;position:fixed;display:none;color:#000;background-color:#fff!important;}
+	</style>
+<?PHP } ?>
 </head>
 <body>
 	<div id="myModal" class="modal fade">
@@ -157,6 +164,9 @@
 			</div>
 		</div>
 	</div>
+<?PHP
+	if($shownav == 1) {
+?>
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
@@ -207,7 +217,23 @@
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP echo '&nbsp;&nbsp;' .($_SESSION['connected'] == 0 ? $lang['stnv0028'] : $_SESSION['tsname']); ?>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<?PHP echo (!isset($_SESSION['tsname']) ? ' ' : '<li><a href="my_stats.php"><i class="fa fa-fw fa-user"></i>&nbsp;'.$lang['stmy0001'].'</a></li>'); ?>
+						<?PHP
+						if(isset($_SESSION['admin'])) {
+							echo '<li><a href="http',(!empty($_SERVER['HTTPS'])?'s':''),'://',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/ts.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
+						} elseif ($_SESSION['connected'] == 0) {
+							echo '<li><a href="ts3server://';
+								if (($ts['host']=='localhost' || $ts['host']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
+									echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
+								} elseif ($ts['host']=='localhost' || $ts['host']=='127.0.0.1') {
+									echo $_SERVER['HTTP_HOST'];
+								} else {
+									echo $ts['host'];
+								}
+								echo ':'.$ts['voice'];
+							echo '"><i class="fa fa-fw fa-headphones"></i>&nbsp;'.$lang['stnv0043'].'</a></li>';
+						}
+						echo (!isset($_SESSION['tsname']) ? ' ' : '<li><a href="my_stats.php"><i class="fa fa-fw fa-user"></i>&nbsp;'.$lang['stmy0001'].'</a></li>');
+						?>
 						<li>
 							<a href="#myModal" data-toggle="modal"><i class="fa fa-fw fa-envelope"></i>&nbsp;<?PHP echo $lang['stnv0001']; ?></a>
 						</li>
@@ -282,6 +308,11 @@
 			</div>
 		</nav>
 <?PHP
+	} else {
+		echo '<div id="container">';
+	}
+
+
 function error_handling($msg,$type = NULL) {
 	switch ($type) {
 		case NULL: echo '<div class="alert alert-success alert-dismissible">'; break;

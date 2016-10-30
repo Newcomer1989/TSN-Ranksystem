@@ -2,13 +2,13 @@
 function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath) {
 
 	if(($count_user = $mysqlcon->query("SELECT count(*) as count FROM ((SELECT u.uuid FROM $dbname.user AS u INNER JOIN $dbname.stats_user As s On u.uuid=s.uuid) UNION (SELECT u.uuid FROM $dbname.user AS u LEFT JOIN $dbname.stats_user As s On u.uuid=s.uuid WHERE s.uuid IS NULL)) x")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_userstats 1:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"calc_userstats 1:".print_r($mysqlcon->errorInfo(), true));
 	}
 	$count_user = $count_user->fetchAll(PDO::FETCH_ASSOC);
 	$total_user = $count_user[0]['count'];
 
 	if(($job_begin = $mysqlcon->query("SELECT timestamp FROM $dbname.job_check WHERE job_name='calc_user_limit'")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_userstats 2:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"calc_userstats 2:".print_r($mysqlcon->errorInfo(), true));
 	}
 	$job_begin = $job_begin->fetchAll();
 	$job_begin = $job_begin[0]['timestamp'];
@@ -21,7 +21,7 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 	}
 
 	if(($uuids = $mysqlcon->query("(SELECT u.uuid,u.rank,u.cldbid FROM $dbname.user AS u INNER JOIN $dbname.stats_user As s On u.uuid=s.uuid) UNION (SELECT u.uuid,u.rank,u.cldbid FROM $dbname.user AS u LEFT JOIN $dbname.stats_user As s On u.uuid=s.uuid WHERE s.uuid IS NULL) ORDER BY cldbid ASC LIMIT $job_begin, 10")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_userstats 3:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"calc_userstats 3:".print_r($mysqlcon->errorInfo(), true));
 	}
 	$uuids = $uuids->fetchAll();
 	foreach($uuids as $uuid) {
@@ -34,11 +34,11 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 
 	// Calc Client Stats
 	if ($mysqlcon->exec("UPDATE $dbname.stats_user AS t LEFT JOIN $dbname.user AS u ON t.uuid=u.uuid SET t.removed='1' WHERE u.uuid IS NULL") === false) {
-		enter_logfile($logpath,$timezone,2,"calc_userstats 4:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"calc_userstats 4:".print_r($mysqlcon->errorInfo(), true));
 	}
 	
 	if(($statsuserhis = $mysqlcon->query("SELECT uuid, removed FROM $dbname.stats_user")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_userstats 5:".print_r($mysqlcon->errorInfo()));
+		enter_logfile($logpath,$timezone,2,"calc_userstats 5:".print_r($mysqlcon->errorInfo(), true));
 	}
 	$statsuserhis = $statsuserhis->fetchAll();
 	foreach($statsuserhis as $userhis) {
@@ -49,19 +49,19 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 	if(isset($sqlhis)) {
 		//enter_logfile($logpath,$timezone,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
 		if(($userdataweekbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo(), true));
 		}
 		$userdataweekbegin = $userdataweekbegin->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 		if(($userdataweekend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
 		}
 		$userdataweekend = $userdataweekend->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 		if(($userdatamonthbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo(), true));
 		}
 		$userdatamonthbegin = $userdatamonthbegin->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 		if(($userdatamonthend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 9:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_userstats 9:".print_r($mysqlcon->errorInfo(), true));
 		}
 		$userdatamonthend = $userdatamonthend->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
@@ -119,20 +119,20 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 		}
 		
 		if ($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp=$job_end WHERE job_name='calc_user_limit'") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 11:".print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,"calc_userstats 11:".print_r($mysqlcon->errorInfo(), true));
 		}
 		
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
 			if ($mysqlcon->exec("UPDATE $dbname.stats_user set rank = CASE uuid $allupdaterank END, count_week = CASE uuid $allupdatecountw END, count_month = CASE uuid $allupdatecountm END, idle_week = CASE uuid $allupdateidlew END, idle_month = CASE uuid $allupdateidlem END, total_connections = CASE uuid $allupdatetotac END, base64hash = CASE uuid $allupdatebase64 END, client_total_up = CASE uuid $allupdatecldtup END, client_total_down = CASE uuid $allupdatecldtdo END, client_description = CASE uuid $allupdateclddes END WHERE uuid IN ($allupdateuuid)") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_userstats 12:".print_r($mysqlcon->errorInfo()));
+				enter_logfile($logpath,$timezone,2,"calc_userstats 12:".print_r($mysqlcon->errorInfo(), true));
 			}
 		}
 
 		if($allinsertuserstats != '') {
 			$allinsertuserstats = substr($allinsertuserstats, 0, -1);
 			if ($mysqlcon->exec("INSERT INTO $dbname.stats_user (uuid,rank,count_week,count_month,idle_week,idle_month,total_connections,base64hash,client_total_up,client_total_down,client_description) VALUES $allinsertuserstats") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_userstats 13:".print_r($mysqlcon->errorInfo()));
+				enter_logfile($logpath,$timezone,2,"calc_userstats 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 		}
 	}

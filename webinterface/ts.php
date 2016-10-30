@@ -53,7 +53,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
     $defchid 	= $_POST['defchid'];
 	$slowmode 	= $_POST['slowmode'];
     if ($mysqlcon->exec("UPDATE $dbname.config set tshost='$tshost',tsquery='$tsquery',tsvoice='$tsvoice',tsuser='$tsuser',tspass='$tspass',queryname='$queryname',queryname2='$queryname2',slowmode='$slowmode',defchid='$defchid'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo());
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
         $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];

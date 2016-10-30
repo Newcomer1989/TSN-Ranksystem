@@ -61,33 +61,61 @@ if(($last_access = $mysqlcon->query("SELECT last_access,count_access FROM $dbnam
 }
 $last_access = $last_access->fetchAll();
 
-if(($last_access[0]['last_access'] + 1) >= time()) {
+if (($last_access[0]['last_access'] + 1) >= time()) {
 	$again = $last_access[0]['last_access'] + 2 - time();
 	$err_msg = sprintf($lang['errlogin2'],$again);
 	$err_lvl = 3;
-} elseif ($last_access[0]['count_access'] >= 10) {
-	enter_logfile($logpath,$timezone,3,"Much incorrect logins detected on the webinterface. Blocked login for 300 seconds! Last access from IP ".getclientip().".");
-	$err_msg = $lang['errlogin3'];
-	$err_lvl = 3;
-	$bantime = time() + 299;
-	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$bantime', count_access='0'") === false) { }
-} elseif (isset($_POST['username']) && $_POST['username'] == $webuser && password_verify($_POST['password'], $webpass)) {
-	$_SESSION['username'] = $webuser;
-	$_SESSION['password'] = $webpass;
-	$_SESSION['clientip'] = getclientip();
-	$_SESSION['newversion'] = $newversion;
-	if($mysqlcon->exec("UPDATE $dbname.config SET count_access='0'") === false) { }
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	}
-	exit;
-} elseif(isset($_POST['username'])) {
+} elseif (isset($_POST['resetpw']) && $adminuuid==NULL) {
+	$err_msg = $lang['wirtpw1']; $err_lvl=3;
+} elseif (isset($_POST['resetpw'])) {
 	$nowtime = time();
 	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$nowtime', count_access = count_access + 1") === false) { }
-	$err_msg = $lang['errlogin'];
-	$err_lvl = 3;
+	
+	require_once(substr(__DIR__,0,-12).'ts3_lib/TeamSpeak3.php');
+	try {
+		$ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		
+		try {
+			usleep($slowmode);
+			$ts3->selfUpdate(array('client_nickname' => "Ranksystem - Reset Password"));
+		} catch (Exception $e) { }
+		
+		usleep($slowmode);
+		$allclients = $ts3->clientList();
+		
+		foreach ($allclients as $client) {
+			if($client['client_unique_identifier'] == $adminuuid) {
+				$uuid = $client['client_unique_identifier'];
+				$checkuuid = 1;
+				if($client['connection_client_ip'] == getclientip()) {
+					$checkip = 1;
+				}
+			}
+		}
+		
+		if (!isset($checkuuid)) {
+			$err_msg = $lang['wirtpw2']; $err_lvl = 3;
+		} elseif (!isset($checkip)) {
+			$err_msg = $lang['wirtpw3']; $err_lvl = 3;
+		} else {
+			usleep($slowmode);
+			$pwd = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&$§!()"),0,12);
+			$webpass = password_hash($pwd, PASSWORD_DEFAULT);
+			if($mysqlcon->exec("UPDATE $dbname.config set webpass='$webpass', last_access='0'") === false) { 
+				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+			} else {
+				try {
+					$ts3->clientGetByUid($uuid)->message(sprintf($lang['wirtpw4'], $webuser, $pwd, '[URL=http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).']','[/URL]'));
+					$err_msg = sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
+					enter_logfile($logpath,$timezone,3,sprintf($lang['wirtpw6'],getclientip()));
+				} catch (Exception $e) {
+					$err_msg = 'TeamSpeak '.$lang['error'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+				}
+			}
+		}
+	} catch (Exception $e) {
+		$err_msg = 'TeamSpeak '.$lang['error'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+	}
 }
 
 require_once('nav.php');
@@ -98,32 +126,23 @@ require_once('nav.php');
 				<div id="login-overlay" class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
-						  <h4 class="modal-title" id="myModalLabel"><?PHP echo $lang['isntwiusrh']; ?></h4>
+						  <h4 class="modal-title" id="myModalLabel"><?PHP echo $lang['wirtpw7'].' - '.$lang['wi']; ?></h4>
 						</div>
 						<div class="modal-body">
 							<div class="row">
 								<div class="col-xs-12">
-									<form id="loginForm" method="POST">
-										<div class="form-group">
-											<label for="username" class="control-label"><?PHP echo $lang['user']; ?>:</label>
-											<div class="input-group">
-												<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-												<input type="text" class="form-control" name="username" placeholder="" autofocus>
-											</div>
-										</div>
-										<div class="form-group">
-											<label for="password" class="control-label"><?PHP echo $lang['pass']; ?>:</label>
-											<div class="input-group">
-												<span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
-												<input type="password" class="form-control" name="password" placeholder="<?PHP echo $lang['pass']; ?>">
-											</div>
-										</div>
+									<form id="resetForm" method="POST">
+										<p><?PHP echo $lang['wirtpw8']; ?></p>
+										<p><?PHP echo $lang['wirtpw9']; ?>
+											<ul>
+												<li><?PHP echo $lang['wirtpw10']; ?></li>
+												<li><?PHP echo $lang['wirtpw11']; ?></li>
+												<li><?PHP echo $lang['wirtpw12']; ?></li>
+											</ul>
+										</p>
 										<br>
 										<p>
-											<button type="submit" class="btn btn-success btn-block"><?PHP echo $lang['login']; ?></button>
-										</p>
-										<p class="small text-right">
-											<a href="resetpassword.php"><?PHP echo $lang['pass5']; ?></a>
+											<button type="submit" class="btn btn-success btn-block" name="resetpw"><?PHP echo $lang['wirtpw7']; ?></button>
 										</p>
 									</form>
 								</div>

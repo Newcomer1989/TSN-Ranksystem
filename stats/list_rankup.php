@@ -23,7 +23,7 @@ function getclientip() {
 }
 
 if(!isset($_SESSION['tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
 if(isset($_POST['username'])) {
@@ -114,7 +114,7 @@ $keyorder = '';
 if (isset($_GET['sort'])) {
 	$keysort = strip_tags(htmlspecialchars($_GET['sort']));
 }
-if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active') {
+if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active' && $keysort != 'grpsince') {
 	$keysort = 'nextup';
 }
 if (isset($_GET['order'])) {
@@ -142,24 +142,24 @@ if(!isset($_GET["user"])) {
 $start = $seite * $user_pro_seite - $user_pro_seite;
 
 if ($keysort == 'active' && $keyorder == 'asc') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (count - idle) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (count - idle) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($keysort == 'active' && $keyorder == 'desc') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (idle - count) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (idle - count) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($searchstring == '') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except FROM $dbname.user WHERE 1=1$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE 1=1$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } else {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
@@ -213,7 +213,8 @@ foreach($uuids as $uuid) {
 		"lastseen" => $uuid['lastseen'],
 		"ip" => $uuid['ip'],
 		"grpid" => $uuid['grpid'],
-		"except" => $uuid['except']
+		"except" => $uuid['except'],
+		"grpsince" => $uuid['grpsince']
 	);
 	$uidarr[]			  = $uuid['uuid'];
 	$countentries		  = $countentries + 1;
@@ -257,7 +258,8 @@ if($adminlogin == 1) {
 <?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
 			<div class="container-fluid">
 				<?PHP
-				if($user_pro_seite != "all") {
+				if($user_pro_seite == "all" || $shownav == 0) {
+				} else {
 					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
@@ -286,6 +288,8 @@ if($adminlogin == 1) {
 					echo '<th class="text-center"><a href="?sort=active&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listsuma'] , '</span></a></th>';
 				if ($showcolas == 1 || $adminlogin == 1)
 					echo '<th class="text-center"><a href="?sort=grpid&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listacsg'] , '</span></a></th>';
+				if ($showgrpsince == 1 || $adminlogin == 1)
+					echo '<th class="text-center"><a href="?sort=grpsince&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listgrps'] , '</span></a></th>';
 				if ($showcolnx == 1 || $adminlogin == 1)
 					echo ($keysort == 'nextup') ? '<th class="text-center"><a href="?sort=nextup&amp;order=' . $keyorder2 . '&amp;seite=' . $seite . '&amp;user=' . $user_pro_seite . '&amp;search=' . $getstring . '"><span class="hdcolor">' . $lang['listnxup'] . '</span></a></th>' : '<th class="text-center"><a href="?sort=nextup&amp;order=' . $keyorder2 . '&amp;seite=' . $seite . '&amp;user=' . $user_pro_seite . '&amp;search=' . $getstring . '"><span class="hdcolor">' . $lang['listnxup'] . '</span></a></th>';
 				if ($showcolsg == 1 || $adminlogin == 1)
@@ -384,6 +388,13 @@ if($adminlogin == 1) {
 										echo '<td class="text-center">' , $sqlhisgroup[$usergroupid] , '</td>';
 									}
 								}
+								if ($showgrpsince == 1 || $adminlogin == 1) {
+									if ($sqlhis[$uid]['grpsince'] == 0) {
+										echo '<td class="text-center"></td>';
+									} else {
+										echo '<td class="text-center">' , date('Y-m-d H:i:s',$sqlhis[$uid]['grpsince']), '</td>';
+									}
+								}
 								if ($showcolnx == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
@@ -407,8 +418,10 @@ if($adminlogin == 1) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup_file[$groupid]) && $sqlhisgroup_file[$groupid]===true) {
 										echo '<td class="text-center"><img src="../icons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
-									} else {
+									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid] , '</td>';
+									} else {
+										echo '<td class="text-center"></td>';
 									}
 								}
 								echo '</tr>';

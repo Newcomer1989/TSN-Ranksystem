@@ -1,5 +1,12 @@
 <?php
 error_reporting(0);
+
+if(isset($_SERVER['USER']) && $_SERVER['USER'] == "root" || isset($_SERVER['USERNAME']) && $_SERVER['USERNAME'] == "administrator") {
+	echo "\n !!!! Do not start the Ranksystem with root privileges !!!!\n\n";
+	echo " Start Ranksystem Bot in 10 seconds...\n\n";
+	sleep(10);
+}
+
 require_once(__DIR__.'/other/config.php');
 $GLOBALS['exec'] = FALSE;
 if($logpath == NULL) { $logpath = "./logs/"; }
@@ -62,9 +69,24 @@ function start() {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if (checkProcess() == FALSE) {
 			echo "Starting the Ranksystem Bot.";
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".__DIR__."\jobs\bot.php", 0, false);
-			exec("wmic process WHERE \"Name=\"php.exe\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
+			try {
+				$WshShell = new COM("WScript.Shell");
+				echo "1";
+			} catch (Exception $e) {
+				echo "\n Error due loading the PHP COM module (wrong server configuration!): ",$e->getMessage(),"\n";
+			}
+			try {
+				$oExec = $WshShell->Run("cmd /C php ".__DIR__."\jobs\bot.php", 0, false);
+				echo "2";
+			} catch (Exception $e) {
+				echo "\n Error due starting Bot (exec command enabled?): ",$e->getMessage(),"\n";
+			}
+			try {
+				exec("wmic process WHERE \"Name=\"php.exe\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
+				echo "3";
+			} catch (Exception $e) {
+				echo "\n Error due getting process list (wmic command enabled?): ",$e->getMessage(),"\n";
+			}
 			if(isset($pid[1]) && is_numeric($pid[1])) {
 				exec("echo ".$pid[1]." > ".$GLOBALS['pidfile']);
 				echo " [OK]\n";

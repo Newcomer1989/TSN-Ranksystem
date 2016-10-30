@@ -3,7 +3,7 @@ if (isset($_POST['refresh'])) {
     $_SESSION = array();
     session_destroy();
 }
-function set_session_ts3($voiceport, $mysqlcon, $dbname, $language) {
+function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		$hpclientip = $_SERVER['HTTP_CLIENT_IP'];
 	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -29,6 +29,9 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language) {
             $_SESSION['tsuid']    = $client['uuid'];
             $_SESSION['tscldbid'] = $client['cldbid'];
             $_SESSION['tsname']   = $client['name'];
+			if ($_SESSION['tsuid'] == $adminuuid) {
+				$_SESSION['admin'] = TRUE;
+			}
             if ($client['firstcon'] == 0) {
                 $_SESSION['tscreated'] = "unkown";
             } else {

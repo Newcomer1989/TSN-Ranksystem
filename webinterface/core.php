@@ -54,7 +54,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 	$cleanperiod 	= $_POST['cleanperiod'];
     $boost          = $_POST['boost'];
     if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo());
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
         $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];

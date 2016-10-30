@@ -124,7 +124,7 @@ $db[\'dbname\']="'.$dbname.'";
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE $dbname.user (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,cldbid bigint(10) NOT NULL default '0',count bigint(11) NOT NULL default '0',ip VARBINARY(16) DEFAULT NULL,name text CHARACTER SET utf8 COLLATE utf8_unicode_ci,lastseen bigint(11) NOT NULL default '0',grpid bigint(10) NOT NULL default '0',nextup bigint(11) NOT NULL default '0',idle bigint(11) NOT NULL default '0',cldgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,online int(1) NOT NULL default '0',boosttime bigint(11) NOT NULL default '0', rank bigint(11) NOT NULL default '0', platform text default NULL, nation text default NULL, version text default NULL, firstcon bigint(11) NOT NULL default '0', except int(1) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE $dbname.user (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,cldbid bigint(10) NOT NULL default '0',count bigint(11) NOT NULL default '0',ip VARBINARY(16) DEFAULT NULL,name text CHARACTER SET utf8 COLLATE utf8_unicode_ci,lastseen bigint(11) NOT NULL default '0',grpid bigint(10) NOT NULL default '0',nextup bigint(11) NOT NULL default '0',idle bigint(11) NOT NULL default '0',cldgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,online int(1) NOT NULL default '0',boosttime bigint(11) NOT NULL default '0', rank bigint(11) NOT NULL default '0', platform text default NULL, nation text default NULL, version text default NULL, firstcon bigint(11) NOT NULL default '0', except int(1) NOT NULL default '0', grpsince bigint(11) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -134,7 +134,7 @@ $db[\'dbname\']="'.$dbname.'";
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery int(5) NOT NULL default '0',tsvoice int(5) NOT NULL default '0',tsuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,language text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime text CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange int(1) NOT NULL default '0',msgtouser int(1) NOT NULL default '0',upcheck int(1) NOT NULL default '0',uniqueid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime int(8) NOT NULL default '0',currvers text CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle int(1) NOT NULL default '0',exceptuuid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat text CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld int(1) NOT NULL default '0',showcolcld int(1) NOT NULL default '0',showcoluuid int(1) NOT NULL default '0',showcoldbid int(1) NOT NULL default '0',showcolot int(1) NOT NULL default '0',showcolit int(1) NOT NULL default '0',showcolat int(1) NOT NULL default '0',showcolnx int(1) NOT NULL default '0',showcolsg int(1) NOT NULL default '0',showcolrg int(1) NOT NULL default '0',showcolls int(1) NOT NULL default '0',slowmode bigint(11) NOT NULL default '0',cleanclients int(1) NOT NULL default '0',cleanperiod bigint(11) NOT NULL default '0',showhighest int(1) NOT NULL default '0',boost text default NULL,showcolas int(1) NOT NULL default '0',defchid bigint(11) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci, advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci, servernews text CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
+		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery int(5) NOT NULL default '0',tsvoice int(5) NOT NULL default '0',tsuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,language text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime text CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange int(1) NOT NULL default '0',msgtouser int(1) NOT NULL default '0',upcheck int(1) NOT NULL default '0',uniqueid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime int(8) NOT NULL default '0',currvers text CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle int(1) NOT NULL default '0',exceptuuid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat text CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld int(1) NOT NULL default '0',showcolcld int(1) NOT NULL default '0',showcoluuid int(1) NOT NULL default '0',showcoldbid int(1) NOT NULL default '0',showcolot int(1) NOT NULL default '0',showcolit int(1) NOT NULL default '0',showcolat int(1) NOT NULL default '0',showcolnx int(1) NOT NULL default '0',showcolsg int(1) NOT NULL default '0',showcolrg int(1) NOT NULL default '0',showcolls int(1) NOT NULL default '0',slowmode bigint(11) NOT NULL default '0',cleanclients int(1) NOT NULL default '0',cleanperiod bigint(11) NOT NULL default '0',showhighest int(1) NOT NULL default '0',boost text default NULL,showcolas int(1) NOT NULL default '0',defchid bigint(11) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci, advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci, servernews text CHARACTER SET utf8 COLLATE utf8_unicode_ci, adminuuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfo int(1) NOT NULL default '0', nextupinfomsg1 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg3 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, shownav int(1) NOT NULL default '0', showgrpsince int(1) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -248,13 +248,19 @@ if(isset($_POST['confweb'])) {
 			$err_msg = $lang['dbconerr'].$e->getMessage(); $err_lvl = 1;
 		}
 	}
-	if($err_lvl != 1) {
-		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.1.1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600','\\nHey, you got a rank up, cause you reached an activity of %s days, %s hours, %s minutes and %s seconds.','1.1.1','<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.')") === false) {
+	if(!isset($err_lvl) || $err_lvl != 1) {
+		$nextupinfomsg1 = $mysqlcon->quote("Your next rank up will be in %1\$s days, %2\$s hours, %3\$s minutes and %4\$s seconds. The next servergroup you will reach is [B]%5\$s[/B].");
+		$nextupinfomsg2 = $mysqlcon->quote("You have already reached the highest rank.");
+		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
+		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
+		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
+		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.1.2','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.1.2',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1')") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
-			$err_msg .= $lang['isntwiusr'].'<br><br>';
+			$err_msg = $lang['isntwiusr'].'<br><br>';
+			$err_msg .= sprintf($lang['isntwiconf'],"<a href=\"webinterface\\\">/webinterface/</a>").'<br><br>';
 			if(!unlink('./install.php')) {
-				$err_msg .= sprintf($lang['isntwidel'],"<a href=\"webinterface\\\">/webinterface/</a>");
+				$err_msg .= $lang['isntwidel'];
 			}
 			$install_finished = 1; $err_lvl = NULL;
 		}
@@ -266,7 +272,7 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	unset($err_lvl);
 	$err_msg = '';
 	if(!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
-		$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."\">";
+		$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF'])."/install.php", '/\\')."\">";
 		$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
 	}
 	if(!is_writeable('./other/dbconfig.php')) {
@@ -290,12 +296,15 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	if(version_compare(phpversion(), '5.5.0', '<')) {
 		$err_msg .= "<br>".sprintf($lang['insterr4'],phpversion()); $err_lvl = 3;
 	}
+	if (!function_exists('simplexml_load_file')) {
+		$err_msg .= "<br>".$lang['insterr5']; $err_lvl = 3;
+	}
 	if(!isset($err_lvl)) {
 		unset($err_msg);
 	}
 }
 	
-function error_handling($msg,$type = NULL) {
+function error_handling($lang,$msg,$type = NULL) {
 	switch ($type) {
 		case NULL: echo '<div class="alert alert-success alert-dismissible">'; break;
 		case 1: echo '<div class="alert alert-info alert-dismissible">'; break;
@@ -319,7 +328,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 	}
 	?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?PHP if(isset($err_msg)) error_handling($lang, $err_msg, $err_lvl); ?>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-lg-12">
@@ -345,7 +354,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 										<option data-subtext="Firebird/Interbase 6" value="firebird">firebird</option>
 										<option data-subtext="IBM DB2" value="ibm">ibm</option>
 										<option data-subtext="IBM Informix Dynamic Server" value="informix">informix</option>
-										<option data-subtext="MySQL 3.x/4.x/5.x [recommend]" value="mysql" selected>mysql (and mariadb)</option>
+										<option data-subtext="MySQL 3.x/4.x/5.x [recommend]" value="mysql" selected>mysql (also mariadb)</option>
 										<option data-subtext="Oracle Call Interface" value="oci">oci</option>
 										<option data-subtext="ODBC v3 (IBM DB2, unixODBC und win32 ODBC)" value="odbc">odbc</option>
 										<option data-subtext="PostgreSQL" value="pgsql">pgsql</option>
@@ -512,7 +521,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 } elseif(isset($install_webuser)) {
 ?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?PHP if(isset($err_msg)) error_handling($lang, $err_msg, $err_lvl); ?>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-lg-12">
@@ -561,7 +570,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 } elseif(isset($install_finished)) {
 ?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?PHP if(isset($err_msg)) error_handling($lang, $err_msg, $err_lvl); ?>
 		<div class="container-fluid">
 			<div class="row">
 			</div>

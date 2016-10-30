@@ -59,6 +59,9 @@ if (isset($_POST['number'])) {
 	} else {
 		$number_lines = 20;
 	}
+	$_SESSION['number_lines'] = $number_lines;
+} elseif (isset($_SESSION['number_lines'])) {
+	$number_lines = $_SESSION['number_lines'];
 }
 
 $filters = '';
@@ -81,11 +84,15 @@ if (isset($_POST['logfilter']) && in_array('debug', $_POST['logfilter'])) {
 	$filters .= "DEBUG,";
 }
 
-if (!isset($_POST['logfilter'])) {
-	$filters = "CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG";
+if($filters != '') {
+	$_SESSION['logfilter'] = $filters;
 }
 
-$filters = explode(',', $filters);
+if (!isset($_SESSION['logfilter'])) {
+	$_SESSION['logfilter'] = "CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG";
+}
+
+$filters = explode(',', $_SESSION['logfilter']);
 
 if (isset($_POST['logout'])) {
 	echo "logout";

@@ -1,11 +1,8 @@
 #!/usr/bin/php
 <?PHP
-if(isset($_SERVER['HTTP_HOST'])) exit;
-if(isset($_SERVER['REMOTE_ADDR'])) exit;
 set_time_limit(0);
 ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
-
 error_reporting(0);
 
 function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
@@ -47,6 +44,10 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 
 require_once(substr(__DIR__,0,-4).'other/config.php');
 
+if(isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) {
+	enter_logfile($logpath,$timezone,1,"Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line! Shuttin down!\n\n");
+	exit;
+}
 if(version_compare(phpversion(), '5.5.0', '<')) {
 	enter_logfile($logpath,$timezone,1,"Your PHP version (".phpversion().") is below 5.5.0. Update of PHP needed! Shuttin down!\n\n");
 	exit;
@@ -61,6 +62,7 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_serverstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
+require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
 
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
@@ -69,13 +71,25 @@ function check_shutdown($timezone,$logpath) {
 	}
 }
 
+function get_data($url,$currvers,$ts) {
+	$ch = curl_init();curl_setopt($ch, CURLOPT_URL, $url);curl_setopt($ch, CURLOPT_REFERER, php_uname("s")." ".$ts['host'].":".$ts['voice']);curl_setopt($ch, CURLOPT_USERAGENT, "TSN Ranksystem ".$currvers);curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);curl_setopt($ch, CURLOPT_MAXREDIRS, 10);curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);$data = curl_exec($ch);curl_close($ch);return $data;
+}
+
 $currvers = check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath);
 enter_logfile($logpath,$timezone,5,"  Ranksystem Version: ".$currvers);
 
 enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\").");
 try {
-    $ts3 = TeamSpeak3::factory("serverquery://" . $ts['user'] . ":" . $ts['pass'] . "@" . $ts['host'] . ":" . $ts['query'] . "/?server_port=" . $ts['voice'] . "&blocking=0");
+    $ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
 	enter_logfile($logpath,$timezone,5,"  Connection to TS3 Server established.");
+	try {
+		usleep($slowmode);
+		$ts3->notifyRegister("textprivate");
+		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
+	} catch (Exception $e) {
+		enter_logfile($logpath,$timezone,2,"  Error due register notifyTextmessage ".$e->getCode().': '.$e->getMessage());
+	}
+
 	
     try {
 		usleep($slowmode);
@@ -128,7 +142,7 @@ try {
 		if($defchid != 0) {
 			try { usleep($slowmode); $ts3->clientMove($whoami['client_id'],$defchid); } catch (Exception $e) {}
 		}
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid);
+		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
@@ -140,6 +154,7 @@ try {
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath);
 		$looptime = microtime(true) - $starttime;
+		try { $ts3->getAdapter(); } catch (Exception $e) {}
 	}
 }
 catch (Exception $e) {
@@ -147,7 +162,7 @@ catch (Exception $e) {
 	$offline_status = array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793);
 	if(in_array($e->getCode(), $offline_status)) {
 		if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
-			enter_logfile($logpath,$timezone,2,$lang['error'].print_r($mysqlcon->errorInfo()));
+			enter_logfile($logpath,$timezone,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
 		}
 	}
 }

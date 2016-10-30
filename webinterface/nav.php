@@ -64,7 +64,12 @@
 			</ul>
 			<?PHP } ?>
 			<ul class="nav navbar-right top-nav">
-				<?PHP if(isset($_SESSION['username']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass) { ?>
+				<?PHP
+				echo '<li><a href="http',(!empty($_SERVER['HTTPS'])?'s':''),'://',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;',$lang['winav6'],'</a></li>';
+				if(isset($_SESSION['username']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass) { ?>
+				<li>
+					<a href="changepassword.php"><i class="fa fa-lock"></i>&nbsp;<?PHP echo $lang['pass2']; ?></a>
+				</li>
 				<li>
 					<form class="navbar-form navbar-center" method="post">
 						<div class="form-group">
@@ -119,7 +124,12 @@
 					</li>
 					<li class="divider"></li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin.php" ? ' class="active">' : '>'); ?>
-						<a href="admin.php"><i class="fa fa-fw fa-users"></i>&nbsp;<?PHP echo $lang['winav7']; ?></a>
+						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-users"></i>&nbsp;<?PHP echo $lang['winav7']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>
+						<ul id="demo" class="collapse">
+							<li>
+								<a href="admin.php"><?PHP echo $lang['wihladm1']; ?></a>
+							</li>
+						</ul>
 					</li>
 					<li class="divider"></li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "bot.php" ? ' class="active">' : '>'); ?>
@@ -129,7 +139,11 @@
 			</div>
 		</nav>
 <?PHP
-if(!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on") {
+if($adminuuid==NULL && $_SESSION['username'] == $webuser && !isset($err_msg)) {
+	$err_msg = $lang['winav11']; $err_lvl = 3;
+}
+
+if(!isset($_SERVER['HTTPS']) && !isset($err_msg) || $_SERVER['HTTPS'] != "on" && !isset($err_msg)) {
 	$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."\">";
 	$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
 }

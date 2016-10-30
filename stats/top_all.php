@@ -6,7 +6,7 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 
 if(!isset($_SESSION['tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
 if ($substridle == 1) {

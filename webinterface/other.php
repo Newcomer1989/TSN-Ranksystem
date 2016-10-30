@@ -50,8 +50,9 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 	if (isset($_POST['upcheck'])) $upcheck = 1; else $upcheck = 0;
 	$updateinfotime = $_POST['updateinfotime'];
 	$uniqueid       = $_POST['uniqueid'];
-	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$dateformat',logpath='$logpath',language='$language',upcheck='$upcheck',updateinfotime='$updateinfotime',uniqueid='$uniqueid'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo());
+	$adminuuid     	= $_POST['adminuuid'];
+	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$dateformat',logpath='$logpath',language='$language',upcheck='$upcheck',updateinfotime='$updateinfotime',uniqueid='$uniqueid',adminuuid='$adminuuid'") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
         $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];
@@ -120,7 +121,14 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								</div>
 							</div>
 						</div>
-						<div class="col-md-6 ">
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check the entered unique ID!" name="adminuuid" value="<?php echo $adminuuid; ?>">
+									<div class="help-block with-errors"></div>
+								</div>
+							</div>
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
@@ -275,6 +283,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
       </div>
       <div class="modal-body">
         <?php echo $lang['wiupuiddesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wiadmuuiddesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wiadmuuid']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wiadmuuiddesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

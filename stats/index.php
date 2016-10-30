@@ -18,7 +18,7 @@ if($language == "ar") {
 }
 
 if(!isset($_SESSION['tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language);
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
 function human_readable_size($bytes) {

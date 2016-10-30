@@ -57,8 +57,10 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 	if (isset($_POST['showcolnx'])) $showcolnx = 1; else $showcolnx = 0;
 	if (isset($_POST['showcolsg'])) $showcolsg = 1; else $showcolsg = 0;
 	if (isset($_POST['showhighest'])) $showhighest = 1; else $showhighest = 0;
-	if ($mysqlcon->exec("UPDATE $dbname.config set showexcld='$showexcld',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolas='$showcolas',showcolnx='$showcolnx',showcolsg='$showcolsg',showhighest='$showhighest'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo());
+	if (isset($_POST['showgrpsince'])) $showgrpsince = 1; else $showgrpsince = 0;
+	if (isset($_POST['shownav'])) $shownav = 1; else $shownav = 0;
+	if ($mysqlcon->exec("UPDATE $dbname.config set showexcld='$showexcld',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolas='$showcolas',showcolnx='$showcolnx',showcolsg='$showcolsg',showhighest='$showhighest',showgrpsince='$showgrpsince',shownav='$shownav'") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
         $err_msg = $lang['wisvsuc'];
@@ -78,19 +80,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
 					<div class="row">
-						<div class="col-md-3">
-						</div>
 						<div class="col-md-6">
-							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishexclddesc"><?php echo $lang['wishexcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-								<div class="col-sm-8">
-									<?PHP if ($showexcld == 1) {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showexcld" value="',$showexcld,'">';
-									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showexcld" value="',$showexcld,'">';
-									} ?>
-								</div>
-							</div>
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
@@ -184,6 +174,16 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										</div>
 									</div>
 									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolgsdesc"><?php echo $lang['wishcolgs']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<div class="col-sm-8">
+											<?PHP if ($showgrpsince == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showgrpsince" value="',$showgrpsince,'">';
+											} else {
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showgrpsince" value="',$showgrpsince,'">';
+											} ?>
+										</div>
+									</div>
+									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolnxdesc"><?php echo $lang['wishcolnx']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($showcolnx == 1) {
@@ -205,7 +205,18 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									</div>
 								</div>
 							</div>
-							<div class="row">&nbsp;</div>
+						</div>
+						<div class="col-md-6">
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishexclddesc"><?php echo $lang['wishexcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-sm-8">
+									<?PHP if ($showexcld == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showexcld" value="',$showexcld,'">';
+									} else {
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showexcld" value="',$showexcld,'">';
+									} ?>
+								</div>
+							</div>
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishhiclddesc"><?php echo $lang['wishhicld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
@@ -213,6 +224,17 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showhighest" value="',$showhighest,'">';
 									} else {
 										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showhighest" value="',$showhighest,'">';
+									} ?>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishnavdesc"><?php echo $lang['wishnav']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-sm-8">
+									<?PHP if ($shownav == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="shownav" value="',$shownav,'">';
+									} else {
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="shownav" value="',$shownav,'">';
 									} ?>
 								</div>
 							</div>
@@ -390,6 +412,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
     </div>
   </div>
 </div>
+<div class="modal fade" id="wishcolgsdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wishcolgs']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wishcolgsdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal fade" id="wishcolnxdesc" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -431,6 +469,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
       </div>
       <div class="modal-body">
         <?php echo $lang['wishhiclddesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wishnavdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wishnav']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wishnavdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
