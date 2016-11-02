@@ -254,7 +254,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.1.2','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.1.2',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1')") === false) {
+		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.1.3','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.1.3',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1')") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
@@ -278,26 +278,29 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	if(!is_writeable('./other/dbconfig.php')) {
 		$err_msg .= "<br>".$lang['isntwicfg']; $err_lvl = 3;
 	}
-	if (substr(sprintf('%o', fileperms('./avatars/')), -4)!='0777') {
+	if(substr(sprintf('%o', fileperms('./avatars/')), -4)!='0777') {
 		$err_msg .= "<br>".sprintf($lang['isntwichm'],"avatars"); $err_lvl = 3;
 	}
-	if (substr(sprintf('%o', fileperms('./icons/')), -4)!='0777') {
+	if(substr(sprintf('%o', fileperms('./icons/')), -4)!='0777') {
 		$err_msg .= "<br>".sprintf($lang['isntwichm'],"icons"); $err_lvl = 3;
 	}
-	if (substr(sprintf('%o', fileperms('./logs/')), -4)!='0777') {
+	if(substr(sprintf('%o', fileperms('./logs/')), -4)!='0777') {
 		$err_msg .= "<br>".sprintf($lang['isntwichm'],"logs"); $err_lvl = 3;
 	}
-	if (!class_exists('PDO')) {
+	if(!class_exists('PDO')) {
 		$err_msg .= "<br>".$lang['insterr2']; $err_lvl = 3;
 	}
-	if (!function_exists('exec')) {
+	if(!function_exists('exec')) {
 		$err_msg .= "<br>".$lang['insterr3']; $err_lvl = 3;
 	}
 	if(version_compare(phpversion(), '5.5.0', '<')) {
 		$err_msg .= "<br>".sprintf($lang['insterr4'],phpversion()); $err_lvl = 3;
 	}
-	if (!function_exists('simplexml_load_file')) {
+	if(!function_exists('simplexml_load_file')) {
 		$err_msg .= "<br>".$lang['insterr5']; $err_lvl = 3;
+	}
+	if(!in_array('curl', get_loaded_extensions())) {
+		$err_msg .= "<br>".$lang['insterr6']; $err_lvl = 3;
 	}
 	if(!isset($err_lvl)) {
 		unset($err_msg);

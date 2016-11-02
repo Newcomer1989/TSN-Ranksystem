@@ -369,8 +369,8 @@ require_once('nav.php');
 		Morris.Donut({
 		  element: 'time-gap-donut',
 		  data: [
-			{label: "Active Time (in Days)", value: <?PHP echo round(($sql_res[0]['total_active_time'] / 86400)); ?>},
-			{label: "Inactive Time (in Days)", value: <?PHP echo round(($sql_res[0]['total_inactive_time'] / 86400)); ?>},
+			{label: "<?PHP echo $lang['stix0053']?>", value: <?PHP echo round(($sql_res[0]['total_active_time'] / 86400)); ?>},
+			{label: "<?PHP echo $lang['stix0054']?>", value: <?PHP echo round(($sql_res[0]['total_inactive_time'] / 86400)); ?>},
 		  ]
 		});
 		Morris.Donut({
@@ -381,7 +381,7 @@ require_once('nav.php');
 			   {label: "<?PHP echo $sql_res[0]['version_name_3'] ?>", value: <?PHP echo $sql_res[0]['version_3'] ?>},
 			   {label: "<?PHP echo $sql_res[0]['version_name_4'] ?>", value: <?PHP echo $sql_res[0]['version_4'] ?>},
 			   {label: "<?PHP echo $sql_res[0]['version_name_5'] ?>", value: <?PHP echo $sql_res[0]['version_5'] ?>},
-			   {label: "Others", value: <?PHP echo $sql_res[0]['version_other'] ?>},
+			   {label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['version_other'] ?>},
 			],
 			colors: [
 				'#5cb85c',
@@ -399,7 +399,7 @@ require_once('nav.php');
 				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_3']])) { echo $nation[$sql_res[0]['country_nation_name_3']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_3'])) { echo $sql_res[0]['country_nation_3']; } else { echo "0";} ?>},
 				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_4']])) { echo $nation[$sql_res[0]['country_nation_name_4']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_4'])) { echo $sql_res[0]['country_nation_4']; } else { echo "0";} ?>},
 				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_5']])) { echo $nation[$sql_res[0]['country_nation_name_5']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_5'])) { echo $sql_res[0]['country_nation_5']; } else { echo "0";} ?>},
-				{label: "Others", value: <?PHP echo $sql_res[0]['country_nation_other'] ?>}
+				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['country_nation_other'] ?>}
 			],
 			colors: [
 				'#f0ad4e',
@@ -418,7 +418,7 @@ require_once('nav.php');
 				{label: "Android", value: <?PHP echo $sql_res[0]['platform_4'] ?>},
 				{label: "iOS", value: <?PHP echo $sql_res[0]['platform_2'] ?>},
 				{label: "OS X", value: <?PHP echo $sql_res[0]['platform_5'] ?>},
-				{label: "Others", value: <?PHP echo $sql_res[0]['platform_other'] ?>},
+				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['platform_other'] ?>},
 			],
 			colors: [
 				'#d9534f',

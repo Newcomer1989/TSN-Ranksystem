@@ -66,6 +66,13 @@ function checkProcess($pid = null) {
 }
 
 function start() {
+	global $logpath;
+	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
+		echo "\n !!!! Logs folder is not writable !!!!\n\n";
+		echo " Cancel start request...\n\n";
+		exit;
+	}
+
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if (checkProcess() == FALSE) {
 			echo "Starting the Ranksystem Bot.";

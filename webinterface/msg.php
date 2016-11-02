@@ -48,8 +48,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 	$nextupinfomsg1	= addslashes($_POST['nextupinfomsg1']);
 	$nextupinfomsg2	= addslashes($_POST['nextupinfomsg2']);
 	$nextupinfomsg3	= addslashes($_POST['nextupinfomsg3']);
+	$nextupinfo = $_POST['nextupinfo'];
 	if (isset($_POST['msgtouser'])) $msgtouser = 1; else $msgtouser = 0;
-	if (isset($_POST['nextupinfo'])) $nextupinfo = 1; else $nextupinfo = 0;
 	if ($mysqlcon->exec("UPDATE $dbname.config set msgtouser='$msgtouser',rankupmsg='$rankupmsg',servernews='$servernews',nextupinfo='$nextupinfo',nextupinfomsg1='$nextupinfomsg1',nextupinfomsg2='$nextupinfomsg2',nextupinfomsg3='$nextupinfomsg3'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
@@ -112,11 +112,13 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxinfodesc"><?php echo $lang['winxinfo']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($nextupinfo == 1) {
-												echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="nextupinfo" value="',$nextupinfo,'">';
-											} else {
-												echo '<input id="switch-animate" type="checkbox" data-size="mini" name="nextupinfo" value="',$nextupinfo,'">';
-											} ?>
+											<select class="selectpicker show-tick form-control" id="basic" name="nextupinfo">
+											<?PHP
+											echo '<option value="0"'; if($nextupinfo=="0") echo " selected=selected"; echo '>',$lang['winxmode1'],'</option>';
+											echo '<option value="1"'; if($nextupinfo=="1") echo " selected=selected"; echo '>',$lang['winxmode2'],'</option>';
+											echo '<option value="2"'; if($nextupinfo=="2") echo " selected=selected"; echo '>',$lang['winxmode3'],'</option>';
+											?>
+											</select>
 										</div>
 									</div>
 									<div class="form-group">

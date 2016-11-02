@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.1.2';
+	$newversion = '1.1.3';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -15,14 +15,14 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		}
 	}
 	
-	function check_chmod($timezone) {
-		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'icons/')), -4)!='0777') {
+	function check_chmod($timezone,$logpath,$lang) {
+		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'icons/')), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'icons'));
 		}
-		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'logs/')), -4)!='0777') {
+		if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'logs'));
 		}
-		if (substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'avatars/')), -4)!='0777') {
+		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'avatars/')), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'avatars'));
 		}
 	}
@@ -131,7 +131,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 	if($currvers==$newversion) {
 		enter_logfile($logpath,$timezone,5,"  No newer version detected; Database check finished.");
 		old_files($timezone,$logpath);
-		check_chmod($timezone);
+		check_chmod($timezone,$logpath,$lang);
 		check_config($mysqlcon,$dbname);
 	} elseif($currvers=="0.13-beta") {
 		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to version 1.0.1");
@@ -260,7 +260,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		
 		if ($errcount == 1) {
 			$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
-			old_files($timezone,$logpath);
+			check_chmod($timezone,$logpath,$lang);
 			check_chmod($timezone);
 		} else {
 			enter_logfile($logpath,$timezone,1,"An error happens due updating the Ranksystem Database!");
@@ -335,8 +335,6 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 					enter_logfile($logpath,$timezone,4,"    [1.1.2] Adjusted table config (part1) successfully.");
 				}
 			}
-		}
-		if(version_compare($currvers, '1.1.1', '<=')) {
 			if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (shownav int(1) NOT NULL default '0', showgrpsince int(1) NOT NULL default '0')") === false) { } else {
 				if($mysqlcon->exec("UPDATE $dbname.config set shownav='1', showgrpsince='1'") === false) { } else {
 					enter_logfile($logpath,$timezone,4,"    [1.1.2] Adjusted table config (part2) successfully.");
@@ -346,9 +344,12 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.1.2] Adjusted table user successfully.");
 			}
 		}
+		if(version_compare($currvers, '1.1.2', '<=')) {
+			enter_logfile($logpath,$timezone,4,"    [1.1.3] No database changes needed.");
+		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone,$logpath);
-		check_chmod($timezone);
+		check_chmod($timezone,$logpath,$lang);
 		check_config($mysqlcon,$dbname);
 	}
 	return $currvers;

@@ -52,6 +52,14 @@ if(version_compare(phpversion(), '5.5.0', '<')) {
 	enter_logfile($logpath,$timezone,1,"Your PHP version (".phpversion().") is below 5.5.0. Update of PHP needed! Shuttin down!\n\n");
 	exit;
 }
+if(!function_exists('simplexml_load_file')) {
+	enter_logfile($logpath,$timezone,1,"SimpleXML is missed. Installation of SimpleXML is needed! Shuttin down!\n\n");
+	exit;
+}
+if(!in_array('curl', get_loaded_extensions())) {
+	enter_logfile($logpath,$timezone,1,"PHP cURL is missed. Installation of PHP cURL is needed! Shuttin down!\n\n");
+	exit;
+}
 
 enter_logfile($logpath,$timezone,5,"Initialize Bot...");
 require_once(substr(__DIR__,0,-4).'ts3_lib/TeamSpeak3.php');

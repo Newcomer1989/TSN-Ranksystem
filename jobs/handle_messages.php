@@ -5,19 +5,12 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 	$uuid = $event["invokeruid"];
 	
 	
-		if(strstr($event["msg"], 'nextup') && $nextupinfo == 1) {
+		if(strstr($event["msg"], 'nextup') && $nextupinfo != 0) {
 			//enter_logfile($logpath,$timezone,6,"Client ".$event["invokername"]." (".$event["invokeruid"].") sent textmessage: ".$event["msg"]);
 			if(($dbuserdata = $mysqlcon->query("SELECT count,nextup,idle,except FROM $dbname.user WHERE uuid='$uuid'")) === false) {
 				enter_logfile($logpath,$timezone,2,"handle_messages 1:".print_r($mysqlcon->errorInfo(), true));
 			}
 			$user = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
-			$nextup = $user[0]['nextup'];
-			$dtF = new DateTime("@0");
-			$dtT = new DateTime("@$nextup");
-			$days  = $dtF->diff($dtT)->format('%a');
-			$hours = $dtF->diff($dtT)->format('%h');
-			$mins  = $dtF->diff($dtT)->format('%i');
-			$secs  = $dtF->diff($dtT)->format('%s');
 
 			if(($dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups")) === false) {
 				enter_logfile($logpath,$timezone,2,"handle_messages 2:".print_r($mysqlcon->errorInfo(), true));
@@ -31,15 +24,21 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 			$countgrp = count($grouptime);
 			$grpcount=0;
 			foreach ($grouptime as $time => $groupid) {
-				$grpcount++;
 				if ($substridle == 1) {
-					$activetime = $user[0]['count'] - $user[0]['idle'];
+					$nextup = $time - $user[0]['count'] - $user[0]['idle'];
 				} else {
-					$activetime = $user[0]['count'];
+					$nextup = $time - $user[0]['count'];
 				}
-				if ($activetime < $time || $grpcount == $countgrp && $nextup <= 0) {
+				$dtF = new DateTime("@0");
+				$dtT = new DateTime("@$nextup");
+				$days  = $dtF->diff($dtT)->format('%a');
+				$hours = $dtF->diff($dtT)->format('%h');
+				$mins  = $dtF->diff($dtT)->format('%i');
+				$secs  = $dtF->diff($dtT)->format('%s');
+				$grpcount++;
+				if ($nextup > 0 && $nextup < $time || $grpcount == $countgrp && $nextup <= 0) {
 					check_shutdown($timezone,$logpath); usleep($slowmode);
-					if ($grpcount == $countgrp && $nextup == 0) {
+					if ($grpcount == $countgrp && $nextup <= 0) {
 						try {
 							$host->serverGetSelected()->clientGetByUid($event["invokeruid"])->message(sprintf($nextupinfomsg2, $days, $hours, $mins, $secs, $sqlhisgroup[$groupid]));
 						} catch (Exception $e) {
@@ -57,6 +56,9 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 						} catch (Exception $e) {
 							enter_logfile($logpath,$timezone,2,"handle_messages 5:".$e->getCode().': '.$e->getMessage());
 						}
+					}
+					if($nextupinfo == 1) {
+						break;
 					}
 				}
 			}
