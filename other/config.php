@@ -45,6 +45,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 		} elseif($_GET["lang"] == "it") {
 			$language = "it";
 			$_SESSION['language'] = "it";
+		} elseif($_GET["lang"] == "nl") {
+			$language = "nl";
+			$_SESSION['language'] = "nl";
 		} elseif($_GET["lang"] == "ro") {
 			$language = "ro";
 			$_SESSION['language'] = "ro";
@@ -124,6 +127,8 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 		$nextupinfomsg3	 = $config[0]['nextupinfomsg3'];
 		$shownav		 = $config[0]['shownav'];
 		$showgrpsince	 = $config[0]['showgrpsince'];
+		$resetexcept	 = $config[0]['resetexcept'];
+		$upchannel		 = $config[0]['upchannel'];
 	}
 }
 if(!isset($language) || $language == "en") {
@@ -134,6 +139,8 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
 } elseif($language == "it") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
+} elseif($language == "nl") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_nl.php');
 } elseif($language == "ro") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
 } elseif($language == "ru") {

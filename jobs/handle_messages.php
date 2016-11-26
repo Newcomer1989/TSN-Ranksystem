@@ -1,6 +1,6 @@
 <?PHP
 function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {
-	global $lang, $logpath, $timezone, $nextupinfo, $nextupinfomsg1, $nextupinfomsg2, $nextupinfomsg3, $mysqlcon, $dbname, $grouptime, $substridle, $slowmode, $currvers, $newversion, $adminuuid;
+	global $lang, $logpath, $timezone, $nextupinfo, $nextupinfomsg1, $nextupinfomsg2, $nextupinfomsg3, $mysqlcon, $dbname, $grouptime, $substridle, $slowmode, $currvers, $newversion, $adminuuid, $phpcommand;
 	if($host->whoami()["client_unique_identifier"] != $event["invokeruid"]) {  //check whoami need to slowmode or is already stored?
 	$uuid = $event["invokeruid"];
 	
@@ -25,7 +25,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 			$grpcount=0;
 			foreach ($grouptime as $time => $groupid) {
 				if ($substridle == 1) {
-					$nextup = $time - $user[0]['count'] - $user[0]['idle'];
+					$nextup = $time - $user[0]['count'] + $user[0]['idle'];
 				} else {
 					$nextup = $time - $user[0]['count'];
 				}
@@ -96,7 +96,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 			} catch (Exception $e) {
 				enter_logfile($logpath,$timezone,2,"handle_messages 9:".$e->getCode().': '.$e->getMessage());
 			}
-			exec("php ".$path."worker.php stop");
+			exec($phpcommand." ".$path."worker.php stop");
 		} elseif (strstr($event["msg"], 'shutdown') || strstr($event["msg"], 'exit')) {
 			try {
 				$host->serverGetSelected()->clientGetByUid($event["invokeruid"])->message($lang['msg0003']);
@@ -114,9 +114,9 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 				enter_logfile($logpath,$timezone,2,"handle_messages 11:".$e->getCode().': '.$e->getMessage());
 			}
 			if (substr(php_uname(), 0, 7) == "Windows") {
-				exec("start php ".$path."worker.php restart");
+				exec("start ".$phpcommand." ".$path."worker.php restart");
 			} else {
-				exec("php ".$path."worker.php restart > /dev/null 2>/dev/null &");
+				exec($phpcommand." ".$path."worker.php restart > /dev/null 2>/dev/null &");
 			}
 		} elseif (strstr($event["msg"], 'shutdown') || strstr($event["msg"], 'exit')) {
 			try {

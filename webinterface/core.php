@@ -49,11 +49,12 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
     $exceptcid		= $_POST['exceptcid'];
 	$grouptime		= $_POST['grouptime'];
 	$ignoreidle		= $_POST['ignoreidle'];
+	$resetexcept	= $_POST['resetexcept'];
     if (isset($_POST['resetbydbchange'])) $resetbydbchange = 1; else $resetbydbchange = 0;
 	if (isset($_POST['cleanclients'])) $cleanclients = 1; else $cleanclients = 0;
 	$cleanperiod 	= $_POST['cleanperiod'];
     $boost          = $_POST['boost'];
-    if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost'") === false) {
+    if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost',resetexcept='$resetexcept'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -91,6 +92,18 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							</div>
 							<div class="panel panel-default">
 								<div class="panel-body">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexresdesc"><?php echo $lang['wiexres']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<div class="col-sm-8">
+											<select class="selectpicker show-tick form-control" id="basic" name="resetexcept">
+											<?PHP
+											echo '<option value="0"'; if($resetexcept=="0") echo " selected=selected"; echo '>',$lang['wiexres1'],'</option>';
+											echo '<option value="1"'; if($resetexcept=="1") echo " selected=selected"; echo '>',$lang['wiexres2'],'</option>';
+											echo '<option value="2"'; if($resetexcept=="2") echo " selected=selected"; echo '>',$lang['wiexres3'],'</option>';
+											?>
+											</select>
+										</div>
+									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
@@ -182,7 +195,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[1-9][0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[1-9][0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost"><?php echo $config[0]['boost']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost"><?php echo $config[0]['boost']; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
@@ -209,6 +222,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
       </div>
       <div class="modal-body">
         <?php echo $lang['wisupidledesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wiexresdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wiexres']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wiexresdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

@@ -9,23 +9,23 @@ require_once('other/config.php');
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" href="icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="bootstrap/css/custom.css" rel="stylesheet">
-	<link href="bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
-	<link href="bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.css" rel="stylesheet">
-	<link href="bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
-	<link href="bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<script src="jquerylib/jquery.js"></script>
-	<script src="bootstrap/js/bootstrap.min.js"></script>
-	<script src="bootstrap/js/highlight.js"></script>
-	<script src="bootstrap/js/main.js"></script>
-	<script src="bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
-	<script src="bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.js"></script>
-	<script src="bootstrap/addons/select/bootstrap-select.min.js"></script>
-	<script src="bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
-	<script src="bootstrap/addons/validator/validator.min.js"></script>
+	<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="libs/bootstrap/css/custom.css" rel="stylesheet">
+	<link href="libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
+	<link href="libs/bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
+	<link href="libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.css" rel="stylesheet">
+	<link href="libs/bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
+	<link href="libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
+	<script src="libs/jquery/jquery.min.js"></script>
+	<script src="libs/bootstrap/js/bootstrap.min.js"></script>
+	<script src="libs/bootstrap/js/highlight.js"></script>
+	<script src="libs/bootstrap/js/main.js"></script>
+	<script src="libs/bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
+	<script src="libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.js"></script>
+	<script src="libs/bootstrap/addons/select/bootstrap-select.min.js"></script>
+	<script src="libs/bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
+	<script src="libs/bootstrap/addons/validator/validator.min.js"></script>
 	<script>
 	$(function() {
 		$('.required-icon').tooltip({
@@ -68,6 +68,9 @@ require_once('other/config.php');
 						</li>
 						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+						</li>
+						<li>
+							<a href="?lang=it"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
 							<a href="?lang=ru"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>
@@ -134,7 +137,7 @@ $db[\'dbname\']="'.$dbname.'";
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery int(5) NOT NULL default '0',tsvoice int(5) NOT NULL default '0',tsuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,language text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime text CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange int(1) NOT NULL default '0',msgtouser int(1) NOT NULL default '0',upcheck int(1) NOT NULL default '0',uniqueid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime int(8) NOT NULL default '0',currvers text CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle int(1) NOT NULL default '0',exceptuuid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat text CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld int(1) NOT NULL default '0',showcolcld int(1) NOT NULL default '0',showcoluuid int(1) NOT NULL default '0',showcoldbid int(1) NOT NULL default '0',showcolot int(1) NOT NULL default '0',showcolit int(1) NOT NULL default '0',showcolat int(1) NOT NULL default '0',showcolnx int(1) NOT NULL default '0',showcolsg int(1) NOT NULL default '0',showcolrg int(1) NOT NULL default '0',showcolls int(1) NOT NULL default '0',slowmode bigint(11) NOT NULL default '0',cleanclients int(1) NOT NULL default '0',cleanperiod bigint(11) NOT NULL default '0',showhighest int(1) NOT NULL default '0',boost text default NULL,showcolas int(1) NOT NULL default '0',defchid bigint(11) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci, advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci, servernews text CHARACTER SET utf8 COLLATE utf8_unicode_ci, adminuuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfo int(1) NOT NULL default '0', nextupinfomsg1 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg3 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, shownav int(1) NOT NULL default '0', showgrpsince int(1) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery int(5) NOT NULL default '0',tsvoice int(5) NOT NULL default '0',tsuser text CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass text CHARACTER SET utf8 COLLATE utf8_unicode_ci,language text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname text CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime text CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange int(1) NOT NULL default '0',msgtouser int(1) NOT NULL default '0',upcheck int(1) NOT NULL default '0',uniqueid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime int(8) NOT NULL default '0',currvers text CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle int(1) NOT NULL default '0',exceptuuid text CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup text CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat text CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld int(1) NOT NULL default '0',showcolcld int(1) NOT NULL default '0',showcoluuid int(1) NOT NULL default '0',showcoldbid int(1) NOT NULL default '0',showcolot int(1) NOT NULL default '0',showcolit int(1) NOT NULL default '0',showcolat int(1) NOT NULL default '0',showcolnx int(1) NOT NULL default '0',showcolsg int(1) NOT NULL default '0',showcolrg int(1) NOT NULL default '0',showcolls int(1) NOT NULL default '0',slowmode bigint(11) NOT NULL default '0',cleanclients int(1) NOT NULL default '0',cleanperiod bigint(11) NOT NULL default '0',showhighest int(1) NOT NULL default '0',boost text default NULL,showcolas int(1) NOT NULL default '0',defchid bigint(11) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci, advancemode int(1) NOT NULL default '0', count_access int(2) NOT NULL default '0', last_access bigint(11) NOT NULL default '0', ignoreidle bigint(11) NOT NULL default '0', exceptcid text CHARACTER SET utf8 COLLATE utf8_unicode_ci, rankupmsg text CHARACTER SET utf8 COLLATE utf8_unicode_ci, boost_mode int(1) NOT NULL default '0', newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci, servernews text CHARACTER SET utf8 COLLATE utf8_unicode_ci, adminuuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfo int(1) NOT NULL default '0', nextupinfomsg1 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg2 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, nextupinfomsg3 text CHARACTER SET utf8 COLLATE utf8_unicode_ci, shownav int(1) NOT NULL default '0', showgrpsince int(1) NOT NULL default '0', resetexcept int(1) NOT NULL default '0', upchannel varchar(20) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -185,7 +188,6 @@ $db[\'dbname\']="'.$dbname.'";
 		if($count == 1) {
 			$err_msg = sprintf($lang['instdbsuc'], $dbname); $err_lvl = NULL;
 			$install_webuser = 1;
-			
 		}
 	}
 	fclose($handle);
@@ -254,7 +256,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.1.3','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.1.3',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1')") === false) {
+		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince,resetexcept,upchannel) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.2.0','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','200000','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.2.0',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1','0','version')") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
@@ -287,6 +289,9 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	if(substr(sprintf('%o', fileperms('./logs/')), -4)!='0777') {
 		$err_msg .= "<br>".sprintf($lang['isntwichm'],"logs"); $err_lvl = 3;
 	}
+	if(substr(sprintf('%o', fileperms('./update/')), -4)!='0777') {
+		$err_msg .= "<br>".sprintf($lang['isntwichm'],"update"); $err_lvl = 3;
+	}
 	if(!class_exists('PDO')) {
 		$err_msg .= "<br>".$lang['insterr2']; $err_lvl = 3;
 	}
@@ -301,6 +306,9 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	}
 	if(!in_array('curl', get_loaded_extensions())) {
 		$err_msg .= "<br>".$lang['insterr6']; $err_lvl = 3;
+	}
+	if(!in_array('zip', get_loaded_extensions())) {
+		$err_msg .= "<br>".$lang['insterr7']; $err_lvl = 3;
 	}
 	if(!isset($err_lvl)) {
 		unset($err_msg);

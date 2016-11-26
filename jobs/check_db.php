@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.1.3';
+	$newversion = '1.2.0';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -25,12 +25,19 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'avatars/')), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'avatars'));
 		}
+		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'update/')), -3, 1)!='7') {
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'update'));
+		}
 	}
 	
 	function check_config($mysqlcon,$dbname) {
 		if(($dbdata = $mysqlcon->query("SELECT * FROM $dbname.config")) === false) { } else {
 			if($dbdata->rowCount() > 1) {
 				if($mysqlcon->exec("DELETE FROM $dbname.config WHERE webuser IS NULL") === false) { }
+			}
+			$config = $dbdata->fetchAll();
+			if($config[0]['updateinfotime'] > 86400) {
+				if($mysqlcon->exec("UPDATE $dbname.config SET updateinfotime='86400'") === false) { }
 			}
 		}
 	}
@@ -56,44 +63,19 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: license.txt");
 			}
 		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/jquery.ajaxQueue.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/jquery.ajaxQueue.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/jquery.ajaxQueue.js");
+		if(is_dir(substr(__DIR__,0,-4).'jquerylib/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'jquerylib/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: jquerylib/");
 			}
 		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/jquery.autocomplete.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/jquery.autocomplete.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/jquery.autocomplete.js");
+		if(is_dir(substr(__DIR__,0,-4).'ts3_lib/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'ts3_lib/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: ts3_lib/");
 			}
 		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/jquery.autocomplete.min.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/jquery.autocomplete.min.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/jquery.autocomplete.min.js");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/jquery.bgiframe.min.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/jquery.bgiframe.min.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/jquery.bgiframe.min.js");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/jquery.css')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/jquery.css')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/jquery.css");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/localdata.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/localdata.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/localdata.js");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/thickbox.css')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/thickbox.css')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/thickbox.css");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'jquerylib/thickbox-compressed.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'jquerylib/thickbox-compressed.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: jquerylib/thickbox-compressed.js");
+		if(is_dir(substr(__DIR__,0,-4).'bootstrap/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'bootstrap/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: bootstrap/");
 			}
 		}
 		if(is_file(substr(__DIR__,0,-4).'other/webinterface_list.php')) {
@@ -116,9 +98,9 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/style.css.php");
 			}
 		}
-		if(is_file(substr(__DIR__,0,-4).'bootstrap/js/_bootstrap.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'bootstrap/js/_bootstrap.js')) {
-				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: bootstrap/js/_bootstrap.js");
+	if(is_file(substr(__DIR__,0,-4).'other/search.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'other/search.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/search.php");
 			}
 		}
 		if(is_file(substr(__DIR__,0,-4).'server-news')) {
@@ -128,11 +110,40 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		}
 	}
 	
+	function check_writable($timezone,$logpath) {
+		enter_logfile($logpath,$timezone,5,"  Check files permissions...");
+		$counterr=0;
+		$scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(substr(__DIR__,0,-4)));
+		$files = array(); 
+		foreach ($scandir as $object) {
+			if(!strstr($object, '/.') && !strstr($object, '\.')) {
+				if (!$object->isDir()) {
+					if(!is_writable($object->getPathname())) {
+						enter_logfile($logpath,$timezone,3,"    File is not writeable ".$object);
+						$counterr++;
+					}
+				} else {
+					if(!is_writable($object->getPathname())) {
+						enter_logfile($logpath,$timezone,3,"    Folder is not writeable ".$object);
+						$counterr++;
+					}
+				}
+			}
+		}
+		if($counterr!=0) {
+			enter_logfile($logpath,$timezone,1,"Please check the files pemissions. Shutting down!\n\n");
+			exit;
+		} else {
+			enter_logfile($logpath,$timezone,5,"  done");
+		}
+	}
+	
 	if($currvers==$newversion) {
 		enter_logfile($logpath,$timezone,5,"  No newer version detected; Database check finished.");
 		old_files($timezone,$logpath);
 		check_chmod($timezone,$logpath,$lang);
 		check_config($mysqlcon,$dbname);
+		check_writable($timezone,$logpath);
 	} elseif($currvers=="0.13-beta") {
 		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to version 1.0.1");
 		
@@ -346,6 +357,13 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		}
 		if(version_compare($currvers, '1.1.2', '<=')) {
 			enter_logfile($logpath,$timezone,4,"    [1.1.3] No database changes needed.");
+		}
+		if(version_compare($currvers, '1.1.3', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (resetexcept int(1) NOT NULL default '0', upchannel varchar(20) NOT NULL default '0')") === false) { } else {
+				if($mysqlcon->exec("UPDATE $dbname.config set upchannel='version'") === false) { } else {
+					enter_logfile($logpath,$timezone,4,"    [1.2.0] Adjusted table config successfully.");
+				}
+			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone,$logpath);

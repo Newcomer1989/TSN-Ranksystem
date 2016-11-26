@@ -270,11 +270,11 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 	}
 	if ($substridle == 1) {
-		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except!=1 ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr") === false) {
+		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
 		}
 	} else {
-		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except!=1 ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr") === false) {
+		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
 		}
 	}

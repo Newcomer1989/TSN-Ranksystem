@@ -2,6 +2,7 @@
 session_start();
 
 require_once('../other/config.php');
+require_once('../other/phpcommand.php');
 
 function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 	$file = $logpath.'ranksystem.log';
@@ -29,11 +30,11 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			exec("del /F ".substr(__DIR__,0,-12).'logs/pid');
 			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-12)."worker.php start", 0, false);
+			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."worker.php start", 0, false);
 			exit;
 		} else {
 			exec("rm -f ".substr(__DIR__,0,-12).'logs/pid');
-			exec("php ".substr(__DIR__,0,-12)."worker.php start");
+			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start");
 			exit;
 		}
 	}

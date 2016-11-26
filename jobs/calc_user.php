@@ -1,5 +1,5 @@
 <?PHP
-function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts) {
+function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel) {
 	$nowtime = time();
 
 	if(($getversion = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='get_version'")) === false) {
@@ -8,7 +8,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		$getversion = $getversion->fetchAll();
 		$updatetime = $nowtime - 43200;
 		if ($getversion[0]['timestamp'] < $updatetime) {
-			$newversion=get_data('http://ts-n.net/ranksystem/version',$currvers,$ts);
+			$newversion=get_data('http://ts-n.net/ranksystem/'.$upchannel,$currvers,$ts);
 			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user -2:".print_r($mysqlcon->errorInfo(), true));
 			}
@@ -18,36 +18,38 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		}
 	}
 	
-	if ($update == 1) {
-		$updatetime = $nowtime - $updateinfotime;
-		if(($lastupdate = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='check_update'")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_user 0:".print_r($mysqlcon->errorInfo(), true));
+	$updatetime = $nowtime - $updateinfotime;
+	if(($lastupdate = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='check_update'")) === false) {
+		enter_logfile($logpath,$timezone,2,"calc_user 0:".print_r($mysqlcon->errorInfo(), true));
+	}
+	$lastupdate = $lastupdate->fetchAll();
+	if ($lastupdate[0]['timestamp'] < $updatetime) {
+		if(($getversion = $mysqlcon->query("SELECT newversion FROM $dbname.config")) === false) {
+			enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo(), true));
 		}
-		$lastupdate = $lastupdate->fetchAll();
-		if ($lastupdate[0]['timestamp'] < $updatetime) {
-			if(($getversion = $mysqlcon->query("SELECT newversion FROM $dbname.config")) === false) {
-				enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo(), true));
-			}
-			$getversion = $getversion->fetch(PDO::FETCH_ASSOC);
-			$newversion = $getversion['newversion'];
-			if(version_compare(substr($newversion, 0, 5), substr($currvers, 0, 5), '>') && $newversion != '') {
+		$getversion = $getversion->fetch(PDO::FETCH_ASSOC);
+		$newversion = $getversion['newversion'];
+		if(version_compare($newversion, $currvers, '>') && $newversion != '') {
+			if ($update == 1) {
 				enter_logfile($logpath,$timezone,4,$lang['upinf']);
 				foreach ($uniqueid as $clientid) {
 					check_shutdown($timezone,$logpath); usleep($slowmode);
 					try {
 						$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $currvers, $newversion));
 						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
+						if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp=$nowtime WHERE job_name='check_update'") === false) {
+							enter_logfile($logpath,$timezone,2,"calc_user 3:".print_r($mysqlcon->errorInfo(), true));
+						}
 					}
 					catch (Exception $e) {
-						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrerr'], $clientid));
+						//enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrerr'], $clientid));
 					}
 				}
 			}
-			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp=$nowtime WHERE job_name='check_update'") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_user 3:".print_r($mysqlcon->errorInfo(), true));
-			}
+			update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion);
 		}
 	}
+
 
 	if(($dbdata = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='calc_user_lastscan'")) === false) {
 		enter_logfile($logpath,$timezone,2,"calc_user 4:".print_r($mysqlcon->errorInfo(), true));
@@ -66,7 +68,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_user_lastscan'") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 5:".print_r($mysqlcon->errorInfo(), true));
 		}
-		if(($dbuserdata = $mysqlcon->query("SELECT uuid,cldbid,count,grpid,nextup,idle,boosttime,grpsince FROM $dbname.user")) === false) {
+		if(($dbuserdata = $mysqlcon->query("SELECT uuid,cldbid,count,grpid,nextup,idle,boosttime,grpsince,except FROM $dbname.user")) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 6:".print_r($mysqlcon->errorInfo(), true));
 		}
 		$uuids = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
@@ -79,7 +81,8 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 				"nextup" => $uuid['nextup'],
 				"idle" => $uuid['idle'],
 				"boosttime" => $uuid['boosttime'],
-				"grpsince" => $uuid['grpsince']
+				"grpsince" => $uuid['grpsince'],
+				"except" => $uuid['except']
 			);
 			$uidarr[] = $uuid['uuid'];
 		}
@@ -120,9 +123,16 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 				$clientidle = 0;
 			}
 			$yetonline[] = $uid;
-			if(in_array($uid, $exceptuuid) || array_intersect($sgroups, $exceptgroup)) {
-				$except = 1;
+			if(in_array($uid, $exceptuuid)) {
+				$except = 3;
+			} elseif(array_intersect($sgroups, $exceptgroup)) {
+				$except = 2;
 			} else {
+				if(($sqlhis[$uid]['except'] == 3 || $sqlhis[$uid]['except'] == 2) && $resetexcept == 2) { 
+				 	$sqlhis[$uid]['count'] = 0;
+				 	$sqlhis[$uid]['idle'] = 0;
+					enter_logfile($logpath,$timezone,5,sprintf($lang['resettime'], $name, $uid, $cldbid));
+				}
 				$except = 0;
 			}
 			if (in_array($uid, $uidarr)) {
@@ -186,10 +196,12 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 				$grpcount=0;
 				foreach ($grouptime as $time => $groupid) {
 					$grpcount++;
-					if(in_array($channel, $exceptcid)) {
+					if(in_array($channel, $exceptcid) || (($sqlhis[$uid]['except'] == 3 || $sqlhis[$uid]['except'] == 2) && $resetexcept == 1)) {
 						$count = $sqlhis[$uid]['count'];
 						$idle = $sqlhis[$uid]['idle'];
-						$except = 1;
+						if($except != 2 && $except != 3) {
+							$except = 1;
+						}
 					} elseif ($activetime > $time && !in_array($uid, $exceptuuid) && !array_intersect($sgroups, $exceptgroup)) {
 						if ($sqlhis[$uid]['grpid'] != $groupid) {
 							if ($sqlhis[$uid]['grpid'] != 0 && in_array($sqlhis[$uid]['grpid'], $sgroups)) {

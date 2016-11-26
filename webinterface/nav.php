@@ -7,23 +7,23 @@
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="../bootstrap/css/custom.css" rel="stylesheet">
-	<link href="../bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="../bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
-	<link href="../bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.css" rel="stylesheet">
-	<link href="../bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
-	<link href="../bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="../bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<script src="../jquerylib/jquery.js"></script>
-	<script src="../bootstrap/js/bootstrap.min.js"></script>
-	<script src="../bootstrap/js/highlight.js"></script>
-	<script src="../bootstrap/js/main.js"></script>
-	<script src="../bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
-	<script src="../bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.js"></script>
-	<script src="../bootstrap/addons/select/bootstrap-select.min.js"></script>
-	<script src="../bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
-	<script src="../bootstrap/addons/validator/validator.min.js"></script>
+	<link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/css/custom.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="../libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
+	<script src="../libs/jquery/jquery.min.js"></script>
+	<script src="../libs/bootstrap/js/bootstrap.min.js"></script>
+	<script src="../libs/bootstrap/js/highlight.js"></script>
+	<script src="../libs/bootstrap/js/main.js"></script>
+	<script src="../libs/bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
+	<script src="../libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.min.js"></script>
+	<script src="../libs/bootstrap/addons/select/bootstrap-select.min.js"></script>
+	<script src="../libs/bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
+	<script src="../libs/bootstrap/addons/validator/validator.min.js"></script>
 	<script>
 	$(function() {
 		$('.required-icon').tooltip({
@@ -88,10 +88,13 @@
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
 						</li>
 						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - english</a>
+							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+						</li>
+						<li>
+							<a href="?lang=it"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
 							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>

@@ -114,7 +114,7 @@ require_once('nav.php');
 								<div class="row">
 									<div class="col-xs-9 text-left">
 										<div class="huge"><?PHP echo $_SESSION['tsname'] ?></div>
-										<div><?PHP if ($dbdata_fetched[0]['except'] != 1) {
+										<div><?PHP if ($except == 0 || $except == 1) {
 											echo $lang['stmy0002'],' #',$dbdata_fetched[0]['rank'];
 										} ?></div>
 									</div>
@@ -154,7 +154,7 @@ require_once('nav.php');
 							</div>
 						</div>
 					</div>
-					<?PHP if($except!=1) { ?>
+					<?PHP if($except == 0 || $except == 1) { ?>
 					<div class="col-lg-6">
 						<h3><?PHP echo $lang['stmy0030']; ?></h3>
 						<div class="progress">

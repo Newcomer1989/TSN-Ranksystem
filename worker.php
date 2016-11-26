@@ -1,13 +1,8 @@
 <?php
 error_reporting(0);
 
-if(isset($_SERVER['USER']) && $_SERVER['USER'] == "root" || isset($_SERVER['USERNAME']) && $_SERVER['USERNAME'] == "administrator") {
-	echo "\n !!!! Do not start the Ranksystem with root privileges !!!!\n\n";
-	echo " Start Ranksystem Bot in 10 seconds...\n\n";
-	sleep(10);
-}
-
 require_once(__DIR__.'/other/config.php');
+require_once(__DIR__.'/other/phpcommand.php');
 $GLOBALS['exec'] = FALSE;
 if($logpath == NULL) { $logpath = "./logs/"; }
 $GLOBALS['logfile'] = $logpath.'ranksystem.log';
@@ -66,6 +61,13 @@ function checkProcess($pid = null) {
 }
 
 function start() {
+	global $phpcommand;
+	if(isset($_SERVER['USER']) && $_SERVER['USER'] == "root" || isset($_SERVER['USERNAME']) && $_SERVER['USERNAME'] == "administrator") {
+		echo "\n !!!! Do not start the Ranksystem with root privileges !!!!\n\n";
+		echo " Start Ranksystem Bot in 10 seconds...\n\n";
+		sleep(10);
+	}
+	
 	global $logpath;
 	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 		echo "\n !!!! Logs folder is not writable !!!!\n\n";
@@ -78,19 +80,16 @@ function start() {
 			echo "Starting the Ranksystem Bot.";
 			try {
 				$WshShell = new COM("WScript.Shell");
-				echo "1";
 			} catch (Exception $e) {
 				echo "\n Error due loading the PHP COM module (wrong server configuration!): ",$e->getMessage(),"\n";
 			}
 			try {
-				$oExec = $WshShell->Run("cmd /C php ".__DIR__."\jobs\bot.php", 0, false);
-				echo "2";
+				$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".__DIR__."\jobs\bot.php", 0, false);
 			} catch (Exception $e) {
 				echo "\n Error due starting Bot (exec command enabled?): ",$e->getMessage(),"\n";
 			}
 			try {
 				exec("wmic process WHERE \"Name=\"php.exe\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
-				echo "3";
 			} catch (Exception $e) {
 				echo "\n Error due getting process list (wmic command enabled?): ",$e->getMessage(),"\n";
 			}
@@ -107,7 +106,7 @@ function start() {
 	} else {
 		if (checkProcess() == FALSE) {
 			echo "Starting the Ranksystem Bot.";
-			exec("php ".dirname(__FILE__)."/jobs/bot.php >/dev/null 2>&1 & echo $! > ".$GLOBALS['pidfile']);
+			exec($phpcommand." ".dirname(__FILE__)."/jobs/bot.php >/dev/null 2>&1 & echo $! > ".$GLOBALS['pidfile']);
 			if (checkProcess() == FALSE) {
 				echo " [Failed]\n";
 			} else {

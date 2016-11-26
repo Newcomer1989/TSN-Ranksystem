@@ -101,7 +101,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wilogdesc"><?php echo $lang['wilog']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8 required-field-block">
-									<input type="text" class="form-control" name="logpath" value="<?php echo $logpath; ?>" required>
+									<input type="text" class="form-control" data-pattern=".*(\/|\\)$" data-error="The Logpath must end with / or \" name="logpath" value="<?php echo $logpath; ?>" required>
+									<div class="help-block with-errors"></div>
 									<div class="required-icon"><div class="text">*</div></div>
 								</div>
 							</div>
@@ -114,6 +115,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									echo '<option data-subtext="Deutsch" value="de"'.($language === 'de' ? ' selected="selected"' : '').'>DE</option>';
 									echo '<option data-subtext="english" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
 									echo '<option data-subtext="italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
+									echo '<option data-subtext="Nederlands" value="nl"'.($language === 'nl' ? ' selected="selected"' : '').'>NL</option>';
 									echo '<option data-subtext="românesc" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';
 									echo '<option data-subtext="русский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
 									?>
@@ -124,9 +126,10 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 						<div class="col-md-6">
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-								<div class="col-sm-8">
-									<input type="text" class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check the entered unique ID!" name="adminuuid" value="<?php echo $adminuuid; ?>">
+								<div class="col-sm-8 required-field-block">
+									<input type="text" class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check the entered unique ID!" name="adminuuid" value="<?php echo $adminuuid; ?>" required>
 									<div class="help-block with-errors"></div>
+									<div class="required-icon"><div class="text">*</div></div>
 								</div>
 							</div>
 							<div class="panel panel-default">
@@ -148,7 +151,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 											<script>
 											$("input[name='updateinfotime']").TouchSpin({
 												min: 0,
-												max: 9223372036854775807,
+												max: 86400,
 												verticalbuttons: true,
 												prefix: 'Sec.:'
 											});

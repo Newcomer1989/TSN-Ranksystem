@@ -5,7 +5,8 @@ ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
 error_reporting(0);
 
-function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
+function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) {
+	global $phpcommand;
 	$file = $logpath.'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
@@ -22,7 +23,7 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, $input);
 	fclose($loghandle);
-	if (filesize($file) > 5242880) {
+	if($norotate == false && filesize($file) > 5242880) {
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Restart Bot to continue with new log file...\n");
 		fclose($loghandle);
@@ -32,17 +33,18 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			exec("del /F ".substr(__DIR__,0,-4).'logs/pid');
 			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-4)."worker.php start", 0, false);
+			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-4)."worker.php start", 0, false);
 			exit;
 		} else {
 			exec("rm -f ".substr(__DIR__,0,-4).'logs/pid');
-			exec("php ".substr(__DIR__,0,-4)."worker.php start");
+			exec($phpcommand." ".substr(__DIR__,0,-4)."worker.php start");
 			exit;
 		}
 	}
 }
 
 require_once(substr(__DIR__,0,-4).'other/config.php');
+require_once(substr(__DIR__,0,-4).'other/phpcommand.php');
 
 if(isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) {
 	enter_logfile($logpath,$timezone,1,"Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line! Shuttin down!\n\n");
@@ -60,9 +62,13 @@ if(!in_array('curl', get_loaded_extensions())) {
 	enter_logfile($logpath,$timezone,1,"PHP cURL is missed. Installation of PHP cURL is needed! Shuttin down!\n\n");
 	exit;
 }
+if(!in_array('zip', get_loaded_extensions())) {
+	enter_logfile($logpath,$timezone,1,"PHP Zip is missed. Installation of PHP Zip is needed! Shuttin down!\n\n");
+	exit;
+}
 
 enter_logfile($logpath,$timezone,5,"Initialize Bot...");
-require_once(substr(__DIR__,0,-4).'ts3_lib/TeamSpeak3.php');
+require_once(substr(__DIR__,0,-4).'libs/ts3_lib/TeamSpeak3.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
 require_once(substr(__DIR__,0,-4).'jobs/get_avatars.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_groups.php');
@@ -71,6 +77,7 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
+require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
@@ -93,6 +100,8 @@ try {
 	try {
 		usleep($slowmode);
 		$ts3->notifyRegister("textprivate");
+		$ts3->notifyRegister("textchannel");
+		$ts3->notifyRegister("textserver");
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
 	} catch (Exception $e) {
 		enter_logfile($logpath,$timezone,2,"  Error due register notifyTextmessage ".$e->getCode().': '.$e->getMessage());
@@ -122,7 +131,7 @@ try {
 			enter_logfile($logpath,$timezone,5,"  Joined to specified Channel.");
 		} catch (Exception $e) {
 			if($e->getCode() != 770) {
-				echo "\n",DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u "),$lang['error'], $e->getCode(), ': ', $e->getMessage(),"\n";
+				enter_logfile($logpath,$timezone,5,"  Could not join specified channel.");
 			} else {
 				enter_logfile($logpath,$timezone,5,"  Joined to specified channel.");
 			}
@@ -147,10 +156,7 @@ try {
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$ts3->serverInfoReset();
 		$serverinfo = $ts3->serverInfo();
-		if($defchid != 0) {
-			try { usleep($slowmode); $ts3->clientMove($whoami['client_id'],$defchid); } catch (Exception $e) {}
-		}
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts);
+		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);

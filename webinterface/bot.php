@@ -2,6 +2,7 @@
 session_start();
 
 require_once('../other/config.php');
+require_once('../other/phpcommand.php');
 
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
@@ -124,9 +125,9 @@ if (isset($_POST['start']) && $_SESSION['username'] == $webuser && $_SESSION['pa
 	} else {
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-12)."\worker.php start", 0, false); 
+			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php start", 0, false); 
 		} else {
-			exec("php ".substr(__DIR__,0,-12)."worker.php start");
+			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start");
 		}
 		$err_msg = $lang['wibot2'];
 		$err_lvl = 1;
@@ -138,9 +139,9 @@ if (isset($_POST['start']) && $_SESSION['username'] == $webuser && $_SESSION['pa
 if (isset($_POST['stop']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		$WshShell = new COM("WScript.Shell");
-		$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-12)."\worker.php stop", 0, false); 
+		$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php stop", 0, false); 
 	} else {
-		exec("php ".substr(__DIR__,0,-12)."worker.php stop");
+		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php stop");
 	}
 	$err_msg = $lang['wibot1'];
 	$err_lvl = 1;
@@ -154,9 +155,9 @@ if (isset($_POST['restart']) && $_SESSION['username'] == $webuser && $_SESSION['
 	} else {
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-12)."\worker.php restart", 0, false); 
+			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php restart", 0, false); 
 		} else {
-			exec("php ".substr(__DIR__,0,-12)."worker.php restart");
+			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php restart");
 		}
 		$err_msg = $lang['wibot3'];
 		$err_lvl = 1;

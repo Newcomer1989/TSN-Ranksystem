@@ -88,7 +88,8 @@ require_once('nav.php');
 										<p class="text-center"><i class="fa fa-trophy fa-5x"></i></p>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[0]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[0]['name']) ?></span></div>
+										<div>&nbsp;</div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[0]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[0]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[0]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -106,7 +107,8 @@ require_once('nav.php');
 										<p class="text-center"><i class="fa fa-trophy fa-5x"></i></p>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[1]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[1]['name']) ?></span></div>
+										<div>&nbsp;</div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[1]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[1]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[1]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -122,7 +124,8 @@ require_once('nav.php');
 										<p class="text-center"><i class="fa fa-trophy fa-5x"></i></p>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[2]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[2]['name']) ?></span></div>
+										<div>&nbsp;</div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[2]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[2]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[2]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -136,10 +139,10 @@ require_once('nav.php');
 							<div class="panel-heading">
 								<div class="row">
 									<div class="col-xs-3">
-										<i class="fa-3x">#4th</i>
+										<i class="fa-2x">#4th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[3]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[3]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[3]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[3]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[3]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -151,10 +154,10 @@ require_once('nav.php');
 							<div class="panel-heading">
 								<div class="row">
 									<div class="col-xs-3">
-										<i class="fa-3x">#5th</i>
+										<i class="fa-2x">#5th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[4]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[4]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[4]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[4]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[4]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -166,10 +169,10 @@ require_once('nav.php');
 							<div class="panel-heading">
 								<div class="row">
 									<div class="col-xs-3">
-										<i class="fa-3x">#6th</i>
+										<i class="fa-2x">#6th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[5]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[5]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[5]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[5]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[5]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -189,7 +192,7 @@ require_once('nav.php');
 										<i class="fa-2x">#7th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[6]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[6]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[6]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[6]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[6]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -207,7 +210,7 @@ require_once('nav.php');
 										<i class="fa-2x">#8th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[7]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[7]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[7]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[7]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[7]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -225,7 +228,7 @@ require_once('nav.php');
 										<i class="fa-2x">#9th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[8]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[8]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[8]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[8]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[8]['count']/3600))); ?></div>
 									</div>
 								</div>
@@ -243,7 +246,7 @@ require_once('nav.php');
 										<i class="fa-2x">#10th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><span title=<?PHP echo '"' .$client_data[9]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[9]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[9]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[9]['name']) ?></span></div>
 										<div><?PHP echo sprintf($texttime, round(($client_data[9]['count']/3600))); ?></div>
 									</div>
 								</div>

@@ -39,12 +39,12 @@ if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 	if(str_replace('filter:excepted:','',$getstring)!='') {
 		$searchstring = str_replace('filter:excepted:','',$getstring);
 	}
-	$filter .= " AND except='1'";
+	$filter .= " AND except IN ('2','3')";
 } elseif(isset($getstring) && strstr($getstring, 'filter:nonexcepted:')) {
 	if(str_replace('filter:nonexcepted:','',$getstring)!='') {
 		$searchstring = str_replace('filter:nonexcepted:','',$getstring);
 	}
-	$filter .= " AND except='0'";
+	$filter .= " AND except IN ('0','1')";
 } else {
 	if(isset($getstring)) {
 		$searchstring = $getstring;
@@ -52,7 +52,7 @@ if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 		$searchstring = '';
 	}
 	if($showexcld == 0) {
-		$filter .= " AND except='0'";
+		$filter .= " AND except IN ('0','1')";
 	}
 }
 if(isset($getstring) && strstr($getstring, 'filter:online:')) {
@@ -263,9 +263,8 @@ if($adminlogin == 1) {
 					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
-				<div class="confix">
 					<table class="table table-striped">
-						<thead>
+						<thead data-spy="affix" data-offset-top="100">
 							<tr>
 				<?PHP
 				if ($showcolrg == 1 || $adminlogin == 1)
@@ -330,7 +329,7 @@ if($adminlogin == 1) {
 								}
 								echo '<tr>';
 								if ($showcolrg == 1 || $adminlogin == 1) {
-									if($except == 1) {
+									if($except == 2 || $except == 3) {
 										echo '<td class="text-center"></td>';
 									} else {
 										echo '<td class="text-center">' , $sqlhis[$uid]['rank'] , '</td>';
@@ -400,12 +399,12 @@ if($adminlogin == 1) {
 									$dtF	   = new DateTime("@0");
 									$dtT	   = new DateTime("@$neededtime");
 									$timecount = $dtF->diff($dtT)->format($timeformat);
-									if ($except != 1 && $neededtime > 0) {
+									if (($except == 0 || $except == 1) && $neededtime > 0) {
 										echo $timecount , '</td>';
-									} elseif ($except != 1) {
+									} elseif ($except == 0 || $except == 1) {
 										$timecount = 0;
 										echo $timecount , '</td>';
-									} elseif ($except == 1) {
+									} elseif ($except == 2 || $except == 3) {
 										echo '0</td>';
 									} else {
 										echo $lang['errukwn'], '</td>';
@@ -414,7 +413,7 @@ if($adminlogin == 1) {
 								if ($showcolsg == 1 || $adminlogin == 1) {
 									if ($grpcount == $countgrp && $nextup == 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
 										echo '<td class="text-center"><em>',$lang['highest'],'</em></td>';
-									} elseif ($except == 1) {
+									} elseif ($except == 2 || $except == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup_file[$groupid]) && $sqlhisgroup_file[$groupid]===true) {
 										echo '<td class="text-center"><img src="../icons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
@@ -432,7 +431,7 @@ if($adminlogin == 1) {
 				} else {
 					echo '<tr><td colspan="6">' , $lang['noentry'] , '</td></tr>';
 				}
-				echo '</tbody></table></div>';
+				echo '</tbody></table>';
 				if($user_pro_seite != "all") {
 					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
@@ -440,44 +439,12 @@ if($adminlogin == 1) {
 			</div>
 		</div>
 	</div>
-	<script src="../jquerylib/jquery.js"></script>
 	<script type="text/javascript">
-	;(function($) {
-		$.fn.fixMe = function() {
-			return this.each(function() {
-				var $this = $(this), $t_fixed;
-				function init() {
-					$this.wrap('<div class="confix" />');
-					$t_fixed = $this.clone();
-					$t_fixed.find("tbody").remove().end().addClass("fixed").insertBefore($this);
-					resizeFixed();
-				}
-				function resizeFixed() {
-					$t_fixed.find("table").each(function(index) {
-						$(this).css("width",$this.find("th").eq(index).outerWidth()+"px");
-					});
-				}
-				function scrollFixed() {
-					var offset = $(this).scrollTop(), tableOffsetTop = $this.offset().top, tableOffsetBottom = tableOffsetTop + $this.height() - $this.find("thead").height();
-					if(offset < tableOffsetTop || offset > tableOffsetBottom)
-						$t_fixed.hide();
-					else if(offset >= tableOffsetTop && offset <= tableOffsetBottom && $t_fixed.is(":hidden"))
-						$t_fixed.show();
-				}
-				$(window).resize(resizeFixed);
-				$(window).scroll(scrollFixed);
-				init();
-			});
-		};
-	})(jQuery);
-
-	$(document).ready(function(){
-		$("table").fixMe();
-		$(".up").click(function() {
-			$('html, body').animate({
-				scrollTop: 0
-			}, 2000);
-		});
+	$("th").each(function() {
+      $(this).width($(this).width());
+	});
+	$("td").each(function() {
+      $(this).width($(this).width());
 	});
 	</script>
 </body>

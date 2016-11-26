@@ -6,28 +6,22 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
-
 	<title>TS-N.NET Ranksystem</title>
-
-	<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-	<link href="../bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="../bootstrap/addons/morris/morris.css" rel="stylesheet">
-	<link href="../bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="../bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<link href="../bootstrap/css/custom.css" rel="stylesheet">
-
-	<script src="../jquerylib/jquery.js"></script>
-
-	<script src="../bootstrap/js/bootstrap.min.js"></script>
-
-	<script src="../bootstrap/addons/morris/raphael.min.js"></script>
-	<script src="../bootstrap/addons/morris/morris.min.js"></script>
+	<link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/morris/morris.css" rel="stylesheet">
+	<link href="../libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+	<link href="../libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
+	<link href="../libs/bootstrap/css/custom.css" rel="stylesheet">
+	<script src="../libs/jquery/jquery.min.js"></script>
+	<script src="../libs/bootstrap/js/bootstrap.min.js"></script>
+	<script src="../libs/bootstrap/addons/morris/raphael.min.js"></script>
+	<script src="../libs/bootstrap/addons/morris/morris.min.js"></script>
 <?PHP
 	if(isset($shownav) && $shownav == 0) { ?>
 	<style>
 		body{margin-top:0px!important}
-		.fixed{top:0px!important;width:calc(100% - 50px)!important;position:fixed;display:none;color:#000;background-color:#fff!important;}
+		.affix{top:0px!important;width:calc(100% - 50px)!important;position:fixed;color:#000;background-color:#fff!important;}
 	</style>
 <?PHP } ?>
 </head>
@@ -258,10 +252,13 @@
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
 						</li>
 						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - english</a>
+							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+						</li>
+						<li>
+							<a href="?lang=it"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
 							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>
