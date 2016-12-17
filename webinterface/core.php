@@ -107,21 +107,21 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="exceptuuid"><?php echo $config[0]['exceptuuid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="exceptuuid" maxlength="999"><?php echo $config[0]['exceptuuid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup"><?php echo $config[0]['exceptgroup']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup" maxlength="999"><?php echo $config[0]['exceptgroup']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid"><?php echo $config[0]['exceptcid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid" maxlength="999"><?php echo $config[0]['exceptcid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
@@ -131,7 +131,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group required-field-block">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([0-9]+=>[0-9]+,)*[0-9]+=>[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" required><?php echo $config[0]['grouptime']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([0-9]+=>[0-9]+,)*[0-9]+=>[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config[0]['grouptime']; ?></textarea>
 									<div class="required-icon"><div class="text">*</div></div>
 									<div class="help-block with-errors"></div>
 								</div>
@@ -145,7 +145,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<script>
 									$("input[name='ignoreidle']").TouchSpin({
 										min: 0,
-										max: 9223372036854775807,
+										max: 65535,
 										verticalbuttons: true,
 										prefix: 'Sec.:'
 									});
@@ -195,7 +195,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost"><?php echo $config[0]['boost']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost" maxlength="999"><?php echo $config[0]['boost']; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>

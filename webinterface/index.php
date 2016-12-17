@@ -117,7 +117,7 @@ require_once('nav.php');
 											<label for="username" class="control-label"><?PHP echo $lang['user']; ?>:</label>
 											<div class="input-group">
 												<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-												<input type="text" class="form-control" name="username" placeholder="" autofocus>
+												<input type="text" class="form-control" name="username" placeholder="" maxlength="64" autofocus>
 											</div>
 										</div>
 										<div class="form-group">

@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 $lang= array();
 $lang['adduser']			= "User %s (unique Client-ID: %s; Client-database-ID %s) is unknown -> added to the Ranksystem now.";
 $lang['changedbid']			= "User %s (unique Client-ID: %s) got a new TeamSpeak Client-database-ID (%s). Update the old Client-database-ID (%s) and reset collected times!";
@@ -149,6 +149,15 @@ $lang['stix0051']			= "لقد فشل التيم سبيك لذا لن يكون ه
 $lang['stix0052']			= "others";
 $lang['stix0053']			= "Active Time (in Days)";
 $lang['stix0054']			= "Inactive Time (in Days)";
+$lang['stix0055']			= "online last 24 hours";
+$lang['stix0056']			= "online last 7 days";
+$lang['stix0057']			= "online last 30 days";
+$lang['stix0058']			= "online last 90 days";
+$lang['stix0059']			= "List of user";
+$lang['stix0060']			= "User";
+$lang['stix0061']			= "View all versions";
+$lang['stix0062']			= "View all nations";
+$lang['stix0063']			= "View all platforms";
 $lang['stmy0001']			= "العضوية";
 $lang['stmy0002']			= "رتبة";
 $lang['stmy0003']			= "Database ID:";
@@ -179,6 +188,12 @@ $lang['stmy0027']			= "عدد مرات الإتصال : فضي";
 $lang['stmy0028']			= "عدد مرات الإتصال: برونزي";
 $lang['stmy0029']			= "عدد مرات الإتصال: لايوجد رتبة";
 $lang['stmy0030']			= "التقدم للمستوى القادم";
+$lang['stna0001']			= "Nations";
+$lang['stna0002']			= "statistics";
+$lang['stna0003']			= "Code";
+$lang['stna0004']			= "Count";
+$lang['stna0005']			= "Versions";
+$lang['stna0006']			= "Platforms";
 $lang['stnv0001']			= "اخبار الخادم";
 $lang['stnv0002']			= "اغلاق";
 $lang['stnv0003']			= "تحديث معلومات المستخدم";

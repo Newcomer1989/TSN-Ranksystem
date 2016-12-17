@@ -10,7 +10,11 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$platform_string = '';
 	$server_used_slots = 0;
 	$server_channel_amount = 0;
-	if(($uuids = $mysqlcon->query("SELECT uuid,count,idle,platform,nation FROM $dbname.user")) === false) {
+	$user_today = 0;
+	$user_week = 0;
+	$user_month = 0;
+	$user_quarter = 0;
+	if(($uuids = $mysqlcon->query("SELECT uuid,count,idle,platform,nation,lastseen FROM $dbname.user")) === false) {
 		enter_logfile($logpath,$timezone,2,"calc_serverstats 1:".print_r($mysqlcon->errorInfo(), true));
 	}
 	$uuids = $uuids->fetchAll();
@@ -25,6 +29,16 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 			$uuid_platform = str_replace(' ','',$uuid['platform']);
 			$platform_string .= $uuid_platform . ' ';
 		}
+		if ($uuid['lastseen']>($nowtime-86400)) {
+			$user_quarter++; $user_month++; $user_week++; $user_today++;
+		} elseif ($uuid['lastseen']>($nowtime-604800)) {
+			$user_quarter++; $user_month++; $user_week++;
+		} elseif ($uuid['lastseen']>($nowtime-2592000)) {
+			$user_quarter++; $user_month++;
+		} elseif ($uuid['lastseen']>($nowtime-7776000)) {
+			$user_quarter++;
+		}
+
 		$total_online_time = $total_online_time + $uuid['count'];
 		$total_active_time = $total_active_time + $uuid['count'] - $uuid['idle'];
 		$total_inactive_time = $total_inactive_time + $uuid['idle'];
@@ -105,6 +119,7 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$country_nation_3 = 0;
 	$country_nation_4 = 0;
 	$country_nation_5 = 0;
+	$allinsertnation = '';
 	foreach ($country_array as $k => $v) {
 		$country_counter++;
 		if ($country_counter == 1) {
@@ -125,8 +140,9 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		} else {
 			$country_nation_other = $country_nation_other + $v;
 		}
+		$allinsertnation = $allinsertnation . "('" . $k . "', " . $v . "),";
 	}
-
+	$allinsertnation = substr($allinsertnation, 0, -1);
 	$platform_array = array_count_values(str_word_count($platform_string, 1));
 	$platform_other = 0;
 	$platform_1 = 0;
@@ -134,6 +150,7 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$platform_3 = 0;
 	$platform_4 = 0;
 	$platform_5 = 0;
+	$allinsertplatform = '';
 	foreach ($platform_array as $k => $v) {
 		if ($k == "Windows") {
 			$platform_1 = $v;
@@ -148,8 +165,9 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		} else {
 			$platform_other = $platform_other + $v;
 		}
+		$allinsertplatform = $allinsertplatform . "('" . $k . "', " . $v . "),";
 	}
-
+	$allinsertplatform = substr($allinsertplatform, 0, -1);
 	$version_1 = 0;
 	$version_2 = 0;
 	$version_3 = 0;
@@ -160,10 +178,10 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$version_name_3 = 0;
 	$version_name_4 = 0;
 	$version_name_5 = 0;
-	$client_versions = $mysqlcon->query("SELECT version, COUNT(version) AS count FROM $dbname.user GROUP BY version ORDER BY count DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+	$client_versions = $mysqlcon->query("SELECT version, COUNT(version) AS count FROM $dbname.user GROUP BY version ORDER BY count DESC")->fetchAll(PDO::FETCH_ASSOC);
 	$count_version = 0;
-	$version_other = $mysqlcon->query("SELECT COUNT(version) AS count FROM $dbname.user ORDER BY count DESC")->fetchAll(PDO::FETCH_ASSOC);
-
+	$allinsertversion = '';
+	$sum_count = 0;
 	foreach($client_versions as $version) {
 		$count_version++;
 		if ($count_version == 1) {
@@ -182,8 +200,11 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 			$version_5 = $version['count'];
 			$version_name_5 = $version['version'];
 		}
+		$sum_count = $sum_count + $version['count'];
+		$allinsertversion = $allinsertversion . "('" . $version['version'] . "', " . $version['count'] . "),";
 	}
-	$version_other = $version_other[0]['count'] - $version_1 - $version_2 - $version_3 - $version_4 - $version_5;
+	$allinsertversion = substr($allinsertversion, 0, -1);
+	$version_other = $sum_count - $version_1 - $version_2 - $version_3 - $version_4 - $version_5;
 
 	$total_user = count($sqlhis);
 	$server_used_slots = $serverinfo['virtualserver_clientsonline'] - $serverinfo['virtualserver_queryclientsonline'];
@@ -202,27 +223,60 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$server_weblist = $serverinfo['virtualserver_weblist_enabled'];
 	$server_version = $serverinfo['virtualserver_version'];
 	
-	if($mysqlcon->exec("UPDATE $dbname.stats_server SET total_user='$total_user', total_online_time='$total_online_time', total_online_month='$total_online_month', total_online_week='$total_online_week', total_active_time='$total_active_time', total_inactive_time='$total_inactive_time', country_nation_name_1='$country_nation_name_1', country_nation_name_2='$country_nation_name_2', country_nation_name_3='$country_nation_name_3', country_nation_name_4='$country_nation_name_4', country_nation_name_5='$country_nation_name_5', country_nation_1='$country_nation_1', country_nation_2='$country_nation_2', country_nation_3='$country_nation_3', country_nation_4='$country_nation_4', country_nation_5='$country_nation_5', country_nation_other='$country_nation_other', platform_1='$platform_1', platform_2='$platform_2', platform_3='$platform_3', platform_4='$platform_4', platform_5='$platform_5', platform_other='$platform_other', version_name_1='$version_name_1', version_name_2='$version_name_2', version_name_3='$version_name_3', version_name_4='$version_name_4', version_name_5='$version_name_5', version_1='$version_1', version_2='$version_2', version_3='$version_3', version_4='$version_4', version_5='$version_5', version_other='$version_other', version_name_1='$version_name_1', server_status='$server_status', server_free_slots='$server_free_slots', server_used_slots='$server_used_slots', server_channel_amount='$server_channel_amount', server_ping='$server_ping', server_packet_loss='$server_packet_loss', server_bytes_down='$server_bytes_down', server_bytes_up='$server_bytes_up', server_uptime='$server_uptime', server_id='$server_id', server_name=$server_name, server_pass='$server_pass', server_creation_date='$server_creation_date', server_platform='$server_platform', server_weblist='$server_weblist', server_version='$server_version'") === false) {
+	if($mysqlcon->exec("UPDATE $dbname.stats_server SET total_user='$total_user', total_online_time='$total_online_time', total_online_month='$total_online_month', total_online_week='$total_online_week', total_active_time='$total_active_time', total_inactive_time='$total_inactive_time', country_nation_name_1='$country_nation_name_1', country_nation_name_2='$country_nation_name_2', country_nation_name_3='$country_nation_name_3', country_nation_name_4='$country_nation_name_4', country_nation_name_5='$country_nation_name_5', country_nation_1='$country_nation_1', country_nation_2='$country_nation_2', country_nation_3='$country_nation_3', country_nation_4='$country_nation_4', country_nation_5='$country_nation_5', country_nation_other='$country_nation_other', platform_1='$platform_1', platform_2='$platform_2', platform_3='$platform_3', platform_4='$platform_4', platform_5='$platform_5', platform_other='$platform_other', version_name_1='$version_name_1', version_name_2='$version_name_2', version_name_3='$version_name_3', version_name_4='$version_name_4', version_name_5='$version_name_5', version_1='$version_1', version_2='$version_2', version_3='$version_3', version_4='$version_4', version_5='$version_5', version_other='$version_other', version_name_1='$version_name_1', server_status='$server_status', server_free_slots='$server_free_slots', server_used_slots='$server_used_slots', server_channel_amount='$server_channel_amount', server_ping='$server_ping', server_packet_loss='$server_packet_loss', server_bytes_down='$server_bytes_down', server_bytes_up='$server_bytes_up', server_uptime='$server_uptime', server_id='$server_id', server_name=$server_name, server_pass='$server_pass', server_creation_date='$server_creation_date', server_platform='$server_platform', server_weblist='$server_weblist', server_version='$server_version', user_today='$user_today', user_week='$user_week', user_month='$user_month', user_quarter='$user_quarter'") === false) {
 		enter_logfile($logpath,$timezone,2,"calc_serverstats 8:".print_r($mysqlcon->errorInfo(), true));
+	}
+	
+	// Write Nations
+	if ($allinsertnation != '') {
+		if($mysqlcon->exec("DELETE FROM $dbname.stats_nations") === false) {
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
+		} else {
+			if($mysqlcon->exec("INSERT INTO $dbname.stats_nations (nation, count) VALUES $allinsertnation") === false) {
+				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
+			}
+		}
+	}
+	
+	// Write Platforms
+	if ($allinsertplatform != '') {
+		if($mysqlcon->exec("DELETE FROM $dbname.stats_platforms") === false) {
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
+		} else {
+			if($mysqlcon->exec("INSERT INTO $dbname.stats_platforms (platform, count) VALUES $allinsertplatform") === false) {
+				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
+			}
+		}
+	}
+	
+	// Write Versions
+	if ($allinsertversion != '') {
+		if($mysqlcon->exec("DELETE FROM $dbname.stats_versions") === false) {
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
+		} else {
+			if($mysqlcon->exec("INSERT INTO $dbname.stats_versions (version, count) VALUES $allinsertversion") === false) {
+				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
+			}
+		}
 	}
 
 	// Stats for Server Usage
 	if(($max_entry_serverusage = $mysqlcon->query("SELECT MAX(timestamp) AS timestamp FROM $dbname.server_usage")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
+		enter_logfile($logpath,$timezone,2,"calc_serverstats 11:".print_r($mysqlcon->errorInfo(), true));
 		$sqlerr++;
 	}
 	$max_entry_serverusage = $max_entry_serverusage->fetch(PDO::FETCH_ASSOC);
 	$diff_max_serverusage = $nowtime - $max_entry_serverusage['timestamp'];
 	if ($max_entry_serverusage['timestamp'] == 0 || $diff_max_serverusage > 898) { // every 15 mins
 		if($mysqlcon->exec("INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount)") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 12:".print_r($mysqlcon->errorInfo(), true));
 		}
 	}
 
 	//Calc time next rankup
 	$upnextuptime = $nowtime - 86400;
 	if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 11:".print_r($mysqlcon->errorInfo(), true));
+		enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 	}
 	if ($uuidsoff->rowCount() != 0) {
 		$uuidsoff = $uuidsoff->fetchAll(PDO::FETCH_ASSOC);
@@ -261,21 +315,21 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		}
 		$allupdateuuid = substr($allupdateuuid, 0, -1);
 		if ($mysqlcon->exec("UPDATE $dbname.user set nextup = CASE uuid $allupdatenextup END WHERE uuid IN ($allupdateuuid)") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 12:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
 		}
 	}
 
 	//Calc Rank
 	if($mysqlcon->exec("SET @a:=0") === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
+		enter_logfile($logpath,$timezone,2,"calc_serverstats 15:".print_r($mysqlcon->errorInfo(), true));
 	}
 	if ($substridle == 1) {
 		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 16".print_r($mysqlcon->errorInfo(), true));
 		}
 	} else {
 		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 17:".print_r($mysqlcon->errorInfo(), true));
 		}
 	}
 }

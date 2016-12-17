@@ -84,7 +84,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="tshost" value="<?php echo $ts['host']; ?>" required>
+											<input type="text" class="form-control" name="tshost" value="<?php echo $ts['host']; ?>" maxlength="64" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>

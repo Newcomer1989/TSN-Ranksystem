@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.0';
+	$newversion = '1.2.1';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -134,7 +134,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			enter_logfile($logpath,$timezone,1,"Please check the files pemissions. Shutting down!\n\n");
 			exit;
 		} else {
-			enter_logfile($logpath,$timezone,5,"  done");
+			enter_logfile($logpath,$timezone,5,"  Check files permissions [done]");
 		}
 	}
 	
@@ -363,6 +363,41 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				if($mysqlcon->exec("UPDATE $dbname.config set upchannel='version'") === false) { } else {
 					enter_logfile($logpath,$timezone,4,"    [1.2.0] Adjusted table config successfully.");
 				}
+			}
+		}
+		if(version_compare($currvers, '1.2.1', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_server MODIFY COLUMN server_name varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN server_platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN server_weblist tinyint(1) NOT NULL default '0', MODIFY COLUMN server_version varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN total_user int(10) NOT NULL default '0', MODIFY COLUMN country_nation_1 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_2 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_3 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_4 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_5 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_other int(10) NOT NULL default '0', MODIFY COLUMN platform_1 int(10) NOT NULL default '0', MODIFY COLUMN platform_2 int(10) NOT NULL default '0', MODIFY COLUMN platform_3 int(10) NOT NULL default '0', MODIFY COLUMN platform_4 int(10) NOT NULL default '0', MODIFY COLUMN platform_5 int(10) NOT NULL default '0', MODIFY COLUMN platform_other int(10) NOT NULL default '0', MODIFY COLUMN version_1 int(10) NOT NULL default '0', MODIFY COLUMN version_2 int(10) NOT NULL default '0', MODIFY COLUMN version_3 int(10) NOT NULL default '0', MODIFY COLUMN version_4 int(10) NOT NULL default '0', MODIFY COLUMN version_5 int(10) NOT NULL default '0', MODIFY COLUMN version_other int(10) NOT NULL default '0', MODIFY COLUMN server_status tinyint(1) NOT NULL default '0', MODIFY COLUMN server_free_slots smallint(5) NOT NULL default '0', MODIFY COLUMN server_used_slots smallint(5) NOT NULL default '0', MODIFY COLUMN server_channel_amount smallint(5) NOT NULL default '0', MODIFY COLUMN server_ping smallint(5) NOT NULL default '0', MODIFY COLUMN server_id smallint(5) NOT NULL default '0', MODIFY COLUMN server_pass tinyint(1) NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table stats_server (part1) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_server ADD (user_today int(10) NOT NULL default '0', user_week int(10) NOT NULL default '0', user_month int(10) NOT NULL default '0', user_quarter int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table stats_server (part2) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_user MODIFY COLUMN removed tinyint(1) NOT NULL default '0', MODIFY COLUMN rank int(10) NOT NULL default '0', MODIFY COLUMN count_week int(10) NOT NULL default '0', MODIFY COLUMN count_month int(10) NOT NULL default '0', MODIFY COLUMN idle_week int(10) NOT NULL default '0', MODIFY COLUMN idle_month int(10) NOT NULL default '0', MODIFY COLUMN achiev_count tinyint(1) NOT NULL default '0', MODIFY COLUMN achiev_time int(10) NOT NULL default '0', MODIFY COLUMN achiev_connects smallint(5) NOT NULL default '0', MODIFY COLUMN achiev_battles tinyint(3) NOT NULL default '0', MODIFY COLUMN achiev_time_perc tinyint(3) NOT NULL default '0', MODIFY COLUMN achiev_connects_perc tinyint(3) NOT NULL default '0', MODIFY COLUMN achiev_battles_perc tinyint(3) NOT NULL default '0', MODIFY COLUMN battles_total tinyint(3) NOT NULL default '0', MODIFY COLUMN battles_won tinyint(3) NOT NULL default '0', MODIFY COLUMN battles_lost tinyint(3) NOT NULL default '0', MODIFY COLUMN total_connections smallint(5) NOT NULL default '0', MODIFY COLUMN client_description varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table stats_user successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.user MODIFY COLUMN cldbid int(10) NOT NULL default '0', MODIFY COLUMN count int(10) NOT NULL default '0', MODIFY COLUMN name varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN grpid int(10) NOT NULL default '0', MODIFY COLUMN nextup int(10) NOT NULL default '0', MODIFY COLUMN idle int(10) NOT NULL default '0', MODIFY COLUMN cldgroup varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN online tinyint(1) NOT NULL default '0', MODIFY COLUMN boosttime int(10) NOT NULL default '0', MODIFY COLUMN rank int(10) NOT NULL default '0', MODIFY COLUMN platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN nation varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN version varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN except tinyint(1) NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table user successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config MODIFY COLUMN webuser varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN webpass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN tshost varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN tsquery smallint(5) NOT NULL default '0', MODIFY COLUMN tsvoice smallint(5) NOT NULL default '0', MODIFY COLUMN tsuser varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN tspass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN language char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN queryname varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN queryname2 varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN grouptime varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN resetbydbchange tinyint(1) NOT NULL default '0', MODIFY COLUMN msgtouser tinyint(1) NOT NULL default '0', MODIFY COLUMN upcheck tinyint(1) NOT NULL default '0', MODIFY COLUMN uniqueid varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN updateinfotime mediumint(6) NOT NULL default '0', MODIFY COLUMN currvers varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN substridle tinyint(1) NOT NULL default '0', MODIFY COLUMN exceptuuid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN exceptgroup varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN dateformat varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN showexcld tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolcld tinyint(1) NOT NULL default '0', MODIFY COLUMN showcoluuid tinyint(1) NOT NULL default '0', MODIFY COLUMN showcoldbid tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolot tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolit tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolat tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolnx tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolsg tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolrg tinyint(1) NOT NULL default '0', MODIFY COLUMN showcolls tinyint(1) NOT NULL default '0', MODIFY COLUMN slowmode mediumint(9) NOT NULL default '0', MODIFY COLUMN cleanclients tinyint(1) NOT NULL default '0', MODIFY COLUMN cleanperiod mediumint(9) NOT NULL default '0', MODIFY COLUMN showhighest tinyint(1) NOT NULL default '0', MODIFY COLUMN boost varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN showcolas tinyint(1) NOT NULL default '0', MODIFY COLUMN defchid int(10) NOT NULL default '0', MODIFY COLUMN advancemode tinyint(1) NOT NULL default '0', MODIFY COLUMN count_access tinyint(2) NOT NULL default '0', MODIFY COLUMN ignoreidle smallint(5) NOT NULL default '0', MODIFY COLUMN exceptcid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN rankupmsg varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN boost_mode tinyint(1) NOT NULL default '0', MODIFY COLUMN servernews varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN nextupinfo tinyint(1) NOT NULL default '0', MODIFY COLUMN nextupinfomsg1 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN nextupinfomsg2 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN nextupinfomsg3 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN shownav tinyint(1) NOT NULL default '0', MODIFY COLUMN showgrpsince tinyint(1) NOT NULL default '0', MODIFY COLUMN resetexcept tinyint(1) NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table config successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.server_usage MODIFY COLUMN clients smallint(5) NOT NULL default '0', MODIFY COLUMN channel smallint(5) NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table server_usage successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.user_snapshot MODIFY COLUMN count int(10) NOT NULL default '0', MODIFY COLUMN idle int(10) NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table user_snapshot successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.groups MODIFY COLUMN sgid int(10) NOT NULL default '0' PRIMARY KEY, MODIFY COLUMN sgidname varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table groups successfully.");
+			}
+			if($mysqlcon->exec("CREATE TABLE $dbname.stats_nations (nation varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_nations successfully.");
+			}
+			if($mysqlcon->exec("CREATE TABLE $dbname.stats_versions (version varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_versions successfully.");
+			}
+			if($mysqlcon->exec("CREATE TABLE $dbname.stats_platforms (platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_platforms successfully.");
 			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);

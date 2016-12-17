@@ -79,12 +79,11 @@ if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 		$lastseen = $seenvalue[2];
 	} else {
 		$r = date_parse_from_format("Y-m-d H-i",$seenvalue[2]);
-		$d = mktime($r['hour'], $r['minute'], $r['second'], $r['month'], $r['day'], $r['year']);
-		$lastseen = $d;
+		$lastseen = mktime($r['hour'], $r['minute'], $r['second'], $r['month'], $r['day'], $r['year']);
 	}
-	if($seenvalue[1] == '&lt;') {
+	if($seenvalue[1] == '&lt;' || $seenvalue[1] == '<') {
 		$operator = '<';
-	} elseif($seenvalue[1] == '&gt;') {
+	} elseif($seenvalue[1] == '&gt;' || $seenvalue[1] == '>') {
 		$operator = '>';
 	} elseif($seenvalue[1] == '!=') {
 		$operator = '!=';
@@ -132,7 +131,7 @@ $countentries = 0;
 $sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
 
 if(!isset($_GET["user"])) {
-	$user_pro_seite = 50;
+	$user_pro_seite = 25;
 } elseif($_GET['user'] == "all") {
 	$user_pro_seite = $sumentries[0];
 } else {

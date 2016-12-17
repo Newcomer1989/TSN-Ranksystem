@@ -92,7 +92,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgmsgdesc"><?php echo $lang['wimsgmsg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankupmsg"><?php echo $rankupmsg; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankupmsg" maxlength="500"><?php echo $rankupmsg; ?></textarea>
 										</div>
 									</div>
 								</div>
@@ -101,7 +101,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgsndesc"><?php echo $lang['wimsgsn']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 									<div class="col-sm-8">
-										<textarea class="form-control" rows="15" name="servernews"><?php echo $servernews; ?></textarea>
+										<textarea class="form-control" rows="15" name="servernews" maxlength="5000"><?php echo $servernews; ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -124,19 +124,19 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc1"><?php echo $lang['winxmsg1']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg1"><?php echo $nextupinfomsg1; ?></textarea>
+											<textarea class="form-control" rows="5" name="nextupinfomsg1" maxlength="500"><?php echo $nextupinfomsg1; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc2"><?php echo $lang['winxmsg2']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg2"><?php echo $nextupinfomsg2; ?></textarea>
+											<textarea class="form-control" rows="5" name="nextupinfomsg2" maxlength="500"><?php echo $nextupinfomsg2; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc3"><?php echo $lang['winxmsg3']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg3"><?php echo $nextupinfomsg3; ?></textarea>
+											<textarea class="form-control" rows="5" name="nextupinfomsg3" maxlength="500"><?php echo $nextupinfomsg3; ?></textarea>
 										</div>
 									</div>
 								</div>

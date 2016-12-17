@@ -51,8 +51,6 @@ require_once('nav.php');
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
 			<div class="container-fluid">
-
-				<!-- Page Heading -->
 				<div class="row">
 					<div class="col-lg-12">
 						<h1 class="page-header">
@@ -153,7 +151,6 @@ require_once('nav.php');
 						</div>
 					</div>
 				</div>
-				<!-- /.row -->
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="panel panel-primary">
@@ -182,8 +179,6 @@ require_once('nav.php');
 						</div>
 					</div>
 				</div>
-				<!-- /.row -->
-
 				<div class="row">
 					<div class="col-lg-3">
 						<div class="panel panel-primary">
@@ -203,6 +198,13 @@ require_once('nav.php');
 							<div class="panel-body">
 								<div id="client-version-donut"></div>
 							</div>
+							<a href="versions.php">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0061']; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
 						</div>
 					</div>
 					<div class="col-lg-3">
@@ -213,6 +215,13 @@ require_once('nav.php');
 							<div class="panel-body">
 								<div id="user-descent-donut"></div>
 							</div>
+							<a href="nations.php">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0062']; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
 						</div>
 					</div>
 					<div class="col-lg-3">
@@ -223,10 +232,106 @@ require_once('nav.php');
 							<div class="panel-body">
 								<div id="user-platform-donut"></div>
 							</div>
+							<a href="platforms.php">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0063']; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
 						</div>
 					</div>
 				</div>
-				<!-- /.row -->
+				<div class="row">
+					<div class="col-lg-3 col-md-6">
+						<div class="panel panel-primary">
+							<div class="panel-heading">
+								<div class="row">
+									<div class="col-xs-3">
+										<i class="fa fa-users fa-5x"></i>
+									</div>
+									<div class="col-xs-9 text-right">
+										<div class="huge"><?PHP echo $sql_res[0]['user_today']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0055']; ?></div>
+									</div>
+								</div>
+							</div>
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-86400; ?>:">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0055'],')'; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6">
+						<div class="panel panel-green">
+							<div class="panel-heading">
+								<div class="row">
+									<div class="col-xs-3">
+										<i class="fa fa-users fa-5x"></i>
+									</div>
+									<div class="col-xs-9 text-right">
+										<div class="huge"><?PHP echo $sql_res[0]['user_week']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0056']; ?></div>
+									</div>
+								</div>
+							</div>
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-604800; ?>:">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0056'],')'; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6">
+						<div class="panel panel-yellow">
+							<div class="panel-heading">
+								<div class="row">
+									<div class="col-xs-3">
+										<i class="fa fa-users fa-5x"></i>
+									</div>
+									<div class="col-xs-9 text-right">
+										<div class="huge"><?PHP echo $sql_res[0]['user_month']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0057']; ?></div>
+									</div>
+								</div>
+							</div>
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-2592000; ?>:">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0057'],')'; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="col-lg-3 col-md-6">
+						<div class="panel panel-red">
+							<div class="panel-heading">
+								<div class="row">
+									<div class="col-xs-3">
+										<i class="fa fa-users fa-5x"></i>
+									</div>
+									<div class="col-xs-9 text-right">
+										<div class="huge"><?PHP echo $sql_res[0]['user_quarter']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0058']; ?></div>
+									</div>
+								</div>
+							</div>
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-7776000; ?>:">
+								<div class="panel-footer">
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0058'],')'; ?></span>
+									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+									<div class="clearfix"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
 				<div class="row">
 					<div class="col-lg-6">
 						<h2><?PHP echo $lang['stix0020']; ?></h2>
