@@ -1,5 +1,5 @@
 <?PHP
-function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel) {
+function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel,$phpcommand) {
 	$nowtime = time();
 
 	if(($getversion = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='get_version'")) === false) {
@@ -29,7 +29,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		}
 		$getversion = $getversion->fetch(PDO::FETCH_ASSOC);
 		$newversion = $getversion['newversion'];
-		if(version_compare($newversion, $currvers, '>') && $newversion != '') {
+		if(version_compare($newversion, $currvers, '>') && $newversion != NULL) {
 			if ($update == 1) {
 				enter_logfile($logpath,$timezone,4,$lang['upinf']);
 				foreach ($uniqueid as $clientid) {
@@ -46,7 +46,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 					}
 				}
 			}
-			update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion);
+			update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpcommand);
 		}
 	}
 
@@ -64,7 +64,8 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		enter_logfile($logpath,$timezone,4,"Negative time between now and last scan (Error in your server time!).. reset time difference to zero.");
 		$lastscan = $nowtime;
 	}
-	if ($dbdata->rowCount() != 0) {
+	$uidarr = array();
+	if ($dbdata->rowCount() != NULL) {
 		if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_user_lastscan'") === false) {
 			enter_logfile($logpath,$timezone,2,"calc_user 5:".print_r($mysqlcon->errorInfo(), true));
 		}
@@ -90,8 +91,9 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 	unset($uuids);
 
 	check_shutdown($timezone,$logpath); usleep($slowmode);
-	$yetonline[] = '';
-	$insertdata  = '';
+	$yetonline = array();
+	$insertdata  = array();
+	$updatedata  = array();
 	if(empty($grouptime)) {
 		enter_logfile($logpath,$timezone,2,"calc_user 7:".$lang['wiconferr']);
 		exit;
@@ -128,10 +130,13 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 			} elseif(array_intersect($sgroups, $exceptgroup)) {
 				$except = 2;
 			} else {
-				if(($sqlhis[$uid]['except'] == 3 || $sqlhis[$uid]['except'] == 2) && $resetexcept == 2) { 
+				if(isset($sqlhis[$uid]['except']) && ($sqlhis[$uid]['except'] == 3 || $sqlhis[$uid]['except'] == 2) && $resetexcept == 2) { 
 				 	$sqlhis[$uid]['count'] = 0;
 				 	$sqlhis[$uid]['idle'] = 0;
 					enter_logfile($logpath,$timezone,5,sprintf($lang['resettime'], $name, $uid, $cldbid));
+					if($mysqlcon->exec("DELETE FROM $dbname.user_snapshot WHERE uuid='$uid'") === false) {
+						enter_logfile($logpath,$timezone,2,"calc_user 5:".print_r($mysqlcon->errorInfo(), true));
+					}
 				}
 				$except = 0;
 			}
@@ -204,7 +209,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 						}
 					} elseif ($activetime > $time && !in_array($uid, $exceptuuid) && !array_intersect($sgroups, $exceptgroup)) {
 						if ($sqlhis[$uid]['grpid'] != $groupid) {
-							if ($sqlhis[$uid]['grpid'] != 0 && in_array($sqlhis[$uid]['grpid'], $sgroups)) {
+							if ($sqlhis[$uid]['grpid'] != NULL && in_array($sqlhis[$uid]['grpid'], $sgroups)) {
 								check_shutdown($timezone,$logpath); usleep($slowmode);
 								try {
 									$ts3->serverGroupClientDel($sqlhis[$uid]['grpid'], $cldbid);
@@ -298,13 +303,13 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		enter_logfile($logpath,$timezone,2,"calc_user 13:".print_r($mysqlcon->errorInfo(), true));
 	}
 
-	if ($insertdata != '') {
+	if ($insertdata != NULL) {
 		$allinsertdata = '';
 		foreach ($insertdata as $insertarr) {
 			$allinsertdata = $allinsertdata . "(" . $insertarr['uuid'] . ", '" . $insertarr['cldbid'] . "', '1', " . $insertarr['ip'] . ", " . $insertarr['name'] . ", '" . $insertarr['lastseen'] . "', '" . $insertarr['grpid'] . "', '" . $insertarr['nextup'] . "', '" . $insertarr['cldgroup'] . "', '" . $insertarr['platform'] . "', '" . $insertarr['nation'] . "', '" . $insertarr['version'] . "', '" . $insertarr['firstcon'] . "', '" . $insertarr['except'] . "','1'),";
 		}
 		$allinsertdata = substr($allinsertdata, 0, -1);
-		if ($allinsertdata != '') {
+		if ($allinsertdata != NULL) {
 			if($mysqlcon->exec("INSERT INTO $dbname.user (uuid, cldbid, count, ip, name, lastseen, grpid, nextup, cldgroup, platform, nation, version, firstcon, except, online) VALUES $allinsertdata") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user 14:".print_r($mysqlcon->errorInfo(), true));
 			}
@@ -313,7 +318,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 
 	unset($insertdata);
 	unset($allinsertdata);
-	if ($updatedata != 0) {
+	if ($updatedata != NULL) {
 		$allupdateuuid	 = '';
 		$allupdatecldbid   = '';
 		$allupdatecount	= '';

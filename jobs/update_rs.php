@@ -1,11 +1,11 @@
 <?PHP
-function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$norotate=NULL) {
+function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpcommand,$norotate=NULL) {
 	$norotate = true;
 	enter_logfile($logpath,$timezone,4,"  Start updating the Ranksystem...\n",$norotate);
 	enter_logfile($logpath,$timezone,4,"    Backup the database due cloning tables...\n",$norotate);
 	$countbackuperr = 0;
 	
-	$tables = array('config','groups','job_check','server_usage','stats_nations','stats_platforms','stats_server','stats_user','stats_versions','user','user_snapshot');
+	$tables = array('addons_config','addon_assign_groups','config','groups','job_check','server_usage','stats_nations','stats_platforms','stats_server','stats_user','stats_versions','user','user_snapshot');
 	
 	foreach ($tables as $table) {
 		if($mysqlcon->query("SELECT 1 FROM bak_$table LIMIT 1") !== false) {
@@ -21,6 +21,7 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$norot
 	foreach ($tables as $table) {
 		if($mysqlcon->exec("CREATE TABLE $dbname.bak_$table LIKE $dbname.$table") === false) {
 			enter_logfile($logpath,$timezone,1,"      Error due creating table bak_".$table.".",$norotate);
+			$countbackuperr++;
 		} else {
 			if($mysqlcon->exec("INSERT $dbname.bak_$table SELECT * FROM $dbname.$table") === false) { 
 				enter_logfile($logpath,$timezone,1,"      Error due inserting data from table ".$table.".",$norotate);
@@ -111,6 +112,15 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$norot
 			enter_logfile($logpath,$timezone,5,"    Cleaned update folder.",$norotate);
 		}
 		enter_logfile($logpath,$timezone,4,"  Files updated successfully. Wait for restart via cron/task. Shutting down!\n\n",$norotate);
+		
+		$path = substr(__DIR__, 0, -4);
+
+		if (substr(php_uname(), 0, 7) == "Windows") {
+			exec("start ".$phpcommand." ".$path."worker.php restart");
+		} else {
+			exec($phpcommand." ".$path."worker.php restart > /dev/null 2>/dev/null &");
+		}
+	
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			$WshShell = new COM("WScript.Shell");
 			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-4)."\worker.php stop", 0, false); 

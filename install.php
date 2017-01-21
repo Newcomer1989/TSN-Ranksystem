@@ -9,23 +9,8 @@ require_once('other/config.php');
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="icon" href="icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="libs/bootstrap/css/custom.css" rel="stylesheet">
-	<link href="libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="libs/bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
-	<link href="libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.css" rel="stylesheet">
-	<link href="libs/bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
-	<link href="libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<script src="libs/jquery/jquery.min.js"></script>
-	<script src="libs/bootstrap/js/bootstrap.min.js"></script>
-	<script src="libs/bootstrap/js/highlight.js"></script>
-	<script src="libs/bootstrap/js/main.js"></script>
-	<script src="libs/bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
-	<script src="libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.js"></script>
-	<script src="libs/bootstrap/addons/select/bootstrap-select.min.js"></script>
-	<script src="libs/bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
-	<script src="libs/bootstrap/addons/validator/validator.min.js"></script>
+	<link href="libs/combined_wi.css" rel="stylesheet">
+	<script src="libs/combined_wi.js"></script>
 	<script>
 	$(function() {
 		$('.required-icon').tooltip({
@@ -65,6 +50,9 @@ require_once('other/config.php');
 						</li>
 						<li>
 							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - english</a>
+						</li>
+						<li>
+							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
 						</li>
 						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
@@ -137,7 +125,7 @@ $db[\'dbname\']="'.$dbname.'";
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery smallint(5) NOT NULL default '0',tsvoice smallint(5) NOT NULL default '0',tsuser varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,language char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange tinyint(1) NOT NULL default '0',msgtouser tinyint(1) NOT NULL default '0',upcheck tinyint(1) NOT NULL default '0',uniqueid varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime mediumint(6) NOT NULL default '0',currvers varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle tinyint(1) NOT NULL default '0',exceptuuid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld tinyint(1) NOT NULL default '0',showcolcld tinyint(1) NOT NULL default '0',showcoluuid tinyint(1) NOT NULL default '0',showcoldbid tinyint(1) NOT NULL default '0',showcolot tinyint(1) NOT NULL default '0',showcolit tinyint(1) NOT NULL default '0',showcolat tinyint(1) NOT NULL default '0',showcolnx tinyint(1) NOT NULL default '0',showcolsg tinyint(1) NOT NULL default '0',showcolrg tinyint(1) NOT NULL default '0',showcolls tinyint(1) NOT NULL default '0',slowmode mediumint(9) NOT NULL default '0',cleanclients tinyint(1) NOT NULL default '0',cleanperiod mediumint(9) NOT NULL default '0',showhighest tinyint(1) NOT NULL default '0',boost varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,showcolas tinyint(1) NOT NULL default '0',defchid int(10) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci,advancemode tinyint(1) NOT NULL default '0',count_access tinyint(2) NOT NULL default '0',last_access bigint(11) NOT NULL default '0',ignoreidle smallint(5) NOT NULL default '0',exceptcid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,rankupmsg varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,boost_mode tinyint(1) NOT NULL default '0',newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci,servernews varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci,adminuuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfo tinyint(1) NOT NULL default '0',nextupinfomsg1 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfomsg2 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfomsg3 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,shownav tinyint(1) NOT NULL default '0',showgrpsince tinyint(1) NOT NULL default '0',resetexcept tinyint(1) NOT NULL default '0',upchannel varchar(20) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE $dbname.config (webuser varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,webpass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tshost varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tsquery smallint(5) UNSIGNED NOT NULL default '0',tsvoice smallint(5) NOT NULL default '0',tsuser varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,tspass varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,language char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,queryname2 varchar(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci,grouptime varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci,resetbydbchange tinyint(1) NOT NULL default '0',msgtouser tinyint(1) NOT NULL default '0',upcheck tinyint(1) NOT NULL default '0',uniqueid varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,updateinfotime mediumint(6) NOT NULL default '0',currvers varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,substridle tinyint(1) NOT NULL default '0',exceptuuid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,exceptgroup varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,dateformat varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,showexcld tinyint(1) NOT NULL default '0',showcolcld tinyint(1) NOT NULL default '0',showcoluuid tinyint(1) NOT NULL default '0',showcoldbid tinyint(1) NOT NULL default '0',showcolot tinyint(1) NOT NULL default '0',showcolit tinyint(1) NOT NULL default '0',showcolat tinyint(1) NOT NULL default '0',showcolnx tinyint(1) NOT NULL default '0',showcolsg tinyint(1) NOT NULL default '0',showcolrg tinyint(1) NOT NULL default '0',showcolls tinyint(1) NOT NULL default '0',slowmode mediumint(9) NOT NULL default '0',cleanclients tinyint(1) NOT NULL default '0',cleanperiod mediumint(9) NOT NULL default '0',showhighest tinyint(1) NOT NULL default '0',boost varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,showcolas tinyint(1) NOT NULL default '0',defchid int(10) NOT NULL default '0',timezone varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,logpath varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci,advancemode tinyint(1) NOT NULL default '0',count_access tinyint(2) NOT NULL default '0',last_access bigint(11) NOT NULL default '0',ignoreidle smallint(5) NOT NULL default '0',exceptcid varchar(999) CHARACTER SET utf8 COLLATE utf8_unicode_ci,rankupmsg varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,boost_mode tinyint(1) NOT NULL default '0',newversion varchar(25) CHARACTER SET utf8 COLLATE utf8_unicode_ci,servernews varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci,adminuuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfo tinyint(1) NOT NULL default '0',nextupinfomsg1 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfomsg2 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,nextupinfomsg3 varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci,shownav tinyint(1) NOT NULL default '0',showgrpsince tinyint(1) NOT NULL default '0',resetexcept tinyint(1) NOT NULL default '0',upchannel varchar(20) NOT NULL default '0',avatar_delay smallint(5) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -165,11 +153,11 @@ $db[\'dbname\']="'.$dbname.'";
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE $dbname.stats_user (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,removed tinyint(1) NOT NULL default '0',rank int(10) NOT NULL default '0',total_connections smallint(5) NOT NULL default '0',count_week int(10) NOT NULL default '0',count_month int(10) NOT NULL default '0',idle_week int(10) NOT NULL default '0',idle_month int(10) NOT NULL default '0',achiev_count tinyint(1) NOT NULL default '0',achiev_time int(10) NOT NULL default '0',achiev_connects smallint(5) NOT NULL default '0',achiev_battles tinyint(3) NOT NULL default '0',achiev_time_perc tinyint(3) NOT NULL default '0',achiev_connects_perc tinyint(3) NOT NULL default '0',achiev_battles_perc tinyint(3) NOT NULL default '0',battles_total tinyint(3) NOT NULL default '0',battles_won tinyint(3) NOT NULL default '0',battles_lost tinyint(3) NOT NULL default '0',client_description varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci,base64hash varchar(58) CHARACTER SET utf8 COLLATE utf8_unicode_ci, client_total_up bigint(15) NOT NULL default '0', client_total_down bigint(15) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE $dbname.stats_user (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,removed tinyint(1) NOT NULL default '0',rank int(10) NOT NULL default '0',total_connections smallint(5) NOT NULL default '0',count_week int(10) NOT NULL default '0',count_month int(10) NOT NULL default '0',idle_week int(10) NOT NULL default '0',idle_month int(10) NOT NULL default '0',achiev_count tinyint(1) NOT NULL default '0',achiev_time int(10) NOT NULL default '0',achiev_connects smallint(5) NOT NULL default '0',achiev_battles tinyint(3) NOT NULL default '0',achiev_time_perc tinyint(3) NOT NULL default '0',achiev_connects_perc tinyint(3) NOT NULL default '0',achiev_battles_perc tinyint(3) NOT NULL default '0',battles_total tinyint(3) NOT NULL default '0',battles_won tinyint(3) NOT NULL default '0',battles_lost tinyint(3) NOT NULL default '0',client_description varchar(200) CHARACTER SET utf8 COLLATE utf8_unicode_ci,base64hash varchar(58) CHARACTER SET utf8 COLLATE utf8_unicode_ci, client_total_up bigint(15) NOT NULL default '0', client_total_down bigint(15) NOT NULL default '0', active_week int(10) NOT NULL default '0', active_month int(10) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
-
+		
 		if($mysqlcon->exec("INSERT INTO $dbname.stats_server SET total_user='9999'") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
@@ -196,6 +184,21 @@ $db[\'dbname\']="'.$dbname.'";
 		}
 		
 		if($mysqlcon->exec("CREATE TABLE $dbname.stats_platforms (platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+		
+		if($mysqlcon->exec("CREATE TABLE $dbname.addons_config (param varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE, value varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+		
+		if($mysqlcon->exec("INSERT INTO $dbname.addons_config (param,value) VALUES ('assign_groups_active','0'),('assign_groups_groupids',''),('assign_groups_limit','')") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+		
+		if($mysqlcon->exec("CREATE TABLE $dbname.addon_assign_groups (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, grpids varchar(1000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -271,7 +274,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince,resetexcept,upchannel) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.2.1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','200000','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.2.1',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1','0','version')") === false) {
+		if($mysqlcon->exec("INSERT INTO $dbname.config (webuser,webpass,tshost,tsquery,tsvoice,tsuser,language,queryname,queryname2,grouptime,resetbydbchange,msgtouser,upcheck,uniqueid,updateinfotime,currvers,exceptuuid,exceptgroup,dateformat,showexcld,showcolcld,showcoluuid,showcoldbid,showcolot,showcolit,showcolat,showcolnx,showcolsg,showcolrg,showcolls,slowmode,cleanclients,cleanperiod,showhighest,showcolas,defchid,timezone,logpath,ignoreidle,rankupmsg,newversion,servernews,nextupinfo,nextupinfomsg1,nextupinfomsg2,nextupinfomsg3,shownav,showgrpsince,resetexcept,upchannel,avatar_delay) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1','xrTKhT/HDl4ea0WoFDQH2zOpmKg=,9odBYAU7z2E2feUz965sL0/Myom=','7200','1.2.2','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','200000','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.2.2',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1','0','version','0')") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';

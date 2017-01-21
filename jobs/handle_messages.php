@@ -44,7 +44,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 						} catch (Exception $e) {
 							enter_logfile($logpath,$timezone,2,"handle_messages 3:".$e->getCode().': '.$e->getMessage());
 						}
-					} elseif ($user[0]['except'] == 1) {
+					} elseif ($user[0]['except'] == 2 || $user[0]['except'] == 3) {
 						try {
 							$host->serverGetSelected()->clientGetByUid($event["invokeruid"])->message(sprintf($nextupinfomsg3, $days, $hours, $mins, $secs, $sqlhisgroup[$groupid]));
 						} catch (Exception $e) {

@@ -4,6 +4,9 @@ $starttime = microtime(true);
 
 require_once('../other/config.php');
 require_once('../other/session.php');
+require_once('../other/load_addons_config.php');
+
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
 if(!isset($_SESSION['tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
@@ -30,7 +33,7 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h4><strong><span class="text-success"><?PHP echo $lang['stri0004']; ?></span></strong></h4>
-						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2016 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a>. All rights reserved.</p>
+						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2017 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a></p>
 						<br>
 					</div>
 				</div>
@@ -73,6 +76,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0016']; ?></p>
 						<p><?PHP echo $lang['stri0017']; ?></p>
 						<p><?PHP echo $lang['stri0018']; ?></p>
+						<p><?PHP echo $lang['stri0019']; ?></p>
 						<br>
 					</div>
 				</div>

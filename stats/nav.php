@@ -7,16 +7,8 @@
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/morris/morris.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="../libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/css/custom.css" rel="stylesheet">
-	<script src="../libs/jquery/jquery.min.js"></script>
-	<script src="../libs/bootstrap/js/bootstrap.min.js"></script>
-	<script src="../libs/bootstrap/addons/morris/raphael.min.js"></script>
-	<script src="../libs/bootstrap/addons/morris/morris.min.js"></script>
+	<link href="../libs/combined_stats.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
+	<script src="../libs/combined_stats.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
 	if(isset($shownav) && $shownav == 0) { ?>
 	<style>
@@ -255,6 +247,9 @@
 							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
+							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
+						</li>
+						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
 						</li>
 						<li>
@@ -280,6 +275,16 @@
 						} else {
 							echo '<a href="my_stats.php"><i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;',$lang['stmy0001'],'</a>';
 						}?>
+					</li>
+					<?PHP if($addons_config['assign_groups_active']['value'] == '1') {
+							echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "assign_groups.php" ? ' class="active">' : '>'); ?>
+							<?PHP if($_SESSION['connected'] == 0) {
+								echo '<a href="#myStatsModal" data-toggle="modal"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;*',$lang['stag0001'],'</a>';
+							} else {
+								echo '<a href="assign_groups.php"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;',$lang['stag0001'],'</a>';
+							}
+						}
+						?>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "top_all.php" ? ' class="active">' : '>'); ?>
 						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-trophy"></i>&nbsp;<?PHP echo $lang['sttw0001']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>

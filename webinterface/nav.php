@@ -7,23 +7,8 @@
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/css/custom.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/sb-admin.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/switch-master/bootstrap-switch.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/select/bootstrap-select.min.css" rel="stylesheet">
-	<link href="../libs/bootstrap/addons/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-	<link href="../libs/bootstrap/flag_icon/css/flag-icon.min.css" rel="stylesheet">
-	<script src="../libs/jquery/jquery.min.js"></script>
-	<script src="../libs/bootstrap/js/bootstrap.min.js"></script>
-	<script src="../libs/bootstrap/js/highlight.js"></script>
-	<script src="../libs/bootstrap/js/main.js"></script>
-	<script src="../libs/bootstrap/addons/switch-master/bootstrap-switch.min.js"></script>
-	<script src="../libs/bootstrap/addons/touchspin-master/jquery.bootstrap-touchspin.min.js"></script>
-	<script src="../libs/bootstrap/addons/select/bootstrap-select.min.js"></script>
-	<script src="../libs/bootstrap/addons/show-password/bootstrap-show-password.min.js"></script>
-	<script src="../libs/bootstrap/addons/validator/validator.min.js"></script>
+	<link href="../libs/combined_wi.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
+	<script src="../libs/combined_wi.js?v=<?PHP echo $currvers; ?>"></script>
 	<script>
 	$(function() {
 		$('.required-icon').tooltip({
@@ -91,6 +76,9 @@
 							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
+							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
+						</li>
+						<li>
 							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
 						</li>
 						<li>
@@ -124,6 +112,15 @@
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active">' : '>'); ?>
 						<a href="stats.php"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;<?PHP echo $lang['winav6']; ?></a>
+					</li>
+					<li class="divider"></li>
+					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
+						<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fa fa-fw fa-puzzle-piece"></i>&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>
+						<ul id="addons" class="collapse">
+							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
+								<a href="addon_assign_groups.php"><?PHP echo $lang['stag0001']; ?></a>
+							</li>
+						</ul>
 					</li>
 					<li class="divider"></li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin.php" ? ' class="active">' : '>'); ?>

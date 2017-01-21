@@ -4,6 +4,9 @@ $starttime = microtime(true);
 
 require_once('../other/config.php');
 require_once('../other/session.php');
+require_once('../other/load_addons_config.php');
+
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
 if(!isset($_SESSION['tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);

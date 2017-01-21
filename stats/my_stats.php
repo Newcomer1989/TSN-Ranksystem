@@ -2,8 +2,11 @@
 session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
+require_once('../other/load_addons_config.php');
 
-if(!isset($_SESSION['tsuid'])) {
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+
+if(!isset($_SESSION['tsuid']) || isset($_SESSION['uuid_verified'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
@@ -21,9 +24,11 @@ if ($substridle == 1) {
 } else {
 	$activetime = $dbdata_fetched[0]['count'];
 }
+$active_count = $dbdata_fetched[0]['count'] - $dbdata_fetched[0]['idle'];
 
 krsort($grouptime);
 $grpcount = 0;
+$nextgrp = '';
 
 foreach ($grouptime as $time => $groupid) {
 	$grpcount++;
@@ -51,10 +56,15 @@ $stats_user = $stats_user->fetchAll();
 
 if (isset($stats_user[0]['count_week'])) $count_week = $stats_user[0]['count_week']; else $count_week = 0;
 $dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($timeformat);
+if (isset($stats_user[0]['active_week'])) $active_week = $stats_user[0]['active_week']; else $active_week = 0;
+$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_week"); $active_week = $dtF->diff($dtT)->format($timeformat);
 if (isset($stats_user[0]['count_month'])) $count_month = $stats_user[0]['count_month']; else $count_month = 0;
 $dtF = new DateTime("@0"); $dtT = new DateTime("@$count_month"); $count_month = $dtF->diff($dtT)->format($timeformat);
+if (isset($stats_user[0]['active_month'])) $active_month = $stats_user[0]['active_month']; else $active_month = 0;
+$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($timeformat);
 if (isset($dbdata_fetched[0]['count'])) $count_total = $dbdata_fetched[0]['count']; else $count_total = 0;
 $dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($timeformat);
+$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($timeformat);
 
 $time_for_bronze = 50;
 $time_for_silver = 100;
@@ -136,8 +146,11 @@ require_once('nav.php');
 									<p><strong><?PHP echo $lang['stmy0005']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0006']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0007']; ?></strong></p>
-									<p><strong><?PHP echo $lang['stmy0008']; ?></strong></p>
-									<p><strong><?PHP echo $lang['stmy0009']; ?></strong></p>
+									<p><strong><?PHP echo $lang['stmy0031']; ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0008'], '7'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0009'], '7'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0008'], '30'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0009'], '30'); ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0010']; ?></strong></p>
 								</div>
 								<div class="pull-right">
@@ -146,8 +159,11 @@ require_once('nav.php');
 									<p class="text-right"><?PHP echo $_SESSION['tsconnections']; ?></p>
 									<p class="text-right"><?PHP echo $_SESSION['tscreated']; ?></p>
 									<p class="text-right"><?PHP echo $count_total; ?></p>
+									<p class="text-right"><?PHP echo $active_count; ?></p>
 									<p class="text-right"><?PHP echo $count_week; ?></p>
+									<p class="text-right"><?PHP echo $active_week; ?></p>
 									<p class="text-right"><?PHP echo $count_month; ?></p>
+									<p class="text-right"><?PHP echo $active_month; ?></p>
 									<p class="text-right"><?PHP echo $achievements_done .' / 8'; ?></p>
 								</div>
 								<div class="clearfix"></div>

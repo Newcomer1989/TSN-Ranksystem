@@ -2,6 +2,9 @@
 session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
+require_once('../other/load_addons_config.php');
+
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
 if($language == "ar") {
 	require_once('../languages/nations_en.php');

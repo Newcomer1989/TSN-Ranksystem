@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.1';
+	$newversion = '1.2.2';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -365,7 +365,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				}
 			}
 		}
-		if(version_compare($currvers, '1.2.1', '<=')) {
+		if(version_compare($currvers, '1.2.0', '<=')) {
 			if($mysqlcon->exec("ALTER TABLE $dbname.stats_server MODIFY COLUMN server_name varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN server_platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN server_weblist tinyint(1) NOT NULL default '0', MODIFY COLUMN server_version varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN total_user int(10) NOT NULL default '0', MODIFY COLUMN country_nation_1 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_2 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_3 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_4 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_5 int(10) NOT NULL default '0', MODIFY COLUMN country_nation_other int(10) NOT NULL default '0', MODIFY COLUMN platform_1 int(10) NOT NULL default '0', MODIFY COLUMN platform_2 int(10) NOT NULL default '0', MODIFY COLUMN platform_3 int(10) NOT NULL default '0', MODIFY COLUMN platform_4 int(10) NOT NULL default '0', MODIFY COLUMN platform_5 int(10) NOT NULL default '0', MODIFY COLUMN platform_other int(10) NOT NULL default '0', MODIFY COLUMN version_1 int(10) NOT NULL default '0', MODIFY COLUMN version_2 int(10) NOT NULL default '0', MODIFY COLUMN version_3 int(10) NOT NULL default '0', MODIFY COLUMN version_4 int(10) NOT NULL default '0', MODIFY COLUMN version_5 int(10) NOT NULL default '0', MODIFY COLUMN version_other int(10) NOT NULL default '0', MODIFY COLUMN server_status tinyint(1) NOT NULL default '0', MODIFY COLUMN server_free_slots smallint(5) NOT NULL default '0', MODIFY COLUMN server_used_slots smallint(5) NOT NULL default '0', MODIFY COLUMN server_channel_amount smallint(5) NOT NULL default '0', MODIFY COLUMN server_ping smallint(5) NOT NULL default '0', MODIFY COLUMN server_id smallint(5) NOT NULL default '0', MODIFY COLUMN server_pass tinyint(1) NOT NULL default '0'") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table stats_server (part1) successfully.");
 			}
@@ -391,13 +391,34 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table groups successfully.");
 			}
 			if($mysqlcon->exec("CREATE TABLE $dbname.stats_nations (nation varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_nations successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Created table stats_nations successfully.");
 			}
 			if($mysqlcon->exec("CREATE TABLE $dbname.stats_versions (version varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_versions successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Created table stats_versions successfully.");
 			}
 			if($mysqlcon->exec("CREATE TABLE $dbname.stats_platforms (platform varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, count int(10) NOT NULL default '0')") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.1] Create table stats_platforms successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.1] Created table stats_platforms successfully.");
+			}
+		}
+		if(version_compare($currvers, '1.2.1', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_user ADD (active_week int(10) NOT NULL default '0', active_month int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.2] Adjusted table stats_user successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (avatar_delay smallint(5) UNSIGNED NOT NULL default '0')") === false) { } else {
+				if($mysqlcon->exec("UPDATE $dbname.config set avatar_delay='0'") === false) { } else {
+					enter_logfile($logpath,$timezone,4,"    [1.2.2] Adjusted table config (part 1) successfully.");
+				}
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config MODIFY COLUMN tsquery smallint(5) UNSIGNED NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.2] Adjusted table config (part 2) successfully.");
+			}
+			if($mysqlcon->exec("CREATE TABLE $dbname.addons_config (param varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE, value varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
+				if($mysqlcon->exec("INSERT INTO $dbname.addons_config (param,value) VALUES ('assign_groups_active','0'),('assign_groups_groupids',''),('assign_groups_limit','')") === false) { } else {
+					enter_logfile($logpath,$timezone,4,"    [1.2.2] Created table addons_config successfully.");
+				}
+			}
+			if($mysqlcon->exec("CREATE TABLE $dbname.addon_assign_groups (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, grpids varchar(1000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.2] Created table addon_assign_groups successfully.");
 			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);

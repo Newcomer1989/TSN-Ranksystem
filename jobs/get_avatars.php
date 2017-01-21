@@ -1,5 +1,5 @@
 <?PHP
-function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath) {
+function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$avatar_delay) {
 	$count = 0;
 
 	try {
@@ -21,7 +21,7 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath) 
 		foreach($tsfilelist as $tsfile) {
 			$fullfilename = '/'.$tsfile['name'];
 			$uuidasbase16 = substr($tsfile['name'],7);
-			if (!isset($fsfilelistarray[$uuidasbase16.'.png']) || $tsfile['datetime']>$fsfilelistarray[$uuidasbase16.'.png']) {
+			if (!isset($fsfilelistarray[$uuidasbase16.'.png']) || ($tsfile['datetime'] - $avatar_delay) > $fsfilelistarray[$uuidasbase16.'.png']) {
 				if (substr($tsfile['name'],0,7) == 'avatar_') {
 					try {
 						check_shutdown($timezone,$logpath); usleep($slowmode);

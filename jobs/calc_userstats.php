@@ -71,6 +71,8 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 		$allupdatecountm = '';
 		$allupdateidlew = '';
 		$allupdateidlem = '';
+		$allupdateactw = '';
+		$allupdateactm = '';
 		$allupdatetotac = '';
 		$allupdatebase64 = '';
 		$allupdatecldtup = '';
@@ -86,16 +88,20 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 				if(isset($userdataweekend[$userstats['uuid']]) && isset($userdataweekbegin[$userstats['uuid']])) {
 					$count_week = $userdataweekend[$userstats['uuid']][0]['count'] - $userdataweekbegin[$userstats['uuid']][0]['count'];
 					$idle_week = $userdataweekend[$userstats['uuid']][0]['idle'] - $userdataweekbegin[$userstats['uuid']][0]['idle'];
+					$active_week = $count_week - $idle_week;
 				} else {
 					$count_week = 0;
 					$idle_week = 0;
+					$active_week = 0;
 				}
 				if(isset($userdatamonthend[$userstats['uuid']]) && isset($userdatamonthbegin[$userstats['uuid']])) {
 					$count_month = $userdatamonthend[$userstats['uuid']][0]['count'] - $userdatamonthbegin[$userstats['uuid']][0]['count'];
 					$idle_month = $userdatamonthend[$userstats['uuid']][0]['idle'] - $userdatamonthbegin[$userstats['uuid']][0]['idle'];
+					$active_month = $count_month - $idle_month;
 				} else {
 					$count_month = 0;
 					$idle_month = 0;
+					$active_month = 0;
 				}
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);;
 				if(isset($uidarrstats[$userstats['uuid']])) {
@@ -105,13 +111,15 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 					$allupdatecountm = $allupdatecountm . "WHEN '" . $userstats['uuid'] . "' THEN '" . $count_month . "' ";
 					$allupdateidlew = $allupdateidlew . "WHEN '" . $userstats['uuid'] . "' THEN '" . $idle_week . "' ";
 					$allupdateidlem = $allupdateidlem . "WHEN '" . $userstats['uuid'] . "' THEN '" . $idle_month . "' ";
+					$allupdateactw = $allupdateactw . "WHEN '" . $userstats['uuid'] . "' THEN '" . $active_week . "' ";
+					$allupdateactm = $allupdateactm . "WHEN '" . $userstats['uuid'] . "' THEN '" . $active_month . "' ";
 					$allupdatetotac = $allupdatetotac . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_totalconnections'] . "' ";
 					$allupdatebase64 = $allupdatebase64 . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_base64HashClientUID'] . "' ";
 					$allupdatecldtup = $allupdatecldtup . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_total_bytes_uploaded'] . "' ";
 					$allupdatecldtdo = $allupdatecldtdo . "WHEN '" . $userstats['uuid'] . "' THEN '" . $clientinfo['client_total_bytes_downloaded'] . "' ";
 					$allupdateclddes = $allupdateclddes . "WHEN '" . $userstats['uuid'] . "' THEN " . $clientdesc . " ";
 				} else {
-					$allinsertuserstats = $allinsertuserstats . "('" . $userstats['uuid'] . "', '" .$userstats['rank'] . "', '" . $count_week . "', '" . $count_month . "', '" . $idle_week . "', '" . $idle_month . "', '" . $clientinfo['client_totalconnections'] . "', '" . $clientinfo['client_base64HashClientUID'] . "', '" . $clientinfo['client_total_bytes_uploaded'] . "', '" . $clientinfo['client_total_bytes_downloaded'] . "', " . $clientdesc . "),";
+					$allinsertuserstats = $allinsertuserstats . "('" . $userstats['uuid'] . "', '" .$userstats['rank'] . "', '" . $count_week . "', '" . $count_month . "', '" . $idle_week . "', '" . $idle_month . "', '" . $active_week . "', '" . $active_month . "', '" . $clientinfo['client_totalconnections'] . "', '" . $clientinfo['client_base64HashClientUID'] . "', '" . $clientinfo['client_total_bytes_uploaded'] . "', '" . $clientinfo['client_total_bytes_downloaded'] . "', " . $clientdesc . "),";
 				}
 			} catch (Exception $e) {
 				//enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$userstats['cldbid']." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted".);
@@ -124,14 +132,14 @@ function calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpat
 		
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
-			if ($mysqlcon->exec("UPDATE $dbname.stats_user set rank = CASE uuid $allupdaterank END, count_week = CASE uuid $allupdatecountw END, count_month = CASE uuid $allupdatecountm END, idle_week = CASE uuid $allupdateidlew END, idle_month = CASE uuid $allupdateidlem END, total_connections = CASE uuid $allupdatetotac END, base64hash = CASE uuid $allupdatebase64 END, client_total_up = CASE uuid $allupdatecldtup END, client_total_down = CASE uuid $allupdatecldtdo END, client_description = CASE uuid $allupdateclddes END WHERE uuid IN ($allupdateuuid)") === false) {
+			if ($mysqlcon->exec("UPDATE $dbname.stats_user set rank = CASE uuid $allupdaterank END, count_week = CASE uuid $allupdatecountw END, count_month = CASE uuid $allupdatecountm END, idle_week = CASE uuid $allupdateidlew END, idle_month = CASE uuid $allupdateidlem END, active_week = CASE uuid $allupdateactw END, active_month = CASE uuid $allupdateactm END, total_connections = CASE uuid $allupdatetotac END, base64hash = CASE uuid $allupdatebase64 END, client_total_up = CASE uuid $allupdatecldtup END, client_total_down = CASE uuid $allupdatecldtdo END, client_description = CASE uuid $allupdateclddes END WHERE uuid IN ($allupdateuuid)") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_userstats 12:".print_r($mysqlcon->errorInfo(), true));
 			}
 		}
 
 		if($allinsertuserstats != '') {
 			$allinsertuserstats = substr($allinsertuserstats, 0, -1);
-			if ($mysqlcon->exec("INSERT INTO $dbname.stats_user (uuid,rank,count_week,count_month,idle_week,idle_month,total_connections,base64hash,client_total_up,client_total_down,client_description) VALUES $allinsertuserstats") === false) {
+			if ($mysqlcon->exec("INSERT INTO $dbname.stats_user (uuid,rank,count_week,count_month,idle_week,idle_month,active_week,active_month,total_connections,base64hash,client_total_up,client_total_down,client_description) VALUES $allinsertuserstats") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_userstats 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 		}

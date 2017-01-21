@@ -137,7 +137,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								</div>
 							</div>
 						</div>
-						<div class="col-md-6 ">
+						<div class="col-md-6">
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">

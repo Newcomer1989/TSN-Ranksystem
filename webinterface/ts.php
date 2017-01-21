@@ -52,7 +52,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
     $queryname2 = $_POST['queryname2'];
     $defchid 	= $_POST['defchid'];
 	$slowmode 	= $_POST['slowmode'];
-    if ($mysqlcon->exec("UPDATE $dbname.config set tshost='$tshost',tsquery='$tsquery',tsvoice='$tsvoice',tsuser='$tsuser',tspass='$tspass',queryname='$queryname',queryname2='$queryname2',slowmode='$slowmode',defchid='$defchid'") === false) {
+	$avatar_delay= $_POST['avatar_delay'];
+    if ($mysqlcon->exec("UPDATE $dbname.config set tshost='$tshost',tsquery='$tsquery',tsvoice='$tsvoice',tsuser='$tsuser',tspass='$tspass',queryname='$queryname',queryname2='$queryname2',slowmode='$slowmode',defchid='$defchid',avatar_delay='$avatar_delay'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -187,6 +188,21 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									echo '<option data-subtext="(1,0 seconds)" value="1000000"'; if($slowmode=="1000000") echo ' selected="selected"'; echo '>High delay</option>';
 									?>
 									</select>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3avatdesc"><?php echo $lang['wits3avat']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="avatar_delay" value="<?php echo $avatar_delay; ?>">
+									<script>
+									$("input[name='avatar_delay']").TouchSpin({
+										min: 0,
+										max: 65535,
+										verticalbuttons: true,
+										prefix: 'Sec.:'
+									});
+									</script>
 								</div>
 							</div>
 						</div>
@@ -339,6 +355,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
       </div>
       <div class="modal-body">
         <?php echo $lang['wits3smdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wits3avatdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wits3avat']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wits3avatdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

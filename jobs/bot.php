@@ -93,6 +93,18 @@ function get_data($url,$currvers,$ts) {
 $currvers = check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath);
 enter_logfile($logpath,$timezone,5,"  Ranksystem Version: ".$currvers);
 
+enter_logfile($logpath,$timezone,5,"Loading addons...");
+require_once(substr(__DIR__,0,-4).'other/load_addons_config.php');
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+if($addons_config['assign_groups_active']['value'] == '1') {
+	enter_logfile($logpath,$timezone,5,"  Addon: 'assign_groups' [ON]");
+	include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
+	define('assign_groups',1);
+} else {
+	enter_logfile($logpath,$timezone,5,"  Addon: 'assign_groups' [OFF]");
+}
+enter_logfile($logpath,$timezone,5,"Loading addons [done]");
+
 enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\").");
 try {
     $ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
@@ -139,7 +151,7 @@ try {
 	} else {
 		enter_logfile($logpath,$timezone,4,"  No channel defined where the Ranksystem Bot should be entered.");
 	}
-
+	
 	enter_logfile($logpath,$timezone,5,"Bot starts now his work!");
 	$looptime = 1;
 	usleep(5000000);
@@ -151,14 +163,15 @@ try {
 		}
 		$starttime = microtime(true);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
+		$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 		$ts3->clientListReset();
 		$allclients = $ts3->clientList();
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$ts3->serverInfoReset();
 		$serverinfo = $ts3->serverInfo();
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel);
+		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel,$phpcommand);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
+		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$avatar_delay);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
@@ -167,6 +180,16 @@ try {
 		calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath);
+		if($addons_config['assign_groups_active']['value'] == '1') {
+			if(!defined('assign_groups')) {
+				enter_logfile($logpath,$timezone,5,"Loading new addon...");
+				enter_logfile($logpath,$timezone,5,"  Addon: 'assign_groups' [ON]");
+				include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
+				define('assign_groups',1);
+				enter_logfile($logpath,$timezone,5,"Loading new addon [done]");
+			}
+			addon_assign_groups($addons_config,$ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$allclients);
+		}
 		$looptime = microtime(true) - $starttime;
 		try { $ts3->getAdapter(); } catch (Exception $e) {}
 	}

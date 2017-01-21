@@ -2,6 +2,9 @@
 session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
+require_once('../other/load_addons_config.php');
+
+$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
 if($language == "ar") {
 	require_once('../languages/nations_en.php');
@@ -9,6 +12,8 @@ if($language == "ar") {
 	require_once('../languages/nations_de.php');
 } elseif($language == "en") {
 	require_once('../languages/nations_en.php');
+} elseif($language == "fr") {
+	require_once('../languages/nations_fr.php');
 } elseif($language == "it") {
 	require_once('../languages/nations_it.php');
 } elseif($language == "ro") {
@@ -274,13 +279,13 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div class="huge"><?PHP echo $sql_res[0]['user_week']; ?></div>
-										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0056']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '7'); ?></div>
 									</div>
 								</div>
 							</div>
 							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-604800; ?>:">
 								<div class="panel-footer">
-									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0056'],')'; ?></span>
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '7'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
 									<div class="clearfix"></div>
 								</div>
@@ -296,13 +301,13 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div class="huge"><?PHP echo $sql_res[0]['user_month']; ?></div>
-										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0057']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '30'); ?></div>
 									</div>
 								</div>
 							</div>
 							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-2592000; ?>:">
 								<div class="panel-footer">
-									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0057'],')'; ?></span>
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '30'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
 									<div class="clearfix"></div>
 								</div>
@@ -318,13 +323,13 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div class="huge"><?PHP echo $sql_res[0]['user_quarter']; ?></div>
-										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0058']; ?></div>
+										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '90'); ?></div>
 									</div>
 								</div>
 							</div>
 							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-7776000; ?>:">
 								<div class="panel-footer">
-									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0058'],')'; ?></span>
+									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '90'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
 									<div class="clearfix"></div>
 								</div>
@@ -381,7 +386,10 @@ require_once('nav.php');
 								<tbody>
 									<tr>
 										<td><?PHP echo $lang['stix0036']; ?></td>
-										<td><?PHP if(file_exists("../icons/servericon.png")) { echo $sql_res[0]['server_name'] .'<div class="pull-right"><img src="../icons/servericon.png" alt="servericon"></div>'; } else { echo $sql_res[0]['server_name']; } ?></td>
+										<td><?PHP if(file_exists("../icons/servericon.png")) { 
+										$img_content = file_get_contents("../icons/servericon.png");
+										echo $sql_res[0]['server_name'] .'<div class="pull-right"><img src="data:image/',mime_content_type("../icons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										} else { echo $sql_res[0]['server_name']; } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0037']; ?></td>

@@ -26,6 +26,14 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
     $_SESSION['serverport'] = $voiceport;
     foreach ($allclients as $client) {
         if ($hpclientip == $client['ip']) {
+			if(isset($_SESSION['uuid_verified']) && $_SESSION['uuid_verified'] != $client['uuid']) {
+				continue;
+			}
+			if(isset($_SESSION['tsuid']) && $_SESSION['tsuid'] != $client['uuid']) {
+				$_SESSION['multiple'] .= htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';
+			} elseif (!isset($_SESSION['tsuid'])) {
+				$_SESSION['multiple'] = htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';
+			}
             $_SESSION['tsuid']    = $client['uuid'];
             $_SESSION['tscldbid'] = $client['cldbid'];
             $_SESSION['tsname']   = $client['name'];
@@ -73,7 +81,6 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
             }
             $_SESSION['connected'] = 1;
             $_SESSION['language']  = $language;
-            break;
         }
     }
 }

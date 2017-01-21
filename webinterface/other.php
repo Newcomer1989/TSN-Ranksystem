@@ -114,6 +114,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									echo '<option data-subtext="العربية" value="ar"'.($language === 'ar' ? ' selected="selected"' : '').'>AR</option>';
 									echo '<option data-subtext="Deutsch" value="de"'.($language === 'de' ? ' selected="selected"' : '').'>DE</option>';
 									echo '<option data-subtext="english" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
+									echo '<option data-subtext="français" value="fr"'.($language === 'fr' ? ' selected="selected"' : '').'>FR</option>';
 									echo '<option data-subtext="italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
 									echo '<option data-subtext="Nederlands" value="nl"'.($language === 'nl' ? ' selected="selected"' : '').'>NL</option>';
 									echo '<option data-subtext="românesc" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';

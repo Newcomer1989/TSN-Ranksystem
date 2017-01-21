@@ -42,6 +42,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 		} elseif($_GET["lang"] == "de") {
 			$language = "de";
 			$_SESSION['language'] = "de";
+		} elseif($_GET["lang"] == "fr") {
+			$language = "fr";
+			$_SESSION['language'] = "fr";
 		} elseif($_GET["lang"] == "it") {
 			$language = "it";
 			$_SESSION['language'] = "it";
@@ -129,6 +132,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 		$showgrpsince	 = $config[0]['showgrpsince'];
 		$resetexcept	 = $config[0]['resetexcept'];
 		$upchannel		 = $config[0]['upchannel'];
+		$avatar_delay	 = $config[0]['avatar_delay'];
 	}
 }
 if(!isset($language) || $language == "en") {
@@ -137,6 +141,8 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
 } elseif($language == "de") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
+} elseif($language == "fr") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_fr.php');
 } elseif($language == "it") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
 } elseif($language == "nl") {
