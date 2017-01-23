@@ -78,8 +78,8 @@ $lang['msg0001']			= "используемая версия: %s";
 $lang['msg0002']			= "Доступные команды:\n[B]help[/B], [B]info[/B], [B]commands[/B]\t\tдля получения списка команд\n[B]version[/B]\t\t\t\t\t\t\t\t  для получения версии системы рангов\n[B]nextup[/B]\t\t\t\t\t\t\t\t   что бы узнать через какое время произойдет повышение\n[B]restart[/B], [B]reboot[/B]\t\t\t\t\tперезапускает систему рангов\n[B]shutdown[/B], [B]quit[/B], [B]stop[/B]\t\t  останавливает систему рангов";
 $lang['msg0003']			= "У вас нет доступа для выполнения данной команды!";
 $lang['msg0004']			= "Клиент %s (%s) выключил систему рангов.";
-$lang['msg0005']			= "cya"; //wth is that
-$lang['msg0006']			= "brb"; //and that
+$lang['msg0005']			= "увидимся"; //cya? where and why it is used for?
+$lang['msg0006']			= "сейчас вернусь"; //brb? where and why it is used for?
 $lang['msg0007']			= "Клиент %s (%s) перезапустил систему рангов.";
 $lang['nocount']			= "Пользователь %s (UID: %s; Клиент ID %s) является query-пользователем -> не будет учитываться!";
 $lang['noentry']			= "Записей не найдено..";
@@ -164,8 +164,8 @@ $lang['stix0051']			= "Ошибка при получении даты";
 $lang['stix0052']			= "другие";
 $lang['stix0053']			= "Активное время (в днях)";
 $lang['stix0054']			= "Неактивное время (в днях)";
-$lang['stix0055']			= "онлайн в течении суток";
-$lang['stix0056']			= "онлайн в течении %s дней";
+$lang['stix0055']			= "онлайн в течение суток";
+$lang['stix0056']			= "онлайн в течение %s дней";
 $lang['stix0059']			= "Список пользователей";
 $lang['stix0060']			= "Пользователей";
 $lang['stix0061']			= "Показать все версии";
@@ -263,7 +263,7 @@ $lang['stri0009']			= "Как создавалась TSN Ranksystem?";
 $lang['stri0010']			= "\"RankSystem\" разрабатывалась на языке";
 $lang['stri0011']			= "При создании использовался следующий набор инструментов:";
 $lang['stri0012']			= "Особая благодарность:";
-$lang['stri0013']			= "<a href=\"//nya-pw.ru/\" target=\"_blank\">sergey</a>, <a href=\"//vk.com/akhachirov\" target=\"_blank\">Arselopster</a> & <a href=\"//want2speak.ru/\" target=\"_blank\">DeviantUser</a>(<a href=\"//vk.com/zheez\" target=\"_blank\">VK</a>), <a href=\"//goodgame.by/\" target=\"_blank\">kidi</a>(<a href=\"//vk.com/kaidinak\" target=\"_blank\">VK</a>) - За русскоязычный перевод интерфейса. Пишите о всех очепятках в ВК DeviantUser'у";
+$lang['stri0013']			= "<a href=\"//goodgame.by\" target=\"_blank\">kidi@goodgame.by</a> (<a href=\"//vk.com/kaidinak\" target=\"_blank\">VK</a>), <a href=\"//vk.com/akhachirov\" target=\"_blank\">Arselopster</a> & <a href=\"//want2speak.ru/\" target=\"_blank\">DeviantUser</a>(<a href=\"//vk.com/zheez\" target=\"_blank\">VK</a>), - За русскоязычный перевод интерфейса. Начиная с версии 1.2.2 поддержкой русского перевода занимается kidi.";
 $lang['stri0014']			= "Bejamin Frost - За помощь в создании дизайна сайта с помощью Bootstrap.";
 $lang['stri0015']			= "<a href=\"//hydrake.eu/\" target=\"_blank\">ZanK</a> - За перевод интерфейса на итальянский язык.";
 $lang['stri0016']			= "<a href=\"//iraqgaming.net/\" target=\"_blank\">DeStRoYzR</a> & <a href=\"//www.sagamer.net/\" target=\"_blank\">Jehad</a>  - За перевод интерфейса на арабский язык";
@@ -410,11 +410,11 @@ $lang['wirtpw10']			= "Вы должны находиться онлайн на 
 $lang['wirtpw11']			= "Ранее в веб-панели должен был быть указан UID Администратора.";
 $lang['wirtpw12']			= "Ваши IP-адреса на сервере и на данной странице сайта должны совпадать (протоколы IPv4 / IPv6 также учитываются при сверке IP).";
 $lang['wiselcld']			= "Выбор пользователя";
-$lang['ADDMEPLEASE']		= "Ничего не выбрано"; //Nothing selected. Currently is missing in the ranksystem lang file. /webinterface/admin.php
-$lang['ADDMEPLEASE1']		= "Дни"; //Day(s). Currently is missing in the ranksystem lang file. /webinterface/admin.php
-$lang['ADDMEPLEASE2']		= "Часы"; //Hour(s). Currently is missing in the ranksystem lang file. /webinterface/admin.php
-$lang['ADDMEPLEASE3']		= "Минуты"; //Min(s). Currently is missing in the ranksystem lang file. /webinterface/admin.php
-$lang['ADDMEPLEASE4']		= "Секунды"; //Sec(s). Currently is missing in the ranksystem lang file. /webinterface/admin.php
+$lang['ADDMEPLEASE']		= "Ничего не выбрано"; //Nothing selected. Currently missing in the ranksystem lang file. /webinterface/admin.php
+$lang['ADDMEPLEASE1']		= "Дни"; //Day(s). Currently missing in the ranksystem lang file. /webinterface/admin.php
+$lang['ADDMEPLEASE2']		= "Часы"; //Hour(s). Currently missing in the ranksystem lang file. /webinterface/admin.php
+$lang['ADDMEPLEASE3']		= "Минуты"; //Min(s). Currently missing in the ranksystem lang file. /webinterface/admin.php
+$lang['ADDMEPLEASE4']		= "Секунды"; //Sec(s). Currently missing in the ranksystem lang file. /webinterface/admin.php
 $lang['wiselclddesc']		= "Укажите пользователя по его последнему никнейму или уникальному идентификатору(UID), или ID в базе данных Teamspeak 3 сервера.<br><br>Для большой базы данных поиск пользователя может занять некоторое время. Рекомендуется вставлять сразу скопированный никнейм(или UID) пользователя.";
 $lang['wishcolas']			= "Текущая группа сервера";
 $lang['wishcolasdesc']		= "Показывать колонку 'Текущая группа сервера' в stats/list_rankup.php";
