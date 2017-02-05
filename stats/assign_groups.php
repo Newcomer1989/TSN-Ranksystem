@@ -120,9 +120,9 @@ require_once('nav.php');
 										<?PHP } ?>
 										<div class="col-sm-2">
 											<?PHP if(in_array($allowed_group, $cld_groups)) {
-												echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="',$allowed_group,'" value="',$msgtouser,'">';
+												echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="',$allowed_group,'" value="1">';
 											} else {
-												echo '<input id="switch-animate" type="checkbox" data-size="mini" name="',$allowed_group,'" value="',$msgtouser,'">';
+												echo '<input id="switch-animate" type="checkbox" data-size="mini" name="',$allowed_group,'" value="1">';
 											} ?>
 										</div>
 									</div>
