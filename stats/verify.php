@@ -44,8 +44,9 @@ if(isset($_POST['uuid']) && !isset($_SESSION['temp_uuid'])) {
 				$_SESSION['temp_uuid'] = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 				$pwd = substr(str_shuffle("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"),0,6);
 				$_SESSION['token'] = $pwd;
+				$link = 'http' . (isset($_SERVER['HTTPS']) ? 's' : '') . "://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}?token={$pwd}";
 				try {
-					$ts3->clientGetByUid($_SESSION['temp_uuid'])->message(sprintf($lang['stve0001'], $nickname, $pwd));
+					$ts3->clientGetByUid($_SESSION['temp_uuid'])->message(sprintf($lang['stve0001'], $nickname, $pwd, $link));
 					$err_msg = $lang['stve0002']; $err_lvl = 1;
 				} catch (Exception $e) {
 					$err_msg = 'TeamSpeak '.$lang['error'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
@@ -58,12 +59,12 @@ if(isset($_POST['uuid']) && !isset($_SESSION['temp_uuid'])) {
 	}
 }
 
-if(isset($_POST['token']) && isset($_SESSION['temp_uuid'])) {
-	if($_POST['token'] == NULL) {
+if(isset($_REQUEST['token']) && isset($_SESSION['temp_uuid'])) {
+	if($_REQUEST['token'] == NULL) {
 		$err_msg = $lang['stve0003']; $err_lvl = 1;
-	} elseif($_POST['token'] != $_SESSION['token']) {
+	} elseif($_REQUEST['token'] != $_SESSION['token']) {
 		$err_msg = $lang['stve0004']; $err_lvl = 3;
-	} elseif($_POST['token'] == $_SESSION['token']) {
+	} elseif($_REQUEST['token'] == $_SESSION['token']) {
 		$err_msg = $lang['stve0005']; $err_lvl = NULL;
 		$_SESSION['uuid_verified'] = $_SESSION['temp_uuid'];
 		$_SESSION['multiple'] = '';

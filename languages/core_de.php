@@ -285,7 +285,7 @@ $lang['sttw0012']			= "Andere %s User (in Stunden)";
 $lang['sttw0013']			= "mit %s Stunden aktive Zeit";
 $lang['sttm0001']			= "des Monats";
 $lang['stta0001']			= "aller Zeiten";
-$lang['stve0001']			= "\Hallo %s,\nhier ist dein [B]Token[/B], um dich im Ranksystem zu identifizieren:\n[B]%s[/B]\n\nGib diesen Code auf in das Feld der Ranksystem-Seite ein und sende ihn ab.\n\nWenn du diese Nachricht nicht angefordert hast, ignoriere sie oder wende dich an einen Admin.";
+$lang['stve0001']			= "\nHallo %1\$s,\nklicke hier, um dich im Ranksystem anzumelden:\n[URL=%3\$s][B]Identität bestätigen[/B][/URL]\n\nAlternativ kannst du folgendes Token auf der Webseite eingeben:\n[B]%2\$s[/B]\n\nWenn du diese Nachricht nicht angefordert hast, ignoriere sie oder wende dich an einen Admin.";
 $lang['stve0002']			= "Dir wurde eine Nachricht auf dem TS-Server gesendet, mit der du deine Identität bestätigen kannst.";
 $lang['stve0003']			= "Bitte trage den Token ein, welchen du auf dem TeamSpeak-Server erhalten hast. Wenn du keine Nachricht bekommen hast, überprüfe, ob du die richtige eindeutige ID gewählt hast.";
 $lang['stve0004']			= "Das eingegebene Token war falsch, bitte prüfe ob du es richtig getippt hast.";
