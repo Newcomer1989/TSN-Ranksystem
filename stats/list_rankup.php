@@ -216,6 +216,7 @@ foreach($uuids as $uuid) {
 		"ip" => $uuid['ip'],
 		"grpid" => $uuid['grpid'],
 		"except" => $uuid['except'],
+		"cldbid" => $uuid['cldbid'],
 		"grpsince" => $uuid['grpsince']
 	);
 	$uidarr[]			  = $uuid['uuid'];
@@ -340,7 +341,7 @@ if($adminlogin == 1) {
 								if ($adminlogin == 1) {
 									echo '<td class="text-center"><a href="http://www.tsviewer.com/index.php?page=search&action=ausgabe_user&nickname=' , $sqlhis[$uid]['name'] , '" target="_blank">' , $sqlhis[$uid]['name'] , '</a></td>';
 								} elseif ($showcolcld == 1) {
-									echo '<td class="text-center">' , $sqlhis[$uid]['name'] , '</td>';
+									echo '<td class="text-center"><a href="profil.php?id='.$sqlhis[$uid]['cldbid'].'">' , $sqlhis[$uid]['name'] , '</a></td>';
 								}
 								if ($adminlogin == 1) {
 									echo '<td class="text-center"><a href="http://ts3index.com/?page=searchclient&uid=' , $uid , '" target="_blank">' , $uid , '</a></td>';
