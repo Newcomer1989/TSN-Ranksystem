@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
-	<title>FragCS TS3 Tracker</title>
+	<title>TS-N.NET Ranksystem</title>
 	<link href="../libs/combined_stats.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
 	<script src="../libs/combined_stats.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
