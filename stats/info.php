@@ -19,39 +19,33 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h1 class="page-header">
-							<?PHP echo $lang['stri0001']; ?>
+							Despre Tracker
 						</h1>
 					</div>
 				</div>
 				<div class="row">
+					
+				<div class="row">
 					<div class="col-lg-12">
-						<h4><strong><span class="text-info"><?PHP echo $lang['stri0002']; ?></span></strong></h4>
-						<p><?PHP echo $lang['stri0003']; ?></p>
+						<h4><strong><span class="text-success">Cine s-a muncit pentru tracker?</span></strong></h4>
+						<p>FragCS <a href="http://fragcs.ro" target="_blank">Traker</a> scris din plictiseaza de <strong>BIT</strong> Copyright &copy; 2017 v1.0 BETA </p>
 						<br>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-lg-12">
-						<h4><strong><span class="text-success"><?PHP echo $lang['stri0004']; ?></span></strong></h4>
-						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2017 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a></p>
+						<h4><strong><span class="text-warning">Cand a fost lansat?</span></strong></h4>
+						<p>Versiunea BETA 18.02.2016</p>
+						
 						<br>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-lg-12">
-						<h4><strong><span class="text-warning"><?PHP echo $lang['stri0005']; ?></span></strong></h4>
-						<p><?PHP echo $lang['stri0006']; ?></p>
-						<p><?PHP echo $lang['stri0007']; ?></p>
-						<p><?PHP echo $lang['stri0008']; ?></p>
-						<br>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-12">
-						<h4><strong><span class="text-danger"><?PHP echo $lang['stri0009']; ?></span></strong></h4>
-						<p><?PHP echo $lang['stri0010']; ?></p>
+						<h4><strong><span class="text-danger">Cum si in ce a fost codat Traker-ul?</span></strong></h4>
+						<p>A fost scris in</p>
 						<p><a href="//php.net/" target="_blank">PHP</a> - Copyright &copy; 2001-2016 the <a href="//secure.php.net/credits.php" target="_blank">PHP Group</a></p><br>
-						<p><?PHP echo $lang['stri0011']; ?></p>
+						<p>Si am mai folosit</p>
 						<p><a href="//jquery.com/" target="_blank">jQuery v3.1.1</a> - Copyright &copy; 2016 The jQuery Foundation</p> 
 						<p><a href="//fontawesome.io" target="_blank">Font Awesome 4.7.0</a> - Copyright &copy; davegandy</p>
 						<p><a href="//flag-icon-css.lip.is/" target="_blank">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
@@ -67,19 +61,7 @@ require_once('nav.php');
 						<br>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-lg-12">
-						<h4><strong><span class="text-info"><?PHP echo $lang['stri0012']; ?></span></strong></h4>
-						<p><?PHP echo $lang['stri0013']; ?></p>
-						<p><?PHP echo $lang['stri0014']; ?></p>
-						<p><?PHP echo $lang['stri0015']; ?></p>
-						<p><?PHP echo $lang['stri0016']; ?></p>
-						<p><?PHP echo $lang['stri0017']; ?></p>
-						<p><?PHP echo $lang['stri0018']; ?></p>
-						<p><?PHP echo $lang['stri0019']; ?></p>
-						<br>
-					</div>
-				</div>
+				
 			</div>
 		</div>
 	</div>

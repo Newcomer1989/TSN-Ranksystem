@@ -10,10 +10,9 @@ $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 if(!isset($_SESSION['tsuid']) || isset($_SESSION['uuid_verified'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
-
-$getstring = $_SESSION['tsuid'];
-$searchmysql = 'WHERE uuid LIKE \'%'.$getstring.'%\'';
-
+$username = (isset($_GET['id']) ? (int)$_GET['id'] : NULL);
+//$searchmysql = 'WHERE uuid LIKE \'%'.$username.'%\'';
+$searchmysql = "WHERE cldbid='$username'";
 $dbdata = $mysqlcon->query("SELECT * FROM $dbname.user $searchmysql");
 $dbdata_fetched = $dbdata->fetchAll();
 $count_hours = round($dbdata_fetched[0]['count']/3600);
@@ -101,6 +100,20 @@ if($_SESSION['tsconnections'] >= $connects_for_legendary) {
 function get_percentage($max_value, $value) {
 	return (round(($value/$max_value)*100));
 }
+	//avatar
+	function ts3_base16($str) {
+        $convert = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p');
+
+        $ret = '';
+        for ($i = 0; $i < 20; $i++) {
+                $ch = ord(substr($str, $i, 1));
+
+                $ret .= $convert[($ch & 0xF0) >> 4];
+                $ret .= $convert[$ch & 0x0F];
+        }
+        return $ret;
+}
+
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -124,11 +137,14 @@ require_once('nav.php');
 							<div class="panel-heading">
 								<div class="row">
 									<div class="col-xs-9 text-left">
-										<div class="huge"><?PHP echo $_SESSION['tsname'] ?></div>
+									
+
+
+
+										<div class="huge"><?PHP echo $dbdata_fetched[0]['name'] ?></div>
 										<div><?PHP if ($except == 0 || $except == 1) {
 											echo $lang['stmy0002'],' #',$dbdata_fetched[0]['rank'];
 										} ?></div>
-										
 										<?php //Server asigned on server and offer by bot
 										$uuid=$dbdata_fetched[0]['uuid'];
 										$query = mysql_query("SELECT cldgroup,grpid from user WHERE uuid='$uuid'"); 
@@ -157,14 +173,30 @@ require_once('nav.php');
 										
 										echo '</div>'; //final server and bot group
 										 ?>
-									</div>
+									
+									
+										</div>	
 									<div class="col-xs-3">
-										<?PHP
-											if(isset($_SESSION['tsavatar']) && $_SESSION['tsavatar'] != "none") {
-												echo '<img src="../avatars/'.$_SESSION['tsavatar'].'" class="img-rounded pull-right" alt="avatar" height="70">';
-											} else {
-												echo '<span class="fa fa-user fa-5x"></span>';
-											}
+										
+									<?php
+									// avatar functie by bit
+$uid = (isset($dbdata_fetched[0]['uuid']) && !empty($dbdata_fetched[0]['uuid'])) ? $dbdata_fetched[0]['uuid'] : '';
+if (!empty($uid)) {
+        $var=ts3_base16(base64_decode($uid));
+} 
+
+//final avatar
+						if(isset($dbdata_fetched[0]['uuid']) && $dbdata_fetched[0]['uuid'] != NULL) { ?>
+						<img src="../avatars/<?php echo $var ?>.png" class="img-rounded pull-right" alt="avatar" height="70">
+						<?php
+						} else {
+							    echo '<span class="fa fa-user fa-5x"></span>';
+								}
+
+
+											
+										
+											
 										?>
 									</div>
 								</div>
@@ -173,8 +205,7 @@ require_once('nav.php');
 								<div class="pull-left">
 									<p><strong><?PHP echo $lang['stmy0003']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0004']; ?></strong></p>
-									<p><strong><?PHP echo $lang['stmy0005']; ?></strong></p>
-									<p><strong><?PHP echo $lang['stmy0006']; ?></strong></p>
+								
 									<p><strong><?PHP echo $lang['stmy0007']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0031']; ?></strong></p>
 									<p><strong><?PHP echo sprintf($lang['stmy0008'], '7'); ?></strong></p>
@@ -186,8 +217,7 @@ require_once('nav.php');
 								<div class="pull-right">
 									<p class="text-right"><?PHP echo $dbdata_fetched[0]['cldbid']; ?></p>
 									<p class="text-right"><?PHP echo $dbdata_fetched[0]['uuid']; ?></p>
-									<p class="text-right"><?PHP echo $_SESSION['tsconnections']; ?></p>
-									<p class="text-right"><?PHP echo $_SESSION['tscreated']; ?></p>
+									
 									<p class="text-right"><?PHP echo $count_total; ?></p>
 									<p class="text-right"><?PHP echo $active_count; ?></p>
 									<p class="text-right"><?PHP echo $count_week; ?></p>
