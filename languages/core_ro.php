@@ -231,7 +231,7 @@ $lang['stnv0020']			= "This page contains a overall summary of your personal sta
 $lang['stnv0021']			= "The informations are collected since the beginning of the Ranksystem, they are not since the beginning of the TeamSpeak server.";
 $lang['stnv0022']			= "This page receives its values out of a database. So the values might be delayed a bit.";
 $lang['stnv0023']			= "The sum inside of the donut charts may differ to the amount of 'Total user'. The reason is that this data weren't collected with older versions of the Ranksystem.";
-$lang['stnv0024']			= "FragCS TS3 Tracker Interfata WEB 1.0 BETA";
+$lang['stnv0024']			= "Ranksystem - Statistics";
 $lang['stnv0025']			= "Limit entries";
 $lang['stnv0026']			= "all";
 $lang['stnv0027']			= "The informations on this site could be outdated! It seems the Ranksystem is no more connected to the TeamSpeak.";
@@ -476,8 +476,5 @@ $lang['wiuptimedesc']		= "Enter here how much seconds have to gone till the Rank
 $lang['wiupuid']			= "Recipient";
 $lang['wiupuiddesc']		= "A comma separate list of unique Client-IDs, which shoud be informed on the TeamSpeak via private message for available updates.";
 $lang['wivlang']			= "Language";
-$lang['cauta_player']			= "Cauta Player dupa Nume";
-$lang['grad_server']			= "Grade oferite pe server:";
-$lang['grad_system']			= "Grade oferite pe Tracker:";
 $lang['wivlangdesc']		= "Choose a default language for the Ranksystem.<br><br>The language is also selectable on the websites for the users and will be stored for the session.";
 ?>

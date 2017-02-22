@@ -1,6 +1,5 @@
 <?PHP
 session_start();
-include 'db.php'; //simple method for mysql_connect
 require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
@@ -128,35 +127,6 @@ require_once('nav.php');
 										<div><?PHP if ($except == 0 || $except == 1) {
 											echo $lang['stmy0002'],' #',$dbdata_fetched[0]['rank'];
 										} ?></div>
-										
-										<?php //Server asigned on server and offer by bot
-										$uuid=$dbdata_fetched[0]['uuid'];
-										$query = mysql_query("SELECT cldgroup,grpid from user WHERE uuid='$uuid'"); 
-
-										$dnn=mysql_fetch_array($query) ;
-										
-										$cldg = explode(",", $dnn['cldgroup']);
-										$grpid = explode(",", $dnn['grpid']);
-										if($cldg[0]!==NULL){
-										echo'<div>'.$lang['grad_server'].' <img src="../icons/'.$cldg[0].'.png" alt="groupicon" title="">';
-										}
-										if($cldg[1]!==NULL){
-										echo'<img src="../icons/'.$cldg[1].'.png" alt="groupicon" title="">';
-										}
-										if($cldg[2]!==NULL){
-										echo'<img src="../icons/'.$cldg[2].'.png" alt="groupicon" title="">';
-										}
-										if($cldg[3]!==NULL){
-										echo'<img src="../icons/'.$cldg[3].'.png" alt="groupicon" title="">';
-										}
-										if($grpid[0]!==NULL && $grpid[0]!=0 ){
-										echo'<br>'.$lang['grad_system'].' <img src="../icons/'.$grpid[0].'.png" alt="groupicon" title="">';
-										}
-										 
-										
-										
-										echo '</div>'; //final server and bot group
-										 ?>
 									</div>
 									<div class="col-xs-3">
 										<?PHP

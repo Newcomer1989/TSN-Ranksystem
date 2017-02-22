@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
-	<title>FragCS TS3 Tracker</title>
+	<title>TS-N.NET Ranksystem</title>
 	<link href="../libs/combined_stats.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
 	<script src="../libs/combined_stats.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
@@ -157,26 +157,7 @@
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php"><?PHP echo $lang['stnv0024']; ?></a>
-			
 			</div>
-				
-
-
-			<ul class="nav navbar-left top-nav">
-				
-				
-				<li class="navbar-form navbar-right">
-					<form name="form1" method="post" action="search_rez.php">
-						<div class="form-group">
-							<input class="form-control" name="nume" type="text" id="nume" value="Search Player By Name" onfocus="if (this.value=='Search Player By Name') this.value='';"  required>
-						</div>
-						<button class="btn btn-primary" type="submit" name="submit" value="Submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
-					</form>
-				</li>
-			</ul>
-			
-			
-
 			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "list_rankup.php") { ?>
 			<ul class="nav navbar-left top-nav">
 				<li class="navbar-form navbar-left dropdown">
@@ -210,7 +191,6 @@
 				</li>
 			</ul>
 			<?PHP } ?>
-			
 			<ul class="nav navbar-right top-nav">
 				<?PHP
 				$lastscan = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='calc_user_lastscan'");
@@ -258,12 +238,28 @@
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - English</a>
+							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
 						</li>
-						
-					
 						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Romana</a>
+							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
+						</li>
+						<li>
+							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
+						</li>
+						<li>
+							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
+						</li>
+						<li>
+							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+						</li>
+						<li>
+							<a href="?lang=it"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
+						</li>
+						<li>
+							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>
+						</li>
+						<li>
+							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - русский</a>
 						</li>
 					</ul>
 				</li>
@@ -308,9 +304,8 @@
 						<a href="list_rankup.php"><i class="fa fa-fw fa-list-ul"></i>&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "info.php" ? ' class="active">' : '>'); ?>
-						<a href="info.php"><i class="fa fa-fw fa-info-circle"></i>&nbsp;Despre Proiect</a>
+						<a href="info.php"><i class="fa fa-fw fa-info-circle"></i>&nbsp;<?PHP echo $lang['stnv0030']; ?></a>
 					</li>
-
 				</ul>
 			</div>
 		</nav>
