@@ -30,7 +30,7 @@ if(count($multiple_uuid) > 1 and !isset($_SESSION['uuid_verified'])) {
 	$servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
 	foreach($servergroups as $servergroup) {
 		$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-		if(file_exists('../icons/'.$servergroup['sgid'].'.png')) {
+		if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
 			$sqlhisgroup_file[$servergroup['sgid']] = true;
 		} else {
 			$sqlhisgroup_file[$servergroup['sgid']] = false;
@@ -112,7 +112,7 @@ require_once('nav.php');
 									<div class="form-group">
 										<?PHP if (isset($sqlhisgroup_file[$allowed_group]) && $sqlhisgroup_file[$allowed_group]===true) { ?>
 										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]; ?></label>
-										<label class="col-sm-1 control-label"><img src="../icons/<?PHP echo $allowed_group; ?>.png" alt="groupicon"></label>
+										<label class="col-sm-1 control-label"><img src="../tsicons/<?PHP echo $allowed_group; ?>.png" alt="groupicon"></label>
 										<label class="col-sm-2 control-label"></label>
 										<?PHP } else { ?>
 										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]; ?></label>
