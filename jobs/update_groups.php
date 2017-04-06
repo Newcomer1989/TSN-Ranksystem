@@ -3,7 +3,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 
 	try {
 		check_shutdown($timezone,$logpath); usleep($slowmode);
-		$iconlist = $ts3->channelFileList($cid="0", $cpw="", $path="/tsicons/");
+		$iconlist = $ts3->channelFileList($cid="0", $cpw="", $path="/icons/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
 			enter_logfile($logpath,$timezone,2,"update_groups 1:".$e->getCode().': '."Error while getting servergrouplist: ".$e->getMessage());
