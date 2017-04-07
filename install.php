@@ -7,7 +7,7 @@ require_once('other/config.php');
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" href="icons/rs.png">
+	<link rel="icon" href="tsicons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
 	<link href="libs/combined_wi.css" rel="stylesheet">
 	<script src="libs/combined_wi.js"></script>
@@ -301,8 +301,8 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	if(substr(sprintf('%o', fileperms('./avatars/')), -4)!='0777') {
 		unset($err_msg); $err_msg .= "<br>".sprintf($lang['isntwichm'],"avatars"); $err_lvl = 3;
 	}
-	if(substr(sprintf('%o', fileperms('./icons/')), -4)!='0777') {
-		unset($err_msg); $err_msg .= "<br>".sprintf($lang['isntwichm'],"icons"); $err_lvl = 3;
+	if(substr(sprintf('%o', fileperms('./tsicons/')), -4)!='0777') {
+		unset($err_msg); $err_msg .= "<br>".sprintf($lang['isntwichm'],"tsicons"); $err_lvl = 3;
 	}
 	if(substr(sprintf('%o', fileperms('./logs/')), -4)!='0777') {
 		unset($err_msg); $err_msg .= "<br>".sprintf($lang['isntwichm'],"logs"); $err_lvl = 3;
