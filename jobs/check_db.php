@@ -16,8 +16,8 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 	}
 	
 	function check_chmod($timezone,$logpath,$lang) {
-		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'icons/')), -3, 1)!='7') {
-			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'icons'));
+		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'tsicons/')), -3, 1)!='7') {
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'tsicons'));
 		}
 		if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'logs'));
