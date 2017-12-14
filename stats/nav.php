@@ -7,8 +7,8 @@
 	<meta name="version" content="<?PHP echo $currvers; ?>">
 	<link rel="icon" href="../icons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/combined_stats.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
-	<script src="../libs/combined_stats.js?v=<?PHP echo $currvers; ?>"></script>
+	<link href="../libs/combined_statistics.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
+	<script src="../libs/combined_statistics.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
 	if(isset($shownav) && $shownav == 0) { ?>
 	<style>
