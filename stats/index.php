@@ -555,7 +555,7 @@ require_once('nav.php');
 				} elseif ($usage == 'year') {
 					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,64) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 548");
 				} else {
-					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp ORDER BY u2.timestamp DESC LIMIT 96");
+					$server_usage = $mysqlcon->query("SELECT timestamp, clients, channel FROM $dbname.server_usage ORDER BY timestamp DESC LIMIT 96");
 				}
 				$server_usage = $server_usage->fetchAll(PDO::FETCH_ASSOC);
 				foreach($server_usage as $chart_value) {
