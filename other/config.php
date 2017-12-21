@@ -152,4 +152,15 @@ if(!isset($language) || $language == "en") {
 } elseif($language == "ru") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
 }
+
+// Add "restart" button
+$lang['wisvres'] .= <<<EOT
+<br>
+<form class="form-horizontal" name="restart" action="bot.php" method="POST">
+<button type="submit" class="btn btn-primary" name="restart">
+<i class="fa fa-fw fa-refresh"></i>&nbsp;{$lang['wibot7']}
+</button>
+</form>
+EOT;
+
 ?>

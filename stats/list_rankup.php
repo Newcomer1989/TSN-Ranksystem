@@ -232,7 +232,7 @@ $dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups");
 $servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
 foreach($servergroups as $servergroup) {
 	$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-	if(file_exists('../icons/'.$servergroup['sgid'].'.png')) {
+	if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
 		$sqlhisgroup_file[$servergroup['sgid']] = true;
 	} else {
 		$sqlhisgroup_file[$servergroup['sgid']] = false;
@@ -384,7 +384,7 @@ if($adminlogin == 1) {
 									if ($sqlhis[$uid]['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
 									} elseif ($sqlhisgroup_file[$sqlhis[$uid]['grpid']]===true) {
-										echo '<td class="text-center"><img src="../icons/'.$sqlhis[$uid]['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$usergroupid] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$sqlhis[$uid]['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$usergroupid] , '</td>';
 									} else {
 										echo '<td class="text-center">' , $sqlhisgroup[$usergroupid] , '</td>';
 									}
@@ -418,7 +418,7 @@ if($adminlogin == 1) {
 									} elseif ($except == 2 || $except == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup_file[$groupid]) && $sqlhisgroup_file[$groupid]===true) {
-										echo '<td class="text-center"><img src="../icons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid] , '</td>';
 									} else {

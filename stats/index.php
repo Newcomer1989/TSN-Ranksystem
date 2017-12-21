@@ -20,6 +20,8 @@ if($language == "ar") {
 	require_once('../languages/nations_en.php');
 } elseif($language == "ru") {
 	require_once('../languages/nations_ru.php');
+} elseif($language == "nl") {
+	require_once('../languages/nations_nl.php');
 }
 
 if(!isset($_SESSION['tsuid'])) {

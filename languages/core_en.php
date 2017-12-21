@@ -285,7 +285,7 @@ $lang['sttw0012']			= "Other %s users (in hours)";
 $lang['sttw0013']			= "With %s hours active time";
 $lang['sttm0001']			= "Of the month";
 $lang['stta0001']			= "Of all time";
-$lang['stve0001']			= "\nHello %s,\nhere a [B]token[/B] to verify you for the Ranksystem:\n[B]%s[/B]\n\nPut this on the Ranksystem page inside the token field.\n\nIf you didn't request this message, please ignore it. If you get it repeated times, please contact an admin.";
+$lang['stve0001']			= "\nHello %1\$s,\nclick here, to login into the ranksystem:\n[URL=%3\$s][B]Verify identity[/B][/URL]\n\nAlternatively you can enter the following token:\n[B]%2\$s[/B]\n\nIf you didn't request this message, please ignore it. If you get it repeated times, please contact an admin.";
 $lang['stve0002']			= "A message with the token was sent to you on the TS3 server.";
 $lang['stve0003']			= "Please enter the token, which you received on the TS3 server. If you have not received a message, please be sure you have chosen the correct unique ID.";
 $lang['stve0004']			= "The entered token does not match! Please try it again.";
