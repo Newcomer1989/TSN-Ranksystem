@@ -10,91 +10,99 @@ if(!isset($_SESSION['tsuid']) || isset($_SESSION['uuid_verified'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-$getstring = $_SESSION['tsuid'];
-$searchmysql = 'WHERE uuid LIKE \'%'.$getstring.'%\'';
+$multiple_uuid = explode(',', substr($_SESSION['multiple'], 0, -1));
 
-$dbdata = $mysqlcon->query("SELECT * FROM $dbname.user $searchmysql");
-$dbdata_fetched = $dbdata->fetchAll();
-$count_hours = round($dbdata_fetched[0]['count']/3600);
-$idle_hours = round($dbdata_fetched[0]['idle']/3600);
-$except = $dbdata_fetched[0]['except'];
-
-if ($substridle == 1) {
-	$activetime = $dbdata_fetched[0]['count'] - $dbdata_fetched[0]['idle'];
+if(count($multiple_uuid) > 1 and !isset($_SESSION['uuid_verified'])) {
+	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
+	
 } else {
-	$activetime = $dbdata_fetched[0]['count'];
-}
-$active_count = $dbdata_fetched[0]['count'] - $dbdata_fetched[0]['idle'];
 
-krsort($grouptime);
-$grpcount = 0;
-$nextgrp = '';
+	$getstring = $_SESSION['tsuid'];
+	$searchmysql = 'WHERE uuid LIKE \'%'.$getstring.'%\'';
 
-foreach ($grouptime as $time => $groupid) {
-	$grpcount++;
-	$actualgrp = $time;
-	if ($activetime > $time) {
-		break;
+	$dbdata = $mysqlcon->query("SELECT * FROM $dbname.user $searchmysql");
+	$dbdata_fetched = $dbdata->fetchAll();
+	$count_hours = round($dbdata_fetched[0]['count']/3600);
+	$idle_hours = round($dbdata_fetched[0]['idle']/3600);
+	$except = $dbdata_fetched[0]['except'];
+
+	if ($substridle == 1) {
+		$activetime = $dbdata_fetched[0]['count'] - $dbdata_fetched[0]['idle'];
 	} else {
-		$nextup = $time - $activetime;
-		$nextgrp = $time;
+		$activetime = $dbdata_fetched[0]['count'];
 	}
-}
-if($actualgrp==$nextgrp) {
-	$actualgrp = 0;
-}
-if($activetime>$nextgrp) {
-	$percentage_rankup = 100;
-} else {
-	$takedtime = $activetime - $actualgrp;
-	$neededtime = $nextgrp - $actualgrp;
-	$percentage_rankup = round($takedtime/$neededtime*100);
-}
+	$active_count = $dbdata_fetched[0]['count'] - $dbdata_fetched[0]['idle'];
 
-$stats_user = $mysqlcon->query("SELECT * FROM $dbname.stats_user WHERE uuid='$getstring'");
-$stats_user = $stats_user->fetchAll();
+	krsort($grouptime);
+	$grpcount = 0;
+	$nextgrp = '';
 
-if (isset($stats_user[0]['count_week'])) $count_week = $stats_user[0]['count_week']; else $count_week = 0;
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($timeformat);
-if (isset($stats_user[0]['active_week'])) $active_week = $stats_user[0]['active_week']; else $active_week = 0;
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_week"); $active_week = $dtF->diff($dtT)->format($timeformat);
-if (isset($stats_user[0]['count_month'])) $count_month = $stats_user[0]['count_month']; else $count_month = 0;
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_month"); $count_month = $dtF->diff($dtT)->format($timeformat);
-if (isset($stats_user[0]['active_month'])) $active_month = $stats_user[0]['active_month']; else $active_month = 0;
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($timeformat);
-if (isset($dbdata_fetched[0]['count'])) $count_total = $dbdata_fetched[0]['count']; else $count_total = 0;
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($timeformat);
-$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($timeformat);
+	foreach ($grouptime as $time => $groupid) {
+		$grpcount++;
+		$actualgrp = $time;
+		if ($activetime > $time) {
+			break;
+		} else {
+			$nextup = $time - $activetime;
+			$nextgrp = $time;
+		}
+	}
+	if($actualgrp==$nextgrp) {
+		$actualgrp = 0;
+	}
+	if($activetime>$nextgrp) {
+		$percentage_rankup = 100;
+	} else {
+		$takedtime = $activetime - $actualgrp;
+		$neededtime = $nextgrp - $actualgrp;
+		$percentage_rankup = round($takedtime/$neededtime*100);
+	}
 
-$time_for_bronze = 50;
-$time_for_silver = 100;
-$time_for_gold = 250;
-$time_for_legendary = 500;
+	$stats_user = $mysqlcon->query("SELECT * FROM $dbname.stats_user WHERE uuid='$getstring'");
+	$stats_user = $stats_user->fetchAll();
 
-$connects_for_bronze = 50;
-$connects_for_silver = 100;
-$connects_for_gold = 250;
-$connects_for_legendary = 500;
+	if (isset($stats_user[0]['count_week'])) $count_week = $stats_user[0]['count_week']; else $count_week = 0;
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($timeformat);
+	if (isset($stats_user[0]['active_week'])) $active_week = $stats_user[0]['active_week']; else $active_week = 0;
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_week"); $active_week = $dtF->diff($dtT)->format($timeformat);
+	if (isset($stats_user[0]['count_month'])) $count_month = $stats_user[0]['count_month']; else $count_month = 0;
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_month"); $count_month = $dtF->diff($dtT)->format($timeformat);
+	if (isset($stats_user[0]['active_month'])) $active_month = $stats_user[0]['active_month']; else $active_month = 0;
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($timeformat);
+	if (isset($dbdata_fetched[0]['count'])) $count_total = $dbdata_fetched[0]['count']; else $count_total = 0;
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($timeformat);
 
-$achievements_done = 0;
+	$time_for_bronze = 50;
+	$time_for_silver = 100;
+	$time_for_gold = 250;
+	$time_for_legendary = 500;
 
-if($count_hours >= $time_for_legendary) {
-	$achievements_done = $achievements_done + 4; 
-} elseif($count_hours >= $time_for_gold) {
-	$achievements_done = $achievements_done + 3;
-} elseif($count_hours >= $time_for_silver) {
-	$achievements_done = $achievements_done + 2;
-} else {
-	$achievements_done = $achievements_done + 1;
-}
-if($_SESSION['tsconnections'] >= $connects_for_legendary) {
-	$achievements_done = $achievements_done + 4;
-} elseif($_SESSION['tsconnections'] >= $connects_for_gold) {
-	$achievements_done = $achievements_done + 3;
-} elseif($_SESSION['tsconnections'] >= $connects_for_silver) {
-	$achievements_done = $achievements_done + 2;
-} else {
-	$achievements_done = $achievements_done + 1;
+	$connects_for_bronze = 50;
+	$connects_for_silver = 100;
+	$connects_for_gold = 250;
+	$connects_for_legendary = 500;
+
+	$achievements_done = 0;
+
+	if($count_hours >= $time_for_legendary) {
+		$achievements_done = $achievements_done + 4; 
+	} elseif($count_hours >= $time_for_gold) {
+		$achievements_done = $achievements_done + 3;
+	} elseif($count_hours >= $time_for_silver) {
+		$achievements_done = $achievements_done + 2;
+	} else {
+		$achievements_done = $achievements_done + 1;
+	}
+	if($_SESSION['tsconnections'] >= $connects_for_legendary) {
+		$achievements_done = $achievements_done + 4;
+	} elseif($_SESSION['tsconnections'] >= $connects_for_gold) {
+		$achievements_done = $achievements_done + 3;
+	} elseif($_SESSION['tsconnections'] >= $connects_for_silver) {
+		$achievements_done = $achievements_done + 2;
+	} else {
+		$achievements_done = $achievements_done + 1;
+	}
 }
 
 function get_percentage($max_value, $value) {
@@ -103,7 +111,8 @@ function get_percentage($max_value, $value) {
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
-		<?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
+		<?PHP if(isset($err_msg)) error_handling($err_msg, 3); 
+		if(count($multiple_uuid) > 1) { echo "</div></div></body></html>"; exit; } ?>
 			<div class="container-fluid">
 
 				<!-- Page Heading -->
@@ -357,7 +366,7 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-warning progress-bar-striped active role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_bronze, $_SESSION['tsconnections']); ?>%;">
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_bronze, $_SESSION['tsconnections']); ?>%;">
 								<?PHP echo get_percentage($connects_for_bronze, $_SESSION['tsconnections']),$lang['stmy0022']; ?>
 							</div>
 						</div>

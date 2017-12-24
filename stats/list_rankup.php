@@ -78,17 +78,19 @@ if(isset($getstring) && strstr($getstring, 'filter:country:')) {
 if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 	preg_match('/filter\:lastseen\:(.*)\:(.*)\:/',$searchstring,$seenvalue);
 	$searchstring = preg_replace('/filter\:lastseen\:(.*)\:(.*)\:/','',$searchstring);
-	if(is_numeric($seenvalue[2])) {
+	if(isset($seenvalue[2]) && is_numeric($seenvalue[2])) {
 		$lastseen = $seenvalue[2];
-	} else {
+	} elseif(isset($seenvalue[2])) {
 		$r = date_parse_from_format("Y-m-d H-i",$seenvalue[2]);
 		$lastseen = mktime($r['hour'], $r['minute'], $r['second'], $r['month'], $r['day'], $r['year']);
+	} else {
+		$lastseen = 0;
 	}
-	if($seenvalue[1] == '&lt;' || $seenvalue[1] == '<') {
+	if(isset($seenvalue[1]) && ($seenvalue[1] == '&lt;' || $seenvalue[1] == '<')) {
 		$operator = '<';
-	} elseif($seenvalue[1] == '&gt;' || $seenvalue[1] == '>') {
+	} elseif(isset($seenvalue[1]) && ($seenvalue[1] == '&gt;' || $seenvalue[1] == '>')) {
 		$operator = '>';
-	} elseif($seenvalue[1] == '!=') {
+	} elseif(isset($seenvalue[1]) && $seenvalue[1] == '!=') {
 		$operator = '!=';
 	} else {
 		$operator = '=';
@@ -116,7 +118,7 @@ $keyorder = '';
 if (isset($_GET['sort'])) {
 	$keysort = strip_tags(htmlspecialchars($_GET['sort']));
 }
-if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active' && $keysort != 'grpsince') {
+if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active' && $keysort != 'grpid' && $keysort != 'grpsince') {
 	$keysort = 'nextup';
 }
 if (isset($_GET['order'])) {
@@ -232,7 +234,7 @@ $dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups");
 $servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
 foreach($servergroups as $servergroup) {
 	$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-	if(file_exists('../icons/'.$servergroup['sgid'].'.png')) {
+	if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
 		$sqlhisgroup_file[$servergroup['sgid']] = true;
 	} else {
 		$sqlhisgroup_file[$servergroup['sgid']] = false;
@@ -384,7 +386,7 @@ if($adminlogin == 1) {
 									if ($sqlhis[$uid]['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
 									} elseif ($sqlhisgroup_file[$sqlhis[$uid]['grpid']]===true) {
-										echo '<td class="text-center"><img src="../icons/'.$sqlhis[$uid]['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$usergroupid] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$sqlhis[$uid]['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$usergroupid] , '</td>';
 									} else {
 										echo '<td class="text-center">' , $sqlhisgroup[$usergroupid] , '</td>';
 									}
@@ -418,7 +420,7 @@ if($adminlogin == 1) {
 									} elseif ($except == 2 || $except == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup_file[$groupid]) && $sqlhisgroup_file[$groupid]===true) {
-										echo '<td class="text-center"><img src="../icons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid] , '</td>';
 									} else {

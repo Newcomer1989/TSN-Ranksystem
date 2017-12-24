@@ -58,7 +58,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
 	$config[0]['grouptime']		= $_POST['grouptime'];
@@ -114,14 +115,14 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup" maxlength="999"><?php echo $config[0]['exceptgroup']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup" maxlength="999"><?php echo $config[0]['exceptgroup']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid" maxlength="999"><?php echo $config[0]['exceptcid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid" maxlength="999"><?php echo $config[0]['exceptcid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
@@ -131,7 +132,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group required-field-block">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([0-9]+=>[0-9]+,)*[0-9]+=>[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config[0]['grouptime']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config[0]['grouptime']; ?></textarea>
 									<div class="required-icon"><div class="text">*</div></div>
 									<div class="help-block with-errors"></div>
 								</div>

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="<?PHP echo $language; ?>">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $currvers; ?>">
-	<link rel="icon" href="../icons/rs.png">
+	<link rel="icon" href="../tsicons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/combined_stats.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
-	<script src="../libs/combined_stats.js?v=<?PHP echo $currvers; ?>"></script>
+	<link href="../libs/combined_st.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
+	<script src="../libs/combined_st.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
 	if(isset($shownav) && $shownav == 0) { ?>
 	<style>
@@ -250,16 +250,19 @@
 							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
 						</li>
 						<li>
-							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - italiano</a>
+							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - Italiano</a>
 						</li>
 						<li>
-							<a href="?lang=it"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
+							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - românesc</a>
+							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
 						</li>
 						<li>
-							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - русский</a>
+							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Pусский</a>
+						</li>
+						<li>
+							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
 						</li>
 					</ul>
 				</li>

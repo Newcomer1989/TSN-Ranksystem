@@ -54,7 +54,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
 	$rankupmsg	= $_POST['rankupmsg'];

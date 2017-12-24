@@ -8,7 +8,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 		$getversion = $getversion->fetchAll();
 		$updatetime = $nowtime - 43200;
 		if ($getversion[0]['timestamp'] < $updatetime) {
-			$newversion=get_data('http://ts-n.net/ranksystem/'.$upchannel,$currvers,$ts);
+			$newversion=get_data('https://ts-n.net/ranksystem/'.$upchannel,$currvers,$ts);
 			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'") === false) {
 				enter_logfile($logpath,$timezone,2,"calc_user -2:".print_r($mysqlcon->errorInfo(), true));
 			}
@@ -101,6 +101,16 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 	krsort($grouptime);
 	$sumentries = 0;
 	$nextupforinsert = key($grouptime) - 1;
+	
+	if(!isset($dbgroups)) {
+		if(($dbgroups = $mysqlcon->query("SELECT sgid,sgidname FROM $dbname.groups")) === false) {
+			enter_logfile($logpath,$timezone,2,"calc_user 8.1:".print_r($mysqlcon->errorInfo(), true));
+		} else {
+			$dbgroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
+		}
+	}
+	
+	print_r($dbgroups);
 
 	foreach ($allclients as $client) {
 		$sumentries++;
@@ -164,7 +174,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 										try {
 											$ts3->serverGroupClientDel($boost['group'], $cldbid);
 											$boosttime = 0;
-											enter_logfile($logpath,$timezone,5,sprintf($lang['sgrprm'], $sqlhis[$uid]['grpid'], $name, $uid, $cldbid));
+											enter_logfile($logpath,$timezone,5,sprintf($lang['sgrprm'], $dbgroups[$sqlhis[$uid]['grpid']]['sgidname'], $sqlhis[$uid]['grpid'], $name, $uid, $cldbid));
 										}
 										catch (Exception $e) {
 											enter_logfile($logpath,$timezone,2,"calc_user 8:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
@@ -213,7 +223,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 								check_shutdown($timezone,$logpath); usleep($slowmode);
 								try {
 									$ts3->serverGroupClientDel($sqlhis[$uid]['grpid'], $cldbid);
-									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrprm'], $sqlhis[$uid]['grpid'], $name, $uid, $cldbid));
+									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrprm'], $dbgroups[$sqlhis[$uid]['grpid']]['sgidname'], $sqlhis[$uid]['grpid'], $name, $uid, $cldbid));
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 9:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
@@ -224,7 +234,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 								try {
 									$ts3->serverGroupClientAdd($groupid, $cldbid);
 									$grpsince = $nowtime;
-									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $groupid, $name, $uid, $cldbid));
+									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $dbgroups[$groupid]['sgidname'], $groupid, $name, $uid, $cldbid));
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 10:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
@@ -238,7 +248,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 								$mins  = $dtF->diff($dtT)->format('%i');
 								$secs  = $dtF->diff($dtT)->format('%s');
 								try {
-									$ts3->clientGetByUid($uid)->message(sprintf($rankupmsg, $days, $hours, $mins, $secs));
+									$ts3->clientGetByUid($uid)->message(sprintf($rankupmsg, $days, $hours, $mins, $secs, $dbgroups[$groupid]['sgidname'], $client['client_nickname']));
 								} catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"calc_user 12:".sprintf($lang['sgrprerr'], $name, $uid, $cldbid));
 								}

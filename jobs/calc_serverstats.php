@@ -111,10 +111,12 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	arsort($country_array);
 	$country_counter = 0;
 	$country_nation_other = 0;
+	$country_nation_name_1 = 0;
 	$country_nation_name_2 = 0;
 	$country_nation_name_3 = 0;
 	$country_nation_name_4 = 0;
 	$country_nation_name_5 = 0;
+	$country_nation_1 = 0;
 	$country_nation_2 = 0;
 	$country_nation_3 = 0;
 	$country_nation_4 = 0;

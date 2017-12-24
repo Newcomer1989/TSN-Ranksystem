@@ -57,7 +57,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
 	$ts['host']		= $_POST['tshost'];
@@ -168,7 +169,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<script>
 									$("input[name='defchid']").TouchSpin({
 										min: 0,
-										max: 9223372036854775807,
+										max: 2147483647,
 										verticalbuttons: true,
 										prefix: 'ID:'
 									});
@@ -181,11 +182,13 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" id="basic" name="slowmode">
 									<?PHP
-									echo '<option data-subtext="[recommended]" value="0"'; if($slowmode=="0") echo ' selected="selected"'; echo '>Realtime (deactivated)</option>';
+									echo '<option data-subtext="[recommended]" value="0"'; if($slowmode=="0") echo ' selected="selected"'; echo '>disabled (Realtime)</option>';
 									echo '<option data-divider="true">&nbsp;</option>';
 									echo '<option data-subtext="(0,2 seconds)" value="200000"'; if($slowmode=="200000") echo ' selected="selected"'; echo '>Low delay</option>';
 									echo '<option data-subtext="(0,5 seconds)" value="500000"'; if($slowmode=="500000") echo ' selected="selected"'; echo '>Middle delay</option>';
 									echo '<option data-subtext="(1,0 seconds)" value="1000000"'; if($slowmode=="1000000") echo ' selected="selected"'; echo '>High delay</option>';
+									echo '<option data-subtext="(2,0 seconds)" value="2000000"'; if($slowmode=="2000000") echo ' selected="selected"'; echo '>Huge delay</option>';
+									echo '<option data-subtext="(5,0 seconds)" value="5000000"'; if($slowmode=="5000000") echo ' selected="selected"'; echo '>Ultra delay</option>';
 									?>
 									</select>
 								</div>

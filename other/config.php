@@ -57,6 +57,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
 		} elseif($_GET["lang"] == "ru") {
 			$language = "ru";
 			$_SESSION['language'] = "ru";
+		} elseif($_GET["lang"] == "pt") {
+			$language = "pt";
+			$_SESSION['language'] = "pt";
 		} else {
 			$language = "en";
 			$_SESSION['language'] = "en";
@@ -151,5 +154,7 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
 } elseif($language == "ru") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
+} elseif($language == "pt") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
 }
 ?>

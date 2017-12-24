@@ -117,16 +117,10 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 
 		if (substr(php_uname(), 0, 7) == "Windows") {
 			exec("start ".$phpcommand." ".$path."worker.php restart");
+			exit;
 		} else {
 			exec($phpcommand." ".$path."worker.php restart > /dev/null 2>/dev/null &");
-		}
-	
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C php ".substr(__DIR__,0,-4)."\worker.php stop", 0, false); 
-		} else {
-			exec("php ".substr(__DIR__,0,-5)."/worker.php stop");
-			check_shutdown($timezone,$logpath);
+			exit;
 		}
 	} else {
 		enter_logfile($logpath,$timezone,1,"  Files updated with at least one error. Please check the log!\n",$norotate);

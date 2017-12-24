@@ -16,20 +16,24 @@ if($language == "ar") {
 	require_once('../languages/nations_fr.php');
 } elseif($language == "it") {
 	require_once('../languages/nations_it.php');
+} elseif($language == "nl") {
+	require_once('../languages/nations_en.php');
 } elseif($language == "ro") {
 	require_once('../languages/nations_en.php');
 } elseif($language == "ru") {
 	require_once('../languages/nations_ru.php');
+} elseif($language == "pt") {
+	require_once('../languages/nations_pt.php');
 }
 
 if(!isset($_SESSION['tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-function human_readable_size($bytes) {
-	$size = array(' B',' KiB',' MiB',' GiB',' TiB',' PiB',' EiB',' ZiB',' YiB');
+function human_readable_size($bytes,$lang) {
+	$size = array($lang['size_byte'],$lang['size_kib'],$lang['size_mib'],$lang['size_gib'],$lang['size_tib'],$lang['size_pib'],$lang['size_eib'],$lang['size_zib'],$lang['size_yib']);
 	$factor = floor((strlen($bytes) - 1) / 3);
-	return sprintf("%.2f", $bytes / pow(1024, $factor)) . @$size[$factor];
+	return sprintf("%.2f", $bytes / pow(1024, $factor)) . ' ' . @$size[$factor];
 }
 
 $sql = $mysqlcon->query("SELECT * FROM $dbname.stats_server");
@@ -357,15 +361,15 @@ require_once('nav.php');
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0028']; ?></td>
-										<td><?PHP if($sql_res[0]['server_status'] == 0) { echo '-';} else { echo $sql_res[0]['server_ping'] . ' ms';} ?></td>
+										<td><?PHP if($sql_res[0]['server_status'] == 0) { echo '-';} else { echo $sql_res[0]['server_ping'] . ' ' . $lang['time_ms'];} ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0029']; ?></td>
-										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_down']); ?></td>
+										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_down'],$lang); ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0030']; ?></td>
-										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_up']); ?></td>
+										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_up'],$lang); ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0031']; ?></td>
@@ -386,9 +390,9 @@ require_once('nav.php');
 								<tbody>
 									<tr>
 										<td><?PHP echo $lang['stix0036']; ?></td>
-										<td><?PHP if(file_exists("../icons/servericon.png")) { 
-										$img_content = file_get_contents("../icons/servericon.png");
-										echo $sql_res[0]['server_name'] .'<div class="pull-right"><img src="data:image/',mime_content_type("../icons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
+										$img_content = file_get_contents("../tsicons/servericon.png");
+										echo $sql_res[0]['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
 										} else { echo $sql_res[0]['server_name']; } ?></td>
 									</tr>
 									<tr>
@@ -555,7 +559,7 @@ require_once('nav.php');
 				} elseif ($usage == 'year') {
 					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,64) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 548");
 				} else {
-					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp ORDER BY u2.timestamp DESC LIMIT 96");
+					$server_usage = $mysqlcon->query("SELECT timestamp, clients, channel FROM $dbname.server_usage ORDER BY timestamp DESC LIMIT 96");
 				}
 				$server_usage = $server_usage->fetchAll(PDO::FETCH_ASSOC);
 				foreach($server_usage as $chart_value) {
@@ -572,7 +576,7 @@ require_once('nav.php');
 		  hideHover: 'auto',
 		  hoverCallback:  
 				function (index, options, content, row) {
-					return "<b>" + row.y + "</b><br><div class='morris-hover-point' style='color:#2677B5'>Clients: " + row.a + "</div><div class='morris-hover-point' style='color:#868F96'>Channel: " + (row.b + row.a) + "</div>";
+					return "<b>" + row.y + "</b><br><div class='morris-hover-point text-primary'>Clients: " + row.a + "</div><div class='morris-hover-point text-muted'>Channel: " + (row.b + row.a) + "</div>";
 				} ,
 		  labels: ['Clients', 'Channel']
 		});

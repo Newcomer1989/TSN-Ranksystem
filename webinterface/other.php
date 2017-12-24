@@ -44,18 +44,19 @@ require_once('nav.php');
 
 if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
 	$timezone 		= $_POST['timezone'];
-	$dateformat 	= $_POST['dateformat'];
+	$timeformat 	= $_POST['dateformat'];
 	$logpath		= addslashes($_POST['logpath']);
 	$language  		= $_POST['languagedb'];
 	if (isset($_POST['upcheck'])) $upcheck = 1; else $upcheck = 0;
 	$updateinfotime = $_POST['updateinfotime'];
 	$uniqueid       = $_POST['uniqueid'];
 	$adminuuid     	= $_POST['adminuuid'];
-	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$dateformat',logpath='$logpath',language='$language',upcheck='$upcheck',updateinfotime='$updateinfotime',uniqueid='$uniqueid',adminuuid='$adminuuid'") === false) {
+	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$timeformat',logpath='$logpath',language='$language',upcheck='$upcheck',updateinfotime='$updateinfotime',uniqueid='$uniqueid',adminuuid='$adminuuid'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".$lang['wisvres'];
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
 	$logpath				= $_POST['logpath'];
@@ -113,12 +114,13 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<?PHP
 									echo '<option data-subtext="العربية" value="ar"'.($language === 'ar' ? ' selected="selected"' : '').'>AR</option>';
 									echo '<option data-subtext="Deutsch" value="de"'.($language === 'de' ? ' selected="selected"' : '').'>DE</option>';
-									echo '<option data-subtext="english" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
+									echo '<option data-subtext="English" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
 									echo '<option data-subtext="français" value="fr"'.($language === 'fr' ? ' selected="selected"' : '').'>FR</option>';
-									echo '<option data-subtext="italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
+									echo '<option data-subtext="Italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
 									echo '<option data-subtext="Nederlands" value="nl"'.($language === 'nl' ? ' selected="selected"' : '').'>NL</option>';
-									echo '<option data-subtext="românesc" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';
-									echo '<option data-subtext="русский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
+									echo '<option data-subtext="Română" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';
+									echo '<option data-subtext="Pусский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
+									echo '<option data-subtext="Português" value="pt"'.($language === 'pt' ? ' selected="selected"' : '').'>PT</option>';
 									?>
 									</select>
 								</div>

@@ -131,9 +131,9 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 											<script>
 											$("input[name='setontime_day']").TouchSpin({
 												min: 0,
-												max: 106751991167299,
+												max: 24855,
 												verticalbuttons: true,
-												prefix: 'Day(s):'
+												prefix: '<?PHP echo $lang['time_day']; ?>'
 											});
 											</script>
 										</div>
@@ -147,7 +147,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 												min: 0,
 												max: 23,
 												verticalbuttons: true,
-												prefix: 'Hour(s):'
+												prefix: '<?PHP echo $lang['time_hour']; ?>'
 											});
 											</script>
 										</div>
@@ -161,7 +161,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 												min: 0,
 												max: 59,
 												verticalbuttons: true,
-												prefix: 'Min.:'
+												prefix: '<?PHP echo $lang['time_min']; ?>'
 											});
 											</script>
 										</div>
@@ -175,7 +175,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 												min: 0,
 												max: 59,
 												verticalbuttons: true,
-												prefix: 'Sec:'
+												prefix: '<?PHP echo $lang['time_sec']; ?>'
 											});
 											</script>
 										</div>

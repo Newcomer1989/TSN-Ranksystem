@@ -50,8 +50,8 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 				check_shutdown($timezone,$logpath); usleep($slowmode);
 				enter_logfile($logpath,$timezone,5,"Download new ServerIcon");
 				$sIconFile = $ts3->iconDownload();
-				if(file_put_contents(substr(dirname(__FILE__),0,-4) . "icons/servericon.png", $sIconFile) === false) {
-					enter_logfile($logpath,$timezone,2,"Error while writing out the servericon. Please check the permission for the folder 'icons'");
+				if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png", $sIconFile) === false) {
+					enter_logfile($logpath,$timezone,2,"Error while writing out the servericon. Please check the permission for the folder 'tsicons'");
 				}
 			} catch (Exception $e) {
 				enter_logfile($logpath,$timezone,2,"update_groups 4:".$e->getCode().': '."Error while downloading servericon: ".$e->getMessage());
@@ -95,8 +95,8 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 					} catch (Exception $e) {
 						enter_logfile($logpath,$timezone,2,"update_groups 5:".$e->getCode().': '."Error while downloading servergroupicon: ".$e->getMessage());
 					}
-					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "icons/" . $sgid . ".png", $iconfile) === false) {
-						enter_logfile($logpath,$timezone,2,"Error while writing out the servergroup icon. Please check the permission for the folder 'icons'");
+					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png", $iconfile) === false) {
+						enter_logfile($logpath,$timezone,2,"Error while writing out the servergroup icon. Please check the permission for the folder 'tsicons'");
 					}
 				} catch (Exception $e) {
 					enter_logfile($logpath,$timezone,2,"update_groups 6:".$e->getCode().': '."Error while downloading servergroup icon: ".$e->getMessage());

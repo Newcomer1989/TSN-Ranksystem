@@ -1,7 +1,5 @@
 <?PHP
 function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$avatar_delay) {
-	$count = 0;
-
 	try {
 		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$tsfilelist = $ts3->channelFileList($cid="0", $cpw="", $path="/");
@@ -33,7 +31,6 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$
 						if(file_put_contents($avatarfilepath, $tsfile) === false) {
 							enter_logfile($logpath,$timezone,2,"Error while writing out the avatar. Please check the permission for the folder 'avatars'");
 						}
-						$count++;
 					}
 					catch (Exception $e) {
 						enter_logfile($logpath,$timezone,2,"get_avatars 2:".$e->getCode().': '."Error while downloading avatar: ".$e->getMessage());

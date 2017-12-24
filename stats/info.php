@@ -77,6 +77,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0017']; ?></p>
 						<p><?PHP echo $lang['stri0018']; ?></p>
 						<p><?PHP echo $lang['stri0019']; ?></p>
+						<p><?PHP echo $lang['stri0020']; ?></p>
 						<br>
 					</div>
 				</div>

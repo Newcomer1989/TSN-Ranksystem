@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.2';
+	$newversion = '1.2.3';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -16,8 +16,8 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 	}
 	
 	function check_chmod($timezone,$logpath,$lang) {
-		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'icons/')), -3, 1)!='7') {
-			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'icons'));
+		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'tsicons/')), -3, 1)!='7') {
+			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'tsicons'));
 		}
 		if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 			enter_logfile($logpath,$timezone,2,sprintf($lang['isntwichm'],'logs'));
@@ -98,7 +98,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/style.css.php");
 			}
 		}
-	if(is_file(substr(__DIR__,0,-4).'other/search.php')) {
+		if(is_file(substr(__DIR__,0,-4).'other/search.php')) {
 			if(!unlink(substr(__DIR__,0,-4).'other/search.php')) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: other/search.php");
 			}
@@ -106,6 +106,21 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		if(is_file(substr(__DIR__,0,-4).'server-news')) {
 			if(!unlink(substr(__DIR__,0,-4).'server-news')) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: server-news");
+			}
+		}
+		if(is_dir(substr(__DIR__,0,-4).'icons/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'icons/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: icons/");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/combined_stats.css')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/combined_stats.css')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/combined_stats.css");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/combined_stats.js");
 			}
 		}
 	}
@@ -419,6 +434,21 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			}
 			if($mysqlcon->exec("CREATE TABLE $dbname.addon_assign_groups (uuid varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, grpids varchar(1000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.2] Created table addon_assign_groups successfully.");
+			}
+		}
+		if(version_compare($currvers, '1.2.2', '<=')) {
+			if($mysqlcon->exec("DELETE FROM $dbname.groups") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.3] Cleaned table groups successfully. (cause new icon folder tsicons - redownload)");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config MODIFY COLUMN tsvoice smallint(5) UNSIGNED NOT NULL default '0'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.3] Adjusted table config successfully.");
+			}
+			if($mysqlcon->exec("CREATE INDEX snapshot_timestamp ON $dbname.user_snapshot (timestamp)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.3] Recreated index on table user_snapshot successfully.");
+			}
+			
+			if($mysqlcon->exec("CREATE INDEX serverusage_timestamp ON $dbname.server_usage (timestamp)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.3] Recreated index on table server_usage successfully.");
 			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
