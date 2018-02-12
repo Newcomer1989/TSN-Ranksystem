@@ -1,3 +1,12 @@
+<?PHP
+$job_check = $mysqlcon->query("SELECT * FROM $dbname.job_check")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
+	if(!isset($err_msg)) {
+		$err_msg = '<i class="fa fa-fw fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<a href="//ts-n.net/ranksystem.php?changelog" target="_blank"><i class="fa fa-fw fa-book"></i>&nbsp;', '</a>'); $err_lvl = 1;
+		$_SESSION[$rspathhex.'upinfomsg'] = 1;
+	}
+}
+?>
 <!DOCTYPE html>
 <html lang="<?PHP echo $language; ?>">
 <head>
@@ -193,20 +202,25 @@
 			<?PHP } ?>
 			<ul class="nav navbar-right top-nav">
 				<?PHP
-				$lastscan = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='calc_user_lastscan'");
-				$lastscan = $lastscan->fetchAll();
-				if((time() - $lastscan[0]['timestamp']) > 600) { ?>
+				if((time() - $job_check['calc_user_lastscan']['timestamp']) > 600) { ?>
 				<li class="navbar-form navbar-left">
 					<span class="label label-warning"><?PHP echo $lang['stnv0027']; ?></span>
 				</li>
 				<?PHP } ?>
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP echo '&nbsp;&nbsp;' .($_SESSION['connected'] == 0 ? $lang['stnv0028'] : $_SESSION['tsname']); ?>&nbsp;<b class="caret"></b></a>
-					<ul class="dropdown-menu">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP echo '&nbsp;&nbsp;' . $_SESSION[$rspathhex.'tsname'] ?>&nbsp;
+					<b class="caret"></b></a><ul class="dropdown-menu">
 						<?PHP
-						if(isset($_SESSION['admin'])) {
-							echo '<li><a href="http',(!empty($_SERVER['HTTPS'])?'s':''),'://',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/ts.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
-						} elseif ($_SESSION['connected'] == 0) {
+						if($_SESSION[$rspathhex.'tsname'] == "verification needed!" || $_SESSION[$rspathhex.'connected'] == 0) {
+							echo '<li><a href="verify.php"><i class="fa fa-fw fa-key"></i>&nbsp;verificate here..</a></li>';
+						}
+						if(isset($_SESSION[$rspathhex.'admin']) && $_SESSION[$rspathhex.'admin'] == TRUE) {
+							if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
+								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
+							} else {
+								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
+							}
+						} elseif ($_SESSION[$rspathhex.'connected'] == 0) {
 							echo '<li><a href="ts3server://';
 								if (($ts['host']=='localhost' || $ts['host']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
 									echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
@@ -218,8 +232,10 @@
 								echo ':'.$ts['voice'];
 							echo '"><i class="fa fa-fw fa-headphones"></i>&nbsp;'.$lang['stnv0043'].'</a></li>';
 						}
-						echo (!isset($_SESSION['tsname']) ? ' ' : '<li><a href="my_stats.php"><i class="fa fa-fw fa-user"></i>&nbsp;'.$lang['stmy0001'].'</a></li>');
 						?>
+						<li>
+							<a href="my_stats.php"><i class="fa fa-fw fa-user"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
+						</li>
 						<li>
 							<a href="#myModal" data-toggle="modal"><i class="fa fa-fw fa-envelope"></i>&nbsp;<?PHP echo $lang['stnv0001']; ?></a>
 						</li>
@@ -273,21 +289,12 @@
 						<a href="index.php"><i class="fa fa-fw fa-area-chart"></i>&nbsp;<?PHP echo $lang['stix0001']; ?></a>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "my_stats.php" ? ' class="active">' : '>'); ?>
-						<?PHP if($_SESSION['connected'] == 0) {
-							echo '<a href="#myStatsModal" data-toggle="modal"><i class="fa fa-fw fa-exclamation-triangle"></i>&nbsp;*',$lang['stmy0001'],'</a>';
-						} else {
-							echo '<a href="my_stats.php"><i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;',$lang['stmy0001'],'</a>';
-						}?>
+						<a href="my_stats.php"><i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
 					</li>
 					<?PHP if($addons_config['assign_groups_active']['value'] == '1') {
 							echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "assign_groups.php" ? ' class="active">' : '>'); ?>
-							<?PHP if($_SESSION['connected'] == 0) {
-								echo '<a href="#myStatsModal" data-toggle="modal"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;*',$lang['stag0001'],'</a>';
-							} else {
-								echo '<a href="assign_groups.php"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;',$lang['stag0001'],'</a>';
-							}
-						}
-						?>
+							<a href="assign_groups.php"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;<?PHP echo $lang['stag0001']; ?></a>
+						<?PHP }	?>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "top_all.php" ? ' class="active">' : '>'); ?>
 						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-trophy"></i>&nbsp;<?PHP echo $lang['sttw0001']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>

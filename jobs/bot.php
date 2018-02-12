@@ -5,6 +5,21 @@ ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
 error_reporting(0);
 
+function shutdown($mysqlcon = NULL, $logpath, $timezone, $loglevel, $reason, $nodestroypid = NULL) {
+	if($nodestroypid == NULL) {
+		if (substr(php_uname(), 0, 7) == "Windows") {
+			exec("del /F ".substr(__DIR__,0,-4).'logs/pid');
+		} else {
+			exec("rm -f ".substr(__DIR__,0,-4).'logs/pid');
+		}
+	}
+	enter_logfile($logpath,$timezone,$loglevel,$reason." Shutting down!\n\n");
+	if(isset($mysqlcon)) {
+		$mysqlcon->close();
+	}
+	exit;
+}
+
 function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) {
 	global $phpcommand;
 	$file = $logpath.'ranksystem.log';
@@ -18,10 +33,11 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) 
 		$loglevel = "  NOTICE    ";
 	} elseif ($loglevel == 5) {
 		$loglevel = "  INFO      ";
+	} elseif ($loglevel == 6) {
+		$loglevel = "  DEBUG     ";
 	}
-	$input = DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n";
 	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, $input);
+	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
 	fclose($loghandle);
 	if($norotate == false && filesize($file) > 5242880) {
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
@@ -47,24 +63,19 @@ require_once(substr(__DIR__,0,-4).'other/config.php');
 require_once(substr(__DIR__,0,-4).'other/phpcommand.php');
 
 if(isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) {
-	enter_logfile($logpath,$timezone,1,"Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line! Shuttin down!\n\n");
-	exit;
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line!", 1);
 }
 if(version_compare(phpversion(), '5.5.0', '<')) {
-	enter_logfile($logpath,$timezone,1,"Your PHP version (".phpversion().") is below 5.5.0. Update of PHP needed! Shuttin down!\n\n");
-	exit;
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Your PHP version (".phpversion().") is below 5.5.0. Update of PHP is required!");
 }
 if(!function_exists('simplexml_load_file')) {
-	enter_logfile($logpath,$timezone,1,"SimpleXML is missed. Installation of SimpleXML is needed! Shuttin down!\n\n");
-	exit;
+	shutdown($mysqlcon, $logpath, $timezone, 1, "SimpleXML is missed. Installation of SimpleXML is required!");
 }
 if(!in_array('curl', get_loaded_extensions())) {
-	enter_logfile($logpath,$timezone,1,"PHP cURL is missed. Installation of PHP cURL is needed! Shuttin down!\n\n");
-	exit;
+	shutdown($mysqlcon, $logpath, $timezone, 1, "PHP cURL is missed. Installation of PHP cURL is required!");
 }
 if(!in_array('zip', get_loaded_extensions())) {
-	enter_logfile($logpath,$timezone,1,"PHP Zip is missed. Installation of PHP Zip is needed! Shuttin down!\n\n");
-	exit;
+	shutdown($mysqlcon, $logpath, $timezone, 1, "PHP Zip is missed. Installation of PHP Zip is required!");
 }
 
 enter_logfile($logpath,$timezone,5,"Initialize Bot...");
@@ -79,19 +90,49 @@ require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 
+enter_logfile($logpath,$timezone,6,"Running on OS: ".php_uname("s")." ".php_uname("r"));
+enter_logfile($logpath,$timezone,6,"Using PHP Version: ".phpversion());
+
+enter_logfile($logpath,$timezone,5,"  Config check started...");
+
+if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	enter_logfile($logpath,$timezone,1,"Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
+}
+
+$errcnf = 0;
+if(isset($groupslist) && $groupslist != NULL) {
+	foreach($grouptime as $time => $groupid) {
+		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+			enter_logfile($logpath,$timezone,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
+			$errcnf++;
+		}
+	}
+	foreach($boostarr as $groupid => $value) {
+		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+			enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']));
+		}
+	}
+	foreach($exceptgroup as $groupid => $value) {
+		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+			enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']));
+		}
+	}
+}
+if($errcnf > 0) {
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Critical Config error!");
+}
+unset($groupslist,$errcnf);
+
+enter_logfile($logpath,$timezone,5,"  Config check [done]");
+
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
-		enter_logfile($logpath,$timezone,5,"Received signal to stop. Shutting down!\n\n");
-		exit;
+		shutdown($mysqlcon, $logpath, $timezone, 5, "Received signal to stop!");
 	}
 }
 
-function get_data($url,$currvers,$ts) {
-	$ch = curl_init();curl_setopt($ch, CURLOPT_URL, $url);curl_setopt($ch, CURLOPT_REFERER, php_uname("s")." ".$ts['host'].":".$ts['voice']);curl_setopt($ch, CURLOPT_USERAGENT, "TSN Ranksystem ".$currvers);curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);curl_setopt($ch, CURLOPT_MAXREDIRS, 10);curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);$data = curl_exec($ch);curl_close($ch);return $data;
-}
-
 $currvers = check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath);
-enter_logfile($logpath,$timezone,5,"  Ranksystem Version: ".$currvers);
+enter_logfile($logpath,$timezone,5,"Ranksystem Version: ".$currvers);
 
 enter_logfile($logpath,$timezone,5,"Loading addons...");
 require_once(substr(__DIR__,0,-4).'other/load_addons_config.php');
@@ -153,33 +194,66 @@ try {
 	}
 	
 	enter_logfile($logpath,$timezone,5,"Bot starts now his work!");
-	$looptime = 1;
+	$looptime = $rotated_cnt = 0; $rotated = '';
 	usleep(5000000);
 	while(1) {
-		if($looptime<1) {
-			$loopsleep = (1 - $looptime) * 1000000;
-			//enter_logfile($logpath,$timezone,6,"  Sleep for ".(1 - $looptime)." seconds till next loop starts.");
-			check_shutdown($timezone,$logpath); usleep($loopsleep);
-		}
+		$sqlexec='';
 		$starttime = microtime(true);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
+		
+		if(($get_db_data = $mysqlcon->query("SELECT * FROM $dbname.user; SELECT MAX(timestamp) AS timestamp FROM $dbname.user_snapshot; SELECT version, COUNT(version) AS count FROM $dbname.user GROUP BY version ORDER BY count DESC; SELECT MAX(timestamp) AS timestamp FROM $dbname.server_usage; SELECT * FROM $dbname.job_check; SELECT * FROM $dbname.groups; SELECT uuid FROM $dbname.stats_user; SELECT * FROM $dbname.addon_assign_groups;")) === false) {
+			shutdown($mysqlcon, $logpath, $timezone, 1, "Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
+		}
+		
+		$count_select = 0;
+		$select_arr = array();
+		while($single_select = $get_db_data->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) {
+			$count_select++;
+			
+			switch ($count_select) {
+			case 1:
+				$select_arr['all_user'] = $single_select;
+				break;
+			case 2:
+				$select_arr['max_timestamp_user_snapshot'] = $single_select;
+				break;
+			case 3:
+				$select_arr['count_version_user'] = $single_select;
+				break;
+			case 4:
+				$select_arr['max_timestamp_server_usage'] = $single_select;
+				break;
+			case 5:
+				$select_arr['job_check'] = $single_select;
+				break;
+			case 6:
+				$select_arr['groups'] = $single_select;
+				break;
+			case 7:
+				$select_arr['uuid_stats_user'] = $single_select;
+				break;
+			case 8:
+				$select_arr['addon_assign_groups'] = $single_select;
+				break;
+			}
+			$get_db_data->nextRowset();
+		}
+		unset($get_db_data);
+		
+		check_shutdown($timezone,$logpath);
 		$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 		$ts3->clientListReset();
+		usleep($slowmode);
 		$allclients = $ts3->clientList();
-		check_shutdown($timezone,$logpath); usleep($slowmode);
 		$ts3->serverInfoReset();
+		usleep($slowmode);
 		$serverinfo = $ts3->serverInfo();
-		calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$ts,$resetexcept,$upchannel,$phpcommand);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
-		get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$avatar_delay);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
-		update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
-		calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
-		calc_userstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath);
-		check_shutdown($timezone,$logpath); usleep($slowmode);
-		clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath);
+		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr);
+		$sqlexec .= calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr);
+		get_avatars($ts3,$slowmode,$timezone,$logpath,$avatar_delay);
+		$sqlexec .= clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath,$select_arr);
+		$sqlexec .= calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr);
+		$sqlexec .= calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr);
+		
 		if($addons_config['assign_groups_active']['value'] == '1') {
 			if(!defined('assign_groups')) {
 				enter_logfile($logpath,$timezone,5,"Loading new addon...");
@@ -188,10 +262,44 @@ try {
 				define('assign_groups',1);
 				enter_logfile($logpath,$timezone,5,"Loading new addon [done]");
 			}
-			addon_assign_groups($addons_config,$ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$allclients);
+			$sqlexec .= addon_assign_groups($addons_config,$ts3,$dbname,$slowmode,$timezone,$logpath,$allclients,$select_arr);
 		}
+		
+		if($mysqlcon->exec($sqlexec) === false) {
+			enter_logfile($logpath,$timezone,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+		}
+		unset($sqlexec, $select_arr);
+
 		$looptime = microtime(true) - $starttime;
-		try { $ts3->getAdapter(); } catch (Exception $e) {}
+		$rotated = substr((number_format(round($looptime, 5),5) . ';' . $rotated),0,79);
+
+		if($looptime < 1) {
+			$loopsleep = (1 - $looptime) * 1000000;
+			//enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
+			usleep($loopsleep);
+		} elseif($slowmode == 0) {
+			//enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
+			$rotated_cnt++;
+			if($rotated_cnt > 3600) {
+				$rotated_arr = explode(';', $rotated);
+				$sum_time = 0;
+				foreach ($rotated_arr as $time) {
+					$sum_time = $sum_time + $time;
+				}
+				if(($sum_time / 10) > 1) {
+					$rotated_cnt = 0;
+					enter_logfile($logpath,$timezone,4,"  Your Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.");
+					enter_logfile($logpath,$timezone,4,"  Here you'll find some information to optimize it: https://ts-n.net/ranksystem.php#optimize");
+					enter_logfile($logpath,$timezone,4,"  Last 10 runtimes in seconds (lower values are better): ".$rotated);
+					foreach ($uniqueid as $clientid) {
+						usleep($slowmode);
+						try {
+							$ts3->clientGetByUid($clientid)->message("\nYour Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.\nHere you'll find some information to optimize it: [URL]https://ts-n.net/ranksystem.php#optimize[/URL]\nLast 10 runtimes in seconds (lower values are better):\n".$rotated);
+						} catch (Exception $e) { }
+					}
+				}
+			}
+		}
 	}
 }
 catch (Exception $e) {

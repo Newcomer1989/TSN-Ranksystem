@@ -1,39 +1,48 @@
 <?PHP
 session_start();
+
 require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+
 if($addons_config['assign_groups_active']['value'] != '1') {
 	echo "addon is disabled";
 	exit;
 }
 
-if(!isset($_SESSION['tsuid']) || isset($_SESSION['uuid_verified'])) {
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-$uuid = $_SESSION['tsuid'];
-$dbdata = $mysqlcon->query("SELECT * FROM $dbname.user WHERE uuid='$uuid'");
-$dbdata_fetched = $dbdata->fetchAll();
-$cld_groups = explode(',', $dbdata_fetched[0]['cldgroup']);
-$multiple_uuid = explode(',', substr($_SESSION['multiple'], 0, -1));
+$uuid = $_SESSION[$rspathhex.'tsuid'];
+if(($dbdata = $mysqlcon->query("SELECT cldgroup FROM $dbname.user WHERE uuid='$uuid'")->fetch()) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+}
+$cld_groups = explode(',', $dbdata['cldgroup']);
+$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
 $disabled = '';
 $allowed_groups_arr = array();
 
-if(count($multiple_uuid) > 1 and !isset($_SESSION['uuid_verified'])) {
+
+if(count($multiple_uuid) > 1 and !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$disabled = 1;
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
+} elseif ($_SESSION[$rspathhex.'connected'] == 0) {
+	$err_msg = sprintf($lang['stag0015'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
+	$disabled = 1;
 } else {
-	$dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups");
-	$servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
-	foreach($servergroups as $servergroup) {
-		$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-		if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
-			$sqlhisgroup_file[$servergroup['sgid']] = true;
-		} else {
-			$sqlhisgroup_file[$servergroup['sgid']] = false;
+	if(($servergroups = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+	} else {
+		foreach($servergroups as $servergroup) {
+			$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
+			if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
+				$sqlhisgroup_file[$servergroup['sgid']] = true;
+			} else {
+				$sqlhisgroup_file[$servergroup['sgid']] = false;
+			}
 		}
 	}
 

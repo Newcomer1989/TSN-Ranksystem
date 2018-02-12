@@ -66,7 +66,7 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 	$again = $last_access[0]['last_access'] + 2 - time();
 	$err_msg = sprintf($lang['errlogin2'],$again);
 	$err_lvl = 3;
-} elseif (isset($_POST['resetpw']) && $adminuuid==NULL) {
+} elseif (isset($_POST['resetpw']) && ($adminuuid==NULL || count($adminuuid) == 0)) {
 	$err_msg = $lang['wirtpw1']; $err_lvl=3;
 } elseif (isset($_POST['resetpw'])) {
 	$nowtime = time();
@@ -83,9 +83,10 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 		
 		usleep($slowmode);
 		$allclients = $ts3->clientList();
-		
+		$adminuuid_flipped = array_flip($adminuuid);
+
 		foreach ($allclients as $client) {
-			if($client['client_unique_identifier'] == $adminuuid) {
+			if(in_array($client['client_unique_identifier'] , $adminuuid)) {
 				$uuid = $client['client_unique_identifier'];
 				$checkuuid = 1;
 				if($client['connection_client_ip'] == getclientip()) {

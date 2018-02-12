@@ -9,8 +9,10 @@ $GLOBALS['logfile'] = $logpath.'ranksystem.log';
 
 if (substr(php_uname(), 0, 7) == "Windows") {
 	$GLOBALS['pidfile'] = __DIR__.'\logs\pid';
+	$GLOBALS['autostart'] = __DIR__.'\logs\autostart_deactivated';
 } else {
 	$GLOBALS['pidfile'] = __DIR__.'/logs/pid';
+	$GLOBALS['autostart'] = __DIR__.'/logs/autostart_deactivated';
 }
 
 function checkProcess($pid = null) {
@@ -96,6 +98,9 @@ function start() {
 			if(isset($pid[1]) && is_numeric($pid[1])) {
 				exec("echo ".$pid[1]." > ".$GLOBALS['pidfile']);
 				echo " [OK]\n";
+				if (file_exists($GLOBALS['autostart'])) {
+					unlink($GLOBALS['autostart']);
+				}
 			} else {
 				echo " [Failed]\n";
 			}
@@ -111,6 +116,9 @@ function start() {
 				echo " [Failed]\n";
 			} else {
 				echo " [OK]\n";
+				if (file_exists($GLOBALS['autostart'])) {
+					unlink($GLOBALS['autostart']);
+				}
 			}
 		} else {
 			echo "The Ranksystem is already running.\n";
@@ -140,6 +148,7 @@ function stop() {
 				echo " [Failed]\n";
 			} else {
 				echo " [OK]\n";
+				touch($GLOBALS['autostart']);
 			}
 		} else {
 			echo "The Ranksystem seems not running.\n";
@@ -165,6 +174,7 @@ function stop() {
 				echo " [Failed]\n";
 			} else {
 				echo " [OK]\n";
+				touch($GLOBALS['autostart']);
 			}
 		} else {
 			echo "The Ranksystem seems not running.\n";
@@ -174,23 +184,17 @@ function stop() {
 }
 	
 function check() {
-	if (substr(php_uname(), 0, 7) == "Windows") {
-		if (checkProcess() == FALSE) {
+	if (checkProcess() == FALSE) {
+		if (!file_exists($GLOBALS['autostart'])) {
 			if (file_exists($GLOBALS['pidfile'])) {
-				exec("del /F ".$GLOBALS['pidfile']);
+				unlink($GLOBALS['pidfile']);
 			}
 			start();
+		} else {
+			echo "Starting the Ranksystem Bot. [Failed]\nAutostart is deactivated. Use start command instead.\n";
 		}
-		$GLOBALS['exec'] = TRUE;
-	} else {
-				if (checkProcess() == FALSE) {
-			if (file_exists($GLOBALS['pidfile'])) {
-				exec("rm -f ".$GLOBALS['pidfile']);
-			}
-			start();
-		}
-		$GLOBALS['exec'] = TRUE;
 	}
+	$GLOBALS['exec'] = TRUE;
 }
 
 function restart() {

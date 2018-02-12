@@ -21,28 +21,69 @@ function getclientip() {
 }
 
 if (isset($_POST['logout'])) {
-    $_SESSION = array();
-    session_destroy();
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+    rem_session_ts3($rspathhex);
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
-if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESSION['password'] != $webpass || $_SESSION['clientip'] != getclientip()) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
 require_once('nav.php');
 
-if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+	
+	if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+		enter_logfile($logpath,$timezone,1,"Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
+	}
+	
+	if(empty($_POST['boost'])) {
+		$boostarr = null;
+	} else {
+		foreach (explode(',', $_POST['boost']) as $entry) {
+			list($key, $value1, $value2) = explode('=>', $entry);
+			$boostarr[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
+		}
+	}
+	if(empty($_POST['grouptime'])) {
+		$grouparr = null;
+	} else {
+		foreach (explode(',', $_POST['grouptime']) as $entry) {
+			list($time, $groupid) = explode('=>', $entry);
+			$grouparr[$groupid] = $time;
+		}
+	}
+
+	$err_msg = '';
+	$errcnf = 0;
+	if(isset($groupslist) && $groupslist != NULL) {
+		foreach($grouparr as $groupid => $time) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']).'<br>';
+				$err_lvl = 3;
+				$errcnf++;
+			}
+		}
+		foreach($boostarr as $groupid => $value) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']).'<br>';
+				$err_lvl = 3;
+				$errcnf++;
+			}
+		}
+		foreach(array_flip(explode(',', $_POST['exceptgroup'])) as $groupid => $value) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']).'<br>';
+				$err_lvl = 3;
+				$errcnf++;
+			}
+		}
+	}
+	unset($groupslist);
+	
+	
 	$substridle		= $_POST['substridle'];
 	$exceptuuid 	= $_POST['exceptuuid'];
     $exceptgroup	= $_POST['exceptgroup'];
@@ -54,19 +95,28 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 	if (isset($_POST['cleanclients'])) $cleanclients = 1; else $cleanclients = 0;
 	$cleanperiod 	= $_POST['cleanperiod'];
     $boost          = $_POST['boost'];
-    if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost',resetexcept='$resetexcept'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-    } else {
-        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
-		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
-		$err_lvl = NULL;
-    }
-	$config[0]['grouptime']		= $_POST['grouptime'];
-	$config[0]['exceptuuid'] 	= $_POST['exceptuuid'];
-    $config[0]['exceptgroup']	= $_POST['exceptgroup'];
-    $config[0]['exceptcid']		= $_POST['exceptcid'];
-	$config[0]['boost']			= $_POST['boost'];
+	if($_POST['registercid'] == NULL) {
+		$registercid = 0;
+	} else {
+		$registercid = $_POST['registercid'];
+	}
+	if($errcnf == 0) {
+		if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost',resetexcept='$resetexcept',registercid='$registercid'") === false) {
+			$err_msg = print_r($mysqlcon->errorInfo(), true);
+			$err_lvl = 3;
+		} else {
+			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+			type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+			$err_lvl = NULL;
+		}
+	} else {
+		$err_msg .= "<br>".$lang['errgrpid'];
+	}
+	$config['grouptime']	= $_POST['grouptime'];
+	$config['exceptuuid'] 	= $_POST['exceptuuid'];
+    $config['exceptgroup']	= $_POST['exceptgroup'];
+    $config['exceptcid']	= $_POST['exceptcid'];
+	$config['boost']		= $_POST['boost'];
 }
 ?>
 		<div id="page-wrapper">
@@ -108,21 +158,21 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="exceptuuid" maxlength="999"><?php echo $config[0]['exceptuuid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="exceptuuid" maxlength="999"><?php echo $config['exceptuuid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup" maxlength="999"><?php echo $config[0]['exceptgroup']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptgroup" maxlength="999"><?php echo $config['exceptgroup']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid" maxlength="999"><?php echo $config[0]['exceptcid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="exceptcid" maxlength="999"><?php echo $config['exceptcid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
@@ -132,7 +182,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group required-field-block">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config[0]['grouptime']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config['grouptime']; ?></textarea>
 									<div class="required-icon"><div class="text">*</div></div>
 									<div class="help-block with-errors"></div>
 								</div>
@@ -193,10 +243,28 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									</div>
 								</div>
 							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">&nbsp;</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiverifydesc"><?php echo $lang['wiverify']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-sm-8">
+									<input type="text" class="form-control" name="registercid" value="<?php echo $registercid; ?>">
+									<script>
+									$("input[name='registercid']").TouchSpin({
+										min: 0,
+										max: 16777215,
+										verticalbuttons: true,
+										prefix: 'ID:'
+									});
+									</script>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="row">&nbsp;</div>
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost" maxlength="999"><?php echo $config[0]['boost']; ?></textarea>
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="boost" maxlength="999"><?php echo $config['boost']; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
@@ -367,6 +435,22 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
       </div>
       <div class="modal-body">
         <?php echo $lang['cleanpdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wiverifydesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wiverify']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wiverifydesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

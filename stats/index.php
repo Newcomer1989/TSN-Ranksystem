@@ -26,7 +26,7 @@ if($language == "ar") {
 	require_once('../languages/nations_pt.php');
 }
 
-if(!isset($_SESSION['tsuid'])) {
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
@@ -36,11 +36,9 @@ function human_readable_size($bytes,$lang) {
 	return sprintf("%.2f", $bytes / pow(1024, $factor)) . ' ' . @$size[$factor];
 }
 
-$sql = $mysqlcon->query("SELECT * FROM $dbname.stats_server");
-$sql_res = $sql->fetchAll();
-
-$server_usage_sql = $mysqlcon->query("SELECT * FROM $dbname.server_usage ORDER BY(timestamp) DESC LIMIT 0, 47");
-$server_usage_sql_res = $server_usage_sql->fetchAll();
+if(($sql_res = $mysqlcon->query("SELECT * FROM $dbname.stats_server; SET @a:=0")->fetch()) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+}
 
 if(isset($_GET['usage'])) {
 	if ($_GET["usage"] == 'week') {
@@ -58,7 +56,7 @@ if(isset($_GET['usage'])) {
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
-<?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
+<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-lg-12">
@@ -79,7 +77,7 @@ require_once('nav.php');
 										<i class="fa fa-users fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo $sql_res[0]['total_user'] ?></div>
+										<div class="huge"><?PHP echo $sql_res['total_user'] ?></div>
 										<div><?PHP echo $lang['stix0002']; ?></div>
 									</div>
 								</div>
@@ -101,7 +99,7 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_time'] / 86400))); ?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res['total_online_time'] / 86400))); ?></div>
 										<div><?PHP echo $lang['stix0004']; ?></div>
 									</div>
 								</div>
@@ -123,8 +121,8 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_month'] / 86400))) ?></div>
-										<div><?PHP if($sql_res[0]['total_online_month'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0049']; } ?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res['total_online_month'] / 86400))) ?></div>
+										<div><?PHP if($sql_res['total_online_month'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0049']; } ?></div>
 									</div>
 								</div>
 							</div>
@@ -145,8 +143,8 @@ require_once('nav.php');
 										<i class="fa fa-clock-o fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res[0]['total_online_week'] / 86400))) ?></div>
-										<div><?PHP if ($sql_res[0]['total_online_week'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0050']; } ?></div>
+										<div class="huge"><?PHP echo sprintf($lang['days'], round(($sql_res['total_online_week'] / 86400))) ?></div>
+										<div><?PHP if ($sql_res['total_online_week'] == 0) { echo $lang['stix0048']; } else { echo $lang['stix0050']; } ?></div>
 									</div>
 								</div>
 							</div>
@@ -260,7 +258,7 @@ require_once('nav.php');
 										<i class="fa fa-users fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo $sql_res[0]['user_today']; ?></div>
+										<div class="huge"><?PHP echo $sql_res['user_today']; ?></div>
 										<div><?PHP echo $lang['stix0060'],' ',$lang['stix0055']; ?></div>
 									</div>
 								</div>
@@ -282,7 +280,7 @@ require_once('nav.php');
 										<i class="fa fa-users fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo $sql_res[0]['user_week']; ?></div>
+										<div class="huge"><?PHP echo $sql_res['user_week']; ?></div>
 										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '7'); ?></div>
 									</div>
 								</div>
@@ -304,7 +302,7 @@ require_once('nav.php');
 										<i class="fa fa-users fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo $sql_res[0]['user_month']; ?></div>
+										<div class="huge"><?PHP echo $sql_res['user_month']; ?></div>
 										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '30'); ?></div>
 									</div>
 								</div>
@@ -326,7 +324,7 @@ require_once('nav.php');
 										<i class="fa fa-users fa-5x"></i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="huge"><?PHP echo $sql_res[0]['user_quarter']; ?></div>
+										<div class="huge"><?PHP echo $sql_res['user_quarter']; ?></div>
 										<div><?PHP echo $lang['stix0060'],' ',sprintf($lang['stix0056'], '90'); ?></div>
 									</div>
 								</div>
@@ -349,35 +347,35 @@ require_once('nav.php');
 								<tbody>
 									<tr>
 										<td><?PHP echo $lang['stix0023']; ?></td>
-										<td><?PHP if($sql_res[0]['server_status'] == 1 || $sql_res[0]['server_status'] == 3) { echo '<span class="text-success">'.$lang['stix0024'].'</span>'; } else { echo '<span class="text-danger">'.$lang['stix0025'].'</span>'; } ?></td>
+										<td><?PHP if($sql_res['server_status'] == 1 || $sql_res['server_status'] == 3) { echo '<span class="text-success">'.$lang['stix0024'].'</span>'; } else { echo '<span class="text-danger">'.$lang['stix0025'].'</span>'; } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0026']; ?></td>
-										<td><?PHP if($sql_res[0]['server_status'] == 0) { echo '0'; } else { echo $sql_res[0]['server_used_slots'] , ' / ' ,($sql_res[0]['server_used_slots'] + $sql_res[0]['server_free_slots']); } ?></td>
+										<td><?PHP if($sql_res['server_status'] == 0) { echo '0'; } else { echo $sql_res['server_used_slots'] , ' / ' ,($sql_res['server_used_slots'] + $sql_res['server_free_slots']); } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0027']; ?></td>
-										<td><?PHP echo $sql_res[0]['server_channel_amount']; ?></td>
+										<td><?PHP echo $sql_res['server_channel_amount']; ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0028']; ?></td>
-										<td><?PHP if($sql_res[0]['server_status'] == 0) { echo '-';} else { echo $sql_res[0]['server_ping'] . ' ' . $lang['time_ms'];} ?></td>
+										<td><?PHP if($sql_res['server_status'] == 0) { echo '-';} else { echo $sql_res['server_ping'] . ' ' . $lang['time_ms'];} ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0029']; ?></td>
-										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_down'],$lang); ?></td>
+										<td><?PHP echo human_readable_size($sql_res['server_bytes_down'],$lang); ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0030']; ?></td>
-										<td><?PHP echo human_readable_size($sql_res[0]['server_bytes_up'],$lang); ?></td>
+										<td><?PHP echo human_readable_size($sql_res['server_bytes_up'],$lang); ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0031']; ?></td>
-										<td><?PHP $serveruptime = new DateTime("@".$sql_res[0]['server_uptime']); if ($sql_res[0]['server_status'] == 0) { echo '-&nbsp;&nbsp;&nbsp;(<i>'.$lang['stix0032'].'&nbsp;'.(new DateTime("@0"))->diff($serveruptime)->format($timeformat).')</i>'; } else { echo $lang['stix0033']; } ?></td>
+										<td><?PHP $serveruptime = new DateTime("@".$sql_res['server_uptime']); if ($sql_res['server_status'] == 0) { echo '-&nbsp;&nbsp;&nbsp;(<i>'.$lang['stix0032'].'&nbsp;'.(new DateTime("@0"))->diff($serveruptime)->format($timeformat).')</i>'; } else { echo $lang['stix0033']; } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0034']; ?></td>
-										<td><?PHP if($sql_res[0]['server_status'] == 0) { echo '-'; } else { echo $sql_res[0]['server_packet_loss'] * 100 ,' %';} ?></td>
+										<td><?PHP if($sql_res['server_status'] == 0) { echo '-'; } else { echo $sql_res['server_packet_loss'] * 100 ,' %';} ?></td>
 									</tr>
 								</tbody>
 							</table>
@@ -392,8 +390,8 @@ require_once('nav.php');
 										<td><?PHP echo $lang['stix0036']; ?></td>
 										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
 										$img_content = file_get_contents("../tsicons/servericon.png");
-										echo $sql_res[0]['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
-										} else { echo $sql_res[0]['server_name']; } ?></td>
+										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										} else { echo $sql_res['server_name']; } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0037']; ?></td>
@@ -418,27 +416,27 @@ require_once('nav.php');
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0038']; ?></td>
-										<td><?PHP if($sql_res[0]['server_pass'] == '0')  {echo $lang['stix0039']; } else { echo $lang['stix0040']; } ?></td>
+										<td><?PHP if($sql_res['server_pass'] == '0')  {echo $lang['stix0039']; } else { echo $lang['stix0040']; } ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0041']; ?></td>
-										<td><?PHP echo $sql_res[0]['server_id'] ?></td>
+										<td><?PHP echo $sql_res['server_id'] ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0042']; ?></td>
-										<td><?PHP echo $sql_res[0]['server_platform'] ?></td>
+										<td><?PHP echo $sql_res['server_platform'] ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0043']; ?></td>
-										<td><?PHP echo substr($sql_res[0]['server_version'], 0, strpos($sql_res[0]['server_version'], ' ')); ?></td>
+										<td><?PHP echo substr($sql_res['server_version'], 0, strpos($sql_res['server_version'], ' ')); ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0044']; ?></td>
-										<td><?PHP if($sql_res[0]['server_creation_date']==0) { echo $lang['stix0051']; } else { echo date('d/m/Y', $sql_res[0]['server_creation_date']);} ?></td>
+										<td><?PHP if($sql_res['server_creation_date']==0) { echo $lang['stix0051']; } else { echo date('d/m/Y', $sql_res['server_creation_date']);} ?></td>
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0045']; ?></td>
-										<td><?PHP if ($sql_res[0]['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost' || $ts['host']=='127.0.0.1') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
+										<td><?PHP if ($sql_res['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost' || $ts['host']=='127.0.0.1') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
 									</tr>
 								</tbody>
 							</table>
@@ -459,7 +457,7 @@ require_once('nav.php');
 		var hoursLabel = document.getElementById("hours");
 		var minutesLabel = document.getElementById("minutes");
 		var secondsLabel = document.getElementById("seconds");
-		var totalSeconds = <?PHP echo $sql_res[0]['server_uptime'] ?>;
+		var totalSeconds = <?PHP echo $sql_res['server_uptime'] ?>;
 		setInterval(setTime, 1000);
 		function setTime()
 		{
@@ -486,19 +484,19 @@ require_once('nav.php');
 		Morris.Donut({
 		  element: 'time-gap-donut',
 		  data: [
-			{label: "<?PHP echo $lang['stix0053']?>", value: <?PHP echo round(($sql_res[0]['total_active_time'] / 86400)); ?>},
-			{label: "<?PHP echo $lang['stix0054']?>", value: <?PHP echo round(($sql_res[0]['total_inactive_time'] / 86400)); ?>},
+			{label: "<?PHP echo $lang['stix0053']?>", value: <?PHP echo round(($sql_res['total_active_time'] / 86400)); ?>},
+			{label: "<?PHP echo $lang['stix0054']?>", value: <?PHP echo round(($sql_res['total_inactive_time'] / 86400)); ?>},
 		  ]
 		});
 		Morris.Donut({
 			element: 'client-version-donut',
 			data: [
-			   {label: "<?PHP echo $sql_res[0]['version_name_1'] ?>", value: <?PHP echo $sql_res[0]['version_1'] ?>},
-			   {label: "<?PHP echo $sql_res[0]['version_name_2'] ?>", value: <?PHP echo $sql_res[0]['version_2'] ?>},
-			   {label: "<?PHP echo $sql_res[0]['version_name_3'] ?>", value: <?PHP echo $sql_res[0]['version_3'] ?>},
-			   {label: "<?PHP echo $sql_res[0]['version_name_4'] ?>", value: <?PHP echo $sql_res[0]['version_4'] ?>},
-			   {label: "<?PHP echo $sql_res[0]['version_name_5'] ?>", value: <?PHP echo $sql_res[0]['version_5'] ?>},
-			   {label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['version_other'] ?>},
+			   {label: "<?PHP echo $sql_res['version_name_1'] ?>", value: <?PHP echo $sql_res['version_1'] ?>},
+			   {label: "<?PHP echo $sql_res['version_name_2'] ?>", value: <?PHP echo $sql_res['version_2'] ?>},
+			   {label: "<?PHP echo $sql_res['version_name_3'] ?>", value: <?PHP echo $sql_res['version_3'] ?>},
+			   {label: "<?PHP echo $sql_res['version_name_4'] ?>", value: <?PHP echo $sql_res['version_4'] ?>},
+			   {label: "<?PHP echo $sql_res['version_name_5'] ?>", value: <?PHP echo $sql_res['version_5'] ?>},
+			   {label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res['version_other'] ?>},
 			],
 			colors: [
 				'#5cb85c',
@@ -511,12 +509,12 @@ require_once('nav.php');
 		});
 		Morris.Donut({
 			element: 'user-descent-donut', data: [
-				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_1']])) { echo $nation[$sql_res[0]['country_nation_name_1']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_1'])) { echo $sql_res[0]['country_nation_1']; } else { echo "0";} ?>},
-				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_2']])) { echo $nation[$sql_res[0]['country_nation_name_2']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_2'])) { echo $sql_res[0]['country_nation_2']; } else { echo "0";} ?>},
-				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_3']])) { echo $nation[$sql_res[0]['country_nation_name_3']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_3'])) { echo $sql_res[0]['country_nation_3']; } else { echo "0";} ?>},
-				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_4']])) { echo $nation[$sql_res[0]['country_nation_name_4']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_4'])) { echo $sql_res[0]['country_nation_4']; } else { echo "0";} ?>},
-				{label: "<?PHP if (isset($nation[$sql_res[0]['country_nation_name_5']])) { echo $nation[$sql_res[0]['country_nation_name_5']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res[0]['country_nation_5'])) { echo $sql_res[0]['country_nation_5']; } else { echo "0";} ?>},
-				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['country_nation_other'] ?>}
+				{label: "<?PHP if (isset($nation[$sql_res['country_nation_name_1']])) { echo $nation[$sql_res['country_nation_name_1']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res['country_nation_1'])) { echo $sql_res['country_nation_1']; } else { echo "0";} ?>},
+				{label: "<?PHP if (isset($nation[$sql_res['country_nation_name_2']])) { echo $nation[$sql_res['country_nation_name_2']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res['country_nation_2'])) { echo $sql_res['country_nation_2']; } else { echo "0";} ?>},
+				{label: "<?PHP if (isset($nation[$sql_res['country_nation_name_3']])) { echo $nation[$sql_res['country_nation_name_3']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res['country_nation_3'])) { echo $sql_res['country_nation_3']; } else { echo "0";} ?>},
+				{label: "<?PHP if (isset($nation[$sql_res['country_nation_name_4']])) { echo $nation[$sql_res['country_nation_name_4']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res['country_nation_4'])) { echo $sql_res['country_nation_4']; } else { echo "0";} ?>},
+				{label: "<?PHP if (isset($nation[$sql_res['country_nation_name_5']])) { echo $nation[$sql_res['country_nation_name_5']]; } else { echo "unkown";} ?>", value: <?PHP if ( isset($sql_res['country_nation_5'])) { echo $sql_res['country_nation_5']; } else { echo "0";} ?>},
+				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res['country_nation_other'] ?>}
 			],
 			colors: [
 				'#f0ad4e',
@@ -530,12 +528,12 @@ require_once('nav.php');
 		Morris.Donut({
 			element: 'user-platform-donut',
 			data: [
-				{label: "Windows", value: <?PHP echo $sql_res[0]['platform_1'] ?>},
-				{label: "Linux", value: <?PHP echo $sql_res[0]['platform_3'] ?>},
-				{label: "Android", value: <?PHP echo $sql_res[0]['platform_4'] ?>},
-				{label: "iOS", value: <?PHP echo $sql_res[0]['platform_2'] ?>},
-				{label: "OS X", value: <?PHP echo $sql_res[0]['platform_5'] ?>},
-				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res[0]['platform_other'] ?>},
+				{label: "Windows", value: <?PHP echo $sql_res['platform_1'] ?>},
+				{label: "Linux", value: <?PHP echo $sql_res['platform_3'] ?>},
+				{label: "Android", value: <?PHP echo $sql_res['platform_4'] ?>},
+				{label: "iOS", value: <?PHP echo $sql_res['platform_2'] ?>},
+				{label: "OS X", value: <?PHP echo $sql_res['platform_5'] ?>},
+				{label: "<?PHP echo $lang['stix0052']?>", value: <?PHP echo $sql_res['platform_other'] ?>},
 			],
 			colors: [
 				'#d9534f',
@@ -551,24 +549,19 @@ require_once('nav.php');
 		  data: [
 			<?PHP
 				$chart_data = '';
-				$trash_string = $mysqlcon->query("SET @a:=0");
 				if($usage == 'week') { 
-					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,2) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 336");
+					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,2) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 336")->fetchAll(PDO::FETCH_ASSOC);
 				} elseif ($usage == 'month') {
-					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,4) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 720");
+					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,4) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 720")->fetchAll(PDO::FETCH_ASSOC);
 				} elseif ($usage == 'year') {
-					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,64) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 548");
+					$server_usage = $mysqlcon->query("SELECT u1.timestamp, u1.clients, u1.channel FROM (SELECT @a:=@a+1,mod(@a,64) AS test,timestamp,clients,channel FROM $dbname.server_usage) AS u2, $dbname.server_usage AS u1 WHERE u1.timestamp=u2.timestamp AND u2.test='1' ORDER BY u2.timestamp DESC LIMIT 548")->fetchAll(PDO::FETCH_ASSOC);
 				} else {
-					$server_usage = $mysqlcon->query("SELECT timestamp, clients, channel FROM $dbname.server_usage ORDER BY timestamp DESC LIMIT 96");
+					$server_usage = $mysqlcon->query("SELECT timestamp, clients, channel FROM $dbname.server_usage ORDER BY timestamp DESC LIMIT 96")->fetchAll(PDO::FETCH_ASSOC);
 				}
-				$server_usage = $server_usage->fetchAll(PDO::FETCH_ASSOC);
 				foreach($server_usage as $chart_value) {
-					$chart_time = date('Y-m-d H:i',$chart_value['timestamp']);
-					$channel = $chart_value['channel'] - $chart_value['clients'];
-					$chart_data = $chart_data . '{ y: \''.$chart_time.'\', a: '.$chart_value['clients'].', b: '.$channel.', c: '. $chart_value['channel'].' }, ';
+					$chart_data .= '{ y: \''.date('Y-m-d H:i',$chart_value['timestamp']).'\', a: '.$chart_value['clients'].', b: '.($chart_value['channel'] - $chart_value['clients']).', c: '. $chart_value['channel'].' }, ';
 				}
-				$chart_data = substr($chart_data, 0, -2);
-				echo $chart_data;
+				echo substr($chart_data, 0, -2);
 			?>
 		  ],
 		  xkey: 'y',

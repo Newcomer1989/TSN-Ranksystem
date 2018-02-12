@@ -1,12 +1,12 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.3';
+	$newversion = '1.2.4';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
 		if($mysqlcon->exec("UPDATE $dbname.config set currvers='$newversion'") === false) {
 			enter_logfile($logpath,$timezone,1,"  An error happens due updating the Ranksystem Database:".print_r($mysqlcon->errorInfo(), true));
-			enter_logfile($logpath,$timezone,1,"  Check the database connection properties in other/dbconfig.php and check also the database permissions.");
+			enter_logfile($logpath,$timezone,1,"  Check the database connection and properties in other/dbconfig.php and check also the database permissions.");
 			exit;
 		} else {
 			$currvers = $newversion;
@@ -31,12 +31,11 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 	}
 	
 	function check_config($mysqlcon,$dbname) {
-		if(($dbdata = $mysqlcon->query("SELECT * FROM $dbname.config")) === false) { } else {
-			if($dbdata->rowCount() > 1) {
+		if(($dbdata = $mysqlcon->query("SELECT * FROM $dbname.config")->fetchAll()) === false) { } else {
+			if(count($dbdata) > 1) {
 				if($mysqlcon->exec("DELETE FROM $dbname.config WHERE webuser IS NULL") === false) { }
 			}
-			$config = $dbdata->fetchAll();
-			if($config[0]['updateinfotime'] > 86400) {
+			if($dbdata[0]['updateinfotime'] > 86400) {
 				if($mysqlcon->exec("UPDATE $dbname.config SET updateinfotime='86400'") === false) { }
 			}
 		}
@@ -446,9 +445,50 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			if($mysqlcon->exec("CREATE INDEX snapshot_timestamp ON $dbname.user_snapshot (timestamp)") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.3] Recreated index on table user_snapshot successfully.");
 			}
-			
 			if($mysqlcon->exec("CREATE INDEX serverusage_timestamp ON $dbname.server_usage (timestamp)") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.3] Recreated index on table server_usage successfully.");
+			}
+		}
+		if(version_compare($currvers, '1.2.3', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE $dbname.config MODIFY COLUMN adminuuid varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Adjusted table config (part 1) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.config ADD (registercid mediumint(8) UNSIGNED NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Adjusted table config (part 2) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.user ADD (cid int(10) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Adjusted table user successfully.");
+			}
+			if($mysqlcon->exec("CREATE INDEX user_version ON $dbname.user (version)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Create index 'user_version' on table user successfully.");
+			}
+			if($mysqlcon->exec("CREATE INDEX user_cldbid ON $dbname.user (cldbid ASC,uuid,rank)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Create index 'user_cldbid' on table user successfully.");
+			}
+			if($mysqlcon->exec("CREATE INDEX user_online ON $dbname.user (online,lastseen)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Create index 'user_online' on table user successfully.");
+			}
+			if($mysqlcon->exec("INSERT INTO $dbname.job_check (job_name) VALUES ('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_update')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Set new values to table job_check successfully.");
+			}
+			if($mysqlcon->exec("DELETE FROM $dbname.job_check WHERE job_name='check_clean'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Removed old value 'check_clean' from table job_check successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.user_snapshot ADD PRIMARY KEY (timestamp, uuid)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table user_snapshot successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_nations ADD PRIMARY KEY (nation)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table stats_nations successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_platforms ADD PRIMARY KEY (platform)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table stats_platforms successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE $dbname.stats_versions ADD PRIMARY KEY (version)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table stats_versions successfully.");
+			}
+			
+			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='".time()."' WHERE job_name='last_update'") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Stored timestamp of last update successfully.");
 			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);

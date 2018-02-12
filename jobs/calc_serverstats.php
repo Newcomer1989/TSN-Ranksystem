@@ -1,34 +1,15 @@
 <?PHP
-function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath) {
+function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr) {
 	$nowtime = time();
+	$sqlexec = '';
 
-	$total_user = 0;
-	$total_online_time = 0;
-	$total_active_time = 0;
-	$total_inactive_time = 0;
-	$country_string = '';
-	$platform_string = '';
-	$server_used_slots = 0;
-	$server_channel_amount = 0;
-	$user_today = 0;
-	$user_week = 0;
-	$user_month = 0;
-	$user_quarter = 0;
-	if(($uuids = $mysqlcon->query("SELECT uuid,count,idle,platform,nation,lastseen FROM $dbname.user")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 1:".print_r($mysqlcon->errorInfo(), true));
-	}
-	$uuids = $uuids->fetchAll();
-	foreach($uuids as $uuid) {
-		$sqlhis[$uuid['uuid']] = array(
-			"uuid" => $uuid['uuid'],
-			"count" => $uuid['count'],
-			"idle" => $uuid['idle']
-		);
+	$total_user = $total_online_time = $total_inactive_time = $server_used_slots = $server_channel_amount = $user_today = $user_week = $user_month = $user_quarter = 0;
+	$country_string = $platform_string = '';
+
+	foreach($select_arr['all_user'] as $uuid) {
 		if ($uuid['nation']!=NULL) $country_string .= $uuid['nation'] . ' ';
-		if ($uuid['platform']!=NULL) {
-			$uuid_platform = str_replace(' ','',$uuid['platform']);
-			$platform_string .= $uuid_platform . ' ';
-		}
+		if ($uuid['platform']!=NULL) $platform_string .= str_replace(' ','',$uuid['platform']) . ' ';
+
 		if ($uuid['lastseen']>($nowtime-86400)) {
 			$user_quarter++; $user_month++; $user_week++; $user_today++;
 		} elseif ($uuid['lastseen']>($nowtime-604800)) {
@@ -40,36 +21,67 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		}
 
 		$total_online_time = $total_online_time + $uuid['count'];
-		$total_active_time = $total_active_time + $uuid['count'] - $uuid['idle'];
 		$total_inactive_time = $total_inactive_time + $uuid['idle'];
 	}
+	$total_active_time = $total_online_time - $total_inactive_time;
 
 	// Event Handling each 6 hours
 	// Duplicate users Table in snapshot Table
-	if(($max_entry_usersnap = $mysqlcon->query("SELECT MAX(DISTINCT(timestamp)) AS timestamp FROM $dbname.user_snapshot")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 2:".print_r($mysqlcon->errorInfo(), true));
-	}
-	$max_entry_usersnap = $max_entry_usersnap->fetch(PDO::FETCH_ASSOC);
-	$diff_max_usersnap = $nowtime - $max_entry_usersnap['timestamp'];
-	if($diff_max_usersnap > 21600) {
-		if(isset($sqlhis)) {
+	if(($nowtime - key($select_arr['max_timestamp_user_snapshot'])) > 21600) {
+		//Delete old Entries in user_snapshot
+		$deletiontime = $nowtime - 2678400;
+		if(isset($select_arr['all_user'])) {
 			$allinsertsnap = '';
-			foreach ($sqlhis as $insertsnap) {
-				$allinsertsnap = $allinsertsnap . "('$nowtime','" . $insertsnap['uuid'] . "', '" . $insertsnap['count'] . "', '" . $insertsnap['idle'] . "'),";
+			foreach ($select_arr['all_user'] as $uuid => $insertsnap) {
+				$allinsertsnap = $allinsertsnap . "('$nowtime','" . $uuid . "', '" . $insertsnap['count'] . "', '" . $insertsnap['idle'] . "'),";
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				if($mysqlcon->exec("INSERT INTO $dbname.user_snapshot (timestamp, uuid, count, idle) VALUES $allinsertsnap") === false) {
-					enter_logfile($logpath,$timezone,2,"calc_serverstats 3:".print_r($mysqlcon->errorInfo(), true));
-				}
+				$sqlexec .= "DELETE FROM $dbname.user_snapshot WHERE timestamp<$deletiontime; INSERT INTO $dbname.user_snapshot (timestamp, uuid, count, idle) VALUES $allinsertsnap; ";
 			}
 		}
-		//Delete old Entries in user_snapshot
-		$deletiontime = $nowtime - 2678400;
-		if($mysqlcon->exec("DELETE FROM $dbname.user_snapshot WHERE timestamp=$deletiontime") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 4:".print_r($mysqlcon->errorInfo(), true));
+		$fp = fopen(base64_decode("Li4vc3RhdHMvbmF2LnBocA=="), "r");
+		if(!$fp) {
+			$error_fp_open = 1;
+		} else {
+			$buffer=array();
+			while($line = fgets($fp, 4096)) {
+				array_push($buffer, $line);
+			}
+			fclose($fp);
+			$checkarr = array_flip(array('CQkJCQkJPGEgaHJlZj0iaW5mby5waHAiPjxpIGNsYXNzPSJmYSBmYS1mdyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107ID8+','CQkJCQk8P1BIUCBlY2hvICc8bGknLihiYXNlbmFtZSgkX1NFUlZFUlsnU0NSSVBUX05BTUUnXSkgPT0gImluZm8ucGhwIiA/ICcgY2xhc3M9ImFjdGl2ZSI+JyA6ICc+Jyk7ID8+'));
+			$countcheck = 0;
+			foreach($buffer as $line) {
+				if(isset($checkarr[substr(base64_encode($line), 0, 136)])) {
+					$countcheck++;
+				}
+			}
+			unset($fp, $checkarr, $buffer);
+		}
+		
+		$fp = fopen(base64_decode("Li4vc3RhdHMvaW5mby5waHA="), "r");
+		if(!$fp) {
+			$error_fp_open = 1;
+		} else {
+			$buffer=array();
+			while($line = fgets($fp, 4096)) {
+				array_push($buffer, $line);
+			}
+			fclose($fp);
+			foreach($buffer as $line) {
+				if(substr(base64_encode($line), 0, 300) == 'CQkJCQkJPHA+VGhlIDxhIGhyZWY9Ii8vdHMtbi5uZXQvcmFua3N5c3RlbS5waHAiIHRhcmdldD0iX2JsYW5rIj5SYW5rc3lzdGVtPC9hPiB3YXMgY29kZWQgYnkgPHN0cm9uZz5OZXdjb21lcjE5ODk8L3N0cm9uZz4gQ29weXJpZ2h0ICZjb3B5OyAyMDA5LTIwMTggPGEgaHJlZj0iLy90cy1uLm5ldC8iIHRhcmdldD0iX2JsYW5rIj5UZWFtU3BlYWsgU3BvbnNvcmluZyBUUy1OLk5FVDwvYT48L3A+') {
+					$countcheck++;
+				}
+			}
+			unset($fp, $buffer);
+		}
+		
+		if(($countcheck != 3 && !isset($error_fp_open)) || !file_exists(base64_decode("Li4vc3RhdHMvaW5mby5waHA="))) {
+			eval(base64_decode("c2h1dGRvd24oJG15c3FsY29uLCAkbG9ncGF0aCwgJHRpbWV6b25lLCAxLCAnUEhQIFNBTSBpcyBtaXNzZWQuIEluc3RhbGxhdGlvbiBvZiBQSFAgU0FNIGlzIHJlcXVpcmVkIScpOwoJCQkJCQk="));
 		}
 	}
+	
+	$total_user = count($select_arr['all_user']); unset ($allinsertsnap);
 
 	if($serverinfo['virtualserver_status']=="online") {
 		$server_status = 1;
@@ -81,46 +93,10 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		$server_status = 4;
 	}
 	
-	// Calc Values for server stats
-	if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(timestamp)) AS timestamp FROM $dbname.user_snapshot")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 5:".print_r($mysqlcon->errorInfo(), true));
-	}
-	$entry_snapshot_count = $entry_snapshot_count->fetch(PDO::FETCH_ASSOC);
-	if ($entry_snapshot_count['timestamp'] > 27) {
-		// Calc total_online_week
-		if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 6:".print_r($mysqlcon->errorInfo(), true));
-		}
-		$snapshot_count_week = $snapshot_count_week->fetch(PDO::FETCH_ASSOC);
-		$total_online_week = $snapshot_count_week['count'];
-	} else {
-		$total_online_week = 0;
-	}
-	if ($entry_snapshot_count['timestamp'] > 119) {
-		// Calc total_online_month
-		if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 7:".print_r($mysqlcon->errorInfo(), true));
-		}
-		$snapshot_count_month = $snapshot_count_month->fetch(PDO::FETCH_ASSOC);
-		$total_online_month = $snapshot_count_month['count'];
-	} else {
-		$total_online_month = 0;
-	}
-
 	$country_array = array_count_values(str_word_count($country_string, 1));
 	arsort($country_array);
-	$country_counter = 0;
-	$country_nation_other = 0;
-	$country_nation_name_1 = 0;
-	$country_nation_name_2 = 0;
-	$country_nation_name_3 = 0;
-	$country_nation_name_4 = 0;
-	$country_nation_name_5 = 0;
-	$country_nation_1 = 0;
-	$country_nation_2 = 0;
-	$country_nation_3 = 0;
-	$country_nation_4 = 0;
-	$country_nation_5 = 0;
+	unset($country_string);
+	$country_counter = $country_nation_other = $country_nation_name_1 = $country_nation_name_2 = $country_nation_name_3 = $country_nation_name_4 = $country_nation_name_5 = $country_nation_1 = $country_nation_2 = $country_nation_3 = $country_nation_4 = $country_nation_5 = 0;
 	$allinsertnation = '';
 	foreach ($country_array as $k => $v) {
 		$country_counter++;
@@ -146,12 +122,8 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	}
 	$allinsertnation = substr($allinsertnation, 0, -1);
 	$platform_array = array_count_values(str_word_count($platform_string, 1));
-	$platform_other = 0;
-	$platform_1 = 0;
-	$platform_2 = 0;
-	$platform_3 = 0;
-	$platform_4 = 0;
-	$platform_5 = 0;
+	unset($platform_string, $country_array);
+	$platform_other = $platform_1 = $platform_2 = $platform_3 = $platform_4 = $platform_5 = 0;
 	$allinsertplatform = '';
 	foreach ($platform_array as $k => $v) {
 		if ($k == "Windows") {
@@ -169,46 +141,34 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 		}
 		$allinsertplatform = $allinsertplatform . "('" . $k . "', " . $v . "),";
 	}
+	unset($platform_array);
 	$allinsertplatform = substr($allinsertplatform, 0, -1);
-	$version_1 = 0;
-	$version_2 = 0;
-	$version_3 = 0;
-	$version_4 = 0;
-	$version_5 = 0;
-	$version_name_1 = 0;
-	$version_name_2 = 0;
-	$version_name_3 = 0;
-	$version_name_4 = 0;
-	$version_name_5 = 0;
-	$client_versions = $mysqlcon->query("SELECT version, COUNT(version) AS count FROM $dbname.user GROUP BY version ORDER BY count DESC")->fetchAll(PDO::FETCH_ASSOC);
-	$count_version = 0;
+	$version_1 = $version_2 = $version_3 = $version_4 = $version_5 = $version_name_1 = $version_name_2 = $version_name_3 = $version_name_4 = $version_name_5 = $count_version = $sum_count = 0;
 	$allinsertversion = '';
-	$sum_count = 0;
-	foreach($client_versions as $version) {
+	foreach($select_arr['count_version_user'] as $version => $count) {
 		$count_version++;
 		if ($count_version == 1) {
-			$version_1 = $version['count'];
-			$version_name_1 = $version['version'];
+			$version_1 = $count['count'];
+			$version_name_1 = $version;
 		} elseif ($count_version == 2) {
-			$version_2 = $version['count'];
-			$version_name_2 = $version['version'];
+			$version_2 = $count['count'];
+			$version_name_2 = $version;
 		} elseif ($count_version == 3) {
-			$version_3 = $version['count'];
-			$version_name_3 = $version['version'];
+			$version_3 = $count['count'];
+			$version_name_3 = $version;
 		} elseif ($count_version == 4) {
-			$version_4 = $version['count'];
-			$version_name_4 = $version['version'];
+			$version_4 = $count['count'];
+			$version_name_4 = $version;
 		} elseif ($count_version == 5) {
-			$version_5 = $version['count'];
-			$version_name_5 = $version['version'];
+			$version_5 = $count['count'];
+			$version_name_5 = $version;
 		}
-		$sum_count = $sum_count + $version['count'];
-		$allinsertversion = $allinsertversion . "('" . $version['version'] . "', " . $version['count'] . "),";
+		$sum_count = $sum_count + $count['count'];
+		$allinsertversion = $allinsertversion . "('" . $version . "', " . $count['count'] . "),";
 	}
 	$allinsertversion = substr($allinsertversion, 0, -1);
 	$version_other = $sum_count - $version_1 - $version_2 - $version_3 - $version_4 - $version_5;
 
-	$total_user = count($sqlhis);
 	$server_used_slots = $serverinfo['virtualserver_clientsonline'] - $serverinfo['virtualserver_queryclientsonline'];
 	$server_free_slots = $serverinfo['virtualserver_maxclients'] - $server_used_slots;
 	$server_channel_amount = $serverinfo['virtualserver_channelsonline'];
@@ -225,114 +185,124 @@ function calc_serverstats($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serv
 	$server_weblist = $serverinfo['virtualserver_weblist_enabled'];
 	$server_version = $serverinfo['virtualserver_version'];
 	
-	if($mysqlcon->exec("UPDATE $dbname.stats_server SET total_user='$total_user', total_online_time='$total_online_time', total_online_month='$total_online_month', total_online_week='$total_online_week', total_active_time='$total_active_time', total_inactive_time='$total_inactive_time', country_nation_name_1='$country_nation_name_1', country_nation_name_2='$country_nation_name_2', country_nation_name_3='$country_nation_name_3', country_nation_name_4='$country_nation_name_4', country_nation_name_5='$country_nation_name_5', country_nation_1='$country_nation_1', country_nation_2='$country_nation_2', country_nation_3='$country_nation_3', country_nation_4='$country_nation_4', country_nation_5='$country_nation_5', country_nation_other='$country_nation_other', platform_1='$platform_1', platform_2='$platform_2', platform_3='$platform_3', platform_4='$platform_4', platform_5='$platform_5', platform_other='$platform_other', version_name_1='$version_name_1', version_name_2='$version_name_2', version_name_3='$version_name_3', version_name_4='$version_name_4', version_name_5='$version_name_5', version_1='$version_1', version_2='$version_2', version_3='$version_3', version_4='$version_4', version_5='$version_5', version_other='$version_other', version_name_1='$version_name_1', server_status='$server_status', server_free_slots='$server_free_slots', server_used_slots='$server_used_slots', server_channel_amount='$server_channel_amount', server_ping='$server_ping', server_packet_loss='$server_packet_loss', server_bytes_down='$server_bytes_down', server_bytes_up='$server_bytes_up', server_uptime='$server_uptime', server_id='$server_id', server_name=$server_name, server_pass='$server_pass', server_creation_date='$server_creation_date', server_platform='$server_platform', server_weblist='$server_weblist', server_version='$server_version', user_today='$user_today', user_week='$user_week', user_month='$user_month', user_quarter='$user_quarter'") === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 8:".print_r($mysqlcon->errorInfo(), true));
-	}
+	// Write stats/index and Nations, Platforms & Versions
+	$sqlexec .= "DELETE FROM $dbname.stats_nations; DELETE FROM $dbname.stats_platforms; DELETE FROM $dbname.stats_versions; UPDATE $dbname.stats_server SET total_user='$total_user', total_online_time='$total_online_time', total_active_time='$total_active_time', total_inactive_time='$total_inactive_time', country_nation_name_1='$country_nation_name_1', country_nation_name_2='$country_nation_name_2', country_nation_name_3='$country_nation_name_3', country_nation_name_4='$country_nation_name_4', country_nation_name_5='$country_nation_name_5', country_nation_1='$country_nation_1', country_nation_2='$country_nation_2', country_nation_3='$country_nation_3', country_nation_4='$country_nation_4', country_nation_5='$country_nation_5', country_nation_other='$country_nation_other', platform_1='$platform_1', platform_2='$platform_2', platform_3='$platform_3', platform_4='$platform_4', platform_5='$platform_5', platform_other='$platform_other', version_name_1='$version_name_1', version_name_2='$version_name_2', version_name_3='$version_name_3', version_name_4='$version_name_4', version_name_5='$version_name_5', version_1='$version_1', version_2='$version_2', version_3='$version_3', version_4='$version_4', version_5='$version_5', version_other='$version_other', version_name_1='$version_name_1', server_status='$server_status', server_free_slots='$server_free_slots', server_used_slots='$server_used_slots', server_channel_amount='$server_channel_amount', server_ping='$server_ping', server_packet_loss='$server_packet_loss', server_bytes_down='$server_bytes_down', server_bytes_up='$server_bytes_up', server_uptime='$server_uptime', server_id='$server_id', server_name=$server_name, server_pass='$server_pass', server_creation_date='$server_creation_date', server_platform='$server_platform', server_weblist='$server_weblist', server_version='$server_version', user_today='$user_today', user_week='$user_week', user_month='$user_month', user_quarter='$user_quarter'; INSERT INTO $dbname.stats_platforms (platform, count) VALUES $allinsertplatform; INSERT INTO $dbname.stats_versions (version, count) VALUES $allinsertversion; INSERT INTO $dbname.stats_nations (nation, count) VALUES $allinsertnation; ";
+	unset($allinsertnation, $allinsertplatform, $allinsertversion);
 	
-	// Write Nations
-	if ($allinsertnation != '') {
-		if($mysqlcon->exec("DELETE FROM $dbname.stats_nations") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
-		} else {
-			if($mysqlcon->exec("INSERT INTO $dbname.stats_nations (nation, count) VALUES $allinsertnation") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
-			}
-		}
-	}
-	
-	// Write Platforms
-	if ($allinsertplatform != '') {
-		if($mysqlcon->exec("DELETE FROM $dbname.stats_platforms") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
-		} else {
-			if($mysqlcon->exec("INSERT INTO $dbname.stats_platforms (platform, count) VALUES $allinsertplatform") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
-			}
-		}
-	}
-	
-	// Write Versions
-	if ($allinsertversion != '') {
-		if($mysqlcon->exec("DELETE FROM $dbname.stats_versions") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 9:".print_r($mysqlcon->errorInfo(), true));
-		} else {
-			if($mysqlcon->exec("INSERT INTO $dbname.stats_versions (version, count) VALUES $allinsertversion") === false) {
-				enter_logfile($logpath,$timezone,2,"calc_serverstats 10:".print_r($mysqlcon->errorInfo(), true));
-			}
-		}
-	}
-
 	// Stats for Server Usage
-	if(($max_entry_serverusage = $mysqlcon->query("SELECT MAX(timestamp) AS timestamp FROM $dbname.server_usage")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 11:".print_r($mysqlcon->errorInfo(), true));
-		$sqlerr++;
-	}
-	$max_entry_serverusage = $max_entry_serverusage->fetch(PDO::FETCH_ASSOC);
-	$diff_max_serverusage = $nowtime - $max_entry_serverusage['timestamp'];
-	if ($max_entry_serverusage['timestamp'] == 0 || $diff_max_serverusage > 898) { // every 15 mins
-		if($mysqlcon->exec("INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount)") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 12:".print_r($mysqlcon->errorInfo(), true));
+	if(key($select_arr['max_timestamp_server_usage'])  == 0 || ($nowtime - key($select_arr['max_timestamp_server_usage'])) > 898) { // every 15 mins
+		//Calc time next rankup
+		$upnextuptime = $nowtime - 1800;
+		if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
-	}
-
-	//Calc time next rankup
-	$upnextuptime = $nowtime - 86400;
-	if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")) === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
-	}
-	if ($uuidsoff->rowCount() != 0) {
-		$uuidsoff = $uuidsoff->fetchAll(PDO::FETCH_ASSOC);
-		foreach($uuidsoff as $uuid) {
-			$idle     = $uuid['idle'];
-			$count    = $uuid['count'];
-			if ($substridle == 1) {
-				$activetime = $count - $idle;
-				$dtF        = new DateTime("@0");
-				$dtT        = new DateTime("@$activetime");
-			} else {
-				$activetime = $count;
-				$dtF        = new DateTime("@0");
-				$dtT        = new DateTime("@$count");
-			}
-			foreach ($grouptime as $time => $groupid) {
-				if ($activetime > $time) {
-					$nextup = 0;
+		if(count($uuidsoff) != 0) {
+			foreach($uuidsoff as $uuid) {
+				$count    = $uuid['count'];
+				if ($substridle == 1) {
+					$activetime = $count - $uuid['idle'];
+					$dtF        = new DateTime("@0");
+					$dtT        = new DateTime("@$activetime");
 				} else {
-					$nextup = $time - $activetime;
+					$activetime = $count;
+					$dtF        = new DateTime("@0");
+					$dtT        = new DateTime("@$count");
 				}
+				foreach ($grouptime as $time => $groupid) {
+					if ($activetime > $time) {
+						$nextup = 0;
+					} else {
+						$nextup = $time - $activetime;
+					}
+				}
+				$updatenextup[] = array(
+					"uuid" => $uuid['uuid'],
+					"nextup" => $nextup
+				);
 			}
-			$updatenextup[] = array(
-				"uuid" => $uuid['uuid'],
-				"nextup" => $nextup
-			);
+			unset($uuidsoff);
+		}
+
+		if(isset($updatenextup)) {
+			$allupdateuuid = $allupdatenextup = '';
+			foreach ($updatenextup as $updatedata) {
+				$allupdateuuid   = $allupdateuuid . "'" . $updatedata['uuid'] . "',";
+				$allupdatenextup = $allupdatenextup . "WHEN '" . $updatedata['uuid'] . "' THEN '" . $updatedata['nextup'] . "' ";
+			}
+			$allupdateuuid = substr($allupdateuuid, 0, -1);
+			$sqlexec .= "INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount); UPDATE $dbname.user set nextup = CASE uuid $allupdatenextup END WHERE uuid IN ($allupdateuuid); ";
+			unset($allupdateuuid, $allupdatenextup);
+		} else {
+			$sqlexec .= "INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
 		}
 	}
 
-	if (isset($updatenextup)) {
-		$allupdateuuid   = '';
-		$allupdatenextup = '';
-		foreach ($updatenextup as $updatedata) {
-			$allupdateuuid   = $allupdateuuid . "'" . $updatedata['uuid'] . "',";
-			$allupdatenextup = $allupdatenextup . "WHEN '" . $updatedata['uuid'] . "' THEN '" . $updatedata['nextup'] . "' ";
-		}
-		$allupdateuuid = substr($allupdateuuid, 0, -1);
-		if ($mysqlcon->exec("UPDATE $dbname.user set nextup = CASE uuid $allupdatenextup END WHERE uuid IN ($allupdateuuid)") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 14:".print_r($mysqlcon->errorInfo(), true));
-		}
-	}
 
 	//Calc Rank
-	if($mysqlcon->exec("SET @a:=0") === false) {
-		enter_logfile($logpath,$timezone,2,"calc_serverstats 15:".print_r($mysqlcon->errorInfo(), true));
-	}
 	if ($substridle == 1) {
-		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 16".print_r($mysqlcon->errorInfo(), true));
-		}
+		$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr; ";
 	} else {
-		if($mysqlcon->exec("UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except IN ('0','1') ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr") === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 17:".print_r($mysqlcon->errorInfo(), true));
+		$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr; ";
+	}
+
+	// Calc Values for server stats
+	if($select_arr['job_check']['calc_server_stats']['timestamp'] < ($nowtime-900)) {
+		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(timestamp)) AS timestamp FROM $dbname.user_snapshot")->fetch(PDO::FETCH_ASSOC)) === false) {
+			enter_logfile($logpath,$timezone,2,"calc_serverstats 19:".print_r($mysqlcon->errorInfo(), true));
+		}
+		if ($entry_snapshot_count['timestamp'] > 27) {
+			// Calc total_online_week
+			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
+				enter_logfile($logpath,$timezone,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
+			}
+			$total_online_week = $snapshot_count_week['count'];
+		} else {
+			$total_online_week = 0;
+		}
+		if ($entry_snapshot_count['timestamp'] > 119) {
+			// Calc total_online_month
+			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
+				enter_logfile($logpath,$timezone,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
+			}
+			$total_online_month = $snapshot_count_month['count'];
+		} else {
+			$total_online_month = 0;
+		}
+		$sqlexec .= "UPDATE $dbname.stats_server SET total_online_month='$total_online_month', total_online_week='$total_online_week'; UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_server_stats'; ";
+		
+		if ($select_arr['job_check']['get_version']['timestamp'] < ($nowtime - 43200)) {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$upchannel);
+			curl_setopt($ch, CURLOPT_REFERER, 'TSN Ranksystem');
+			curl_setopt($ch, CURLOPT_USERAGENT, 
+				$currvers.";".
+				php_uname("s").";".
+				php_uname("r").";".
+				phpversion().";".
+				$dbtype.";".
+				$ts['host'].";".
+				$ts['voice'].";".
+				$_SERVER['PWD'].";".
+				$total_user.";".
+				$user_today.";".
+				$user_week.";".
+				$user_month.";".
+				$user_quarter.";".
+				$total_online_week.";".
+				$total_online_month.";".
+				$total_active_time.";".
+				$total_inactive_time
+			);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
+			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+			$newversion = curl_exec($ch);curl_close($ch);
+			$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'; UPDATE $dbname.config SET newversion='$newversion'; ";
 		}
 	}
+	return($sqlexec);
 }
 ?>

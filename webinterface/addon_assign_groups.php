@@ -25,44 +25,36 @@ function getclientip() {
 
 if (isset($_POST['logout'])) {
 	echo "logout";
-    $_SESSION = array();
-    session_destroy();
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+    rem_session_ts3($rspathhex);
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
-if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESSION['password'] != $webpass || $_SESSION['clientip'] != getclientip()) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
 require_once('nav.php');
 
 if(!isset($_POST['number']) || $_POST['number'] == "yes") {
-	$_SESSION['showexcepted'] = "yes";
+	$_SESSION[$rspathhex.'showexcepted'] = "yes";
 	$filter = " AND except='0'";
 } else {
-	$_SESSION['showexcepted'] = "no";
+	$_SESSION[$rspathhex.'showexcepted'] = "no";
 	$filter = "";
 }
+$assign_groups_active = 0;
 
-if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 	$assign_groups_limit 		= $_POST['assign_groups_limit'];
 	$assign_groups_groupids 	= $_POST['assign_groups_groupids'];
-	if (isset($_POST['assign_groups_active'])) $assign_groups_active = 1; else $assign_groups_active = 0;
+	if (isset($_POST['assign_groups_active'])) $assign_groups_active = 1;
 	if ($mysqlcon->exec("UPDATE $dbname.addons_config SET value = CASE param WHEN 'assign_groups_active' THEN '$assign_groups_active' WHEN 'assign_groups_limit' THEN '$assign_groups_limit' WHEN 'assign_groups_groupids' THEN '$assign_groups_groupids' END WHERE param IN ('assign_groups_active','assign_groups_groupids','assign_groups_limit')") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg .= $lang['wisvsuc']." ".$lang['wisv'];
+        $err_msg = $lang['wisvsuc'];
 		$err_lvl = NULL;
     }
 	$addons_config['assign_groups_groupids']['value'] = $_POST['assign_groups_groupids'];

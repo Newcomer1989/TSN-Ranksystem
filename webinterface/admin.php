@@ -22,32 +22,23 @@ function getclientip() {
 
 if (isset($_POST['logout'])) {
 	echo "logout";
-    $_SESSION = array();
-    session_destroy();
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+    rem_session_ts3($rspathhex);
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
-if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESSION['password'] != $webpass || $_SESSION['clientip'] != getclientip()) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
 require_once('nav.php');
 
 if(!isset($_POST['number']) || $_POST['number'] == "yes") {
-	$_SESSION['showexcepted'] = "yes";
+	$_SESSION[$rspathhex.'showexcepted'] = "yes";
 	$filter = " AND except='0'";
 } else {
-	$_SESSION['showexcepted'] = "no";
+	$_SESSION[$rspathhex.'showexcepted'] = "no";
 	$filter = "";
 }
 
@@ -57,7 +48,7 @@ if(($dbuserdata = $mysqlcon->query("SELECT uuid,cldbid,name FROM $dbname.user WH
 }
 $user_arr = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
 
-if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 	$setontime = 0;
 	if($_POST['setontime_day']) { $setontime = $setontime + $_POST['setontime_day'] * 86400; }
 	if($_POST['setontime_hour']) { $setontime = $setontime + $_POST['setontime_hour'] * 3600; }
@@ -106,8 +97,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 										<div class="col-sm-8 pull-right">
 											<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 											<?PHP
-											echo '<option value="yes"'; if(!isset($_SESSION['showexcepted']) || $_SESSION['showexcepted'] == "yes") echo " selected=selected"; echo '>hide</option>';
-											echo '<option value="no"'; if(isset($_SESSION['showexcepted']) && $_SESSION['showexcepted'] == "no") echo " selected=selected"; echo '>show</option>';
+											echo '<option value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '>hide</option>';
+											echo '<option value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '>show</option>';
 											?>
 											</select>
 										</div>

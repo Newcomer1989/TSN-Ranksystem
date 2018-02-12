@@ -1,3 +1,12 @@
+<?PHP
+$job_check = $mysqlcon->query("SELECT * FROM $dbname.job_check")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
+	if(!isset($err_msg)) {
+		$err_msg = '<i class="fa fa-fw fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<a href="//ts-n.net/ranksystem.php?changelog" target="_blank"><i class="fa fa-fw fa-book"></i>&nbsp;', '</a>'); $err_lvl = 1;
+		$_SESSION[$rspathhex.'upinfomsg'] = 1;
+	}
+}
+?>
 <!DOCTYPE html>
 <html lang="<?PHP echo $language; ?>">
 <head>
@@ -35,8 +44,8 @@
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $currvers;?></a>
-				<?PHP if(isset($_SESSION['newversion']) && version_compare(substr($_SESSION['newversion'], 0, 5), substr($currvers, 0, 5), '>') && $_SESSION['newversion'] != '') {
-					echo '<a class="navbar-brand" href="http://ts-n.net/ranksystem.php" target="_blank">'.$lang['winav9'].' ['.$_SESSION['newversion'].']</a>';
+				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare(substr($_SESSION[$rspathhex.'newversion'], 0, 5), substr($currvers, 0, 5), '>') && $_SESSION[$rspathhex.'newversion'] != '') {
+					echo '<a class="navbar-brand" href="//ts-n.net/ranksystem.php?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
 				} ?>
 			</div>
 			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "stats.php") { ?>
@@ -50,8 +59,12 @@
 			<?PHP } ?>
 			<ul class="nav navbar-right top-nav">
 				<?PHP
-				echo '<li><a href="http',(!empty($_SERVER['HTTPS'])?'s':''),'://',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;',$lang['winav6'],'</a></li>';
-				if(isset($_SESSION['username']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass) { ?>
+				if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
+					echo '<li><a href="//',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;',$lang['winav6'],'</a></li>';
+				} else {
+					echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;',$lang['winav6'],'</a></li>';
+				}
+				if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass) { ?>
 				<li>
 					<a href="changepassword.php"><i class="fa fa-lock"></i>&nbsp;<?PHP echo $lang['pass2']; ?></a>
 				</li>
@@ -142,7 +155,7 @@
 			</div>
 		</nav>
 <?PHP
-if($adminuuid==NULL && $_SESSION['username'] == $webuser && !isset($err_msg)) {
+if($adminuuid==NULL && $_SESSION[$rspathhex.'username'] == $webuser && !isset($err_msg)) {
 	$err_msg = $lang['winav11']; $err_lvl = 3;
 }
 

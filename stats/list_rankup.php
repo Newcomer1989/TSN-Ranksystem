@@ -1,6 +1,5 @@
 <?PHP
 session_start();
-$starttime = microtime(true);
 
 require_once('../other/config.php');
 require_once('../other/session.php');
@@ -25,7 +24,7 @@ function getclientip() {
 		return false;
 }
 
-if(!isset($_SESSION['tsuid'])) {
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
@@ -102,10 +101,12 @@ if(isset($getstring)) {
 	$dbdata_full = $mysqlcon->prepare("SELECT COUNT(*) FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter");
 	$dbdata_full->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata_full->execute();
+	$sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
 } else {
 	$getstring = '';
-	$dbdata_full = $mysqlcon->query("SELECT COUNT(*) FROM $dbname.user");
+	$sumentries = $mysqlcon->query("SELECT COUNT(*) FROM $dbname.user")->fetch(PDO::FETCH_NUM);
 }
+
 if(!isset($_GET["seite"])) {
 	$seite = 1;
 } else {
@@ -126,14 +127,14 @@ if (isset($_GET['order'])) {
 }
 $keyorder = ($keyorder == 'desc' ? 'desc' : 'asc');
 if (isset($_GET['admin'])) {
-	if($_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+	if($_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 		$adminlogin = 1;
 	}
 }
 require_once('nav.php');
 
 $countentries = 0;
-$sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
+
 
 if(!isset($_GET["user"])) {
 	$user_pro_seite = 25;
@@ -202,42 +203,14 @@ function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$
 	</nav>
 	<?PHP
 }
-$uuids = $dbdata->fetchAll();
+$sqlhis = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 
-foreach($uuids as $uuid) {
-	$sqlhis[$uuid['uuid']] = array(
-		"cldbid" => $uuid['cldbid'],
-		"rank" => $uuid['rank'],
-		"count" => $uuid['count'],
-		"name" => $uuid['name'],
-		"idle" => $uuid['idle'],
-		"cldgroup" => $uuid['cldgroup'],
-		"online" => $uuid['online'],
-		"nextup" => $uuid['nextup'],
-		"lastseen" => $uuid['lastseen'],
-		"ip" => $uuid['ip'],
-		"grpid" => $uuid['grpid'],
-		"except" => $uuid['except'],
-		"grpsince" => $uuid['grpsince']
-	);
-	$uidarr[]			  = $uuid['uuid'];
-	$countentries		  = $countentries + 1;
-}
-if(!$dbdata = $mysqlcon->query("SELECT * FROM $dbname.job_check WHERE job_name='calc_user_lastscan'")) {
-	$err_msg = '<span class="wncolor">'.$mysqlcon->errorCode().'</span><br>';
-}
-
-$lastscan = $dbdata->fetchAll();
-$scantime = $lastscan[0]['timestamp'];
-$livetime = time() - $scantime;
-$dbgroups = $mysqlcon->query("SELECT * FROM $dbname.groups");
-$servergroups = $dbgroups->fetchAll(PDO::FETCH_ASSOC);
-foreach($servergroups as $servergroup) {
-	$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-	if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
-		$sqlhisgroup_file[$servergroup['sgid']] = true;
+$sqlhisgroup = $mysqlcon->query("SELECT sgid,sgidname FROM $dbname.groups")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+foreach($sqlhisgroup as $sgid => $servergroup) {
+	if(file_exists('../tsicons/'.$sgid.'.png')) {
+		$sqlhisgroup[$sgid]['iconfile'] = 1;
 	} else {
-		$sqlhisgroup_file[$servergroup['sgid']] = false;
+		$sqlhisgroup[$sgid]['iconfile'] = 0;
 	}
 }
 if($adminlogin == 1) {
@@ -259,12 +232,12 @@ if($adminlogin == 1) {
 }
 ?>
 		<div id="page-wrapper">
-<?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
+<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 			<div class="container-fluid">
 				<?PHP
 				if($user_pro_seite == "all" || $shownav == 0) {
 				} else {
-					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
+					pagination($keysort,$keyorder2,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
 					<table class="table table-striped">
@@ -295,134 +268,110 @@ if($adminlogin == 1) {
 					echo '<th class="text-center"><a href="?sort=grpsince&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listgrps'] , '</span></a></th>';
 				if ($showcolnx == 1 || $adminlogin == 1)
 					echo ($keysort == 'nextup') ? '<th class="text-center"><a href="?sort=nextup&amp;order=' . $keyorder2 . '&amp;seite=' . $seite . '&amp;user=' . $user_pro_seite . '&amp;search=' . $getstring . '"><span class="hdcolor">' . $lang['listnxup'] . '</span></a></th>' : '<th class="text-center"><a href="?sort=nextup&amp;order=' . $keyorder2 . '&amp;seite=' . $seite . '&amp;user=' . $user_pro_seite . '&amp;search=' . $getstring . '"><span class="hdcolor">' . $lang['listnxup'] . '</span></a></th>';
-				if ($showcolsg == 1 || $adminlogin == 1)
-					echo '<th class="text-center"><a href="?sort=nextsgrp&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listnxsg'] , '</span></a></th>';
+				if (($showcolsg == 1 || $adminlogin == 1) && $substridle == 1) {
+					echo '<th class="text-center"><a href="?sort=active&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listnxsg'] , '</span></a></th>';
+				} elseif (($showcolsg == 1 || $adminlogin == 1) && $substridle != 1) {
+					echo '<th class="text-center"><a href="?sort=count&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listnxsg'] , '</span></a></th>';
+				}
 				echo '</tr></thead><tbody>';
 				ksort($grouptime);
-				$countgrp = count($grouptime);
-				if ($countentries > 0) {
-					$exceptgrp=0;
-					$exceptcld=0;
-					$countallsum=0;
-					foreach ($uidarr as $uid) {
-						$cldgroup = $sqlhis[$uid]['cldgroup'];
-						$lastseen = $sqlhis[$uid]['lastseen'];
-						$count	= $sqlhis[$uid]['count'];
-						$idle	 = $sqlhis[$uid]['idle'];
-						$status   = $sqlhis[$uid]['online'];
-						$nextup   = $sqlhis[$uid]['nextup'];
-						$except   = $sqlhis[$uid]['except'];
-						$sgroups  = explode(",", $cldgroup);
-						$active   = $count - $idle;
+				if (count($sqlhis) > 0) {
+					foreach ($sqlhis as $uuid => $value) {
 						if ($substridle == 1) {
-							$activetime = $count - $idle;
+							$activetime = $value['count'] - $value['idle'];
 						} else {
-							$activetime = $count;
+							$activetime = $value['count'];
 						}
 						$grpcount=0;
-						$countallsum++;
 						foreach ($grouptime as $time => $groupid) {
 							$grpcount++;
-							if ($activetime < $time || $grpcount == $countgrp && $nextup <= 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
-								if($nextup == 0 && $grpcount == $countgrp) {
-									$neededtime = 0;
-								} elseif ($status == 1) {
-									$neededtime = $time - $activetime - $livetime;
-								} else {
-									$neededtime = $time - $activetime;
-								}
+							if ($activetime < $time || $grpcount == count($grouptime) && $value['nextup'] <= 0 && $showhighest == 1 || $grpcount == count($grouptime) && $value['nextup'] == 0 && $adminlogin == 1) {
 								echo '<tr>';
 								if ($showcolrg == 1 || $adminlogin == 1) {
-									if($except == 2 || $except == 3) {
+									if($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"></td>';
 									} else {
-										echo '<td class="text-center">' , $sqlhis[$uid]['rank'] , '</td>';
+										echo '<td class="text-center">' , $value['rank'] , '</td>';
 									}
 								}
 								if ($adminlogin == 1) {
-									echo '<td class="text-center"><a href="http://www.tsviewer.com/index.php?page=search&action=ausgabe_user&nickname=' , $sqlhis[$uid]['name'] , '" target="_blank">' , $sqlhis[$uid]['name'] , '</a></td>';
+									echo '<td class="text-center"><a href="//tsviewer.com/index.php?page=search&action=ausgabe_user&nickname=' , $value['name'] , '" target="_blank">' , $value['name'] , '</a></td>';
 								} elseif ($showcolcld == 1) {
-									echo '<td class="text-center">' , $sqlhis[$uid]['name'] , '</td>';
+									echo '<td class="text-center">' , $value['name'] , '</td>';
 								}
 								if ($adminlogin == 1) {
-									echo '<td class="text-center"><a href="http://ts3index.com/?page=searchclient&uid=' , $uid , '" target="_blank">' , $uid , '</a></td>';
+									echo '<td class="text-center"><a href="//ts3index.com/?page=searchclient&uid=' , $uuid , '" target="_blank">' , $uuid , '</a></td>';
 								} elseif ($showcoluuid == 1) {
-									echo '<td class="text-center">' , $uid , '</td>';
+									echo '<td class="text-center">' , $uuid , '</td>';
 								}
 								if ($showcoldbid == 1 || $adminlogin == 1)
-									echo '<td class="text-center">' , $sqlhis[$uid]['cldbid'] , '</td>';
+									echo '<td class="text-center">' , $value['cldbid'] , '</td>';
 								if ($adminlogin == 1)
-									echo '<td class="center"><a href="http://myip.ms/info/whois/' , inet_ntop($sqlhis[$uid]['ip']) , '" target="_blank">' , inet_ntop($sqlhis[$uid]['ip']) , '</a></td>';
+									echo '<td class="center"><a href="//myip.ms/info/whois/' , inet_ntop($value['ip']) , '" target="_blank">' , inet_ntop($value['ip']) , '</a></td>';
 								if ($showcolls == 1 || $adminlogin == 1) {
-									if ($status == 1) {
-										echo '<td class="text-center text-success">' , date('Y-m-d H:i:s',$lastseen), '</td>';
+									if ($value['online'] == 1) {
+										echo '<td class="text-center text-success">online</td>';
 									} else {
-										echo '<td class="text-center">' , date('Y-m-d H:i:s',$lastseen), '</td>';
+										echo '<td class="text-center">' , date('Y-m-d H:i:s',$value['lastseen']), '</td>';
 									}
 								}
 								if ($showcolot == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@$count");
-									$timecount = $dtF->diff($dtT)->format($timeformat);
-									echo $timecount;
+									$dtT	   = new DateTime("@".$value['count']);
+									echo $dtF->diff($dtT)->format($timeformat);
 								}
 								if ($showcolit == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@$idle");
-									$timecount = $dtF->diff($dtT)->format($timeformat);
-									echo $timecount;
+									$dtT	   = new DateTime("@".$value['idle']);
+									echo $dtF->diff($dtT)->format($timeformat);
 								}
 								if ($showcolat == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@$active");
-									$timecount = $dtF->diff($dtT)->format($timeformat);
-									echo $timecount;
+									$dtT	   = new DateTime("@".($value['count']-$value['idle']));
+									echo $dtF->diff($dtT)->format($timeformat);
 								}
 								if ($showcolas == 1 || $adminlogin == 1) {
-									$usergroupid = $sqlhis[$uid]['grpid'];
-									if ($sqlhis[$uid]['grpid'] == 0) {
+									if ($value['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
-									} elseif ($sqlhisgroup_file[$sqlhis[$uid]['grpid']]===true) {
-										echo '<td class="text-center"><img src="../tsicons/'.$sqlhis[$uid]['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$usergroupid] , '</td>';
+									} elseif ($sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
+										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									} else {
-										echo '<td class="text-center">' , $sqlhisgroup[$usergroupid] , '</td>';
+										echo '<td class="text-center">' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									}
 								}
 								if ($showgrpsince == 1 || $adminlogin == 1) {
-									if ($sqlhis[$uid]['grpsince'] == 0) {
+									if ($value['grpsince'] == 0) {
 										echo '<td class="text-center"></td>';
 									} else {
-										echo '<td class="text-center">' , date('Y-m-d H:i:s',$sqlhis[$uid]['grpsince']), '</td>';
+										echo '<td class="text-center">' , date('Y-m-d H:i:s',$value['grpsince']), '</td>';
 									}
 								}
 								if ($showcolnx == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
-									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@$neededtime");
-									$timecount = $dtF->diff($dtT)->format($timeformat);
-									if (($except == 0 || $except == 1) && $neededtime > 0) {
-										echo $timecount , '</td>';
-									} elseif ($except == 0 || $except == 1) {
-										$timecount = 0;
-										echo $timecount , '</td>';
-									} elseif ($except == 2 || $except == 3) {
+									if (($value['except'] == 0 || $value['except'] == 1) && $value['nextup'] > 0) {
+										$dtF	   = new DateTime("@0");
+										$dtT	   = new DateTime("@".$value['nextup']);
+										echo $dtF->diff($dtT)->format($timeformat) , '</td>';
+									} elseif ($value['except'] == 0 || $value['except'] == 1) {
+										echo '0</td>';
+									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '0</td>';
 									} else {
 										echo $lang['errukwn'], '</td>';
 									}
 								}
 								if ($showcolsg == 1 || $adminlogin == 1) {
-									if ($grpcount == $countgrp && $nextup == 0 && $showhighest == 1 || $grpcount == $countgrp && $nextup == 0 && $adminlogin == 1) {
+									if ($grpcount == count($grouptime) && $value['nextup'] == 0 && $showhighest == 1 || $grpcount == count($grouptime) && $value['nextup'] == 0 && $adminlogin == 1) {
 										echo '<td class="text-center"><em>',$lang['highest'],'</em></td>';
-									} elseif ($except == 2 || $except == 3) {
+									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
-									} elseif (isset($sqlhisgroup_file[$groupid]) && $sqlhisgroup_file[$groupid]===true) {
-										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid] , '</td>';
+									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconfile'] == 1) {
+										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
-										echo '<td class="text-center">' , $sqlhisgroup[$groupid] , '</td>';
+										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} else {
 										echo '<td class="text-center"></td>';
 									}

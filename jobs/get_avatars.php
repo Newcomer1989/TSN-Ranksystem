@@ -1,7 +1,7 @@
 <?PHP
-function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$avatar_delay) {
+function get_avatars($ts3,$slowmode,$timezone,$logpath,$avatar_delay) {
 	try {
-		check_shutdown($timezone,$logpath); usleep($slowmode);
+		usleep($slowmode);
 		$tsfilelist = $ts3->channelFileList($cid="0", $cpw="", $path="/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
@@ -14,6 +14,7 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$
 			$fsfilelistarray[$fsfile] = filemtime(substr(__DIR__,0,-4).'avatars/'.$fsfile);
 		}
     }
+	unset($fsfilelist);
 
 	if (isset($tsfilelist)) {
 		foreach($tsfilelist as $tsfile) {
@@ -38,6 +39,7 @@ function get_avatars($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$logpath,$
 				}
 			}
 		}
+		unset($fsfilelistarray);
 	}
 }
 ?>

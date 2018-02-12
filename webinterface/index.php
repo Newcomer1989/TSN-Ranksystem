@@ -67,22 +67,18 @@ if(($last_access[0]['last_access'] + 1) >= time()) {
 	$err_msg = sprintf($lang['errlogin2'],$again);
 	$err_lvl = 3;
 } elseif ($last_access[0]['count_access'] >= 10) {
-	enter_logfile($logpath,$timezone,3,"Much incorrect logins detected on the webinterface. Blocked login for 300 seconds! Last access from IP ".getclientip().".");
+	enter_logfile($logpath,$timezone,3,sprintf($lang['brute'], getclientip()));
 	$err_msg = $lang['errlogin3'];
 	$err_lvl = 3;
 	$bantime = time() + 299;
 	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$bantime', count_access='0'") === false) { }
 } elseif (isset($_POST['username']) && $_POST['username'] == $webuser && password_verify($_POST['password'], $webpass)) {
-	$_SESSION['username'] = $webuser;
-	$_SESSION['password'] = $webpass;
-	$_SESSION['clientip'] = getclientip();
-	$_SESSION['newversion'] = $newversion;
+	$_SESSION[$rspathhex.'username'] = $webuser;
+	$_SESSION[$rspathhex.'password'] = $webpass;
+	$_SESSION[$rspathhex.'clientip'] = getclientip();
+	$_SESSION[$rspathhex.'newversion'] = $newversion;
 	if($mysqlcon->exec("UPDATE $dbname.config SET count_access='0'") === false) { }
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	}
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 } elseif(isset($_POST['username'])) {
 	$nowtime = time();
@@ -91,12 +87,8 @@ if(($last_access[0]['last_access'] + 1) >= time()) {
 	$err_lvl = 3;
 }
 
-if(isset($_SESSION['username']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/ts.php");
-	}
+if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 }
 
 require_once('nav.php');

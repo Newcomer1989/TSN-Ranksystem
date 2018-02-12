@@ -20,18 +20,17 @@ if($language == "ar") {
 	require_once('../languages/nations_ru.php');
 }
 
-if(!isset($_SESSION['tsuid'])) {
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
 
-$sql = $mysqlcon->query("SELECT * FROM $dbname.stats_platforms ORDER BY count DESC");
-$sql_res = $sql->fetchAll();
+$sql_res = $mysqlcon->query("SELECT * FROM $dbname.stats_platforms ORDER BY count DESC")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
-<?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
+<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-lg-12">
@@ -49,16 +48,22 @@ require_once('nav.php');
 									<th>#</th>
 									<th><?PHP echo $lang['stna0006']; ?></th>
 									<th><?PHP echo $lang['stix0060'],' ',$lang['stna0004']; ?></th>
+									<th><?PHP echo $lang['stna0007']; ?></th>
 								</tr>
 <?PHP
 $count = 0;
-foreach ($sql_res as $line) {
+$sum_of_all = 0;
+foreach ($sql_res as $country => $value) {
+	$sum_of_all = $sum_of_all + $value['count'];
+}
+foreach ($sql_res as $platform => $value) {
 	$count++;
 	echo '
 	<tr>
 		<td>',$count,'</td>
-		<td>',$line['platform'],'</td>
-		<td>',$line['count'],'</td>
+		<td>',$platform,'</td>
+		<td>',$value['count'],'</td>
+		<td>',number_format(round(($value['count'] * 100 / $sum_of_all), 1), 1),' %</td>
 	</tr>';
 }
 ?>

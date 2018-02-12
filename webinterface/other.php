@@ -21,28 +21,19 @@ function getclientip() {
 }
 
 if (isset($_POST['logout'])) {
-    $_SESSION = array();
-    session_destroy();
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+    rem_session_ts3($rspathhex);
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
-if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESSION['password'] != $webpass || $_SESSION['clientip'] != getclientip()) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
 require_once('nav.php');
 
-if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 	$timezone 		= $_POST['timezone'];
 	$timeformat 	= $_POST['dateformat'];
 	$logpath		= addslashes($_POST['logpath']);
@@ -60,7 +51,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 		$err_lvl = NULL;
     }
 	$logpath				= $_POST['logpath'];
-	$config[0]['uniqueid']	= $_POST['uniqueid'];
+	$config['uniqueid']		= $_POST['uniqueid'];
+	$config['adminuuid']	= $_POST['adminuuid'];
 }
 ?>
 		<div id="page-wrapper">
@@ -130,8 +122,8 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8 required-field-block">
-									<input type="text" class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check the entered unique ID!" name="adminuuid" value="<?php echo $adminuuid; ?>" required>
-									<div class="help-block with-errors"></div>
+									<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="adminuuid" maxlength="500"><?php echo $config['adminuuid']; ?></textarea>
+											<div class="help-block with-errors"></div>
 									<div class="required-icon"><div class="text">*</div></div>
 								</div>
 							</div>
@@ -164,7 +156,7 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupuiddesc"><?php echo $lang['wiupuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="uniqueid" maxlength="500"><?php echo $config[0]['uniqueid']; ?></textarea>
+											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="uniqueid" maxlength="500"><?php echo $config['uniqueid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>

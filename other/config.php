@@ -4,6 +4,7 @@ if(isset($db['type']) === false) {
 	$db['type']="mysql";
 }
 $dbname = $db['dbname'];
+$dbtype = $db['type'];
 $dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'];
 if ($db['type'] == 'mysql') {
 	$dboptions = array(
@@ -16,126 +17,155 @@ if ($db['type'] == 'mysql') {
 try {
 	$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
 } catch (PDOException $e) {
-	$err_msg = "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
-	$language = "en";
+	echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
+	exit;
 }
 
-if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config"))) {
-	if($config->rowCount() != 0) {
-		$config          = $config->fetchAll();
-		$ts['host']      = $config[0]['tshost'];
-		$ts['query']     = $config[0]['tsquery'];
-		$ts['voice']     = $config[0]['tsvoice'];
-		$ts['user']      = $config[0]['tsuser'];
-		$ts['pass']      = $config[0]['tspass'];
-		$webuser         = $config[0]['webuser'];
-		$webpass         = $config[0]['webpass'];
+$rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';
+function rem_session_ts3($rspathhex) {
+	unset($_SESSION[$rspathhex.'admin']);
+	unset($_SESSION[$rspathhex.'clientip']);
+	unset($_SESSION[$rspathhex.'connected']);
+	unset($_SESSION[$rspathhex.'inactivefilter']);
+	unset($_SESSION[$rspathhex.'language']);
+	unset($_SESSION[$rspathhex.'logfilter']);
+	unset($_SESSION[$rspathhex.'logfilter2']);
+	unset($_SESSION[$rspathhex.'multiple']);
+	unset($_SESSION[$rspathhex.'newversion']);
+	unset($_SESSION[$rspathhex.'number_lines']);
+	unset($_SESSION[$rspathhex.'password']);
+	unset($_SESSION[$rspathhex.'serverport']);
+	unset($_SESSION[$rspathhex.'tsavatar']);
+	unset($_SESSION[$rspathhex.'tscldbid']);
+	unset($_SESSION[$rspathhex.'tsconnections']);
+	unset($_SESSION[$rspathhex.'tscreated']);
+	unset($_SESSION[$rspathhex.'tsname']);
+	unset($_SESSION[$rspathhex.'tsuid']);
+	unset($_SESSION[$rspathhex.'upinfomsg']);
+	unset($_SESSION[$rspathhex.'username']);
+	unset($_SESSION[$rspathhex.'uuid_verified']);
+}
+
+if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fetch())) {
+	if(count($config) != 0) {
+		$ts['host']      = $config['tshost'];
+		$ts['query']     = $config['tsquery'];
+		$ts['voice']     = $config['tsvoice'];
+		$ts['user']      = $config['tsuser'];
+		$ts['pass']      = $config['tspass'];
+		$webuser         = $config['webuser'];
+		$webpass         = $config['webpass'];
 		if(!isset($_GET["lang"])) {
-			if(isset($_SESSION['language'])) {
-				$language = $_SESSION['language'];
+			if(isset($_SESSION[$rspathhex.'language'])) {
+				$language = $_SESSION[$rspathhex.'language'];
 			} else {
-				$language = $config[0]['language'];
+				$language = $config['language'];
 			}
 		} elseif($_GET["lang"] == "ar") {
 			$language = "ar";
-			$_SESSION['language'] = "ar";
+			$_SESSION[$rspathhex.'language'] = "ar";
 		} elseif($_GET["lang"] == "de") {
 			$language = "de";
-			$_SESSION['language'] = "de";
+			$_SESSION[$rspathhex.'language'] = "de";
 		} elseif($_GET["lang"] == "fr") {
 			$language = "fr";
-			$_SESSION['language'] = "fr";
+			$_SESSION[$rspathhex.'language'] = "fr";
 		} elseif($_GET["lang"] == "it") {
 			$language = "it";
-			$_SESSION['language'] = "it";
+			$_SESSION[$rspathhex.'language'] = "it";
 		} elseif($_GET["lang"] == "nl") {
 			$language = "nl";
-			$_SESSION['language'] = "nl";
+			$_SESSION[$rspathhex.'language'] = "nl";
 		} elseif($_GET["lang"] == "ro") {
 			$language = "ro";
-			$_SESSION['language'] = "ro";
+			$_SESSION[$rspathhex.'language'] = "ro";
 		} elseif($_GET["lang"] == "ru") {
 			$language = "ru";
-			$_SESSION['language'] = "ru";
+			$_SESSION[$rspathhex.'language'] = "ru";
 		} elseif($_GET["lang"] == "pt") {
 			$language = "pt";
-			$_SESSION['language'] = "pt";
+			$_SESSION[$rspathhex.'language'] = "pt";
 		} else {
 			$language = "en";
-			$_SESSION['language'] = "en";
+			$_SESSION[$rspathhex.'language'] = "en";
 		}
-		$queryname       = $config[0]['queryname'];
-		$queryname2      = $config[0]['queryname2'];
-		$slowmode        = $config[0]['slowmode'];
-		if(empty($config[0]['grouptime'])) {
+		$queryname       = $config['queryname'];
+		$queryname2      = $config['queryname2'];
+		$slowmode        = $config['slowmode'];
+		if(empty($config['grouptime'])) {
 			$grouptime = null;
 		} else {
-			$grouptimearr = explode(',', $config[0]['grouptime']);
+			$grouptimearr = explode(',', $config['grouptime']);
 			foreach ($grouptimearr as $entry) {
 				list($key, $value) = explode('=>', $entry);
 				$grouptime[$key] = $value;
 			}
 		}
-		if(empty($config[0]['boost'])) {
+		if(empty($config['boost'])) {
 			$boostarr = null;
 		} else {
-			$boostexp = explode(',', $config[0]['boost']);
+			$boostexp = explode(',', $config['boost']);
 			foreach ($boostexp as $entry) {
 				list($key, $value1, $value2) = explode('=>', $entry);
 				$boostarr[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
 			}
 		}
-		$resetbydbchange = $config[0]['resetbydbchange'];
-		$msgtouser       = $config[0]['msgtouser'];
-		$update          = $config[0]['upcheck'];
-		$uniqueid        = explode(',', $config[0]['uniqueid']);
-		$updateinfotime  = $config[0]['updateinfotime'];
-		$currvers        = $config[0]['currvers'];
-		$substridle      = $config[0]['substridle'];
-		$exceptuuid      = explode(',', $config[0]['exceptuuid']);
-		$exceptgroup     = explode(',', $config[0]['exceptgroup']);
-		$exceptcid		 = explode(',', $config[0]['exceptcid']);
-		$timeformat      = $config[0]['dateformat'];
-		$showexcld       = $config[0]['showexcld'];
-		$showhighest     = $config[0]['showhighest'];
-		$showcolrg       = $config[0]['showcolrg'];
-		$showcolcld      = $config[0]['showcolcld'];
-		$showcoluuid     = $config[0]['showcoluuid'];
-		$showcoldbid     = $config[0]['showcoldbid'];
-		$showcolls       = $config[0]['showcolls'];
-		$showcolot       = $config[0]['showcolot'];
-		$showcolit       = $config[0]['showcolit'];
-		$showcolat       = $config[0]['showcolat'];
-		$showcolas       = $config[0]['showcolas'];
-		$showcolnx       = $config[0]['showcolnx'];
-		$showcolsg       = $config[0]['showcolsg'];
-		$cleanclients    = $config[0]['cleanclients'];
-		$cleanperiod     = $config[0]['cleanperiod'];
-		$defchid         = $config[0]['defchid'];
-		$logpath         = $config[0]['logpath'];
-		if ($config[0]['timezone'] == NULL) {
+		$resetbydbchange = $config['resetbydbchange'];
+		$msgtouser       = $config['msgtouser'];
+		$update          = $config['upcheck'];
+		$uniqueid        = explode(',', $config['uniqueid']);
+		$updateinfotime  = $config['updateinfotime'];
+		$currvers        = $config['currvers'];
+		$substridle      = $config['substridle'];
+		$exceptuuid      = array_flip(explode(',', $config['exceptuuid']));
+		$exceptgroup     = array_flip(explode(',', $config['exceptgroup']));
+		$exceptcid		 = array_flip(explode(',', $config['exceptcid']));
+		$timeformat      = $config['dateformat'];
+		$showexcld       = $config['showexcld'];
+		$showhighest     = $config['showhighest'];
+		$showcolrg       = $config['showcolrg'];
+		$showcolcld      = $config['showcolcld'];
+		$showcoluuid     = $config['showcoluuid'];
+		$showcoldbid     = $config['showcoldbid'];
+		$showcolls       = $config['showcolls'];
+		$showcolot       = $config['showcolot'];
+		$showcolit       = $config['showcolit'];
+		$showcolat       = $config['showcolat'];
+		$showcolas       = $config['showcolas'];
+		$showcolnx       = $config['showcolnx'];
+		$showcolsg       = $config['showcolsg'];
+		$cleanclients    = $config['cleanclients'];
+		$cleanperiod     = $config['cleanperiod'];
+		$defchid         = $config['defchid'];
+		$logpath         = $config['logpath'];
+		if ($config['timezone'] == NULL) {
 			$timezone    = "Europe/Berlin";
 		} else {
-			$timezone    = $config[0]['timezone'];
+			$timezone    = $config['timezone'];
 		}
 		date_default_timezone_set($timezone);
-		$advancemode	 = $config[0]['advancemode'];
-		$count_access	 = $config[0]['count_access'];
-		$last_access	 = $config[0]['last_access'];
-		$ignoreidle		 = $config[0]['ignoreidle'];
-		$rankupmsg		 = $config[0]['rankupmsg'];
-		$newversion		 = $config[0]['newversion'];
-		$servernews		 = $config[0]['servernews'];
-		$adminuuid		 = $config[0]['adminuuid'];
-		$nextupinfo		 = $config[0]['nextupinfo'];
-		$nextupinfomsg1	 = $config[0]['nextupinfomsg1'];
-		$nextupinfomsg2	 = $config[0]['nextupinfomsg2'];
-		$nextupinfomsg3	 = $config[0]['nextupinfomsg3'];
-		$shownav		 = $config[0]['shownav'];
-		$showgrpsince	 = $config[0]['showgrpsince'];
-		$resetexcept	 = $config[0]['resetexcept'];
-		$upchannel		 = $config[0]['upchannel'];
-		$avatar_delay	 = $config[0]['avatar_delay'];
+		$advancemode	 = $config['advancemode'];
+		$count_access	 = $config['count_access'];
+		$last_access	 = $config['last_access'];
+		$ignoreidle		 = $config['ignoreidle'];
+		$rankupmsg		 = $config['rankupmsg'];
+		$newversion		 = $config['newversion'];
+		$servernews		 = $config['servernews'];
+		if(empty($config['adminuuid'])) {
+			$adminuuid = NULL;
+		} else {
+			$adminuuid = explode(',', $config['adminuuid']);
+		}
+		$nextupinfo		 = $config['nextupinfo'];
+		$nextupinfomsg1	 = $config['nextupinfomsg1'];
+		$nextupinfomsg2	 = $config['nextupinfomsg2'];
+		$nextupinfomsg3	 = $config['nextupinfomsg3'];
+		$shownav		 = $config['shownav'];
+		$showgrpsince	 = $config['showgrpsince'];
+		$resetexcept	 = $config['resetexcept'];
+		$upchannel		 = $config['upchannel'];
+		$avatar_delay	 = $config['avatar_delay'];
+		$registercid	 = $config['registercid'];
 	}
 }
 if(!isset($language) || $language == "en") {

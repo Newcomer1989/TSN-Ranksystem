@@ -8,13 +8,13 @@ require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
-if(!isset($_SESSION['tsuid'])) {
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
-<?PHP if(isset($err_msg)) error_handling($err_msg, 3); ?>
+<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-lg-12">
@@ -33,7 +33,7 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h4><strong><span class="text-success"><?PHP echo $lang['stri0004']; ?></span></strong></h4>
-						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2017 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a></p>
+						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2018 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a></p>
 						<br>
 					</div>
 				</div>
@@ -42,13 +42,14 @@ require_once('nav.php');
 						<h4><strong><span class="text-warning"><?PHP echo $lang['stri0005']; ?></span></strong></h4>
 						<p><?PHP echo $lang['stri0006']; ?></p>
 						<p><?PHP echo $lang['stri0007']; ?></p>
+						<p><?PHP echo $lang['stri0023']; ?></p>
 						<p><?PHP echo $lang['stri0008']; ?></p>
 						<br>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-lg-12">
-						<h4><strong><span class="text-danger"><?PHP echo $lang['stri0009']; ?></span></strong></h4>
+						<h4><strong><span class="text-danger"><?PHP echo $lang['stri0009'];?></span></strong></h4>
 						<p><?PHP echo $lang['stri0010']; ?></p>
 						<p><a href="//php.net/" target="_blank">PHP</a> - Copyright &copy; 2001-2016 the <a href="//secure.php.net/credits.php" target="_blank">PHP Group</a></p><br>
 						<p><?PHP echo $lang['stri0011']; ?></p>
@@ -70,6 +71,8 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h4><strong><span class="text-info"><?PHP echo $lang['stri0012']; ?></span></strong></h4>
+						<p><?PHP echo $lang['stri0021']; ?></p>
+						<p><?PHP echo $lang['stri0022']; ?></p>
 						<p><?PHP echo $lang['stri0013']; ?></p>
 						<p><?PHP echo $lang['stri0014']; ?></p>
 						<p><?PHP echo $lang['stri0015']; ?></p>

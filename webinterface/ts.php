@@ -21,28 +21,19 @@ function getclientip() {
 }
 
 if (isset($_POST['logout'])) {
-    $_SESSION = array();
-    session_destroy();
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+    rem_session_ts3($rspathhex);
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
-if (!isset($_SESSION['username']) || $_SESSION['username'] != $webuser || $_SESSION['password'] != $webpass || $_SESSION['clientip'] != getclientip()) {
-	if($_SERVER['HTTPS'] == "on") {
-		header("Location: https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	} else {
-		header("Location: http://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	}
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
 
 require_once('nav.php');
 
-if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['password'] == $webpass && $_SESSION['clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 	$tshost     = $_POST['tshost'];
     $tsquery    = $_POST['tsquery'];
     $tsvoice    = $_POST['tsvoice'];
@@ -78,16 +69,17 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
 						</h1>
 					</div>
 				</div>
-				<form class="form-horizontal" name="update" method="POST">
+				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="panel panel-default">
 								<div class="panel-body">
-									<div class="form-group">
+									<div class="form-group required-field-block">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="tshost" value="<?php echo $ts['host']; ?>" maxlength="64" required>
+										<div class="col-sm-8">
+											<input type="text" class="form-control" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="tshost" value="<?php echo $ts['host']; ?>" maxlength="64" required>
 											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
@@ -381,5 +373,19 @@ if (isset($_POST['update']) && $_SESSION['username'] == $webuser && $_SESSION['p
     </div>
   </div>
 </div>
+<script>
+$('form[data-toggle="validator"]').validator({
+	custom: {
+		pattern: function ($el) {
+			var pattern = new RegExp($el.data('pattern'));
+			return pattern.test($el.val());
+		}
+	},
+	delay: 100,
+	errors: {
+		pattern: "There should be an error in your value, please check all could be right!"
+	}
+});
+</script>
 </body>
 </html>
