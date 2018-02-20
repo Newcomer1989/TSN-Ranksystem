@@ -12,4 +12,5 @@ $phpcommand = "php";
 #$phpcommand = "C:\PHP7\php.exe";
 #$phpcommand = "\"C:\Program Files (x86)\PHP\php.exe\"";  // on blanks you need special marks \"
 #$phpcommand = "c:\wamp\bin\php\php.exe";
+#$phpcommand = "/opt/plesk/php/<PHP version>/bin/php"
 ?>
