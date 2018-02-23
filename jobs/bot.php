@@ -92,38 +92,7 @@ require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 
 enter_logfile($logpath,$timezone,6,"Running on OS: ".php_uname("s")." ".php_uname("r"));
 enter_logfile($logpath,$timezone,6,"Using PHP Version: ".phpversion());
-
-enter_logfile($logpath,$timezone,5,"  Config check started...");
-
-if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-	enter_logfile($logpath,$timezone,1,"Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
-}
-
-$errcnf = 0;
-if(isset($groupslist) && $groupslist != NULL) {
-	foreach($grouptime as $time => $groupid) {
-		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-			enter_logfile($logpath,$timezone,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
-			$errcnf++;
-		}
-	}
-	foreach($boostarr as $groupid => $value) {
-		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-			enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']));
-		}
-	}
-	foreach($exceptgroup as $groupid => $value) {
-		if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-			enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']));
-		}
-	}
-}
-if($errcnf > 0) {
-	shutdown($mysqlcon, $logpath, $timezone, 1, "Critical Config error!");
-}
-unset($groupslist,$errcnf);
-
-enter_logfile($logpath,$timezone,5,"  Config check [done]");
+enter_logfile($logpath,$timezone,6,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
 
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
@@ -133,6 +102,44 @@ function check_shutdown($timezone,$logpath) {
 
 $currvers = check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath);
 enter_logfile($logpath,$timezone,5,"Ranksystem Version: ".$currvers);
+
+enter_logfile($logpath,$timezone,5,"  Config check started...");
+
+if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	enter_logfile($logpath,$timezone,1,"Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
+}
+
+$errcnf = 0;
+if(isset($groupslist) && $groupslist != NULL) {
+	if(isset($grouptime) && $grouptime != NULL) {
+		foreach($grouptime as $time => $groupid) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				enter_logfile($logpath,$timezone,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
+				$errcnf++;
+			}
+		}
+	}
+	if(isset($boostarr) && $boostarr != NULL) {
+		foreach($boostarr as $groupid => $value) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']));
+			}
+		}
+	}
+	if(isset($exceptgroup) && $exceptgroup != NULL) {
+		foreach($exceptgroup as $groupid => $value) {
+			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				enter_logfile($logpath,$timezone,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']));
+			}
+		}
+	}
+}
+if($errcnf > 0) {
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Critical Config error!");
+}
+unset($groupslist,$errcnf);
+
+enter_logfile($logpath,$timezone,5,"  Config check [done]");
 
 enter_logfile($logpath,$timezone,5,"Loading addons...");
 require_once(substr(__DIR__,0,-4).'other/load_addons_config.php');
@@ -247,11 +254,11 @@ try {
 		$ts3->serverInfoReset();
 		usleep($slowmode);
 		$serverinfo = $ts3->serverInfo();
-		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr);
 		$sqlexec .= calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr);
 		get_avatars($ts3,$slowmode,$timezone,$logpath,$avatar_delay);
 		$sqlexec .= clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath,$select_arr);
 		$sqlexec .= calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr);
+		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr);
 		$sqlexec .= calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr);
 		
 		if($addons_config['assign_groups_active']['value'] == '1') {

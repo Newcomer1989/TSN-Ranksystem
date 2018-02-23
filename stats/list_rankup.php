@@ -386,7 +386,7 @@ if($adminlogin == 1) {
 				}
 				echo '</tbody></table>';
 				if($user_pro_seite != "all") {
-					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
+					pagination($keysort,$keyorder2,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
 			</div>

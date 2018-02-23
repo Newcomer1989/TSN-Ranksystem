@@ -5,20 +5,22 @@ if(isset($db['type']) === false) {
 }
 $dbname = $db['dbname'];
 $dbtype = $db['type'];
-$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'];
-if ($db['type'] == 'mysql') {
-	$dboptions = array(
-		PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-		PDO::ATTR_PERSISTENT => true
-	);
-} else {
-	$dboptions = array();
-}
-try {
-	$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
-} catch (PDOException $e) {
-	echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
-	exit;
+if($db['type'] != "type") {
+	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'];
+	if ($db['type'] == 'mysql') {
+		$dboptions = array(
+			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+			PDO::ATTR_PERSISTENT => true
+		);
+	} else {
+		$dboptions = array();
+	}
+	try {
+		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
+	} catch (PDOException $e) {
+		echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
+		exit;
+	}
 }
 
 $rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';

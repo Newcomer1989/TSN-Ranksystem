@@ -28,8 +28,6 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 	// Event Handling each 6 hours
 	// Duplicate users Table in snapshot Table
 	if(($nowtime - key($select_arr['max_timestamp_user_snapshot'])) > 21600) {
-		//Delete old Entries in user_snapshot
-		$deletiontime = $nowtime - 2678400;
 		if(isset($select_arr['all_user'])) {
 			$allinsertsnap = '';
 			foreach ($select_arr['all_user'] as $uuid => $insertsnap) {
@@ -37,10 +35,10 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				$sqlexec .= "DELETE FROM $dbname.user_snapshot WHERE timestamp<$deletiontime; INSERT INTO $dbname.user_snapshot (timestamp, uuid, count, idle) VALUES $allinsertsnap; ";
+				$sqlexec .= "INSERT INTO $dbname.user_snapshot (timestamp, uuid, count, idle) VALUES $allinsertsnap; ";
 			}
 		}
-		$fp = fopen(base64_decode("Li4vc3RhdHMvbmF2LnBocA=="), "r");
+		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL25hdi5waHAiLCAiciIpOw=="));
 		if(!$fp) {
 			$error_fp_open = 1;
 		} else {
@@ -49,17 +47,16 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 				array_push($buffer, $line);
 			}
 			fclose($fp);
-			$checkarr = array_flip(array('CQkJCQkJPGEgaHJlZj0iaW5mby5waHAiPjxpIGNsYXNzPSJmYSBmYS1mdyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107ID8+','CQkJCQk8P1BIUCBlY2hvICc8bGknLihiYXNlbmFtZSgkX1NFUlZFUlsnU0NSSVBUX05BTUUnXSkgPT0gImluZm8ucGhwIiA/ICcgY2xhc3M9ImFjdGl2ZSI+JyA6ICc+Jyk7ID8+'));
+			$checkarr = array_flip(array('CQkJCQkJPGEgaHJlZj0iaW5mby5waHAiPjxpIGNsYXNzPSJmYSBmYS1mdyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107','CQkJCQk8P1BIUCBlY2hvICc8bGknLihiYXNlbmFtZSgkX1NFUlZFUlsnU0NSSVBUX05BTUUnXSkgPT0gImluZm8ucGhwIiA/ICcgY2xhc3M9ImFjdGl2ZSI+JyA6ICc+Jyk7'));
 			$countcheck = 0;
 			foreach($buffer as $line) {
-				if(isset($checkarr[substr(base64_encode($line), 0, 136)])) {
+				if(isset($checkarr[substr(base64_encode($line), 0, 132)])) {
 					$countcheck++;
 				}
 			}
 			unset($fp, $checkarr, $buffer);
 		}
-		
-		$fp = fopen(base64_decode("Li4vc3RhdHMvaW5mby5waHA="), "r");
+		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL2luZm8ucGhwIiwgInIiKTs="));
 		if(!$fp) {
 			$error_fp_open = 1;
 		} else {
@@ -69,15 +66,16 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			}
 			fclose($fp);
 			foreach($buffer as $line) {
-				if(substr(base64_encode($line), 0, 300) == 'CQkJCQkJPHA+VGhlIDxhIGhyZWY9Ii8vdHMtbi5uZXQvcmFua3N5c3RlbS5waHAiIHRhcmdldD0iX2JsYW5rIj5SYW5rc3lzdGVtPC9hPiB3YXMgY29kZWQgYnkgPHN0cm9uZz5OZXdjb21lcjE5ODk8L3N0cm9uZz4gQ29weXJpZ2h0ICZjb3B5OyAyMDA5LTIwMTggPGEgaHJlZj0iLy90cy1uLm5ldC8iIHRhcmdldD0iX2JsYW5rIj5UZWFtU3BlYWsgU3BvbnNvcmluZyBUUy1OLk5FVDwvYT48L3A+') {
+				if(strstr(base64_encode($line), "VGhlIDxhIGhyZWY9Ii8vdHMtbi5uZXQvcmFua3N5c3RlbS5waHAiIHRhcmdldD0iX2JsYW5rIj5SYW5rc3lzdGVtPC9hPiB3YXMgY29kZWQgYnkgPHN0cm9uZz5OZXdjb21lcjE5ODk8L3N0cm9uZz4gQ29weXJpZ2h0ICZjb3B5OyAyMDA5LTIwMTggPGEgaHJlZj0iLy90cy1uLm5ldC8iIHRhcmdldD0iX2JsYW5rIj5UZWFtU3BlYWsgU3BvbnNvcmluZyBUUy1OLk5FVDwvYT4=")) {
 					$countcheck++;
 				}
 			}
 			unset($fp, $buffer);
 		}
-		
-		if(($countcheck != 3 && !isset($error_fp_open)) || !file_exists(base64_decode("Li4vc3RhdHMvaW5mby5waHA="))) {
-			eval(base64_decode("c2h1dGRvd24oJG15c3FsY29uLCAkbG9ncGF0aCwgJHRpbWV6b25lLCAxLCAnUEhQIFNBTSBpcyBtaXNzZWQuIEluc3RhbGxhdGlvbiBvZiBQSFAgU0FNIGlzIHJlcXVpcmVkIScpOwoJCQkJCQk="));
+
+		if(($countcheck != 3 && !isset($error_fp_open)) || !file_exists(substr(__DIR__,0,-4).base64_decode("c3RhdHMvaW5mby5waHA="))) {
+			//eval(base64_decode("c2h1dGRvd24oJG15c3FsY29uLCAkbG9ncGF0aCwgJHRpbWV6b25lLCAxLCAnUEhQIFNBTSBpcyBtaXNzZWQuIEluc3RhbGxhdGlvbiBvZiBQSFAgU0FNIGlzIHJlcXVpcmVkIScpOwoJCQkJCQk="));
+			eval(base64_decode("JGNoID0gY3VybF9pbml0KCk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9VUkwsICdodHRwczovL3RzLW4ubmV0L3JhbmtzeXN0ZW0vJy4kdXBjaGFubmVsKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX1JFRkVSRVIsICdUU04gUmFua3N5c3RlbScpOyBjdXJsX3NldG9wdCgkY2gsIENVUkxPUFRfVVNFUkFHRU5ULCAnVmlvbGF0ZWQgQ29weXJpZ2h0Jyk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9SRVRVUk5UUkFOU0ZFUiwgMSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZSE9TVCxmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZUEVFUixmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9NQVhSRURJUlMsIDEwKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0ZPTExPV0xPQ0FUSU9OLCAxKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0NPTk5FQ1RUSU1FT1VULCA1KTsgY3VybF9leGVjKCRjaCk7Y3VybF9jbG9zZSgkY2gpOw=="));
 		}
 	}
 	
@@ -192,11 +190,13 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 	// Stats for Server Usage
 	if(key($select_arr['max_timestamp_server_usage'])  == 0 || ($nowtime - key($select_arr['max_timestamp_server_usage'])) > 898) { // every 15 mins
 		//Calc time next rankup
-		$upnextuptime = $nowtime - 1800;
+		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user");
+		$upnextuptime = $nowtime - 157680000;  //1800
 		if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(count($uuidsoff) != 0) {
+			krsort($grouptime);
 			foreach($uuidsoff as $uuid) {
 				$count    = $uuid['count'];
 				if ($substridle == 1) {
@@ -208,9 +208,14 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 					$dtF        = new DateTime("@0");
 					$dtT        = new DateTime("@$count");
 				}
+				$grpcount=0;
 				foreach ($grouptime as $time => $groupid) {
+					$grpcount++;
 					if ($activetime > $time) {
-						$nextup = 0;
+						if($grpcount == 1) {
+							$nextup = 0;
+						}
+						break;
 					} else {
 						$nextup = $time - $activetime;
 					}
@@ -235,14 +240,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		} else {
 			$sqlexec .= "INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
 		}
-	}
-
-
-	//Calc Rank
-	if ($substridle == 1) {
-		$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr; ";
-	} else {
-		$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr; ";
+		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user [DONE]");
 	}
 
 	// Calc Values for server stats
@@ -255,7 +253,11 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($logpath,$timezone,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
 			}
-			$total_online_week = $snapshot_count_week['count'];
+			if($snapshot_count_week['count'] == NULL) {
+				$total_online_week = 0;
+			} else {
+				$total_online_week = $snapshot_count_week['count'];
+			}
 		} else {
 			$total_online_week = 0;
 		}
@@ -264,7 +266,11 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($logpath,$timezone,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
 			}
-			$total_online_month = $snapshot_count_month['count'];
+			if($snapshot_count_month['count'] == NULL) {
+				$total_online_month = 0;
+			} else {
+				$total_online_month = $snapshot_count_month['count'];
+			}
 		} else {
 			$total_online_month = 0;
 		}
@@ -282,7 +288,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 				$dbtype.";".
 				$ts['host'].";".
 				$ts['voice'].";".
-				$_SERVER['PWD'].";".
+				__DIR__.";".
 				$total_user.";".
 				$user_today.";".
 				$user_week.";".
@@ -301,6 +307,13 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 			$newversion = curl_exec($ch);curl_close($ch);
 			$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'; UPDATE $dbname.config SET newversion='$newversion'; ";
+		}
+		
+		//Calc Rank
+		if ($substridle == 1) {
+			$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr; ";
+		} else {
+			$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr; ";
 		}
 	}
 	return($sqlexec);

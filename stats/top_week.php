@@ -74,7 +74,7 @@ require_once('nav.php');
 						</h1>
 					</div>
 				</div>
-				<?PHP if($count_timestamps['count'] < 28) {  echo $lang['stix0048']; } else { ?>
+				<?PHP if($count_timestamps['count'] < 28) {  echo $lang['stix0048'],' (',$count_timestamps['count'],'/28)'; } else { ?>
 				<div class="row">
 					<div class="col-lg-4 col-lg-offset-4">
 						<div class="panel panel-primary">

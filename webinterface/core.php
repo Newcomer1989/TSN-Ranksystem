@@ -42,6 +42,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	if(empty($_POST['boost'])) {
 		$boostarr = null;
 	} else {
+		$boostarr = null;
 		foreach (explode(',', $_POST['boost']) as $entry) {
 			list($key, $value1, $value2) = explode('=>', $entry);
 			$boostarr[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
