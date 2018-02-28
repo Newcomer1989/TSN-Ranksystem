@@ -15,7 +15,6 @@ $lang['cleanrs']			= "Clients in der Ranksystem Datenbank: %s";
 $lang['cleants']			= "Clients in der TeamSpeak Datenbank gefunden: %s (von %s)";
 $lang['clean0001']			= "Nicht benötigtes Avatar %s (ehemals eindeutige Client-ID: %s) erfolgreich gelöscht.";
 $lang['clean0002']			= "Fehler beim Löschen eines nicht benötigten Avatars %s (eindeutige Client-ID: %s). Bitte überprüfe die Zugriffsrechte auf das Verzeichnis 'avatars'!";
-$lang['clean0003']			= "Überprüfung der zu löschenden User abgeschlossen. Es gab nichts zu löschen.";
 $lang['clean0003']			= "Überprüfung der Datenbankbereinigung abgeschlossen. Alle unnötigen Daten wurden gelöscht.";
 $lang['clean0004']			= "Überprüfung der zu löschenden User abgeschlossen. Nichs wurde getan, da die Funktion 'Clientlöschung' deaktiviert ist (Webinterface - Kern).";
 $lang['days']				= "%s <small>Tage</small>";
