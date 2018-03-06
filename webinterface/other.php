@@ -110,9 +110,10 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 									echo '<option data-subtext="français" value="fr"'.($language === 'fr' ? ' selected="selected"' : '').'>FR</option>';
 									echo '<option data-subtext="Italiano" value="it"'.($language === 'it' ? ' selected="selected"' : '').'>IT</option>';
 									echo '<option data-subtext="Nederlands" value="nl"'.($language === 'nl' ? ' selected="selected"' : '').'>NL</option>';
-									echo '<option data-subtext="Română" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>';
-									echo '<option data-subtext="Pусский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
+									echo '<option data-subtext="polski" value="pl"'.($language === 'pl' ? ' selected="selected"' : '').'>PL</option>';
 									echo '<option data-subtext="Português" value="pt"'.($language === 'pt' ? ' selected="selected"' : '').'>PT</option>';
+									echo '<option data-subtext="Română" value="ro"'.($language === 'ro' ? ' selected="selected"' : '').'>RO</option>':
+									echo '<option data-subtext="Pусский" value="ru"'.($language === 'ru' ? ' selected="selected"' : '').'>RU</option>';
 									?>
 									</select>
 								</div>

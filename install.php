@@ -49,7 +49,7 @@ require_once('other/config.php');
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
 						</li>
 						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - English</a>
+							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
 						</li>
 						<li>
 							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
@@ -61,13 +61,16 @@ require_once('other/config.php');
 							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
-						</li>
-						<li>
-							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Русский</a>
+							<a href="?lang=pt"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
 						</li>
 						<li>
 							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
+						</li>
+						<li>
+							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
+						</li>
+						<li>
+							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Pусский</a>
 						</li>
 					</ul>
 				</li>

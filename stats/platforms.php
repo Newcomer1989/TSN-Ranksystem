@@ -12,12 +12,20 @@ if($language == "ar") {
 	require_once('../languages/nations_de.php');
 } elseif($language == "en") {
 	require_once('../languages/nations_en.php');
+} elseif($language == "fr") {
+	require_once('../languages/nations_fr.php');
 } elseif($language == "it") {
 	require_once('../languages/nations_it.php');
+} elseif($language == "nl") {
+	require_once('../languages/nations_en.php');
 } elseif($language == "ro") {
 	require_once('../languages/nations_en.php');
 } elseif($language == "ru") {
 	require_once('../languages/nations_ru.php');
+} elseif($language == "pt") {
+	require_once('../languages/nations_pt.php');
+} elseif($language == "pl") {
+	require_once('../languages/nations_pl.php');
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
