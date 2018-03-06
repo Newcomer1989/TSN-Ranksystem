@@ -272,7 +272,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
 						</li>
 						<li>
-							<a href="?lang=pt"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
+							<a href="?lang=pl"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
 						</li>
 						<li>
 							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
