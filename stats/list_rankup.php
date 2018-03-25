@@ -28,8 +28,9 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
+$_GET["search"] = htmlspecialchars($_POST['usersuche']);
+
 if(isset($_POST['username'])) {
-	$_GET["search"] = strip_tags(htmlspecialchars($_POST['usersuche']));
 	$_GET["seite"] = 1;
 }
 $filter='';
@@ -143,8 +144,6 @@ if(!isset($_GET["user"])) {
 } else {
 	$user_pro_seite = preg_replace('/\D/', '', $_GET["user"]);
 }
-
-$getstring = htmlspecialchars($getstring);
 
 $start = ($seite * $user_pro_seite) - $user_pro_seite;
 
