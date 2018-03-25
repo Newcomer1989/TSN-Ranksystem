@@ -3,6 +3,7 @@ session_start();
 
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
+require_once('../other/csrf_handler.php');
 
 function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 	$file = $logpath.'ranksystem.log';
@@ -134,6 +135,7 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
+										<?php echo $CSRF; ?>
 										<p><?PHP echo $lang['wirtpw8']; ?></p>
 										<p><?PHP echo $lang['wirtpw9']; ?>
 											<ul>

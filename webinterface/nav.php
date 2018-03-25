@@ -70,6 +70,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				</li>
 				<li>
 					<form class="navbar-form navbar-center" method="post">
+						<?php echo $CSRF; ?>
 						<div class="form-group">
 							<button type="submit" name="logout" class="btn btn-primary"><?PHP echo $lang['wilogout']; ?>&nbsp;<span class="glyphicon glyphicon-log-out" aria-hidden="true"></span></button>
 						</div>

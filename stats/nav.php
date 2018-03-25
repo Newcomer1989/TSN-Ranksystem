@@ -1,4 +1,6 @@
 <?PHP
+require_once('../other/csrf_handler.php');
+
 $job_check = $mysqlcon->query("SELECT * FROM $dbname.job_check")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
 	if(!isset($err_msg)) {
@@ -6,6 +8,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 		$_SESSION[$rspathhex.'upinfomsg'] = 1;
 	}
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="<?PHP echo $language; ?>">
@@ -56,6 +59,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				</div>
 				<div class="modal-footer">
 					<form method="post">
+							<?php echo $CSRF; ?>
 							<button class="btn btn-primary" type="submit" name="refresh"><?PHP echo $lang['stnv0006']; ?></button>
 							<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
 					</form>
@@ -192,6 +196,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				</li>
 				<li class="navbar-form navbar-right">
 					<form method="post">
+						<?php echo $CSRF; ?>
 						<div class="form-group">
 							<input class="form-control" type="text" name="usersuche" placeholder="Search"<?PHP if(isset($getstring)) echo ' value="'.$getstring.'"'; ?>>
 						</div>

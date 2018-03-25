@@ -3,6 +3,7 @@ session_start();
 
 require_once('../other/config.php');
 require_once('../other/load_addons_config.php');
+require_once('../other/csrf_handler.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
@@ -73,6 +74,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
+				<?php echo $CSRF; ?>
 				<div class="form-horizontal">
 					<div class="row">
 						<div class="col-md-3">
