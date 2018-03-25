@@ -6,10 +6,9 @@ if(isset($db['type']) === false) {
 $dbname = $db['dbname'];
 $dbtype = $db['type'];
 if($db['type'] != "type") {
-	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'];
+	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'].';charset=utf8mb4';
 	if ($db['type'] == 'mysql') {
 		$dboptions = array(
-			PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
 			PDO::ATTR_PERSISTENT => true
 		);
 	} else {
@@ -66,6 +65,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		} elseif($_GET["lang"] == "ar") {
 			$language = "ar";
 			$_SESSION[$rspathhex.'language'] = "ar";
+		} elseif($_GET["lang"] == "cz") {
+			$language = "cz";
+			$_SESSION[$rspathhex.'language'] = "cz";
 		} elseif($_GET["lang"] == "de") {
 			$language = "de";
 			$_SESSION[$rspathhex.'language'] = "de";
@@ -114,9 +116,6 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		}
 		$resetbydbchange = $config['resetbydbchange'];
 		$msgtouser       = $config['msgtouser'];
-		$update          = $config['upcheck'];
-		$uniqueid        = explode(',', $config['uniqueid']);
-		$updateinfotime  = $config['updateinfotime'];
 		$currvers        = $config['currvers'];
 		$substridle      = $config['substridle'];
 		$exceptuuid      = array_flip(explode(',', $config['exceptuuid']));
@@ -174,6 +173,8 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_en.php');
 } elseif($language == "ar") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
+} elseif($language == "cz") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_cz.php');
 } elseif($language == "de") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
 } elseif($language == "fr") {

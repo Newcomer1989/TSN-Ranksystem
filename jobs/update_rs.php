@@ -111,6 +111,12 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 		} else {
 			enter_logfile($logpath,$timezone,5,"    Cleaned update folder.",$norotate);
 		}
+		
+		$nowtime = time();
+		if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'; UPDATE $dbname.config SET newversion='$newversion';") === false) {
+			enter_logfile($logpath,$timezone,1,"    Error due updating new version in database.");
+		}
+		
 		enter_logfile($logpath,$timezone,4,"  Files updated successfully. Wait for restart via cron/task. Shutting down!\n\n",$norotate);
 		
 		$path = substr(__DIR__, 0, -4);

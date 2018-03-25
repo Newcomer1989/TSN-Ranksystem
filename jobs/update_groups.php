@@ -1,5 +1,5 @@
 <?PHP
-function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr) {
+function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$nobreak = 0) {
 	$sqlexec = '';
 	try {
 		usleep($slowmode);
@@ -107,7 +107,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 		if(!isset($iconarr["i".$iconid])) {
 			$iconarr["i".$iconid] = 0;
 		}
-		if(count($select_arr['groups']) != 0) {
+		if(isset($select_arr['groups']) && count($select_arr['groups']) != 0) {
 			foreach ($select_arr['groups'] as $sqlgid => $groups) {
 				if ($sqlgid == $sgid) {
 					$gefunden       = 1;
@@ -136,7 +136,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 				"icondate" => $iconarr["i".$iconid]
 			);
 		}
-		if($iconcount > 9) {
+		if($iconcount > 9 && $nobreak != 1) {
 			break;
 		}
     }

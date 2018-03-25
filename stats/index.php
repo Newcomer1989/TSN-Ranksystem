@@ -8,6 +8,8 @@ $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
 if($language == "ar") {
 	require_once('../languages/nations_en.php');
+} elseif($language == "cz") {
+	require_once('../languages/nations_en.php');
 } elseif($language == "de") {
 	require_once('../languages/nations_de.php');
 } elseif($language == "en") {

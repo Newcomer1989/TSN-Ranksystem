@@ -63,7 +63,7 @@ require_once('nav.php');
 						<p><a href="//startbootstrap.com" target="_blank">SB Admin Bootstrap Admin Template</a> - Copyright &copy; 2013-2016 Blackrock Digital LLC.</p>
 						<p><a href="//www.bootstrap-switch.org" target="_blank">Bootstrap Switch 3.3.2</a> - Copyright &copy; 2013-2015 Mattia Larentis</p>
 						<p><a href="//www.virtuosoft.eu/code/bootstrap-touchspin" target="_blank">Bootstrap TouchSpin 3.1.2</a> - Copyright &copy; 2013-2016 István Ujj-Mészáros</p>
-						<p><a href="//developer.snapappointments.com/bootstrap-select/" target="_blank">bootstrap-select 1.11.2</a> - Copyright &copy; 2012-2018 SnapAppointments, LLC</p>
+						<p><a href="//developer.snapappointments.com/bootstrap-select" target="_blank">bootstrap-select v1.13.0-beta</a> - Copyright &copy; 2012-2018 SnapAppointments, LLC</p>
 						<p><a href="//wenzhixin.net.cn/" target="_blank">Bootstrap Show Password 1.0.3</a> - Copyright &copy; 2014 zhixin wen</p>
 						<br>
 					</div>
@@ -81,6 +81,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0018']; ?></p>
 						<p><?PHP echo $lang['stri0019']; ?></p>
 						<p><?PHP echo $lang['stri0020']; ?></p>
+						<p><?PHP echo $lang['stri0024']; ?></p>
 						<br>
 					</div>
 				</div>

@@ -1,5 +1,5 @@
 <?PHP
-function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr) {
+function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr,$phpcommand,$adminuuid) {
 	$nowtime = time();
 	$sqlexec = '';
 
@@ -27,7 +27,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 
 	// Event Handling each 6 hours
 	// Duplicate users Table in snapshot Table
-	if(($nowtime - key($select_arr['max_timestamp_user_snapshot'])) > 21600) {
+	if(key($select_arr['max_timestamp_user_snapshot']) == NULL || ($nowtime - key($select_arr['max_timestamp_user_snapshot'])) > 21600) {
 		if(isset($select_arr['all_user'])) {
 			$allinsertsnap = '';
 			foreach ($select_arr['all_user'] as $uuid => $insertsnap) {
@@ -73,7 +73,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			unset($fp, $buffer);
 		}
 
-		if(($countcheck != 3 && !isset($error_fp_open)) || !file_exists(substr(__DIR__,0,-4).base64_decode("c3RhdHMvaW5mby5waHA="))) {
+		if((isset($countcheck) && $countcheck != 3 && !isset($error_fp_open)) || !file_exists(substr(__DIR__,0,-4).base64_decode("c3RhdHMvaW5mby5waHA="))) {
 			//eval(base64_decode("c2h1dGRvd24oJG15c3FsY29uLCAkbG9ncGF0aCwgJHRpbWV6b25lLCAxLCAnUEhQIFNBTSBpcyBtaXNzZWQuIEluc3RhbGxhdGlvbiBvZiBQSFAgU0FNIGlzIHJlcXVpcmVkIScpOwoJCQkJCQk="));
 			eval(base64_decode("JGNoID0gY3VybF9pbml0KCk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9VUkwsICdodHRwczovL3RzLW4ubmV0L3JhbmtzeXN0ZW0vJy4kdXBjaGFubmVsKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX1JFRkVSRVIsICdUU04gUmFua3N5c3RlbScpOyBjdXJsX3NldG9wdCgkY2gsIENVUkxPUFRfVVNFUkFHRU5ULCAnVmlvbGF0ZWQgQ29weXJpZ2h0Jyk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9SRVRVUk5UUkFOU0ZFUiwgMSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZSE9TVCxmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZUEVFUixmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9NQVhSRURJUlMsIDEwKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0ZPTExPV0xPQ0FUSU9OLCAxKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0NPTk5FQ1RUSU1FT1VULCA1KTsgY3VybF9leGVjKCRjaCk7Y3VybF9jbG9zZSgkY2gpOw=="));
 		}
@@ -191,7 +191,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 	if(key($select_arr['max_timestamp_server_usage'])  == 0 || ($nowtime - key($select_arr['max_timestamp_server_usage'])) > 898) { // every 15 mins
 		//Calc time next rankup
 		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user");
-		$upnextuptime = $nowtime - 157680000;  //1800
+		$upnextuptime = $nowtime - 1800;
 		if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
@@ -305,8 +305,25 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-			$newversion = curl_exec($ch);curl_close($ch);
-			$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'; UPDATE $dbname.config SET newversion='$newversion'; ";
+			$newversion = curl_exec($ch);
+			curl_close($ch);
+			
+			if(version_compare($newversion, $currvers, '>') && $newversion != NULL) {
+				enter_logfile($logpath,$timezone,4,$lang['upinf']);
+				if(isset($adminuuid) && $adminuuid != NULL) {
+					foreach ($adminuuid as $clientid) {
+						usleep($slowmode);
+						try {
+							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $currvers, $newversion));
+							enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
+						}
+						catch (Exception $e) {
+							enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+						}
+					}
+				}
+				update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpcommand);
+			}
 		}
 		
 		//Calc Rank

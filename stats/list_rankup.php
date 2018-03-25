@@ -144,7 +144,7 @@ if(!isset($_GET["user"])) {
 	$user_pro_seite = preg_replace('/\D/', '', $_GET["user"]);
 }
 
-$start = $seite * $user_pro_seite - $user_pro_seite;
+$start = ($seite * $user_pro_seite) - $user_pro_seite;
 
 if ($keysort == 'active' && $keyorder == 'asc') {
 	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (count - idle) LIMIT :start, :userproseite");
@@ -237,7 +237,7 @@ if($adminlogin == 1) {
 				<?PHP
 				if($user_pro_seite == "all" || $shownav == 0) {
 				} else {
-					pagination($keysort,$keyorder2,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
+					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
 					<table class="table table-striped">
@@ -295,9 +295,9 @@ if($adminlogin == 1) {
 									}
 								}
 								if ($adminlogin == 1) {
-									echo '<td class="text-center"><a href="//tsviewer.com/index.php?page=search&action=ausgabe_user&nickname=' , $value['name'] , '" target="_blank">' , $value['name'] , '</a></td>';
+									echo '<td class="text-center"><a href="//tsviewer.com/index.php?page=search&action=ausgabe_user&nickname=' , htmlspecialchars($value['name']) , '" target="_blank">' , htmlspecialchars($value['name']) , '</a></td>';
 								} elseif ($showcolcld == 1) {
-									echo '<td class="text-center">' , $value['name'] , '</td>';
+									echo '<td class="text-center">' , htmlspecialchars($value['name']) , '</td>';
 								}
 								if ($adminlogin == 1) {
 									echo '<td class="text-center"><a href="//ts3index.com/?page=searchclient&uid=' , $uuid , '" target="_blank">' , $uuid , '</a></td>';
@@ -386,7 +386,7 @@ if($adminlogin == 1) {
 				}
 				echo '</tbody></table>';
 				if($user_pro_seite != "all") {
-					pagination($keysort,$keyorder2,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
+					pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring);
 				}
 				?>
 			</div>

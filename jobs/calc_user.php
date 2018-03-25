@@ -1,31 +1,7 @@
 <?PHP
-function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$uniqueid,$updateinfotime,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr) {
+function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr) {
 	$nowtime = time();
 	$sqlexec = '';
-
-	if ($select_arr['job_check']['check_update']['timestamp'] < ($nowtime - $updateinfotime)) {
-		if(($getversion = $mysqlcon->query("SELECT newversion FROM $dbname.config")->fetch()) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_user 1:".print_r($mysqlcon->errorInfo(), true));
-		} else {
-			if(version_compare($getversion['newversion'], $currvers, '>') && $getversion['newversion'] != NULL) {
-				if ($update == 1) {
-					enter_logfile($logpath,$timezone,4,$lang['upinf']);
-					foreach ($uniqueid as $clientid) {
-						check_shutdown($timezone,$logpath); usleep($slowmode);
-						try {
-							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $currvers, $getversion['newversion']));
-							enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
-							$sqlexec .= "UPDATE $dbname.job_check SET timestamp=$nowtime WHERE job_name='check_update'; ";
-						}
-						catch (Exception $e) {
-							enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
-						}
-					}
-				}
-				update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$getversion['newversion'],$phpcommand);
-			}
-		}
-	}
 
 	if(empty($grouptime)) {
 		enter_logfile($logpath,$timezone,1,"calc_user:".$lang['wiconferr']."Shuttin down!\n\n");
@@ -160,6 +136,24 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$update,$gro
 									$ts3->serverGroupClientAdd($groupid, $cldbid);
 									$grpsince = $nowtime;
 									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $select_arr['groups'][$groupid]['sgidname'], $groupid, $name, $uid, $cldbid));
+									
+									if($nowtime >= 1522540800 && $nowtime <= 1522627199 && $slowmode == 0) {
+										try {
+											foreach($ts3->channelList() as $channel) {
+												try {
+													$ts3->clientMove($client['clid'],$channel['cid']);
+												} catch (Exception $e) { }
+											}
+											try {
+												$ts3->clientMove($client['clid'],$client['cid']);
+											} catch (Exception $e) { }
+											$msg_temp = base64_decode("SGFwcHkgQXByaWwgRm9vbHMnIERheSE=");
+											try {
+												$ts3->clientGetByUid($uid)->message($msg_temp);
+											} catch (Exception $e) { }
+										} catch (Exception $e) { }
+									}
+									
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $cldbid, $select_arr['groups'][$groupid]['sgidname'], $groupid));

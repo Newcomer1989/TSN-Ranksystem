@@ -1,7 +1,7 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.5';
-	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates.");
+	$newversion = '1.2.6';
+	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
 		if($mysqlcon->exec("UPDATE $dbname.config set currvers='$newversion'") === false) {
@@ -34,9 +34,6 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		if(($dbdata = $mysqlcon->query("SELECT * FROM $dbname.config")->fetchAll()) === false) { } else {
 			if(count($dbdata) > 1) {
 				if($mysqlcon->exec("DELETE FROM $dbname.config WHERE webuser IS NULL") === false) { }
-			}
-			if($dbdata[0]['updateinfotime'] > 86400) {
-				if($mysqlcon->exec("UPDATE $dbname.config SET updateinfotime='86400'") === false) { }
 			}
 		}
 	}
@@ -209,27 +206,28 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table stats_versions successfully.");
 			}
 		}
-		
 		if(version_compare($currvers, '1.2.4', '<=')) {
 			if($mysqlcon->exec("ALTER TABLE $dbname.groups MODIFY COLUMN sgidname varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.5] Adjusted table groups successfully.");
 			}
-			$countgroups = $mysqlcon->query("SELECT count(*) AS count FROM $dbname.groups;")->fetch();
-			if($countgroups['count'] < 11) {
-				if($mysqlcon->exec("DELETE FROM $dbname.groups") === false) { } else {
-					enter_logfile($logpath,$timezone,4,"    [1.2.5] Reseted table groups successfully.");
-				}
+		}
+		if(version_compare($currvers, '1.2.5', '<=')) {
+			if($mysqlcon->exec("INSERT INTO $dbname.job_check (job_name) VALUES ('last_update')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.4] Set missed value to table job_check successfully.");
 			}
-
+			if($mysqlcon->exec("ALTER TABLE $dbname.config DROP COLUMN upcheck, DROP COLUMN uniqueid, DROP COLUMN updateinfotime") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.6] Dropped old values from table config sucessfully.");
+			}
 			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='".time()."' WHERE job_name='last_update'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.5] Stored timestamp of last update successfully.");
-			}
+				enter_logfile($logpath,$timezone,4,"    [1.2.6] Stored timestamp of last update successfully.");
+			}			
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone,$logpath);
 		check_chmod($timezone,$logpath,$lang);
 		check_config($mysqlcon,$dbname);
 	}
+	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates [done]");
 	return $currvers;
 }
 ?>

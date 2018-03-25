@@ -1,6 +1,9 @@
 <?PHP
 function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr) {
 	$sqlexec = '';
+	$max_timestamp = key($select_arr['max_timestamp_user_snapshot']);
+	$min_timestamp_week = key($select_arr['usersnap_min_week']);
+	$min_timestamp_month = key($select_arr['usersnap_min_month']);
 
 	$job_begin = $select_arr['job_check']['calc_user_limit']['timestamp'];
 	$job_end = ceil(count($select_arr['all_user']) / 10) * 10;
@@ -12,21 +15,23 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 	}
 
 	$sqlhis = array_slice($select_arr['all_user'],$job_begin ,10);
+	
+	$uuids = '';
+	foreach ($sqlhis as $uuid => $userstats) {
+		$uuids .= "'".$uuid."',";
+	}
+	$uuids = substr($uuids, 0, -1);
 
-	if(isset($sqlhis)) {
+	if(isset($sqlhis) && $max_timestamp != NULL && $min_timestamp_week != NULL && $min_timestamp_month != NULL) {
 		//enter_logfile($logpath,$timezone,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
-		if(($userdataweekbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+		if(($userdataweekbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$min_timestamp_week AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo(), true));
 		}
-		if(($userdataweekend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
-		}
-		if(($userdatamonthbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+		if(($userdatamonthbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$min_timestamp_month AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo(), true));
 		}
-		
-		if(($userdatamonthend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 9:".print_r($mysqlcon->errorInfo(), true));
+		if(($userdataend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$max_timestamp AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
 		}
 
 		$allupdateuuid = $allupdaterank = $allupdatecountw = $allupdatecountm = $allupdateidlew = $allupdateidlem = $allupdateactw = $allupdateactm = $allupdatetotac = $allupdatebase64 = $allupdatecldtup = $allupdatecldtdo = $allupdateclddes = $allinsertuserstats = '';
@@ -36,18 +41,18 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 			try {
 				$clientinfo = $ts3->clientInfoDb($userstats['cldbid']);
 
-				if(isset($userdataweekend[$uuid]) && isset($userdataweekbegin[$uuid])) {
-					$count_week = $userdataweekend[$uuid]['count'] - $userdataweekbegin[$uuid]['count'];
-					$idle_week = $userdataweekend[$uuid]['idle'] - $userdataweekbegin[$uuid]['idle'];
+				if(isset($userdataend[$uuid]) && isset($userdataweekbegin[$uuid])) {
+					$count_week = $userdataend[$uuid]['count'] - $userdataweekbegin[$uuid]['count'];
+					$idle_week = $userdataend[$uuid]['idle'] - $userdataweekbegin[$uuid]['idle'];
 					$active_week = $count_week - $idle_week;
 				} else {
 					$count_week = 0;
 					$idle_week = 0;
 					$active_week = 0;
 				}
-				if(isset($userdatamonthend[$uuid]) && isset($userdatamonthbegin[$uuid])) {
-					$count_month = $userdatamonthend[$uuid]['count'] - $userdatamonthbegin[$uuid]['count'];
-					$idle_month = $userdatamonthend[$uuid]['idle'] - $userdatamonthbegin[$uuid]['idle'];
+				if(isset($userdataend[$uuid]) && isset($userdatamonthbegin[$uuid])) {
+					$count_month = $userdataend[$uuid]['count'] - $userdatamonthbegin[$uuid]['count'];
+					$idle_month = $userdataend[$uuid]['idle'] - $userdatamonthbegin[$uuid]['idle'];
 					$active_month = $count_month - $idle_month;
 				} else {
 					$count_month = 0;
@@ -76,7 +81,7 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 				//enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted".);
 			}
 		}
-		unset($sqlhis, $userdataweekbegin, $userdataweekend, $userdatamonthend, $userdatamonthbegin);
+		unset($sqlhis, $userdataweekbegin, $userdataend, $userdatamonthbegin);
 		
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);

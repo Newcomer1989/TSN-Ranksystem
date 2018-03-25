@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 session_start();
 
 require_once('../other/config.php');
@@ -38,11 +38,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	$timeformat 	= $_POST['dateformat'];
 	$logpath		= addslashes($_POST['logpath']);
 	$language  		= $_POST['languagedb'];
-	if (isset($_POST['upcheck'])) $upcheck = 1; else $upcheck = 0;
-	$updateinfotime = $_POST['updateinfotime'];
-	$uniqueid       = $_POST['uniqueid'];
 	$adminuuid     	= $_POST['adminuuid'];
-	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$timeformat',logpath='$logpath',language='$language',upcheck='$upcheck',updateinfotime='$updateinfotime',uniqueid='$uniqueid',adminuuid='$adminuuid'") === false) {
+	if ($mysqlcon->exec("UPDATE $dbname.config set timezone='$timezone',dateformat='$timeformat',logpath='$logpath',language='$language',adminuuid='$adminuuid'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -51,7 +48,6 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 		$err_lvl = NULL;
     }
 	$logpath				= $_POST['logpath'];
-	$config['uniqueid']		= $_POST['uniqueid'];
 	$config['adminuuid']	= $_POST['adminuuid'];
 }
 ?>
@@ -105,6 +101,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 									<select class="selectpicker show-tick form-control" name="languagedb">
 									<?PHP
 									echo '<option data-subtext="العربية" value="ar"'.($language === 'ar' ? ' selected="selected"' : '').'>AR</option>';
+									echo '<option data-subtext="čeština" value="cz"'.($language === 'cz' ? ' selected="selected"' : '').'>CZ</option>';
 									echo '<option data-subtext="Deutsch" value="de"'.($language === 'de' ? ' selected="selected"' : '').'>DE</option>';
 									echo '<option data-subtext="English" value="en"'.($language === 'en' ? ' selected="selected"' : '').'>EN</option>';
 									echo '<option data-subtext="français" value="fr"'.($language === 'fr' ? ' selected="selected"' : '').'>FR</option>';
@@ -125,41 +122,6 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 									<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="adminuuid" maxlength="500"><?php echo $config['adminuuid']; ?></textarea>
 											<div class="help-block with-errors"></div>
 									<div class="required-icon"><div class="text">*</div></div>
-								</div>
-							</div>
-							<div class="panel panel-default">
-								<div class="panel-body">
-									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupcheckdesc"><?php echo $lang['wiupcheck']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8">
-											<?PHP if ($update == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="upcheck" value="',$update,'">';
-											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="upcheck" value="',$update,'">';
-											} ?>
-										</div>
-									</div>
-									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiuptimedesc"><?php echo $lang['wiuptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8">
-											<input type="text" class="form-control" name="updateinfotime" value="<?php echo $updateinfotime; ?>">
-											<script>
-											$("input[name='updateinfotime']").TouchSpin({
-												min: 0,
-												max: 86400,
-												verticalbuttons: true,
-												prefix: 'Sec.:'
-											});
-											</script>
-										</div>
-									</div>
-									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupuiddesc"><?php echo $lang['wiupuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="uniqueid" maxlength="500"><?php echo $config['uniqueid']; ?></textarea>
-											<div class="help-block with-errors"></div>
-										</div>
-									</div>
 								</div>
 							</div>
 						</div>
@@ -233,54 +195,6 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
       </div>
       <div class="modal-body">
         <?php echo $lang['wivlangdesc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="wiupcheckdesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wiupcheck']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wiupcheckdesc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="wiuptimedesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wiuptime']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wiuptimedesc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="wiupuiddesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wiupuid']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wiupuiddesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
