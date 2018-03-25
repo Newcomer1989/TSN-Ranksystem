@@ -144,6 +144,8 @@ if(!isset($_GET["user"])) {
 	$user_pro_seite = preg_replace('/\D/', '', $_GET["user"]);
 }
 
+$getstring = htmlspecialchars($getstring);
+
 $start = ($seite * $user_pro_seite) - $user_pro_seite;
 
 if ($keysort == 'active' && $keyorder == 'asc') {
