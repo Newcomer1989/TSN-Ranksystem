@@ -129,7 +129,7 @@ if(isset($_POST['logfilter']) && in_array('debug', $_POST['logfilter'])) {
 	$inactivefilter .= "DEBUG,";
 }
 if(isset($_POST['logfilter'][0])) {
-	$filter2 = $_POST['logfilter'][0];
+	$filter2 = htmlspecialchars($_POST['logfilter'][0]);
 	$_SESSION[$rspathhex.'logfilter2'] = $filter2;
 }
 
