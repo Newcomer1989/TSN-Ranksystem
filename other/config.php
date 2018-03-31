@@ -89,6 +89,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		} elseif($_GET["lang"] == "pt") {
 			$language = "pt";
 			$_SESSION[$rspathhex.'language'] = "pt";
+		} elseif($_GET["lang"] == "pl") {
+			$language = "pl";
+			$_SESSION[$rspathhex.'language'] = "pl";
 		} else {
 			$language = "en";
 			$_SESSION[$rspathhex.'language'] = "en";
@@ -189,5 +192,7 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
 } elseif($language == "pt") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
+} elseif($language == "pl") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
 }
 ?>

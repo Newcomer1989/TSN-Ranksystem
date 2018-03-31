@@ -26,6 +26,8 @@ if($language == "ar") {
 	require_once('../languages/nations_ru.php');
 } elseif($language == "pt") {
 	require_once('../languages/nations_pt.php');
+} elseif($language == "pl") {
+	require_once('../languages/nations_pl.php');
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
