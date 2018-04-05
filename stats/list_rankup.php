@@ -29,13 +29,13 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 }
 
 if(isset($_POST['username'])) {
-	$_GET["search"] = strip_tags(htmlspecialchars($_POST['usersuche']));
 	$_GET["seite"] = 1;
+	$_GET["search"] = $_POST['usersuche'];
 }
 $filter='';
 $searchstring='';
 if(isset($_GET["search"]) && $_GET["search"] != '') {
-	$getstring = $_GET['search'];
+	$getstring = htmlspecialchars($_GET['search']);
 }
 if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 	if(str_replace('filter:excepted:','',$getstring)!='') {
