@@ -29,9 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (hash_equals($_SESSION['token'], $_POST['token'])) {
          // Everything okay
     } else {
-		// Token does not match: Redirect to self (GET)
-		header('Location: '.$_SERVER['PHP_SELF']);
-		die();
+        // Token does not match: Redirect to self (GET)
+        $phpSelf = filter_input(INPUT_SERVER, 'PHP_SELF', FILTER_SANITIZE_URL);
+        header('Location: '.$phpSelf);
+        die();
     }
 }
 
