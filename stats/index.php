@@ -394,7 +394,7 @@ require_once('nav.php');
 										<td><?PHP echo $lang['stix0036']; ?></td>
 										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
 										$img_content = file_get_contents("../tsicons/servericon.png");
-										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" width="16" height="16" alt="servericon"></div>';
 										} else { echo $sql_res['server_name']; } ?></td>
 									</tr>
 									<tr>
