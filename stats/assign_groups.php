@@ -4,6 +4,7 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
+require_once('../other/csrf_handler.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
@@ -103,6 +104,7 @@ require_once('nav.php');
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">
 						<div class="col-md-6">
 						</div>

@@ -3,6 +3,7 @@ session_start();
 
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
+require_once('../other/csrf_handler.php');
 
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
@@ -245,6 +246,7 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 					</div>
 				</div>
 				<form class="form-horizontal" name="start" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -256,6 +258,7 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 					<div class="row">&nbsp;</div>
 				</form>
 				<form class="form-horizontal" name="stop" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -267,6 +270,7 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 					<div class="row">&nbsp;</div>
 				</form>
 				<form class="form-horizontal" name="restart" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -285,6 +289,7 @@ if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['u
 						</h4>
 					</div>
 					<form class="form-horizontal" name="logfilter" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="col-lg-2">
 						<div class="col-sm-12">
 							<?PHP if($filter2!=NULL) { ?>

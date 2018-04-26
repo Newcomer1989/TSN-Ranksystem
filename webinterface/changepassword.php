@@ -3,6 +3,7 @@ session_start();
 
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
+require_once('../other/csrf_handler.php');
 
 function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 	$file = $logpath.'ranksystem.log';
@@ -96,6 +97,7 @@ if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser &&
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
+										<?php echo $CSRF; ?>
 										<div class="form-group">
 											<label for="password" class="control-label"><?PHP echo $lang['pass3']; ?>:</label>
 											<div class="input-group-justified">

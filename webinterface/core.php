@@ -2,6 +2,7 @@
 session_start();
 
 require_once('../other/config.php');
+require_once('../other/csrf_handler.php');
 
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
@@ -129,6 +130,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">

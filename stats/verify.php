@@ -5,6 +5,7 @@ require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
+require_once('../other/csrf_handler.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
@@ -146,6 +147,7 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form name="verify" method="POST">
+										<?php echo $CSRF; ?>
 										<?PHP
 										if($_SESSION[$rspathhex.'connected'] == 0) {
 											$ts3link = '<a href="ts3server://';

@@ -2,6 +2,7 @@
 session_start();
 
 require_once('../other/config.php');
+require_once('../other/csrf_handler.php');
 
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
@@ -77,6 +78,7 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
+					<?php echo $CSRF; ?>
 					<div class="row">
 						<div class="col-md-3">
 						</div>
