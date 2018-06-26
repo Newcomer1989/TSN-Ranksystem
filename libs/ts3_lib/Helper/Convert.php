@@ -4,8 +4,6 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Convert.php 06/06/2016 22:27:13 scp@Svens-iMac $
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
- * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
+ * @copyright Copyright (c) Planet TeamSpeak. All rights reserved.
  */
 
 /**
@@ -39,11 +36,14 @@ class TeamSpeak3_Helper_Convert
    */
   public static function bytes($bytes)
   {
+    // @todo: Fix precision lost from multiple rounding
     $kbytes = sprintf("%.02f", $bytes/1024);
     $mbytes = sprintf("%.02f", $kbytes/1024);
     $gbytes = sprintf("%.02f", $mbytes/1024);
     $tbytes = sprintf("%.02f", $gbytes/1024);
-
+  
+    // @todo: Fix assuming non-negative $bytes value, without validation
+    // Recommend something like: if( (float)$xbytes != 0 )
     if($tbytes >= 1)
       return $tbytes . " TB";
     if($gbytes >= 1)
@@ -58,6 +58,9 @@ class TeamSpeak3_Helper_Convert
 
   /**
    * Converts seconds/milliseconds to a human readable value.
+   * 
+   * Note: Assumes non-negative integer, but no validation
+   * @todo: Handle negative integer $seconds, or invalidate
    *
    * @param  integer $seconds
    * @param  boolean $is_ms
@@ -275,6 +278,24 @@ class TeamSpeak3_Helper_Convert
 
     return $array;
   }
+  
+  /**
+   * Converts a specified 32-bit unsigned integer value to a signed 32-bit integer value.
+   *
+   * @param  integer $unsigned
+   * @return integer
+   */
+  public static function iconId($unsigned)
+  {
+    $signed = (int) $unsigned;
+    
+    if(PHP_INT_SIZE > 4) // 64-bit
+    {
+      if($signed & 0x80000000) return $signed - 0x100000000;
+    }
+    
+    return $signed;
+  }
 
   /**
    * Converts a given string to a ServerQuery password hash.
@@ -332,7 +353,7 @@ class TeamSpeak3_Helper_Convert
   {
     if(!preg_match('/\A(?:(\xff\xd8\xff)|(GIF8[79]a)|(\x89PNG\x0d\x0a)|(BM)|(\x49\x49(\x2a\x00|\x00\x4a))|(FORM.{4}ILBM))/', $binary, $matches))
     {
-      return "application/octet-stream";
+      return "image/svg+xml";
     }
 
     $type = array(

@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -31,17 +39,24 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-require_once('nav.php');
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+require_once('nav.php');
+$newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
+
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$newconfig='<?php
-$db[\'type\']="'.$_POST['dbtype'].'";
-$db[\'host\']="'.$_POST['dbhost'].'";
-$db[\'user\']="'.$_POST['dbuser'].'";
-$db[\'pass\']="'.$_POST['dbpass'].'";
-$db[\'dbname\']="'.$_POST['dbname'].'";
+$db[\'type\']=\''.$_POST['dbtype'].'\';
+$db[\'host\']=\''.$_POST['dbhost'].'\';
+$db[\'user\']=\''.$_POST['dbuser'].'\';
+$db[\'pass\']=\''.$_POST['dbpass'].'\';
+$db[\'dbname\']=\''.$_POST['dbname'].'\';
 ?>';
-	$dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'];
+	$dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'].';charset=utf8mb4';
 	try {
 		$mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass']);
 		$handle=fopen('../other/dbconfig.php','w');
@@ -50,21 +65,23 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 			$err_msg = sprintf($lang['widbcfgerr']);
 			$err_lvl = 3;
 		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$newcsrf.'"><button
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 			$err_lvl = 0;
+			$db['type']	= $_POST['dbtype'];
+			$db['host']	= $_POST['dbhost'];
+			$dbname		= $_POST['dbname'];
+			$db['user']	= $_POST['dbuser'];
+			$db['pass']	= $_POST['dbpass'];
 		}
 		fclose($handle);
 	} catch (PDOException $e) {
 		$err_msg = sprintf($lang['widbcfgerr']);
 		$err_lvl = 3;
 	}
-	$db['type']		= $_POST['dbtype'];
-	$db['host']		= $_POST['dbhost'];
-	$dbname			= $_POST['dbname'];
-	$db['user']		= $_POST['dbuser'];
-	$db['pass']		= $_POST['dbpass'];
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -76,7 +93,8 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 						</h1>
 					</div>
 				</div>
-				<form class="form-horizontal" name="update" method="POST">
+				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 					<div class="row">
 						<div class="col-md-3">
 						</div>
@@ -115,8 +133,9 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbnamedesc"><?php echo $lang['isntwidbname']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="dbname" value="<?php echo $dbname; ?>" required>
+											<input type="text" data-pattern="^([A-Za-z0-9$_]){1,64}$" data-error="Please do not use special characters or more then 64 characters inside the database name!" class="form-control" name="dbname" value="<?php echo $dbname; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 								</div>
@@ -127,15 +146,17 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbusrdesc"><?php echo $lang['isntwidbusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="dbuser" value="<?php echo $db['user']; ?>" required>
+											<input type="text" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not user more then 64 characters inside the database user!" class="form-control" name="dbuser" value="<?php echo $db['user']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbpassdesc"><?php echo $lang['isntwidbpass']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="password" class="form-control" name="dbpass" value="<?php echo $db['pass']; ?>" data-toggle="password" data-placement="before" required>
+											<input type="password" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not user more then 64 characters inside the database password!" class="form-control" name="dbpass" value="<?php echo $db['pass']; ?>" data-toggle="password" data-placement="before" required>
 											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 								</div>
@@ -234,5 +255,19 @@ $db[\'dbname\']="'.$_POST['dbname'].'";
     </div>
   </div>
 </div>
+<script>
+$('form[data-toggle="validator"]').validator({
+	custom: {
+		pattern: function ($el) {
+			var pattern = new RegExp($el.data('pattern'));
+			return pattern.test($el.val());
+		}
+	},
+	delay: 100,
+	errors: {
+		pattern: "There should be an error in your value, please check all could be right!"
+	}
+});
+</script>
 </body>
 </html>

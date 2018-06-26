@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -12,10 +20,10 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 }
 
 if ($substridle == 1) {
-	$db_arr = $mysqlcon->query("SELECT uuid,name,count,idle,cldgroup,online FROM $dbname.user ORDER BY (count - idle) DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$db_arr = $mysqlcon->query("SELECT `uuid`,`name`,`count`,`idle`,`cldgroup`,`online` FROM `$dbname`.`user` ORDER BY (`count` - `idle`) DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 	$texttime = $lang['sttw0013'];
 } else {
-	$db_arr = $mysqlcon->query("SELECT uuid,name,count,idle,cldgroup,online FROM $dbname.user ORDER BY count DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$db_arr = $mysqlcon->query("SELECT `uuid`,`name`,`count`,`idle`,`cldgroup`,`online` FROM `$dbname`.`user` ORDER BY `count` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 	$texttime = $lang['sttw0003'];
 }
 $sumentries = count($db_arr) - 10;
@@ -52,7 +60,7 @@ for($count10 = $count10; $count10 <= 10; $count10++) {
 	);
 }
 
-$sum = $mysqlcon->query("SELECT SUM(count) AS count, SUM(idle) AS idle FROM $dbname.user")->fetch();
+$sum = $mysqlcon->query("SELECT SUM(`count`) AS `count`, SUM(`idle`) AS `idle` FROM `$dbname`.`user`")->fetch();
 $others_sum = round(($sum['count']/3600)) - $top10_sum;
 $others_idle_sum = round(($sum['idle']/3600)) - $top10_idle_sum;
 
@@ -83,7 +91,7 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div>&nbsp;</div>
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[0]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[0]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[0]['name'],'">',$client_data[0]['name']; ?></span></div>
 										<div><?PHP if($client_data[0]['count']<3600) { echo sprintf($texttime, round(($client_data[0]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[0]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -102,7 +110,7 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div>&nbsp;</div>
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[1]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[1]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[1]['name'],'">',$client_data[1]['name']; ?></span></div>
 										<div><?PHP if($client_data[1]['count']<3600) { echo sprintf($texttime, round(($client_data[1]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[1]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -119,7 +127,7 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div>&nbsp;</div>
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[2]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[2]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[2]['name'],'">',$client_data[2]['name']; ?></span></div>
 										<div><?PHP if($client_data[2]['count']<3600) { echo sprintf($texttime, round(($client_data[2]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[2]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -136,7 +144,7 @@ require_once('nav.php');
 										<i class="fa-2x">#4th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[3]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[3]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[3]['name'],'">',$client_data[3]['name']; ?></span></div>
 										<div><?PHP if($client_data[3]['count']<3600) { echo sprintf($texttime, round(($client_data[3]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[3]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -151,7 +159,7 @@ require_once('nav.php');
 										<i class="fa-2x">#5th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[4]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[4]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[4]['name'],'">',$client_data[4]['name']; ?></span></div>
 										<div><?PHP if($client_data[4]['count']<3600) { echo sprintf($texttime, round(($client_data[4]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[4]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -166,7 +174,7 @@ require_once('nav.php');
 										<i class="fa-2x">#6th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[5]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[5]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[5]['name'],'">',$client_data[5]['name']; ?></span></div>
 										<div><?PHP if($client_data[5]['count']<3600) { echo sprintf($texttime, round(($client_data[5]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[5]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -186,7 +194,7 @@ require_once('nav.php');
 										<i class="fa-2x">#7th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[6]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[6]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[6]['name'],'">',$client_data[6]['name']; ?></span></div>
 										<div><?PHP if($client_data[6]['count']<3600) { echo sprintf($texttime, round(($client_data[6]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[6]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -204,7 +212,7 @@ require_once('nav.php');
 										<i class="fa-2x">#8th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[7]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[7]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[7]['name'],'">',$client_data[7]['name']; ?></span></div>
 										<div><?PHP if($client_data[7]['count']<3600) { echo sprintf($texttime, round(($client_data[7]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[7]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -222,7 +230,7 @@ require_once('nav.php');
 										<i class="fa-2x">#9th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[8]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[8]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[8]['name'],'">',$client_data[8]['name']; ?></span></div>
 										<div><?PHP if($client_data[8]['count']<3600) { echo sprintf($texttime, round(($client_data[8]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[8]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -240,7 +248,7 @@ require_once('nav.php');
 										<i class="fa-2x">#10th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"' .$client_data[9]['name'] .'"'?>><?PHP echo str_replace(' ', '', $client_data[9]['name']) ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',$client_data[9]['name'],'">',$client_data[9]['name']; ?></span></div>
 										<div><?PHP if($client_data[9]['count']<3600) { echo sprintf($texttime, round(($client_data[9]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[9]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -343,9 +351,6 @@ require_once('nav.php');
 			</div>
 		</div>
 	</div>
-	<?PHP
-
-	?>
 	<script>
 		Morris.Donut({
 		  element: 'top10vs_donut1',

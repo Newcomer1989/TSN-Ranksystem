@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -18,7 +26,7 @@ if(count($multiple_uuid) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 } elseif ($_SESSION[$rspathhex.'connected'] == 0) {
 	$err_msg = sprintf("Du konntest nicht auf dem TeamSpeak gefunden werden. Bitte %sklicke hier%s um dich zun&auml;chst zu verifizieren.", '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } else {
-	$dbdata_fetched = $mysqlcon->query("SELECT * FROM $dbname.user WHERE uuid LIKE '%".$_SESSION[$rspathhex.'tsuid']."%'")->fetch();
+	$dbdata_fetched = $mysqlcon->query("SELECT * FROM `$dbname`.`user` WHERE `uuid` LIKE '%".$_SESSION[$rspathhex.'tsuid']."%'")->fetch();
 	$count_hours = round($dbdata_fetched['count']/3600);
 	$idle_hours = round($dbdata_fetched['idle']/3600);
 
@@ -51,7 +59,7 @@ if(count($multiple_uuid) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 		$percentage_rankup = round($takedtime/$neededtime*100);
 	}
 
-	$stats_user = $mysqlcon->query("SELECT count_week,active_week,count_month,active_month FROM $dbname.stats_user WHERE uuid='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
+	$stats_user = $mysqlcon->query("SELECT `count_week`,`active_week`,`count_month`,`active_month` FROM `$dbname`.`stats_user` WHERE `uuid`='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
 
 	if (isset($stats_user['count_week'])) $count_week = $stats_user['count_week']; else $count_week = 0;
 	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($timeformat);

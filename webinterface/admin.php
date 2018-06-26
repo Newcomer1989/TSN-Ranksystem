@@ -1,4 +1,12 @@
 ﻿<?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -32,23 +40,28 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
+
 require_once('nav.php');
 
 if(!isset($_POST['number']) || $_POST['number'] == "yes") {
 	$_SESSION[$rspathhex.'showexcepted'] = "yes";
-	$filter = " AND except='0'";
+	$filter = " `except`='0'";
 } else {
 	$_SESSION[$rspathhex.'showexcepted'] = "no";
 	$filter = "";
 }
 
-
-if(($dbuserdata = $mysqlcon->query("SELECT uuid,cldbid,name FROM $dbname.user WHERE 1=1$filter ORDER BY name ASC")) === false) {
+if(($dbuserdata = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE $filter ORDER BY `name` ASC")) === false) {
 	$err_msg = "DB Error: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
 $user_arr = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$setontime = 0;
 	if($_POST['setontime_day']) { $setontime = $setontime + $_POST['setontime_day'] * 86400; }
 	if($_POST['setontime_hour']) { $setontime = $setontime + $_POST['setontime_hour'] * 3600; }
@@ -59,19 +72,23 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	} elseif($_POST['user'] == NULL) {
 		$err_msg = $lang['errselusr']; $err_lvl = 3;
 	} else {
-		$allupdateuuid = '';
-		foreach($_POST['user'] as $user) {
-			$allupdateuuid .= "'".$user."',";
+		$allinsertdata = '';
+		$succmsg = '';
+		$nowtime = time();
+		foreach($_POST['user'] as $uuid) {
+			$allinsertdata .= "('".$uuid."', ".$nowtime.", ".$setontime."),";
+			$succmsg .= sprintf($lang['sccupcount'],$setontime,$uuid)."<br>";
 		}
-		$allupdateuuid = substr($allupdateuuid, 0, -1);
-		if($mysqlcon->exec("UPDATE $dbname.user set count = count + $setontime WHERE uuid IN ($allupdateuuid)") === false) {
+		$allinsertdata = substr($allinsertdata, 0, -1);
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`admin_addtime` (`uuid`,`timestamp`,`timecount`) VALUES $allinsertdata;") === false) {
 			$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 		} else {
-			if($mysqlcon->exec("UPDATE $dbname.user_snapshot set count = count + $setontime WHERE uuid IN ($allupdateuuid)") === false) { }
-			$err_msg = sprintf($lang['sccupcount'],$setontime,$allupdateuuid); $err_lvl = NULL;
+			$err_msg = substr($succmsg,0,-4); $err_lvl = NULL;
 		}
 	}
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -83,8 +100,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 						</h1>
 					</div>
 				</div>
-				<!-- <form id="update" method="POST"></form> -->
 				<form name="post" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 				<div class="form-horizontal">
 					<div class="row">
 						<div class="col-md-3">

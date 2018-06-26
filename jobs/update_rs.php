@@ -8,8 +8,8 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 	$tables = array('addons_config','addon_assign_groups','config','groups','job_check','server_usage','stats_nations','stats_platforms','stats_server','stats_user','stats_versions','user','user_snapshot');
 	
 	foreach ($tables as $table) {
-		if($mysqlcon->query("SELECT 1 FROM bak_$table LIMIT 1") !== false) {
-			if($mysqlcon->exec("DROP TABLE $dbname.bak_$table") === false) {
+		if($mysqlcon->query("SELECT 1 FROM `$dbname`.`bak_$table` LIMIT 1") !== false) {
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_$table`") === false) {
 				enter_logfile($logpath,$timezone,1,"      Error due deleting old backup table ".$table.".",$norotate);
 				$countbackuperr++;
 			} else {
@@ -19,11 +19,11 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 	}
 	
 	foreach ($tables as $table) {
-		if($mysqlcon->exec("CREATE TABLE $dbname.bak_$table LIKE $dbname.$table") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`bak_$table` LIKE `$dbname`.`$table`") === false) {
 			enter_logfile($logpath,$timezone,1,"      Error due creating table bak_".$table.".",$norotate);
 			$countbackuperr++;
 		} else {
-			if($mysqlcon->exec("INSERT $dbname.bak_$table SELECT * FROM $dbname.$table") === false) { 
+			if($mysqlcon->exec("INSERT `$dbname`.`bak_$table` SELECT * FROM `$dbname`.`$table`") === false) { 
 				enter_logfile($logpath,$timezone,1,"      Error due inserting data from table ".$table.".",$norotate);
 				$countbackuperr++;
 			} else {
@@ -113,7 +113,7 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 		}
 		
 		$nowtime = time();
-		if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='get_version'; UPDATE $dbname.config SET newversion='$newversion';") === false) {
+		if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='get_version'; UPDATE `$dbname`.`config` SET `newversion`='$newversion';") === false) {
 			enter_logfile($logpath,$timezone,1,"    Error due updating new version in database.");
 		}
 		

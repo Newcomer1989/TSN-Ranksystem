@@ -1,4 +1,12 @@
 ﻿<?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 $starttime = microtime(true);
 
@@ -56,7 +64,7 @@ require_once('nav.php');
 						<p><a href="//jquery.com/" target="_blank">jQuery v3.1.1</a> - Copyright &copy; 2016 The jQuery Foundation</p> 
 						<p><a href="//fontawesome.io" target="_blank">Font Awesome 4.7.0</a> - Copyright &copy; davegandy</p>
 						<p><a href="//flag-icon-css.lip.is/" target="_blank">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
-						<p><a href="//planetteamspeak.com/" target="_blank">TeamSpeak 3 PHP Framework 1.1.24</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
+						<p><a href="//planetteamspeak.com/" target="_blank">TeamSpeak 3 PHP Framework 1.1.33</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
 						<p><a href="//getbootstrap.com/" target="_blank">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2016 Twitter, Inc.</p>
 						<p><a href="//morrisjs.github.io/morris.js/" target="_blank">morris.js 0.5.0</a> - Copyright &copy; 2013 Olly Smith</p>
 						<p><a href="//raphaeljs.com" target="_blank">Rapha&euml;l 2.2.1 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>
@@ -82,6 +90,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0019']; ?></p>
 						<p><?PHP echo $lang['stri0020']; ?></p>
 						<p><?PHP echo $lang['stri0024']; ?></p>
+						<p><?PHP echo $lang['stri0025']; ?></p>
 						<br>
 					</div>
 				</div>

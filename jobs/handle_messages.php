@@ -3,7 +3,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 
 	global $lang, $logpath, $timezone, $nextupinfo, $nextupinfomsg1, $nextupinfomsg2, $nextupinfomsg3, $mysqlcon, $dbname, $grouptime, $substridle, $slowmode, $currvers, $newversion, $adminuuid, $phpcommand;
 	
-	if($host->whoami()["client_unique_identifier"] != $event["invokeruid"]) {  //check whoami need to slowmode or is already stored?
+	if($host->whoami()["client_unique_identifier"] != $event["invokeruid"]) {
 		$uuid = $event["invokeruid"];
 		$admin = 0;
 		foreach ($adminuuid as $auuid) {
@@ -14,11 +14,11 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 	
 		if((strstr($event["msg"], '!nextup') || strstr($event["msg"], '!next')) && $nextupinfo != 0) {
 			//enter_logfile($logpath,$timezone,6,"Client ".$event["invokername"]." (".$event["invokeruid"].") sent textmessage: ".$event["msg"]);
-			if(($user = $mysqlcon->query("SELECT count,nextup,idle,except,name FROM $dbname.user WHERE uuid='$uuid'")->fetch()) === false) {
+			if(($user = $mysqlcon->query("SELECT `count`,`nextup`,`idle`,`except`,`name` FROM `$dbname`.`user` WHERE `uuid`='$uuid'")->fetch()) === false) {
 				enter_logfile($logpath,$timezone,2,"handle_messages 1:".print_r($mysqlcon->errorInfo(), true));
 			}
 
-			if(($sqlhisgroup = $mysqlcon->query("SELECT sgid,sgidname FROM $dbname.groups")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+			if(($sqlhisgroup = $mysqlcon->query("SELECT `sgid`,`sgidname` FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 				enter_logfile($logpath,$timezone,2,"handle_messages 2:".print_r($mysqlcon->errorInfo(), true));
 			}
 
@@ -140,7 +140,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 		}
 		
 		if((strstr($event["msg"], '!checkupdate') || strstr($event["msg"], '!update')) && $admin == 1) {
-			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='0' WHERE job_name IN ('check_update','get_version','calc_server_stats')") === false) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='0' WHERE `job_name` IN ('check_update','get_version','calc_server_stats')") === false) {
 				enter_logfile($logpath,$timezone,4,"handle_messages 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 			usleep($slowmode);
@@ -159,7 +159,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 		}
 		
 		if((strstr($event["msg"], '!clean')) && $admin == 1) {
-			if($mysqlcon->exec("UPDATE $dbname.job_check SET timestamp='0' WHERE job_name IN ('clean_db','clean_clients')") === false) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='0' WHERE `job_name` IN ('clean_db','clean_clients')") === false) {
 				enter_logfile($logpath,$timezone,4,"handle_messages 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 			usleep($slowmode);

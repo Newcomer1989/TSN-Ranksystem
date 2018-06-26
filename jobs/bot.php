@@ -84,6 +84,7 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
+require_once(substr(__DIR__,0,-4).'jobs/event_userenter.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 
 enter_logfile($logpath,$timezone,6,"Running on OS: ".php_uname("s")." ".php_uname("r"));
@@ -118,14 +119,16 @@ enter_logfile($logpath,$timezone,5,"Loading addons [done]");
 
 enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\").");
 try {
-    $ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+    $ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
 	enter_logfile($logpath,$timezone,5,"  Connection to TS3 Server established.");
 	try {
 		usleep($slowmode);
+		$ts3->notifyRegister("server");
 		$ts3->notifyRegister("textprivate");
 		$ts3->notifyRegister("textchannel");
 		$ts3->notifyRegister("textserver");
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
+		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", "event_userenter");
 	} catch (Exception $e) {
 		enter_logfile($logpath,$timezone,2,"  Error due register notifyTextmessage ".$e->getCode().': '.$e->getMessage());
 	}
@@ -164,7 +167,7 @@ try {
 
 	enter_logfile($logpath,$timezone,5,"Config check started...");
 	
-	if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 		enter_logfile($logpath,$timezone,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
 	}
 	
@@ -209,7 +212,7 @@ try {
 		$errcnf = 0;
 		enter_logfile($logpath,$timezone,4,"  Downloading of servergroups finished. Recheck the config.");
 		
-		if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+		if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($logpath,$timezone,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
 		}
 		
@@ -244,7 +247,7 @@ try {
 		}
 	}
 	
-	if(($lastupdate = $mysqlcon->query("SELECT timestamp FROM $dbname.job_check WHERE job_name='last_update'")->fetch()) === false) {
+	if(($lastupdate = $mysqlcon->query("SELECT `timestamp` FROM `$dbname`.`job_check` WHERE `job_name`='last_update'")->fetch()) === false) {
 		enter_logfile($logpath,$timezone,1,"  Select on DB failed for job check: ".print_r($mysqlcon->errorInfo(), true));
 	} else {
 		if($lastupdate['timestamp'] != 0 && ($lastupdate['timestamp'] + 10) > time()) {
@@ -270,12 +273,12 @@ try {
 	$looptime = $rotated_cnt = 0; $rotated = '';
 	usleep(3000000);
 	while(1) {
-		$sqlexec='';
+		$sqlexec = $sqlexec2 = '';
 		$starttime = microtime(true);
 		$weekago = time() - 604800;
 		$monthago = time() - 2592000;
 		
-		if(($get_db_data = $mysqlcon->query("SELECT * FROM $dbname.user; SELECT MAX(timestamp) AS timestamp FROM $dbname.user_snapshot; SELECT version, COUNT(version) AS count FROM $dbname.user GROUP BY version ORDER BY count DESC; SELECT MAX(timestamp) AS timestamp FROM $dbname.server_usage; SELECT * FROM $dbname.job_check; SELECT uuid FROM $dbname.stats_user; SELECT timestamp FROM $dbname.user_snapshot WHERE timestamp > $weekago ORDER BY timestamp ASC LIMIT 1; SELECT timestamp FROM $dbname.user_snapshot WHERE timestamp > $monthago ORDER BY timestamp ASC LIMIT 1; SELECT * FROM $dbname.groups; SELECT * FROM $dbname.addon_assign_groups; ")) === false) {
+		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`user_snapshot`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$weekago ORDER BY `timestamp` ASC LIMIT 1; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$monthago ORDER BY `timestamp` ASC LIMIT 1; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
 			shutdown($mysqlcon, $logpath, $timezone, 1, "Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 		}
 
@@ -286,36 +289,39 @@ try {
 			$count_select++;
 
 			switch ($count_select) {
-			case 1:
-				$select_arr['all_user'] = $fetched_array;
-				break;
-			case 2:
-				$select_arr['max_timestamp_user_snapshot'] = $fetched_array;
-				break;
-			case 3:
-				$select_arr['count_version_user'] = $fetched_array;
-				break;
-			case 4:
-				$select_arr['max_timestamp_server_usage'] = $fetched_array;
-				break;
-			case 5:
-				$select_arr['job_check'] = $fetched_array;
-				break;
-			case 6:
-				$select_arr['uuid_stats_user'] = $fetched_array;
-				break;
-			case 7:
-				$select_arr['usersnap_min_week'] = $fetched_array;
-				break;
-			case 8:
-				$select_arr['usersnap_min_month'] = $fetched_array;
-				break;
-			case 9:
-				$select_arr['groups'] = $fetched_array;
-				break;
-			case 10:
-				$select_arr['addon_assign_groups'] = $fetched_array;
-				break 2;
+				case 1:
+					$select_arr['all_user'] = $fetched_array;
+					break;
+				case 2:
+					$select_arr['max_timestamp_user_snapshot'] = $fetched_array;
+					break;
+				case 3:
+					$select_arr['count_version_user'] = $fetched_array;
+					break;
+				case 4:
+					$select_arr['max_timestamp_server_usage'] = $fetched_array;
+					break;
+				case 5:
+					$select_arr['job_check'] = $fetched_array;
+					break;
+				case 6:
+					$select_arr['uuid_stats_user'] = $fetched_array;
+					break;
+				case 7:
+					$select_arr['usersnap_min_week'] = $fetched_array;
+					break;
+				case 8:
+					$select_arr['usersnap_min_month'] = $fetched_array;
+					break;
+				case 9:
+					$select_arr['groups'] = $fetched_array;
+					break;
+				case 10:
+					$select_arr['addon_assign_groups'] = $fetched_array;
+					break;
+				case 11:
+					$select_arr['admin_addtime'] = $fetched_array;
+					break 2;
 			}
 			$get_db_data->nextRowset();
 		}
@@ -335,6 +341,7 @@ try {
 		$sqlexec .= calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr,$phpcommand,$adminuuid);
 		$sqlexec .= calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr);
 		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr);
+		$sqlexec .= $sqlexec2;
 		
 		if($addons_config['assign_groups_active']['value'] == '1') {
 			if(!defined('assign_groups')) {
@@ -350,17 +357,17 @@ try {
 		if($mysqlcon->exec($sqlexec) === false) {
 			enter_logfile($logpath,$timezone,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 		}
-		unset($sqlexec, $select_arr);
+		unset($sqlexec, $sqlexec2, $select_arr);
 
 		$looptime = microtime(true) - $starttime;
 		$rotated = substr((number_format(round($looptime, 5),5) . ';' . $rotated),0,79);
 
 		if($looptime < 1) {
 			$loopsleep = (1 - $looptime) * 1000000;
-			//enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
+			#enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
 			usleep($loopsleep);
 		} elseif($slowmode == 0) {
-			//enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
+			#enter_logfile($logpath,$timezone,6,"last loop: ".round($looptime, 5)." sec.");
 			$rotated_cnt++;
 			if($rotated_cnt > 3600) {
 				$rotated_arr = explode(';', $rotated);

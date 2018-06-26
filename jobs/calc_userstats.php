@@ -23,18 +23,18 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 	$uuids = substr($uuids, 0, -1);
 
 	if(isset($sqlhis) && $max_timestamp != NULL && $min_timestamp_week != NULL && $min_timestamp_month != NULL) {
-		//enter_logfile($logpath,$timezone,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
-		if(($userdataweekbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$min_timestamp_week AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+		#enter_logfile($logpath,$timezone,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
+		if(($userdataweekbegin = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$min_timestamp_week AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo(), true));
 		}
-		if(($userdatamonthbegin = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$min_timestamp_month AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+		if(($userdatamonthbegin = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$min_timestamp_month AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo(), true));
 		}
-		if(($userdataend = $mysqlcon->query("SELECT uuid,count,idle FROM $dbname.user_snapshot WHERE timestamp=$max_timestamp AND uuid IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+		if(($userdataend = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$max_timestamp AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
 		}
 
-		$allupdateuuid = $allupdaterank = $allupdatecountw = $allupdatecountm = $allupdateidlew = $allupdateidlem = $allupdateactw = $allupdateactm = $allupdatetotac = $allupdatebase64 = $allupdatecldtup = $allupdatecldtdo = $allupdateclddes = $allinsertuserstats = '';
+		$allupdateuuid = '';
 		
 		foreach ($sqlhis as $uuid => $userstats) {
 			check_shutdown($timezone,$logpath); usleep($slowmode);
@@ -60,39 +60,17 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 					$active_month = 0;
 				}
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);;
-				if(isset($select_arr['uuid_stats_user'][$uuid])) {
-					$allupdateuuid = $allupdateuuid . "'" . $uuid . "',";
-					$allupdaterank = $allupdaterank . "WHEN '" . $uuid . "' THEN '" . $userstats['rank'] . "' ";
-					$allupdatecountw = $allupdatecountw . "WHEN '" . $uuid . "' THEN '" . $count_week . "' ";
-					$allupdatecountm = $allupdatecountm . "WHEN '" . $uuid . "' THEN '" . $count_month . "' ";
-					$allupdateidlew = $allupdateidlew . "WHEN '" . $uuid . "' THEN '" . $idle_week . "' ";
-					$allupdateidlem = $allupdateidlem . "WHEN '" . $uuid . "' THEN '" . $idle_month . "' ";
-					$allupdateactw = $allupdateactw . "WHEN '" . $uuid . "' THEN '" . $active_week . "' ";
-					$allupdateactm = $allupdateactm . "WHEN '" . $uuid . "' THEN '" . $active_month . "' ";
-					$allupdatetotac = $allupdatetotac . "WHEN '" . $uuid . "' THEN '" . $clientinfo['client_totalconnections'] . "' ";
-					$allupdatebase64 = $allupdatebase64 . "WHEN '" . $uuid . "' THEN '" . $clientinfo['client_base64HashClientUID'] . "' ";
-					$allupdatecldtup = $allupdatecldtup . "WHEN '" . $uuid . "' THEN '" . $clientinfo['client_total_bytes_uploaded'] . "' ";
-					$allupdatecldtdo = $allupdatecldtdo . "WHEN '" . $uuid . "' THEN '" . $clientinfo['client_total_bytes_downloaded'] . "' ";
-					$allupdateclddes = $allupdateclddes . "WHEN '" . $uuid . "' THEN " . $clientdesc . " ";
-				} else {
-					$allinsertuserstats = $allinsertuserstats . "('" . $uuid . "', '" .$userstats['rank'] . "', '" . $count_week . "', '" . $count_month . "', '" . $idle_week . "', '" . $idle_month . "', '" . $active_week . "', '" . $active_month . "', '" . $clientinfo['client_totalconnections'] . "', '" . $clientinfo['client_base64HashClientUID'] . "', '" . $clientinfo['client_total_bytes_uploaded'] . "', '" . $clientinfo['client_total_bytes_downloaded'] . "', " . $clientdesc . "),";
-				}
+				$allupdateuuid .= "('" . $uuid . "','" .$userstats['rank'] . "','" . $count_week . "','" . $count_month . "','" . $idle_week . "','" . $idle_month . "','" . $active_week . "','" . $active_month . "','" . $clientinfo['client_totalconnections'] . "','" . $clientinfo['client_base64HashClientUID'] . "','" . $clientinfo['client_total_bytes_uploaded'] . "','" . $clientinfo['client_total_bytes_downloaded'] . "'," . $clientdesc . "),";
 			} catch (Exception $e) {
 				//enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted".);
 			}
 		}
 		unset($sqlhis, $userdataweekbegin, $userdataend, $userdatamonthbegin);
-		
+
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
-			$sqlexec .= "UPDATE $dbname.job_check SET timestamp=$job_end WHERE job_name='calc_user_limit'; UPDATE $dbname.stats_user set rank = CASE uuid $allupdaterank END, count_week = CASE uuid $allupdatecountw END, count_month = CASE uuid $allupdatecountm END, idle_week = CASE uuid $allupdateidlew END, idle_month = CASE uuid $allupdateidlem END, active_week = CASE uuid $allupdateactw END, active_month = CASE uuid $allupdateactm END, total_connections = CASE uuid $allupdatetotac END, base64hash = CASE uuid $allupdatebase64 END, client_total_up = CASE uuid $allupdatecldtup END, client_total_down = CASE uuid $allupdatecldtdo END, client_description = CASE uuid $allupdateclddes END WHERE uuid IN ($allupdateuuid); ";
-			unset($allupdateuuid, $allupdaterank, $allupdatecountw, $allupdatecountm, $allupdateidlew, $allupdateidlem, $allupdateactw, $allupdateactm, $allupdatetotac, $allupdatebase64, $allupdatecldtup, $allupdatecldtdo, $allupdateclddes);
-		}
-
-		if($allinsertuserstats != '') {
-			$allinsertuserstats = substr($allinsertuserstats, 0, -1);
-			$sqlexec .= "UPDATE $dbname.job_check SET timestamp=$job_end WHERE job_name='calc_user_limit'; INSERT INTO $dbname.stats_user (uuid,rank,count_week,count_month,idle_week,idle_month,active_week,active_month,total_connections,base64hash,client_total_up,client_total_down,client_description) VALUES $allinsertuserstats; ";
-			unset($allinsertuserstats);
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit'; INSERT INTO `$dbname`.`stats_user` (`uuid`,`rank`,`count_week`,`count_month`,`idle_week`,`idle_month`,`active_week`,`active_month`,`total_connections`,`base64hash`,`client_total_up`,`client_total_down`,`client_description`) VALUES $allupdateuuid ON DUPLICATE KEY UPDATE `rank`=VALUES(`rank`),`count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`),`idle_month`=VALUES(`idle_month`),`active_week`=VALUES(`active_week`),`active_month`=VALUES(`active_month`),`total_connections`=VALUES(`total_connections`),`base64hash`=VALUES(`base64hash`),`client_total_up`=VALUES(`client_total_up`),`client_total_down`=VALUES(`client_total_down`),`client_description`=VALUES(`client_description`); ";
+			unset($updategroups, $allupdateuuid);
 		}
 	}
 	return($sqlexec);

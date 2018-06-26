@@ -4,6 +4,7 @@ if (isset($_POST['refresh'])) {
 	rem_session_ts3($rspathhex);
 }
 function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) {
+	global $iphash;
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		$hpclientip = $_SERVER['HTTP_CLIENT_IP'];
 	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -19,22 +20,34 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
 	else
 		$hpclientip = 0;
 	
-	$hpclientip = inet_pton($hpclientip);
 	$rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';
 	
-    $allclients = $mysqlcon->query("SELECT u.uuid,u.cldbid,u.name,u.ip,u.firstcon,s.total_connections FROM $dbname.user as u LEFT JOIN $dbname.stats_user as s ON u.uuid=s.uuid WHERE online='1';")->fetchAll();
+    $allclients = $mysqlcon->query("SELECT `u`.`uuid`,`u`.`cldbid`,`u`.`name`,`u`.`firstcon`,`s`.`total_connections` FROM `$dbname`.`user` AS `u` LEFT JOIN `$dbname`.`stats_user` AS `s` ON `u`.`uuid`=`s`.`uuid` WHERE `online`='1'")->fetchAll();
+	$iptable = $mysqlcon->query("SELECT `uuid`,`iphash`,`ip` FROM `$dbname`.`user_iphash`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
     $_SESSION[$rspathhex.'connected'] = 0;
 	$_SESSION[$rspathhex.'tsname'] = "verification needed!";
     $_SESSION[$rspathhex.'serverport'] = $voiceport;
+	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+
     foreach ($allclients as $client) {
-        if ($hpclientip == $client['ip']) {
-			if(isset($_SESSION[$rspathhex.'uuid_verified']) && $_SESSION[$rspathhex.'uuid_verified'] != $client['uuid']) {
-				continue;
+		if(isset($_SESSION[$rspathhex.'uuid_verified']) && $_SESSION[$rspathhex.'uuid_verified'] != $client['uuid']) {
+			continue;
+		}
+		$verify = FALSE;
+		if($iphash == 1) {
+			if (isset($iptable[$client['uuid']]['iphash']) && password_verify($hpclientip, $iptable[$client['uuid']]['iphash'])) {
+				$verify = TRUE;
 			}
+		} else {
+			if (isset($iptable[$client['uuid']]['ip']) && $hpclientip == $iptable[$client['uuid']]['ip']) {
+				$verify = TRUE;
+			}
+		}
+        if ($verify == TRUE) {
 			$_SESSION[$rspathhex.'tsname'] = htmlspecialchars($client['name']);
 			if(isset($_SESSION[$rspathhex.'tsuid']) && $_SESSION[$rspathhex.'tsuid'] != $client['uuid']) {
 				$_SESSION[$rspathhex.'multiple'] .= htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';
-				$_SESSION[$rspathhex.'tsname'] = "verification needed!";
+				$_SESSION[$rspathhex.'tsname'] = "verification needed (multiple)!";
 				unset($_SESSION[$rspathhex.'admin']);
 			} elseif (!isset($_SESSION[$rspathhex.'tsuid'])) {
 				$_SESSION[$rspathhex.'multiple'] = htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';

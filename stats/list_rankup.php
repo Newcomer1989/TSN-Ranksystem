@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -29,8 +37,8 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 }
 
 if(isset($_POST['username'])) {
-	$_GET["seite"] = 1;
 	$_GET["search"] = $_POST['usersuche'];
+	$_GET["seite"] = 1;
 }
 $filter='';
 $searchstring='';
@@ -41,12 +49,12 @@ if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 	if(str_replace('filter:excepted:','',$getstring)!='') {
 		$searchstring = str_replace('filter:excepted:','',$getstring);
 	}
-	$filter .= " AND except IN ('2','3')";
+	$filter .= " AND `except` IN ('2','3')";
 } elseif(isset($getstring) && strstr($getstring, 'filter:nonexcepted:')) {
 	if(str_replace('filter:nonexcepted:','',$getstring)!='') {
 		$searchstring = str_replace('filter:nonexcepted:','',$getstring);
 	}
-	$filter .= " AND except IN ('0','1')";
+	$filter .= " AND `except` IN ('0','1')";
 } else {
 	if(isset($getstring)) {
 		$searchstring = $getstring;
@@ -54,25 +62,25 @@ if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
 		$searchstring = '';
 	}
 	if($showexcld == 0) {
-		$filter .= " AND except IN ('0','1')";
+		$filter .= " AND `except` IN ('0','1')";
 	}
 }
 if(isset($getstring) && strstr($getstring, 'filter:online:')) {
 	$searchstring = preg_replace('/filter\:online\:/','',$searchstring);
-	$filter .= " AND online='1'";
+	$filter .= " AND `online`='1'";
 } elseif(isset($getstring) && strstr($getstring, 'filter:nononline:')) {
 	$searchstring = preg_replace('/filter\:nononline\:/','',$searchstring);
-	$filter .= " AND online='0'";
+	$filter .= " AND `online`='0'";
 }
 if(isset($getstring) && strstr($getstring, 'filter:actualgroup:')) {
 	preg_match('/filter\:actualgroup\:(.*)\:/',$searchstring,$grpvalue);
 	$searchstring = preg_replace('/filter\:actualgroup\:(.*)\:/','',$searchstring);
-	$filter .= " AND grpid='".$grpvalue[1]."'";
+	$filter .= " AND `grpid`='".$grpvalue[1]."'";
 }
 if(isset($getstring) && strstr($getstring, 'filter:country:')) {
 	preg_match('/filter\:country\:(.*)\:/',$searchstring,$grpvalue);
 	$searchstring = preg_replace('/filter\:country\:(.*)\:/','',$searchstring);
-	$filter .= " AND nation='".$grpvalue[1]."'";
+	$filter .= " AND `nation`='".$grpvalue[1]."'";
 }
 if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 	preg_match('/filter\:lastseen\:(.*)\:(.*)\:/',$searchstring,$seenvalue);
@@ -94,17 +102,18 @@ if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 	} else {
 		$operator = '=';
 	}
-	$filter .= " AND lastseen".$operator."'".$lastseen."'";
+	$filter .= " AND `lastseen`".$operator."'".$lastseen."'";
 }
+$searchstring = htmlspecialchars_decode($searchstring);
 
 if(isset($getstring)) {
-	$dbdata_full = $mysqlcon->prepare("SELECT COUNT(*) FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter");
+	$dbdata_full = $mysqlcon->prepare("SELECT COUNT(*) FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter");
 	$dbdata_full->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata_full->execute();
 	$sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
 } else {
 	$getstring = '';
-	$sumentries = $mysqlcon->query("SELECT COUNT(*) FROM $dbname.user")->fetch(PDO::FETCH_NUM);
+	$sumentries = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`user`")->fetch(PDO::FETCH_NUM);
 }
 
 if(!isset($_GET["seite"])) {
@@ -117,13 +126,13 @@ $adminlogin = 0;
 $keysort  = '';
 $keyorder = '';
 if (isset($_GET['sort'])) {
-	$keysort = strip_tags(htmlspecialchars($_GET['sort']));
+	$keysort = htmlspecialchars($_GET['sort']);
 }
 if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active' && $keysort != 'grpid' && $keysort != 'grpsince') {
 	$keysort = 'nextup';
 }
 if (isset($_GET['order'])) {
-	$keyorder = strip_tags(htmlspecialchars($_GET['order']));
+	$keyorder = htmlspecialchars($_GET['order']);
 }
 $keyorder = ($keyorder == 'desc' ? 'desc' : 'asc');
 if (isset($_GET['admin'])) {
@@ -147,24 +156,24 @@ if(!isset($_GET["user"])) {
 $start = ($seite * $user_pro_seite) - $user_pro_seite;
 
 if ($keysort == 'active' && $keyorder == 'asc') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (count - idle) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`count` - `idle`) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($keysort == 'active' && $keyorder == 'desc') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY (idle - count) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`idle` - `count`) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($searchstring == '') {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE 1=1$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE 1=1$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } else {
-	$dbdata = $mysqlcon->prepare("SELECT uuid,cldbid,rank,count,name,idle,cldgroup,online,nextup,lastseen,ip,grpid,except,grpsince FROM $dbname.user WHERE (uuid LIKE :searchvalue OR cldbid LIKE :searchvalue OR name LIKE :searchvalue)$filter ORDER BY $keysort $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
@@ -205,7 +214,7 @@ function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$
 }
 $sqlhis = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 
-$sqlhisgroup = $mysqlcon->query("SELECT sgid,sgidname FROM $dbname.groups")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+$sqlhisgroup = $mysqlcon->query("SELECT `sgid`,`sgidname` FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 foreach($sqlhisgroup as $sgid => $servergroup) {
 	if(file_exists('../tsicons/'.$sgid.'.png')) {
 		$sqlhisgroup[$sgid]['iconfile'] = 1;
@@ -252,8 +261,6 @@ if($adminlogin == 1) {
 					echo '<th class="text-center"><a href="?sort=uuid&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listuid'] , '</span></a></th>';
 				if ($showcoldbid == 1 || $adminlogin == 1)
 					echo '<th class="text-center"><a href="?sort=cldbid&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listcldbid'] , '</span></a></th>';
-				if ($adminlogin == 1)
-					echo '<th class="text-center"><a href="?sort=ip&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listip'] , '</span></a></th>';
 				if ($showcolls == 1 || $adminlogin == 1)
 					echo '<th class="text-center"><a href="?sort=lastseen&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listseen'] , '</span></a></th>';
 				if ($showcolot == 1 || $adminlogin == 1)
@@ -306,8 +313,6 @@ if($adminlogin == 1) {
 								}
 								if ($showcoldbid == 1 || $adminlogin == 1)
 									echo '<td class="text-center">' , $value['cldbid'] , '</td>';
-								if ($adminlogin == 1)
-									echo '<td class="center"><a href="//myip.ms/info/whois/' , inet_ntop($value['ip']) , '" target="_blank">' , inet_ntop($value['ip']) , '</a></td>';
 								if ($showcolls == 1 || $adminlogin == 1) {
 									if ($value['online'] == 1) {
 										echo '<td class="text-center text-success">online</td>';
@@ -392,13 +397,5 @@ if($adminlogin == 1) {
 			</div>
 		</div>
 	</div>
-	<script type="text/javascript">
-	$("th").each(function() {
-      $(this).width($(this).width());
-	});
-	$("td").each(function() {
-      $(this).width($(this).width());
-	});
-	</script>
 </body>
 </html>

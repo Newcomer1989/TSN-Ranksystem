@@ -26,8 +26,8 @@ function checkProcess($pid = null) {
 			}
 		} else {
 			if (file_exists($GLOBALS['pidfile'])) {
-				preg_match_all('!\d+!', file_get_contents($GLOBALS['pidfile']), $pid);
-				exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid[0][0]."\"\" get processid", $result);
+				$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
+				exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid."\"\" get processid", $result);
 				if(isset($result[1]) && is_numeric($result[1])) {
 					return TRUE;
 				} else {
@@ -39,18 +39,17 @@ function checkProcess($pid = null) {
 		}
 	} else {
 		if(!empty($pid)) {
-			$check_pid = "ps ".$pid;
-			$result = shell_exec($check_pid);
-			if (count(preg_split("/\n/", $result)) > 2) {
+			$result = str_replace(array("\r", "\n"), '', shell_exec("ps ".$pid));
+			if (strstr($result, $pid)) {
 				return TRUE;
 			} else {
 				return FALSE;
 			}
 		} else {
 			if (file_exists($GLOBALS['pidfile'])) {
-				$check_pid = "ps ".file_get_contents($GLOBALS['pidfile']);
-				$result = shell_exec($check_pid);
-				if (count(preg_split("/\n/", $result)) > 2) {
+				$check_pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
+				$result = str_replace(array("\r", "\n"), '', shell_exec("ps ".$check_pid));
+				if (strstr($result, $check_pid)) {
 					return TRUE;
 				} else {
 					return FALSE;
@@ -131,20 +130,20 @@ function stop() {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if (checkProcess() == TRUE) {
 			echo "Stopping the Ranksystem Bot.\n";
-			preg_match_all('!\d+!', file_get_contents($GLOBALS['pidfile']), $pid);
+			$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
 			exec("del /F ".$GLOBALS['pidfile']);
 			echo "Wait until Bot is down";
 			$count_check=0;
-			while (checkProcess($pid[0][0]) == TRUE) {
+			while (checkProcess($pid) == TRUE) {
 				sleep(1);
 				echo ".";
 				$count_check ++;
 				if($count_check > 10) {
-					exec("taskkill /F /PID ".$pid[0][0]);
+					exec("taskkill /F /PID ".$pid);
 					break;
 				}
 			}
-			if (checkProcess($pid[0][0]) == TRUE) {
+			if (checkProcess($pid) == TRUE) {
 				echo " [Failed]\n";
 			} else {
 				echo " [OK]\n";
@@ -157,7 +156,7 @@ function stop() {
 	} else {
 		if (checkProcess() == TRUE) {
 			echo "Stopping the Ranksystem Bot.\n";
-			$pid = file_get_contents($GLOBALS['pidfile']);
+			$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
 			exec("rm -f ".$GLOBALS['pidfile']);
 			echo "Wait until Bot is down";
 			$count_check=0;

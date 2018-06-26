@@ -1,6 +1,6 @@
 <?PHP
 function load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath) {
-	if(!isset($mysqlcon) || $mysqlcon == NULL || ($addons_config = $mysqlcon->query("SELECT * FROM $dbname.addons_config")) === false) {
+	if(!isset($mysqlcon) || $mysqlcon == NULL || ($addons_config = $mysqlcon->query("SELECT * FROM `$dbname`.`addons_config`")) === false) {
 		if(function_exists('enter_logfile')) { 
 			enter_logfile($logpath,$timezone,2,"Error on loading addons config.. Database down, not reachable, corrupt or empty?");
 		} else {

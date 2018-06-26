@@ -6,7 +6,7 @@ if(isset($db['type']) === false) {
 $dbname = $db['dbname'];
 $dbtype = $db['type'];
 if($db['type'] != "type") {
-	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$db['dbname'].';charset=utf8mb4';
+	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$dbname.';charset=utf8mb4';
 	if ($db['type'] == 'mysql') {
 		$dboptions = array(
 			PDO::ATTR_PERSISTENT => true
@@ -27,6 +27,7 @@ function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'admin']);
 	unset($_SESSION[$rspathhex.'clientip']);
 	unset($_SESSION[$rspathhex.'connected']);
+	unset($_SESSION[$rspathhex.'csrf_token']);
 	unset($_SESSION[$rspathhex.'inactivefilter']);
 	unset($_SESSION[$rspathhex.'language']);
 	unset($_SESSION[$rspathhex.'logfilter']);
@@ -36,6 +37,10 @@ function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'number_lines']);
 	unset($_SESSION[$rspathhex.'password']);
 	unset($_SESSION[$rspathhex.'serverport']);
+	unset($_SESSION[$rspathhex.'temp_cldbid']);
+	unset($_SESSION[$rspathhex.'temp_name']);
+	unset($_SESSION[$rspathhex.'temp_uuid']);
+	unset($_SESSION[$rspathhex.'token']);
 	unset($_SESSION[$rspathhex.'tsavatar']);
 	unset($_SESSION[$rspathhex.'tscldbid']);
 	unset($_SESSION[$rspathhex.'tsconnections']);
@@ -47,7 +52,7 @@ function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'uuid_verified']);
 }
 
-if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fetch())) {
+if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`config`")->fetch())) {
 	if(count($config) != 0) {
 		$ts['host']      = $config['tshost'];
 		$ts['query']     = $config['tsquery'];
@@ -80,6 +85,9 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		} elseif($_GET["lang"] == "nl") {
 			$language = "nl";
 			$_SESSION[$rspathhex.'language'] = "nl";
+		} elseif($_GET["lang"] == "pl") {
+			$language = "pl";
+			$_SESSION[$rspathhex.'language'] = "pl";
 		} elseif($_GET["lang"] == "ro") {
 			$language = "ro";
 			$_SESSION[$rspathhex.'language'] = "ro";
@@ -89,9 +97,6 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		} elseif($_GET["lang"] == "pt") {
 			$language = "pt";
 			$_SESSION[$rspathhex.'language'] = "pt";
-		} elseif($_GET["lang"] == "pl") {
-			$language = "pl";
-			$_SESSION[$rspathhex.'language'] = "pl";
 		} else {
 			$language = "en";
 			$_SESSION[$rspathhex.'language'] = "en";
@@ -170,6 +175,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM config")->fet
 		$upchannel		 = $config['upchannel'];
 		$avatar_delay	 = $config['avatar_delay'];
 		$registercid	 = $config['registercid'];
+		$iphash			 = $config['iphash'];
 	}
 }
 if(!isset($language) || $language == "en") {
@@ -186,13 +192,13 @@ if(!isset($language) || $language == "en") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
 } elseif($language == "nl") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_nl.php');
+} elseif($language == "pl") {
+	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
 } elseif($language == "ro") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
 } elseif($language == "ru") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
 } elseif($language == "pt") {
 	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
-} elseif($language == "pl") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
 }
 ?>

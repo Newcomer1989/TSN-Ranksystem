@@ -1,5 +1,5 @@
 <?PHP
-$job_check = $mysqlcon->query("SELECT * FROM $dbname.job_check")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+$job_check = $mysqlcon->query("SELECT * FROM `$dbname`.`job_check`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
 	if(!isset($err_msg)) {
 		$err_msg = '<i class="fa fa-fw fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<a href="//ts-n.net/ranksystem.php?changelog" target="_blank"><i class="fa fa-fw fa-book"></i>&nbsp;', '</a>'); $err_lvl = 1;
@@ -17,8 +17,33 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	<link rel="icon" href="../tsicons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
 	<link href="../libs/combined_st.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
-	<script src="../libs/combined_st.js?v=<?PHP echo $currvers; ?>"></script>
 <?PHP
+	$sitescript = basename($_SERVER['SCRIPT_NAME']);
+	switch($sitescript) {
+		case "index.php":
+			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"async"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qbrm.js','../libs/statsindex.js'])</script><?PHP
+			break;
+		case "assign_groups.php":
+			?><script src="../libs/qbh_bsw.js"></script><?PHP
+			break;
+		case "top_all.php":
+			?><script src="../libs/qbrm.js"></script><?PHP
+			break;
+		case "top_month.php":
+			?><script src="../libs/qbrm.js"></script><?PHP
+			break;
+		case "top_week.php":
+			?><script src="../libs/qbrm.js"></script><?PHP
+			break;
+		case "verify.php":
+			?><script src="../libs/qbh_bse.js"></script><?PHP
+			break;
+		case "list_rankup.php":
+			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qb.js'])</script><?PHP
+			break;
+		default:
+			?><script src="../libs/qb.js"></script><?PHP
+	}
 	if(isset($shownav) && $shownav == 0) { ?>
 	<style>
 		body{margin-top:0px!important}
@@ -278,13 +303,13 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 							<a href="?lang=pl"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
 						</li>
 						<li>
-							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
-						</li>
-						<li>
 							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
 						</li>
 						<li>
 							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Pусский</a>
+						</li>
+						<li>
+							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
 						</li>
 					</ul>
 				</li>

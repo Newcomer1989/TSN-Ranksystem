@@ -184,7 +184,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 	$server_version = $serverinfo['virtualserver_version'];
 	
 	// Write stats/index and Nations, Platforms & Versions
-	$sqlexec .= "DELETE FROM $dbname.stats_nations; DELETE FROM $dbname.stats_platforms; DELETE FROM $dbname.stats_versions; UPDATE $dbname.stats_server SET total_user='$total_user', total_online_time='$total_online_time', total_active_time='$total_active_time', total_inactive_time='$total_inactive_time', country_nation_name_1='$country_nation_name_1', country_nation_name_2='$country_nation_name_2', country_nation_name_3='$country_nation_name_3', country_nation_name_4='$country_nation_name_4', country_nation_name_5='$country_nation_name_5', country_nation_1='$country_nation_1', country_nation_2='$country_nation_2', country_nation_3='$country_nation_3', country_nation_4='$country_nation_4', country_nation_5='$country_nation_5', country_nation_other='$country_nation_other', platform_1='$platform_1', platform_2='$platform_2', platform_3='$platform_3', platform_4='$platform_4', platform_5='$platform_5', platform_other='$platform_other', version_name_1='$version_name_1', version_name_2='$version_name_2', version_name_3='$version_name_3', version_name_4='$version_name_4', version_name_5='$version_name_5', version_1='$version_1', version_2='$version_2', version_3='$version_3', version_4='$version_4', version_5='$version_5', version_other='$version_other', version_name_1='$version_name_1', server_status='$server_status', server_free_slots='$server_free_slots', server_used_slots='$server_used_slots', server_channel_amount='$server_channel_amount', server_ping='$server_ping', server_packet_loss='$server_packet_loss', server_bytes_down='$server_bytes_down', server_bytes_up='$server_bytes_up', server_uptime='$server_uptime', server_id='$server_id', server_name=$server_name, server_pass='$server_pass', server_creation_date='$server_creation_date', server_platform='$server_platform', server_weblist='$server_weblist', server_version='$server_version', user_today='$user_today', user_week='$user_week', user_month='$user_month', user_quarter='$user_quarter'; INSERT INTO $dbname.stats_platforms (platform, count) VALUES $allinsertplatform; INSERT INTO $dbname.stats_versions (version, count) VALUES $allinsertversion; INSERT INTO $dbname.stats_nations (nation, count) VALUES $allinsertnation; ";
+	$sqlexec .= "DELETE FROM `$dbname`.`stats_nations`; DELETE FROM `$dbname`.`stats_platforms`; DELETE FROM `$dbname`.`stats_versions`; UPDATE `$dbname`.`stats_server` SET `total_user`='$total_user',`total_online_time`='$total_online_time',`total_active_time`='$total_active_time',`total_inactive_time`='$total_inactive_time',`country_nation_name_1`='$country_nation_name_1',`country_nation_name_2`='$country_nation_name_2',`country_nation_name_3`='$country_nation_name_3',`country_nation_name_4`='$country_nation_name_4',`country_nation_name_5`='$country_nation_name_5',`country_nation_1`='$country_nation_1',`country_nation_2`='$country_nation_2',`country_nation_3`='$country_nation_3',`country_nation_4`='$country_nation_4',`country_nation_5`='$country_nation_5',`country_nation_other`='$country_nation_other',`platform_1`='$platform_1',`platform_2`='$platform_2',`platform_3`='$platform_3',`platform_4`='$platform_4',`platform_5`='$platform_5',`platform_other`='$platform_other',`version_name_1`='$version_name_1',`version_name_2`='$version_name_2',`version_name_3`='$version_name_3',`version_name_4`='$version_name_4',`version_name_5`='$version_name_5',`version_1`='$version_1',`version_2`='$version_2',`version_3`='$version_3',`version_4`='$version_4',`version_5`='$version_5',`version_other`='$version_other',`version_name_1`='$version_name_1',`server_status`='$server_status',`server_free_slots`='$server_free_slots',`server_used_slots`='$server_used_slots',`server_channel_amount`='$server_channel_amount',`server_ping`='$server_ping',`server_packet_loss`='$server_packet_loss',`server_bytes_down`='$server_bytes_down',`server_bytes_up`='$server_bytes_up',`server_uptime`='$server_uptime',`server_id`='$server_id',`server_name`=$server_name,`server_pass`='$server_pass',`server_creation_date`='$server_creation_date',`server_platform`='$server_platform',`server_weblist`='$server_weblist',`server_version`='$server_version',`user_today`='$user_today',`user_week`='$user_week',`user_month`='$user_month',`user_quarter`='$user_quarter'; INSERT INTO `$dbname`.`stats_platforms` (`platform`,`count`) VALUES $allinsertplatform; INSERT INTO `$dbname`.`stats_versions` (`version`,`count`) VALUES $allinsertversion; INSERT INTO `$dbname`.`stats_nations` (`nation`,`count`) VALUES $allinsertnation; ";
 	unset($allinsertnation, $allinsertplatform, $allinsertversion);
 	
 	// Stats for Server Usage
@@ -192,7 +192,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		//Calc time next rankup
 		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user");
 		$upnextuptime = $nowtime - 1800;
-		if(($uuidsoff = $mysqlcon->query("SELECT uuid,idle,count FROM $dbname.user WHERE online<>1 AND lastseen>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+		if(($uuidsoff = $mysqlcon->query("SELECT `uuid`,`idle`,`count` FROM `$dbname`.`user` WHERE `online`<>1 AND `lastseen`>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(count($uuidsoff) != 0) {
@@ -235,22 +235,22 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 				$allupdatenextup = $allupdatenextup . "WHEN '" . $updatedata['uuid'] . "' THEN '" . $updatedata['nextup'] . "' ";
 			}
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
-			$sqlexec .= "INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount); UPDATE $dbname.user set nextup = CASE uuid $allupdatenextup END WHERE uuid IN ($allupdateuuid); ";
+			$sqlexec .= "INSERT INTO `$dbname`.`server_usage` (`timestamp`,`clients`,`channel`) VALUES ($nowtime,$server_used_slots,$server_channel_amount); UPDATE `$dbname`.`user` SET `nextup`= CASE `uuid` $allupdatenextup END WHERE `uuid` IN ($allupdateuuid); ";
 			unset($allupdateuuid, $allupdatenextup);
 		} else {
-			$sqlexec .= "INSERT INTO $dbname.server_usage (timestamp, clients, channel) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
+			$sqlexec .= "INSERT INTO `$dbname`.`server_usage` (`timestamp`,`clients`,`channel`) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
 		}
 		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user [DONE]");
 	}
 
 	// Calc Values for server stats
 	if($select_arr['job_check']['calc_server_stats']['timestamp'] < ($nowtime-900)) {
-		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(timestamp)) AS timestamp FROM $dbname.user_snapshot")->fetch(PDO::FETCH_ASSOC)) === false) {
+		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(`timestamp`)) AS `timestamp` FROM `$dbname`.`user_snapshot`")->fetch(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($logpath,$timezone,2,"calc_serverstats 19:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if ($entry_snapshot_count['timestamp'] > 27) {
 			// Calc total_online_week
-			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 28) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
+			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`s2`.`timestamp`) AS `value1` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 28) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 28) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($logpath,$timezone,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_week['count'] == NULL) {
@@ -263,7 +263,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		}
 		if ($entry_snapshot_count['timestamp'] > 119) {
 			// Calc total_online_month
-			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MAX(s2.timestamp) AS value1 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp)) - (SELECT SUM(count) FROM $dbname.user_snapshot WHERE timestamp=(SELECT MIN(s2.timestamp) AS value2 FROM (SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 120) AS s2, $dbname.user_snapshot AS s1 WHERE s1.timestamp=s2.timestamp) AND uuid IN (SELECT uuid FROM $dbname.user)) AS count")->fetch(PDO::FETCH_ASSOC)) === false) {
+			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`s2`.`timestamp`) AS `value1` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 120) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 120) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($logpath,$timezone,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_month['count'] == NULL) {
@@ -274,7 +274,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		} else {
 			$total_online_month = 0;
 		}
-		$sqlexec .= "UPDATE $dbname.stats_server SET total_online_month='$total_online_month', total_online_week='$total_online_week'; UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_server_stats'; ";
+		$sqlexec .= "UPDATE `$dbname`.`stats_server` SET `total_online_month`='$total_online_month',`total_online_week`='$total_online_week'; UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='calc_server_stats'; ";
 		
 		if ($select_arr['job_check']['get_version']['timestamp'] < ($nowtime - 43200)) {
 			$ch = curl_init();
@@ -328,9 +328,9 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		
 		//Calc Rank
 		if ($substridle == 1) {
-			$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY (count - idle) DESC) s USING (uuid) SET u.rank=s.nr; ";
+			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY (`count` - `idle`) DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";
 		} else {
-			$sqlexec .= "SET @a:=0; UPDATE $dbname.user u INNER JOIN (SELECT @a:=@a+1 nr,uuid FROM $dbname.user WHERE except<2 ORDER BY count DESC) s USING (uuid) SET u.rank=s.nr; ";
+			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY `count` DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";
 		}
 	}
 	return($sqlexec);

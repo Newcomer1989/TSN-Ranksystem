@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -35,22 +43,21 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
+
 require_once('nav.php');
 
-if(!isset($_POST['number']) || $_POST['number'] == "yes") {
-	$_SESSION[$rspathhex.'showexcepted'] = "yes";
-	$filter = " AND except='0'";
-} else {
-	$_SESSION[$rspathhex.'showexcepted'] = "no";
-	$filter = "";
-}
 $assign_groups_active = 0;
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$assign_groups_limit 		= $_POST['assign_groups_limit'];
 	$assign_groups_groupids 	= $_POST['assign_groups_groupids'];
 	if (isset($_POST['assign_groups_active'])) $assign_groups_active = 1;
-	if ($mysqlcon->exec("UPDATE $dbname.addons_config SET value = CASE param WHEN 'assign_groups_active' THEN '$assign_groups_active' WHEN 'assign_groups_limit' THEN '$assign_groups_limit' WHEN 'assign_groups_groupids' THEN '$assign_groups_groupids' END WHERE param IN ('assign_groups_active','assign_groups_groupids','assign_groups_limit')") === false) {
+	if ($mysqlcon->exec("UPDATE `$dbname`.`addons_config` SET `value` = CASE `param` WHEN 'assign_groups_active' THEN '$assign_groups_active' WHEN 'assign_groups_limit' THEN '$assign_groups_limit' WHEN 'assign_groups_groupids' THEN '$assign_groups_groupids' END WHERE `param` IN ('assign_groups_active','assign_groups_groupids','assign_groups_limit')") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -61,6 +68,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	$addons_config['assign_groups_limit']['value'] = $_POST['assign_groups_limit'];
 	$addons_config['assign_groups_active']['value'] = $assign_groups_active;
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -73,6 +82,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 				<div class="form-horizontal">
 					<div class="row">
 						<div class="col-md-3">

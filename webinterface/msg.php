@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -31,9 +39,16 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-require_once('nav.php');
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+require_once('nav.php');
+$newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
+
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$rankupmsg	= addslashes($_POST['rankupmsg']);
 	$servernews	= addslashes($_POST['servernews']);
 	$nextupinfomsg1	= addslashes($_POST['nextupinfomsg1']);
@@ -41,11 +56,11 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	$nextupinfomsg3	= addslashes($_POST['nextupinfomsg3']);
 	$nextupinfo = $_POST['nextupinfo'];
 	if (isset($_POST['msgtouser'])) $msgtouser = 1; else $msgtouser = 0;
-	if ($mysqlcon->exec("UPDATE $dbname.config set msgtouser='$msgtouser',rankupmsg='$rankupmsg',servernews='$servernews',nextupinfo='$nextupinfo',nextupinfomsg1='$nextupinfomsg1',nextupinfomsg2='$nextupinfomsg2',nextupinfomsg3='$nextupinfomsg3'") === false) {
+	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `msgtouser`='$msgtouser',`rankupmsg`='$rankupmsg',`servernews`='$servernews',`nextupinfo`='$nextupinfo',`nextupinfomsg1`='$nextupinfomsg1',`nextupinfomsg2`='$nextupinfomsg2',`nextupinfomsg3`='$nextupinfomsg3'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$newcsrf.'"><button
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
@@ -55,6 +70,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	$nextupinfomsg2	= $_POST['nextupinfomsg2'];
 	$nextupinfomsg3	= $_POST['nextupinfomsg3'];
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -67,6 +84,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="panel panel-default">

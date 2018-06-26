@@ -1,4 +1,12 @@
 ﻿<?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -31,9 +39,15 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
+
 require_once('nav.php');
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 
 	if (isset($_POST['showexcld'])) $showexcld = 1; else $showexcld = 0;
 	if (isset($_POST['showcolrg'])) $showcolrg = 1; else $showcolrg = 0;
@@ -50,7 +64,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	if (isset($_POST['showhighest'])) $showhighest = 1; else $showhighest = 0;
 	if (isset($_POST['showgrpsince'])) $showgrpsince = 1; else $showgrpsince = 0;
 	if (isset($_POST['shownav'])) $shownav = 1; else $shownav = 0;
-	if ($mysqlcon->exec("UPDATE $dbname.config set showexcld='$showexcld',showcolrg='$showcolrg',showcolcld='$showcolcld',showcoluuid='$showcoluuid',showcoldbid='$showcoldbid',showcolls='$showcolls',showcolot='$showcolot',showcolit='$showcolit',showcolat='$showcolat',showcolas='$showcolas',showcolnx='$showcolnx',showcolsg='$showcolsg',showhighest='$showhighest',showgrpsince='$showgrpsince',shownav='$shownav'") === false) {
+	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `showexcld`='$showexcld',`showcolrg`='$showcolrg',`showcolcld`='$showcolcld',`showcoluuid`='$showcoluuid',`showcoldbid`='$showcoldbid',`showcolls`='$showcolls',`showcolot`='$showcolot',`showcolit`='$showcolit',`showcolat`='$showcolat',`showcolas`='$showcolas',`showcolnx`='$showcolnx',`showcolsg`='$showcolsg',`showhighest`='$showhighest',`showgrpsince`='$showgrpsince',`shownav`='$shownav'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -58,6 +72,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 		$err_lvl = NULL;
     }
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -70,6 +86,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="panel panel-default">

@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -68,21 +76,29 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
+if (isset($_POST['changepw']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
+
 require_once('nav.php');
 
-if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$newpass = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
 	if (!password_verify($_POST['oldpwd'], $webpass)) {
 		$err_msg = $lang['wichpw1']; $err_lvl = 3;
 	} elseif ($_POST['newpwd1'] != $_POST['newpwd2'] || $_POST['newpwd1'] == NULL) {
 		$err_msg = $lang['wichpw2']; $err_lvl = 3;
-	} elseif ($mysqlcon->exec("UPDATE $dbname.config set webpass='$newpass'") === false) {
+	} elseif ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `webpass`='$newpass'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
     } else {
         enter_logfile($logpath,$timezone,3,sprintf($lang['wichpw3'],getclientip()));
 		$err_msg = $lang['wisvsuc']; $err_lvl = NULL;
     }
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -96,6 +112,7 @@ if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser &&
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
+									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 										<div class="form-group">
 											<label for="password" class="control-label"><?PHP echo $lang['pass3']; ?>:</label>
 											<div class="input-group-justified">

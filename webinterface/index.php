@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -57,7 +65,7 @@ function getclientip() {
 		return false;
 }
 
-if(($last_access = $mysqlcon->query("SELECT last_access,count_access FROM $dbname.config")) === false) {
+if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")) === false) {
 	$err_msg .= print_r($mysqlcon->errorInfo(), true);
 }
 $last_access = $last_access->fetchAll();
@@ -71,24 +79,26 @@ if(($last_access[0]['last_access'] + 1) >= time()) {
 	$err_msg = $lang['errlogin3'];
 	$err_lvl = 3;
 	$bantime = time() + 299;
-	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$bantime', count_access='0'") === false) { }
+	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$bantime',`count_access`='0'") === false) { }
 } elseif (isset($_POST['username']) && $_POST['username'] == $webuser && password_verify($_POST['password'], $webpass)) {
 	$_SESSION[$rspathhex.'username'] = $webuser;
 	$_SESSION[$rspathhex.'password'] = $webpass;
 	$_SESSION[$rspathhex.'clientip'] = getclientip();
 	$_SESSION[$rspathhex.'newversion'] = $newversion;
-	if($mysqlcon->exec("UPDATE $dbname.config SET count_access='0'") === false) { }
+	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `count_access`='0'") === false) { }
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 } elseif(isset($_POST['username'])) {
 	$nowtime = time();
-	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$nowtime', count_access = count_access + 1") === false) { }
+	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$nowtime',`count_access`=`count_access` + 1") === false) { }
 	$err_msg = $lang['errlogin'];
 	$err_lvl = 3;
 }
 
 if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
+	exit;
 }
 
 require_once('nav.php');

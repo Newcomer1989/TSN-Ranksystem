@@ -1,4 +1,12 @@
 ﻿<?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -31,11 +39,18 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-require_once('nav.php');
+if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+require_once('nav.php');
+$newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
+
+if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	
-	if(($groupslist = $mysqlcon->query("SELECT * FROM $dbname.groups")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 		enter_logfile($logpath,$timezone,1,"Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
 	}
 	
@@ -102,11 +117,11 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 		$registercid = $_POST['registercid'];
 	}
 	if($errcnf == 0) {
-		if ($mysqlcon->exec("UPDATE $dbname.config set substridle='$substridle',exceptuuid='$exceptuuid',exceptgroup='$exceptgroup',exceptcid='$exceptcid',grouptime='$grouptime',ignoreidle='$ignoreidle',resetbydbchange='$resetbydbchange',cleanclients='$cleanclients',cleanperiod='$cleanperiod',boost='$boost',resetexcept='$resetexcept',registercid='$registercid'") === false) {
+		if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `substridle`='$substridle',`exceptuuid`='$exceptuuid',`exceptgroup`='$exceptgroup',`exceptcid`='$exceptcid',`grouptime`='$grouptime',`ignoreidle`='$ignoreidle',`resetbydbchange`='$resetbydbchange',`cleanclients`='$cleanclients',`cleanperiod`='$cleanperiod',`boost`='$boost',`resetexcept`='$resetexcept',`registercid`='$registercid'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><button
+			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$newcsrf.'"><button
 			type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 			$err_lvl = NULL;
 		}
@@ -119,6 +134,8 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
     $config['exceptcid']	= $_POST['exceptcid'];
 	$config['boost']		= $_POST['boost'];
 }
+
+$_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -129,6 +146,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 					</div>
 				</div>
 				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">

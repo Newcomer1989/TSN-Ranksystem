@@ -15,12 +15,31 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 		$select_arr['job_check']['calc_user_lastscan']['timestamp'] = $nowtime;
 	}
 
-	$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='calc_user_lastscan'; ";
+	$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='calc_user_lastscan'; ";
 
 	krsort($grouptime);
 	$yetonline = array();
-	$insertdata = array();
 	$updatedata = array();
+	
+	if(isset($select_arr['admin_addtime']) && count($select_arr['admin_addtime']) != 0) {
+		foreach($select_arr['admin_addtime'] as $uuid => $value) {
+			if(isset($select_arr['all_user'][$uuid])) {
+				$isonline = 0;
+				foreach($allclients as $client) {
+					if($client['client_unique_identifier'] == $uuid) {
+						$isonline = 1;
+						$select_arr['all_user'][$uuid]['count'] += $value['timecount'];
+					}
+				}
+				if($isonline != 1) {
+					$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=`count` + ".$value['timecount']." WHERE `uuid`='$uuid'; ";
+				}
+				$sqlexec .= "DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid'; ";
+				$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`=`count` + ".$value['timecount']." WHERE `uuid`='$uuid'; ";
+				enter_logfile($logpath,$timezone,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid));
+			}
+		}
+	}
 	
 	foreach ($allclients as $client) {
 		$cldbid = $client['client_database_id'];
@@ -28,11 +47,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$sgroups = array_flip(explode(",", $client['client_servergroups']));
 		if (!isset($yetonline[$uid]) && $client['client_version'] != "ServerQuery") {
-			if(strstr($client['connection_client_ip'], '[')) {
-				$ip = $mysqlcon->quote(inet_pton(str_replace(array('[',']'),'',$client['connection_client_ip'])), ENT_QUOTES);
-			} else {
-				$ip = $mysqlcon->quote(inet_pton($client['connection_client_ip']), ENT_QUOTES);
-			}
 			$clientidle = floor($client['client_idle_time'] / 1000);
 			if(isset($ignoreidle) && $clientidle < $ignoreidle) {
 				$clientidle = 0;
@@ -47,7 +61,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 				 	$select_arr['all_user'][$uid]['count'] = 0;
 				 	$select_arr['all_user'][$uid]['idle'] = 0;
 					enter_logfile($logpath,$timezone,5,sprintf($lang['resettime'], $name, $uid, $cldbid));
-					$sqlexec .= "DELETE FROM $dbname.user_snapshot WHERE uuid='$uid'; ";
+					$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `uuid`='$uid'; ";
 				}
 				$except = 0;
 			}
@@ -135,25 +149,7 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 								try {
 									$ts3->serverGroupClientAdd($groupid, $cldbid);
 									$grpsince = $nowtime;
-									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $select_arr['groups'][$groupid]['sgidname'], $groupid, $name, $uid, $cldbid));
-									
-									if($nowtime >= 1522540800 && $nowtime <= 1522627199 && $slowmode == 0) {
-										try {
-											foreach($ts3->channelList() as $channel) {
-												try {
-													$ts3->clientMove($client['clid'],$channel['cid']);
-												} catch (Exception $e) { }
-											}
-											try {
-												$ts3->clientMove($client['clid'],$client['cid']);
-											} catch (Exception $e) { }
-											$msg_temp = base64_decode("SGFwcHkgQXByaWwgRm9vbHMnIERheSE=");
-											try {
-												$ts3->clientGetByUid($uid)->message($msg_temp);
-											} catch (Exception $e) { }
-										} catch (Exception $e) { }
-									}
-									
+									enter_logfile($logpath,$timezone,5,sprintf($lang['sgrpadd'], $select_arr['groups'][$groupid]['sgidname'], $groupid, $name, $uid, $cldbid));								
 								}
 								catch (Exception $e) {
 									enter_logfile($logpath,$timezone,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $cldbid, $select_arr['groups'][$groupid]['sgidname'], $groupid));
@@ -185,7 +181,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 					"uuid" => $mysqlcon->quote($client['client_unique_identifier'], ENT_QUOTES),
 					"cldbid" => $cldbid,
 					"count" => $count,
-					"ip" => $ip,
 					"name" => $name,
 					"lastseen" => $nowtime,
 					"grpid" => $grpid,
@@ -208,20 +203,24 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 						break;
 					}
 				}
-				$insertdata[] = array(
+				$updatedata[] = array(
 					"uuid" => $mysqlcon->quote($client['client_unique_identifier'], ENT_QUOTES),
 					"cldbid" => $cldbid,
-					"ip" => $ip,
+					"count" => "0",
 					"name" => $name,
 					"lastseen" => $nowtime,
 					"grpid" => $grpid,
 					"nextup" => (key($grouptime) - 1),
+					"idle" => "0",
 					"cldgroup" => $client['client_servergroups'],
+					"boosttime" => "0",
 					"platform" => $client['client_platform'],
 					"nation" => $client['client_country'],
 					"version" => $client['client_version'],
 					"firstcon" => $client['client_created'],
-					"except" => $except
+					"except" => $except,
+					"grpsince" => "0",
+					"cid" => $client['cid']
 				);
 				enter_logfile($logpath,$timezone,5,sprintf($lang['adduser'], $name, $uid, $cldbid));
 			}
@@ -229,42 +228,14 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 	}
 	unset($yetonline);
 
-	if ($insertdata != NULL) {
-		$allinsertdata = '';
-		foreach ($insertdata as $insertarr) {
-			$allinsertdata = $allinsertdata . "(" . $insertarr['uuid'] . ", '" . $insertarr['cldbid'] . "', '1', " . $insertarr['ip'] . ", " . $insertarr['name'] . ", '" . $insertarr['lastseen'] . "', '" . $insertarr['grpid'] . "', '" . $insertarr['nextup'] . "', '" . $insertarr['cldgroup'] . "', '" . $insertarr['platform'] . "', '" . $insertarr['nation'] . "', '" . $insertarr['version'] . "', '" . $insertarr['firstcon'] . "', '" . $insertarr['except'] . "','1'),";
-		}
-		$allinsertdata = substr($allinsertdata, 0, -1);
-		if ($allinsertdata != NULL) {
-			$sqlexec .= "INSERT INTO $dbname.user (uuid, cldbid, count, ip, name, lastseen, grpid, nextup, cldgroup, platform, nation, version, firstcon, except, online) VALUES $allinsertdata; ";
-		}
-		unset($insertdata, $allinsertdata);
-	}
-
 	if ($updatedata != NULL) {
-		$allupdateuuid = $allupdatecldbid = $allupdatecount = $allupdateip = $allupdatename = $allupdatelastseen = $allupdategrpid = $allupdatenextup = $allupdateidle = $allupdatecldgroup = $allupdateboosttime = $allupdateplatform = $allupdatenation = $allupdateversion = $allupdateexcept = $allupdategrpsince = $allupdatecid = '';
+		$sqlinsertvalues = '';
 		foreach ($updatedata as $updatearr) {
-			$allupdateuuid	 = $allupdateuuid . $updatearr['uuid'] . ",";
-			$allupdatecldbid   = $allupdatecldbid . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['cldbid'] . "' ";
-			$allupdatecount	= $allupdatecount . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['count'] . "' ";
-			$allupdateip	   = $allupdateip . "WHEN " . $updatearr['uuid'] . " THEN " . $updatearr['ip'] . " ";
-			$allupdatename	 = $allupdatename . "WHEN " . $updatearr['uuid'] . " THEN " . $updatearr['name'] . " ";
-			$allupdatelastseen = $allupdatelastseen . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['lastseen'] . "' ";
-			$allupdategrpid	= $allupdategrpid . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['grpid'] . "' ";
-			$allupdatenextup   = $allupdatenextup . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['nextup'] . "' ";
-			$allupdateidle	 = $allupdateidle . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['idle'] . "' ";
-			$allupdatecldgroup = $allupdatecldgroup . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['cldgroup'] . "' ";
-			$allupdateboosttime = $allupdateboosttime . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['boosttime'] . "' ";
-			$allupdateplatform = $allupdateplatform . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['platform'] . "' ";
-			$allupdatenation = $allupdatenation . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['nation'] . "' ";
-			$allupdateversion = $allupdateversion . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['version'] . "' ";
-			$allupdateexcept = $allupdateexcept . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['except'] . "' ";
-			$allupdategrpsince = $allupdategrpsince . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['grpsince'] . "' ";
-			$allupdatecid = $allupdatecid . "WHEN " . $updatearr['uuid'] . " THEN '" . $updatearr['cid'] . "' ";
+			$sqlinsertvalues .= "(".$updatearr['uuid'].",'".$updatearr['cldbid']."','".$updatearr['count']."',".$updatearr['name'].",'".$updatearr['lastseen']."','".$updatearr['grpid']."','".$updatearr['nextup']."','".$updatearr['idle']."','".$updatearr['cldgroup']."','".$updatearr['boosttime']."','".$updatearr['platform']."','".$updatearr['nation']."','".$updatearr['version']."','".$updatearr['except']."','".$updatearr['grpsince']."','".$updatearr['cid']."',1),";
 		}
-		$allupdateuuid = substr($allupdateuuid, 0, -1);
-		$sqlexec .= "UPDATE $dbname.user SET online='0'; UPDATE $dbname.user set cldbid = CASE uuid $allupdatecldbid END, count = CASE uuid $allupdatecount END, ip = CASE uuid $allupdateip END, name = CASE uuid $allupdatename END, lastseen = CASE uuid $allupdatelastseen END, grpid = CASE uuid $allupdategrpid END, nextup = CASE uuid $allupdatenextup END, idle = CASE uuid $allupdateidle END, cldgroup = CASE uuid $allupdatecldgroup END, boosttime = CASE uuid $allupdateboosttime END, platform = CASE uuid $allupdateplatform END, nation = CASE uuid $allupdatenation END, version = CASE uuid $allupdateversion END, except = CASE uuid $allupdateexcept END, grpsince = CASE uuid $allupdategrpsince END, cid = CASE uuid $allupdatecid END, online = 1 WHERE uuid IN ($allupdateuuid); ";
-		unset($updatedata, $allupdateuuid, $allupdatecldbid, $allupdatecount, $allupdateip, $allupdatename, $allupdatelastseen, $allupdategrpid, $allupdatenextup, $allupdateidle, $allupdatecldgroup, $allupdateboosttime, $allupdateplatform, $allupdatenation, $allupdateversion, $allupdateexcept, $allupdategrpsince, $allupdatecid);
+		$sqlinsertvalues = substr($sqlinsertvalues, 0, -1);
+		$sqlexec .= "UPDATE `$dbname`.`user` SET `online`='0'; INSERT INTO `$dbname`.`user` (`uuid`,`cldbid`,`count`,`name`,`lastseen`,`grpid`,`nextup`,`idle`,`cldgroup`,`boosttime`,`platform`,`nation`,`version`,`except`,`grpsince`,`cid`,`online`) VALUES $sqlinsertvalues ON DUPLICATE KEY UPDATE `cldbid`=VALUES(`cldbid`),`count`=VALUES(`count`),`name`=VALUES(`name`),`lastseen`=VALUES(`lastseen`),`grpid`=VALUES(`grpid`),`nextup`=VALUES(`nextup`),`idle`=VALUES(`idle`),`cldgroup`=VALUES(`cldgroup`),`boosttime`=VALUES(`boosttime`),`platform`=VALUES(`platform`),`nation`=VALUES(`nation`),`version`=VALUES(`version`),`except`=VALUES(`except`),`grpsince`=VALUES(`grpsince`),`cid`=VALUES(`cid`),`online`=VALUES(`online`); ";
+		unset($updatedata, $sqlinsertvalues);
 	}
 	return($sqlexec);
 }

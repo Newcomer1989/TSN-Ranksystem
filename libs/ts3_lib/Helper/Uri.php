@@ -4,8 +4,6 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Uri.php 06/06/2016 22:27:13 scp@Svens-iMac $
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
- * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
+ * @copyright Copyright (c) Planet TeamSpeak. All rights reserved.
  */
 
 /**
@@ -269,7 +266,7 @@ class TeamSpeak3_Helper_Uri
    */
   public function getUser($default = null)
   {
-    return ($this->hasUser()) ? new TeamSpeak3_Helper_String($this->user) : $default;
+    return ($this->hasUser()) ? new TeamSpeak3_Helper_String(urldecode($this->user)) : $default;
   }
 
   /**
@@ -319,13 +316,16 @@ class TeamSpeak3_Helper_Uri
    */
   public function getPass($default = null)
   {
-    return ($this->hasPass()) ? new TeamSpeak3_Helper_String($this->pass) : $default;
+    return ($this->hasPass()) ? new TeamSpeak3_Helper_String(urldecode($this->pass)) : $default;
   }
 
   /**
    * Returns TRUE if the host is valid.
    *
+   * @todo: Implement check for host URI segment
+   *
    * @param string $host
+   *
    * @return boolean
    */
   public function checkHost($host = null)
@@ -356,13 +356,16 @@ class TeamSpeak3_Helper_Uri
    */
   public function getHost($default = null)
   {
-    return ($this->hasHost()) ? new TeamSpeak3_Helper_String($this->host) : $default;
+    return ($this->hasHost()) ? new TeamSpeak3_Helper_String(rawurldecode($this->host)) : $default;
   }
 
   /**
    * Returns TRUE if the port is valid.
    *
+   * @todo: Implement check for port URI segment
+   *
    * @param  integer $port
+   *
    * @return boolean
    */
   public function checkPort($port = null)
@@ -444,7 +447,7 @@ class TeamSpeak3_Helper_Uri
    */
   public function getPath($default = null)
   {
-    return ($this->hasPath()) ? new TeamSpeak3_Helper_String($this->path) : $default;
+    return ($this->hasPath()) ? new TeamSpeak3_Helper_String(rawurldecode($this->path)) : $default;
   }
 
   /**
@@ -500,7 +503,7 @@ class TeamSpeak3_Helper_Uri
       return $default;
     }
 
-    parse_str($this->query, $queryArray);
+    parse_str(rawurldecode($this->query), $queryArray);
 
     return $queryArray;
   }
@@ -530,7 +533,7 @@ class TeamSpeak3_Helper_Uri
   {
     if(!$this->hasQuery()) return $default;
 
-    parse_str($this->query, $queryArray);
+    parse_str(rawurldecode($this->query), $queryArray);
 
     if(array_key_exists($key, $queryArray))
     {
@@ -601,7 +604,7 @@ class TeamSpeak3_Helper_Uri
    */
   public function getFragment($default = null)
   {
-    return ($this->hasFragment()) ? new TeamSpeak3_Helper_String($this->fragment) : $default;
+    return ($this->hasFragment()) ? new TeamSpeak3_Helper_String(rawurldecode($this->fragment)) : $default;
   }
 
   /**

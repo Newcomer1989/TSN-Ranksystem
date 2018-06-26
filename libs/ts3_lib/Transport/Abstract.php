@@ -4,8 +4,6 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Abstract.php 06/06/2016 22:27:13 scp@Svens-iMac $
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
- * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
+ * @copyright Copyright (c) Planet TeamSpeak. All rights reserved.
  */
 
 /**
@@ -186,7 +183,7 @@ abstract class TeamSpeak3_Transport_Abstract
    */
   public function setAdapter(TeamSpeak3_Adapter_Abstract $adapter)
   {
-    $this->adapter = get_class($adapter);
+    $this->adapter = $adapter;
   }
 
   /**
@@ -208,7 +205,7 @@ abstract class TeamSpeak3_Transport_Abstract
   {
     if($this->adapter instanceof TeamSpeak3_Adapter_Abstract)
     {
-      $string = TeamSpeak3_Helper_String::factory($this->adapter);
+      $string = TeamSpeak3_Helper_String::factory(get_class($this->adapter));
 
       return $string->substr($string->findLast("_"))->replace(array("_", " "), "")->toString();
     }

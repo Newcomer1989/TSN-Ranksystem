@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 
 require_once('../other/config.php');
@@ -57,10 +65,16 @@ function getclientip() {
 		return false;
 }
 
-if(($last_access = $mysqlcon->query("SELECT last_access,count_access FROM $dbname.config")) === false) {
+if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")) === false) {
 	$err_msg .= print_r($mysqlcon->errorInfo(), true);
 }
 $last_access = $last_access->fetchAll();
+
+if (isset($_POST['resetpw']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
 
 if (($last_access[0]['last_access'] + 1) >= time()) {
 	$again = $last_access[0]['last_access'] + 2 - time();
@@ -68,9 +82,9 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 	$err_lvl = 3;
 } elseif (isset($_POST['resetpw']) && ($adminuuid==NULL || count($adminuuid) == 0)) {
 	$err_msg = $lang['wirtpw1']; $err_lvl=3;
-} elseif (isset($_POST['resetpw'])) {
+} elseif (isset($_POST['resetpw']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$nowtime = time();
-	if($mysqlcon->exec("UPDATE $dbname.config SET last_access='$nowtime', count_access = count_access + 1") === false) { }
+	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$nowtime',`count_access`=`count_access` + 1") === false) { }
 	
 	require_once(substr(__DIR__,0,-12).'libs/ts3_lib/TeamSpeak3.php');
 	try {
@@ -103,7 +117,7 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 			usleep($slowmode);
 			$pwd = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&$§!()"),0,12);
 			$webpass = password_hash($pwd, PASSWORD_DEFAULT);
-			if($mysqlcon->exec("UPDATE $dbname.config set webpass='$webpass', last_access='0'") === false) { 
+			if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `webpass`='$webpass',`last_access`='0'") === false) { 
 				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 			} else {
 				try {
@@ -120,6 +134,8 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 	}
 }
 
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -134,6 +150,7 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
+									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 										<p><?PHP echo $lang['wirtpw8']; ?></p>
 										<p><?PHP echo $lang['wirtpw9']; ?>
 											<ul>

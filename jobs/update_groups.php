@@ -52,21 +52,12 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 			}
 			$iconarr["i".$sIconId] = 0;
 		}
-		if (!isset($select_arr['groups']['0'])) {
-			$insertgroups[] = array(
-				"sgid" => "0",
-				"sgidname" => "'ServerIcon'",
-				"iconid" => $sIconId,
-				"icondate" => $iconarr["i".$sIconId]
-			);
-		} else {
-			$updategroups[] = array(
-				"sgid" => "0",
-				"sgidname" => "'ServerIcon'",
-				"iconid" => $sIconId,
-				"icondate" => $iconarr["i".$sIconId]
-			);	
-		}
+		$updategroups[] = array(
+			"sgid" => "0",
+			"sgidname" => "'ServerIcon'",
+			"iconid" => $sIconId,
+			"icondate" => $iconarr["i".$sIconId]
+		);	
 	}
 	
 	// GroupIcons
@@ -107,64 +98,25 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 		if(!isset($iconarr["i".$iconid])) {
 			$iconarr["i".$iconid] = 0;
 		}
-		if(isset($select_arr['groups']) && count($select_arr['groups']) != 0) {
-			foreach ($select_arr['groups'] as $sqlgid => $groups) {
-				if ($sqlgid == $sgid) {
-					$gefunden       = 1;
-					$updategroups[] = array(
-						"sgid" => $sgid,
-						"sgidname" => $sgname,
-						"iconid" => $iconid,
-						"icondate" => $iconarr["i".$iconid]
-					);
-					break;
-				}
-			}
-			if ($gefunden != 1) {
-				$insertgroups[] = array(
-					"sgid" => $servergroup['sgid'],
-					"sgidname" => $sgname,
-					"iconid" => $iconid,
-					"icondate" => $iconarr["i".$iconid]
-				);
-			}
-		} else {
-			$insertgroups[] = array(
-				"sgid" => $servergroup['sgid'],
-				"sgidname" => $sgname,
-				"iconid" => $iconid,
-				"icondate" => $iconarr["i".$iconid]
-			);
-		}
+		$updategroups[] = array(
+			"sgid" => $servergroup['sgid'],
+			"sgidname" => $sgname,
+			"iconid" => $iconid,
+			"icondate" => $iconarr["i".$iconid]
+		);
 		if($iconcount > 9 && $nobreak != 1) {
 			break;
 		}
     }
 
-    if (isset($insertgroups)) {
-        $allinsertdata = '';
-        foreach ($insertgroups as $insertarr) {
-			$allinsertdata = $allinsertdata . "('" . $insertarr['sgid'] . "', " . $insertarr['sgidname'] . ", '" . $insertarr['iconid'] . "', '" . $insertarr['icondate'] . "'),";
-        }
-        $allinsertdata = substr($allinsertdata, 0, -1);
-        if ($allinsertdata != '') {
-			$sqlexec .= "INSERT INTO $dbname.groups (sgid, sgidname, iconid, icondate) VALUES $allinsertdata; ";
-        }
-    }
-
     if (isset($updategroups)) {
-        $allsgids        = '';
-        $allupdatesgid   = '';
-		$allupdateiconid = '';
-		$allupdatedate   = '';
+        $sqlinsertvalues = '';
         foreach ($updategroups as $updatedata) {
-            $allsgids        = $allsgids . "'" . $updatedata['sgid'] . "',";
-            $allupdatesgid   = $allupdatesgid . "WHEN '" . $updatedata['sgid'] . "' THEN " . $updatedata['sgidname'] . " ";
-            $allupdateiconid = $allupdateiconid . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['iconid'] . "' ";
-            $allupdatedate   = $allupdatedate . "WHEN '" . $updatedata['sgid'] . "' THEN '" . $updatedata['icondate'] . "' ";
+			$sqlinsertvalues .= "(".$updatedata['sgid'].",".$updatedata['sgidname'].",'".$updatedata['iconid']."','".$updatedata['icondate']."'),";
         }
-        $allsgids = substr($allsgids, 0, -1);
-		$sqlexec .= "UPDATE $dbname.groups set sgidname = CASE sgid $allupdatesgid END, iconid = CASE sgid $allupdateiconid END, icondate = CASE sgid $allupdatedate END WHERE sgid IN ($allsgids); ";
+        $sqlinsertvalues = substr($sqlinsertvalues, 0, -1);
+		$sqlexec .= "INSERT INTO `$dbname`.`groups` (`sgid`,`sgidname`,`iconid`,`icondate`) VALUES $sqlinsertvalues ON DUPLICATE KEY UPDATE `sgidname`=VALUES(`sgidname`),`iconid`=VALUES(`iconid`),`icondate`=VALUES(`icondate`); ";
+		unset($updategroups, $sqlinsertvalues);
     }
 	
 	if(isset($select_arr['groups'])) {
@@ -186,7 +138,7 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 	
 	if(isset($delsgroupids)) {
 		$delsgroupids = substr($delsgroupids, 0, -1);
-		$sqlexec .= "DELETE FROM $dbname.groups WHERE sgid IN ($delsgroupids); ";
+		$sqlexec .= "DELETE FROM `$dbname`.`groups` WHERE `sgid` IN ($delsgroupids); ";
 	}
 	return($sqlexec);
 }

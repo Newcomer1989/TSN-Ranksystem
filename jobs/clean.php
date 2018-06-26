@@ -69,25 +69,29 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$c
 				$alldeldata = substr($alldeldata, 0, -1);
 				$alldeldata = "(".$alldeldata.")";
 				if ($alldeldata != '') {
-					$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='clean_clients'; UPDATE $dbname.stats_user AS t LEFT JOIN $dbname.user AS u ON t.uuid=u.uuid SET t.removed='1' WHERE u.uuid IS NULL; DELETE FROM $dbname.user WHERE uuid IN $alldeldata; ";
+					$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_clients'; UPDATE `$dbname`.`stats_user` AS `t` LEFT JOIN `$dbname`.`user` AS `u` ON `t`.`uuid`=`u`.`uuid` SET `t`.`removed`='1' WHERE `u`.`uuid` IS NULL; DELETE FROM `$dbname`.`user` WHERE `uuid` IN $alldeldata; ";
 					enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['cleandel'], $countdel));
 					unset($$alldeldata);
 				}
 			} else {
 				enter_logfile($logpath,$timezone,4,"  ".$lang['cleanno']);
-				$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='clean_clients'; ";
+				$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_clients'; ";
 			}
 		} else {
 			enter_logfile($logpath,$timezone,4,$lang['clean0004']);
-			$sqlexec .= "UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='clean_clients'; ";
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_clients'; ";
 		}
 	}
 	
 	// clean usersnaps older then 1 month + clean old server usage - older then a year
 	if ($select_arr['job_check']['clean_db']['timestamp'] < ($nowtime - 86400)) {
-		$sqlexec .= "DELETE a FROM $dbname.user_snapshot AS a CROSS JOIN(SELECT DISTINCT(timestamp) FROM $dbname.user_snapshot ORDER BY timestamp DESC LIMIT 1000 OFFSET 121) AS b WHERE a.timestamp=b.timestamp; DELETE FROM $dbname.server_usage WHERE timestamp < (UNIX_TIMESTAMP() - 31536000); DELETE b FROM $dbname.user a RIGHT JOIN $dbname.stats_user b ON a.uuid = b.uuid WHERE a.uuid IS NULL; UPDATE $dbname.job_check SET timestamp='$nowtime' WHERE job_name='clean_db'; ";
+		$sqlexec .= "DELETE `a` FROM `$dbname`.`user_snapshot` AS `a` CROSS JOIN(SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 1000 OFFSET 121) AS `b` WHERE `a`.`timestamp`=`b`.`timestamp`; DELETE FROM `$dbname`.`server_usage` WHERE `timestamp` < (UNIX_TIMESTAMP() - 31536000); DELETE `b` FROM `$dbname`.`user` AS `a` RIGHT JOIN `$dbname`.`stats_user` AS `b` ON `a`.`uuid`=`b`.`uuid` WHERE `a`.`uuid` IS NULL; UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_db'; ";
 		enter_logfile($logpath,$timezone,4,$lang['clean0003']);
 	}
+
+	// delete IP address of offline user
+	$sqlexec .= "DELETE `a` FROM `$dbname`.`user_iphash` AS `a` INNER JOIN `$dbname`.`user` AS `b` ON `a`.`uuid`=`b`.`uuid` WHERE `b`.`online`!=1; ";
+	
 	return($sqlexec);
 }
 ?>

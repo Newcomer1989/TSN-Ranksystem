@@ -4,8 +4,6 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Server.php 06/06/2016 22:27:13 scp@Svens-iMac $
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
- * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
+ * @copyright Copyright (c) Planet TeamSpeak. All rights reserved.
  */
 
 /**
@@ -89,7 +86,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
 
     return $this->getParent()->request($cmd, $throw);
   }
-
+  
   /**
    * Returns an array filled with TeamSpeak3_Node_Server objects.
    *
@@ -111,12 +108,12 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     $this->resetNodeList();
     $this->serverInfo = null;
   }
-  
+
   /**
    * Returns an array filled with TeamSpeak3_Node_Channel objects.
    *
    * @param  array $filter
-   * @return array
+   * @return array|TeamSpeak3_Node_Channel[]
    */
   public function channelList(array $filter = array())
   {
@@ -146,6 +143,22 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   {
     $this->resetNodeList();
     $this->channelList = null;
+  }
+
+  /**
+   * Returns the TeamSpeak3_Node_Channel object representing the default channel.
+   *
+   * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+   * @return TeamSpeak3_Node_Channel
+   */
+  public function channelGetDefault()
+  {
+    foreach($this->channelList() as $channel)
+    {
+      if($channel["channel_flag_default"]) return $channel;
+    }
+
+    throw new TeamSpeak3_Adapter_ServerQuery_Exception("invalid channelID", 0x300);
   }
 
   /**
@@ -523,7 +536,9 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    */
   public function channelFileInfo($cid, $cpw = "", $name = "/")
   {
-    return array_pop($this->execute("ftgetfileinfo", array("cid" => $cid, "cpw" => $cpw, "name" => $name))->toArray());
+    $info = $this->execute("ftgetfileinfo", array("cid" => $cid, "cpw" => $cpw, "name" => $name))->toArray();
+    
+    return array_pop($info);
   }
 
   /**
@@ -645,7 +660,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns an array filled with TeamSpeak3_Node_Client objects.
    *
    * @param  array $filter
-   * @return array
+   * @return array | TeamSpeak3_Node_Client[]
    */
   public function clientList(array $filter = array())
   {
@@ -727,7 +742,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   }
 
   /**
-   * Returns a list of client database IDs matching a given pattern. You can either search for a clients
+   * Returns a list of client database information matching a given pattern. You can either search for a clients
    * last known nickname or his unique identity by using the $uid option.
    *
    * @param  string  $pattern
@@ -736,7 +751,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    */
   public function clientFindDb($pattern, $uid = FALSE)
   {
-    return array_keys($this->execute("clientdbfind", array("pattern" => $pattern, ($uid) ? "-uid" : null))->toAssocArray("cldbid"));
+    return array_keys($this->execute("clientdbfind", array("pattern" => $pattern, ($uid) ? "-uid" : null, "-details"))->toAssocArray("cldbid"));
   }
 
   /**
@@ -1043,7 +1058,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns a list of server groups available.
    *
    * @param  filter $filter
-   * @return array
+   * @return array | TeamSpeak3_Node_Servergroup[]
    */
   public function serverGroupList(array $filter = array())
   {
@@ -1281,28 +1296,25 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns an ordered array of regular server groups available based on a pre-defined
    * set of rules.
    *
+   * @param  integer $type
    * @return array
    */
-  public function serverGroupGetProfiles()
+  public function serverGroupGetProfiles($type = TeamSpeak3::GROUP_DBTYPE_REGULAR)
   {
     $profiles = array();
 
     foreach($this->serverGroupList() as $sgid => $sgroup)
     {
-      if($sgroup["type"] != TeamSpeak3::GROUP_DBTYPE_REGULAR) continue;
+      if($sgroup["type"] != $type) continue;
 
       $profiles[$sgid] = array(
         "b_permission_modify_power_ignore" => 0,
-        "i_group_needed_member_add_power" => 0,
         "i_group_member_add_power" => 0,
-        "i_group_needed_member_remove_power" => 0,
         "i_group_member_remove_power" => 0,
         "i_needed_modify_power_count" => 0,
         "i_needed_modify_power_total" => 0,
         "i_permission_modify_power" => 0,
-        "i_group_needed_modify_power" => 0,
         "i_group_modify_power" => 0,
-        "i_client_needed_modify_power" => 0,
         "i_client_modify_power" => 0,
         "b_virtualserver_servergroup_create" => 0,
         "b_virtualserver_servergroup_delete" => 0,
@@ -1358,11 +1370,12 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * the ID.
    *
    * @param  integer $mode
+   * @param  integer $type
    * @return TeamSpeak3_Node_Servergroup
    */
-  public function serverGroupIdentify($mode = TeamSpeak3::GROUP_IDENTIFIY_STRONGEST)
+  public function serverGroupIdentify($mode = TeamSpeak3::GROUP_IDENTIFIY_STRONGEST, $type = TeamSpeak3::GROUP_DBTYPE_REGULAR)
   {
-    $profiles = $this->serverGroupGetProfiles();
+    $profiles = $this->serverGroupGetProfiles($type);
 
     $best_guess_profile = ($mode == TeamSpeak3::GROUP_IDENTIFIY_STRONGEST) ? array_shift($profiles) : array_pop($profiles);
 
@@ -1373,7 +1386,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns a list of channel groups available.
    *
    * @param  array $filter
-   * @return array
+   * @return array | TeamSpeak3_Node_Channelgroup[]
    */
   public function channelGroupList(array $filter = array())
   {
@@ -1570,16 +1583,37 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * @param  integer $cgid
    * @param  integer $cid
    * @param  integer $cldbid
+   * @param  boolean $resolve
    * @return array
    */
-  public function channelGroupClientList($cgid = null, $cid = null, $cldbid = null)
+  public function channelGroupClientList($cgid = null, $cid = null, $cldbid = null, $resolve = FALSE)
   {
     if($this["virtualserver_default_channel_group"] == $cgid)
     {
       return array();
     }
 
-    return $this->execute("channelgroupclientlist", array("cgid" => $cgid, "cid" => $cid, "cldbid" => $cldbid))->toArray();
+    try
+    {
+      $result = $this->execute("channelgroupclientlist", array("cgid" => $cgid, "cid" => $cid, "cldbid" => $cldbid))->toArray();
+    }
+    catch(TeamSpeak3_Adapter_ServerQuery_Exception $e)
+    {
+      /* ERROR_database_empty_result */
+      if($e->getCode() != 0x501) throw $e;
+
+      $result = array();
+    }
+
+    if($resolve)
+    {
+      foreach($result as $k => $v)
+      {
+        $result[$k] = array_merge($v, $this->clientInfoDb($v["cldbid"]));
+      }
+    }
+
+    return $result;
   }
 
   /**
@@ -1905,14 +1939,22 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
         break;
     }
 
-    $detail = $this->request("serversnapshotdeploy " . $data)->toList();
+    $detail = $this->request("serversnapshotdeploy -mapping " . $data)->toList();
 
-    if(array_key_exists("sid", $detail))
+    if(array_key_exists("sid", $detail[0]))
     {
-      TeamSpeak3_Helper_Signal::getInstance()->emit("notifyServercreated", $this->getParent(), $detail["sid"]);
+      TeamSpeak3_Helper_Signal::getInstance()->emit("notifyServercreated", $this->getParent(), $detail[0]["sid"]);
+
+      $server = array_shift($detail);
+    }
+    else
+    {
+      $server = array();
     }
 
-    return $detail;
+    $server["mapping"] = $detail;
+    
+    return $server;
   }
 
   /**

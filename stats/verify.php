@@ -8,7 +8,13 @@ require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
-if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
+if (isset($_POST['verify']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
+	echo $lang['errcsrf'];
+	rem_session_ts3($rspathhex);
+	exit;
+}
+
+if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	if($_REQUEST['token'] == NULL) {
 		$err_msg = $lang['stve0003']; $err_lvl = 1;
 	} elseif($_REQUEST['token'] != $_SESSION[$rspathhex.'token']) {
@@ -27,7 +33,7 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 				$_SESSION[$rspathhex.'admin'] = TRUE;
 			}
 		}
-		$dbdata = $mysqlcon->prepare("SELECT a.firstcon AS firstcon, b.total_connections AS total_connections FROM $dbname.user a INNER JOIN $dbname.stats_user b ON a.uuid = b.uuid WHERE b.uuid = :uuid");
+		$dbdata = $mysqlcon->prepare("SELECT `a`.`firstcon` AS `firstcon`, `b`.`total_connections` AS `total_connections` FROM `$dbname`.`user` `a` INNER JOIN `$dbname`.`stats_user` `b` ON `a`.`uuid`=`b`.`uuid` WHERE `b`.`uuid` = :uuid");
 		$dbdata->bindValue(':uuid', $_SESSION[$rspathhex.'tsuid'], PDO::PARAM_STR);
 		$dbdata->execute();
 		$clientinfo = $dbdata->fetchAll();
@@ -58,10 +64,6 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	}
 }
 
-if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
-}
-
 if(isset($_SESSION[$rspathhex.'multiple'])) {
 	$multi_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
 }
@@ -71,7 +73,7 @@ if($_SESSION[$rspathhex.'multiple'] == NULL && count($multi_uuid) < 2 && ($regis
 	$err_lvl = 3;
 } elseif($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0) {
 	$err_msg = $lang['verify0001']; $err_lvl = 1;
-	$uuids = $mysqlcon->query("SELECT name,uuid FROM $dbname.user WHERE online='1' and cid='$registercid' ORDER BY name ASC")->fetchAll();
+	$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='$registercid' ORDER BY `name` ASC")->fetchAll();
 	foreach($uuids as $entry) {
 		$multiple_uuid[$entry['uuid']] = $entry['name'];
 	}
@@ -87,10 +89,10 @@ if($_SESSION[$rspathhex.'multiple'] == NULL && count($multi_uuid) < 2 && ($regis
 	$err_msg = $lang['stve0006']; $err_lvl = 3;
 }
 
-if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid'])) {
+if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	require_once('../libs/ts3_lib/TeamSpeak3.php');
 	try {
-		$ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
 		
 		try {
 			usleep($slowmode);
@@ -130,6 +132,12 @@ if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	}
 }
 
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+}
+
+$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -146,6 +154,7 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form name="verify" method="POST">
+									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 										<?PHP
 										if($_SESSION[$rspathhex.'connected'] == 0) {
 											$ts3link = '<a href="ts3server://';

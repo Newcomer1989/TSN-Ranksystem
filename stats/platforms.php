@@ -1,4 +1,12 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+}
 session_start();
 require_once('../other/config.php');
 require_once('../other/session.php');
@@ -12,20 +20,12 @@ if($language == "ar") {
 	require_once('../languages/nations_de.php');
 } elseif($language == "en") {
 	require_once('../languages/nations_en.php');
-} elseif($language == "fr") {
-	require_once('../languages/nations_fr.php');
 } elseif($language == "it") {
 	require_once('../languages/nations_it.php');
-} elseif($language == "nl") {
-	require_once('../languages/nations_en.php');
 } elseif($language == "ro") {
 	require_once('../languages/nations_en.php');
 } elseif($language == "ru") {
 	require_once('../languages/nations_ru.php');
-} elseif($language == "pt") {
-	require_once('../languages/nations_pt.php');
-} elseif($language == "pl") {
-	require_once('../languages/nations_pl.php');
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
@@ -33,7 +33,7 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 }
 
 
-$sql_res = $mysqlcon->query("SELECT * FROM $dbname.stats_platforms ORDER BY count DESC")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+$sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_platforms` ORDER BY `count` DESC")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 
 require_once('nav.php');
 ?>

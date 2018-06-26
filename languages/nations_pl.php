@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 $nation = array();
 $nation['AD']='Andora';
 $nation['AE']='Zjednoczone Emiraty Arabskie';

@@ -4,8 +4,6 @@
  * @file
  * TeamSpeak 3 PHP Framework
  *
- * $Id: Client.php 06/06/2016 22:27:13 scp@Svens-iMac $
- *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   TeamSpeak3
- * @version   1.1.24
  * @author    Sven 'ScP' Paulsen
- * @copyright Copyright (c) 2010 by Planet TeamSpeak. All rights reserved.
+ * @copyright Copyright (c) Planet TeamSpeak. All rights reserved.
  */
 
 /**
@@ -285,7 +282,7 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
    */
   public function avatarDownload()
   {
-    if($this["client_flag_avatar"]->toString() == 0) return;
+    if($this["client_flag_avatar"]->toString() == NULL) return;
 
     $download = $this->getParent()->transferInitDownload(rand(0x0000, 0xFFFF), 0, $this->avatarGetName());
     $transfer = TeamSpeak3::factory("filetransfer://" . (strstr($download["host"], ":") !== FALSE ? "[" . $download["host"] . "]" : $download["host"]) . ":" . $download["port"]);
@@ -301,6 +298,36 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
   public function getClones()
   {
     return $this->execute("clientgetids", array("cluid" => $this["client_unique_identifier"]))->toAssocArray("clid");
+  }
+
+  /**
+   * Returns TRUE if the client is using Overwolf.
+   *
+   * @return boolean
+   */
+  public function hasOverwolf()
+  {
+    return strstr($this["client_badges"], "overwolf=1") !== FALSE;
+  }
+
+  /**
+   * Returns a list of equipped badges for this client.
+   *
+   * @return array
+   */
+  public function getBadges()
+  {
+    $badges = array();
+
+    foreach(explode(":", $this["client_badges"]) as $set)
+    {
+      if(substr($set, 0, 7) == "badges=")
+      {
+        $badges[] = array_map("trim", explode(",", substr($set, 7)));
+      }
+    }
+
+    return $badges;
   }
 
   /**
@@ -320,14 +347,17 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
    */
   public function memberOf()
   {
-    $groups = array($this->getParent()->channelGroupGetById($this["client_channel_group_id"]));
+    $cgroups = array($this->getParent()->channelGroupGetById($this["client_channel_group_id"]));
+    $sgroups = array();
 
     foreach(explode(",", $this["client_servergroups"]) as $sgid)
     {
-      $groups[] = $this->getParent()->serverGroupGetById($sgid);
+      $sgroups[] = $this->getParent()->serverGroupGetById($sgid);
     }
 
-    return $groups;
+    uasort($sgroups, array(__CLASS__, "sortGroupList"));
+
+    return array_merge($cgroups, $sgroups);
   }
 
   /**
