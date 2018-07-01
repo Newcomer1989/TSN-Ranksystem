@@ -4,4 +4,4 @@
 
 The TSN Ranksystem is an easy to handle Level System to automatically grant ranks (servergroups) to users on a TeamSpeaks3 Server for online time or online activity. You can create your own servergroups, with permissions, icons etc. of your choice, and define these for the Ranksystem. Its open source and so its free to use under the GNU license with version 3.
 
-#### Official website: [TS-N.NET](http://ts-n.net/ranksystem.php)
+#### Official website: [TS-N.NET](https://ts-n.net/ranksystem.php)
