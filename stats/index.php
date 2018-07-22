@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 require_once('../other/config.php');
@@ -171,7 +172,7 @@ require_once('nav.php');
 											<option value="day"><?PHP echo $lang['stix0013']; ?></option>
 											<option value="week"><?PHP echo $lang['stix0014']; ?></option>
 											<option value="month"><?PHP echo $lang['stix0015']; ?></option>
-											<option value="3month">Last 3 months</option>
+											<option value="3month"><?PHP echo $lang['stix0064']; ?></option>
 										  </select>
 										</div>
 									</div>
@@ -260,7 +261,7 @@ require_once('nav.php');
 									</div>
 								</div>
 							</div>
-							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-86400; ?>:">
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:%3e:<?PHP echo time()-86400; ?>:">
 								<div class="panel-footer">
 									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',$lang['stix0055'],')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -282,7 +283,7 @@ require_once('nav.php');
 									</div>
 								</div>
 							</div>
-							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-604800; ?>:">
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:%3e:<?PHP echo time()-604800; ?>:">
 								<div class="panel-footer">
 									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '7'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -304,7 +305,7 @@ require_once('nav.php');
 									</div>
 								</div>
 							</div>
-							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-2592000; ?>:">
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:%3e:<?PHP echo time()-2592000; ?>:">
 								<div class="panel-footer">
 									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '30'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -326,7 +327,7 @@ require_once('nav.php');
 									</div>
 								</div>
 							</div>
-							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:&gt;:<?PHP echo time()-7776000; ?>:">
+							<a href="list_rankup.php?sort=lastseen&order=desc&search=filter:lastseen:%3e:<?PHP echo time()-7776000; ?>:">
 								<div class="panel-footer">
 									<span class="pull-left"><?PHP echo $lang['stix0059'],' (',sprintf($lang['stix0056'], '90'),')'; ?></span>
 									<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -387,7 +388,7 @@ require_once('nav.php');
 										<td><?PHP echo $lang['stix0036']; ?></td>
 										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
 										$img_content = file_get_contents("../tsicons/servericon.png");
-										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:image;',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
 										} else { echo $sql_res['server_name']; } ?></td>
 									</tr>
 									<tr>
@@ -433,7 +434,7 @@ require_once('nav.php');
 									</tr>
 									<tr>
 										<td><?PHP echo $lang['stix0045']; ?></td>
-										<td><?PHP if ($sql_res['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost' || $ts['host']=='127.0.0.1') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
+										<td><?PHP if ($sql_res['server_weblist'] == 1) { echo '<a href="https://www.planetteamspeak.com/serverlist/result/server/ip/'; if($ts['host']=='localhost' || $ts['host']=='127.0.0.1') { echo $_SERVER['HTTP_HOST'];} else { echo $ts['host']; } echo ':'.$ts['voice'] .'" target="_blank" rel="noopener noreferrer">'.$lang['stix0046'].'</a>'; } else { echo $lang['stix0047']; } ?></td>
 									</tr>
 								</tbody>
 							</table>
@@ -465,27 +466,27 @@ require_once('nav.php');
 if (isset($nation[$sql_res['country_nation_name_1']])) {
 	echo '<input type="hidden" id="tsn17" value="',$sql_res['country_nation_name_1'],'"><input type="hidden" id="tsn22" value="',$sql_res['country_nation_1'],'">';
 } else {
-	echo '<input type="hidden" id="tsn17">unkown<input type="hidden" id="tsn22">0';
+	echo '<input type="hidden" id="tsn17" value="unkown"><input type="hidden" id="tsn22" value="0">';
 }
 if (isset($nation[$sql_res['country_nation_name_2']])) {
 	echo '<input type="hidden" id="tsn18" value="',$sql_res['country_nation_name_2'],'"><input type="hidden" id="tsn23" value="',$sql_res['country_nation_2'],'">';
 } else {
-	echo '<input type="hidden" id="tsn18">unkown<input type="hidden" id="tsn23">0';
+	echo '<input type="hidden" id="tsn18" value="unkown"><input type="hidden" id="tsn23" value="0">';
 }
 if (isset($nation[$sql_res['country_nation_name_3']])) {
 	echo '<input type="hidden" id="tsn19" value="',$sql_res['country_nation_name_3'],'"><input type="hidden" id="tsn24" value="',$sql_res['country_nation_3'],'">';
 } else {
-	echo '<input type="hidden" id="tsn19">unkown<input type="hidden" id="tsn24">0';
+	echo '<input type="hidden" id="tsn19" value="unkown"><input type="hidden" id="tsn24" value="0">';
 }
 if (isset($nation[$sql_res['country_nation_name_4']])) {
 	echo '<input type="hidden" id="tsn20" value="',$sql_res['country_nation_name_4'],'"><input type="hidden" id="tsn25" value="',$sql_res['country_nation_4'],'">';
 } else {
-	echo '<input type="hidden" id="tsn20">unkown<input type="hidden" id="tsn25">0';
+	echo '<input type="hidden" id="tsn20" value="unkown"><input type="hidden" id="tsn25" value="0">';
 }
 if (isset($nation[$sql_res['country_nation_name_5']])) {
 	echo '<input type="hidden" id="tsn21" value="',$sql_res['country_nation_name_5'],'"><input type="hidden" id="tsn26" value="',$sql_res['country_nation_5'],'">';
 } else {
-	echo '<input type="hidden" id="tsn21">unkown<input type="hidden" id="tsn26">0';
+	echo '<input type="hidden" id="tsn21" value="unkown"><input type="hidden" id="tsn26" value="0">';
 }
 ?>
 <input type="hidden" id="tsn27" value="<?PHP echo $sql_res['country_nation_other']; ?>">

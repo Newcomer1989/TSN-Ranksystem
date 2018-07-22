@@ -236,8 +236,8 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP echo '&nbsp;&nbsp;' . $_SESSION[$rspathhex.'tsname'] ?>&nbsp;
 					<b class="caret"></b></a><ul class="dropdown-menu">
 						<?PHP
-						if($_SESSION[$rspathhex.'tsname'] == "verification needed!" || $_SESSION[$rspathhex.'connected'] == 0) {
-							echo '<li><a href="verify.php"><i class="fa fa-fw fa-key"></i>&nbsp;verificate here..</a></li>';
+						if($_SESSION[$rspathhex.'tsname'] == $lang['stag0016'] || $_SESSION[$rspathhex.'connected'] == 0) {
+							echo '<li><a href="verify.php"><i class="fa fa-fw fa-key"></i>&nbsp;'.$lang['stag0017'].'</a></li>';
 						}
 						if(isset($_SESSION[$rspathhex.'admin']) && $_SESSION[$rspathhex.'admin'] == TRUE) {
 							if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {

@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 
@@ -119,23 +120,28 @@ if(isset($getstring)) {
 if(!isset($_GET["seite"])) {
 	$seite = 1;
 } else {
-	$seite = preg_replace('/\D/', '', $_GET["seite"]);
+	$_GET["seite"] = preg_replace('/\D/', '', $_GET["seite"]);
+	if($_GET["seite"] > 0) {
+		$seite = $_GET["seite"];
+	} else {
+		$seite = 1;
+	}
 }
 $adminlogin = 0;
+$sortarr = array_flip(array("name","uuid","cldbid","rank","lastseen","count","idle","active","grpid","grpsince","nextup"));
 
-$keysort  = '';
-$keyorder = '';
-if (isset($_GET['sort'])) {
-	$keysort = htmlspecialchars($_GET['sort']);
-}
-if ($keysort != 'name' && $keysort != 'uuid' && $keysort != 'cldbid' && $keysort != 'rank' && $keysort != 'lastseen' && $keysort != 'count' && $keysort != 'idle' && $keysort != 'active' && $keysort != 'grpid' && $keysort != 'grpsince') {
+if(isset($_GET['sort']) && isset($sortarr[$_GET['sort']])) {
+	$keysort = $_GET['sort'];
+} else {
 	$keysort = 'nextup';
 }
-if (isset($_GET['order'])) {
-	$keyorder = htmlspecialchars($_GET['order']);
+if(isset($_GET['order']) && $_GET['order'] == 'desc') {
+	$keyorder = 'desc';
+} else {
+	$keyorder = 'asc';
 }
-$keyorder = ($keyorder == 'desc' ? 'desc' : 'asc');
-if (isset($_GET['admin'])) {
+
+if(isset($_GET['admin'])) {
 	if($_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
 		$adminlogin = 1;
 	}
@@ -144,13 +150,17 @@ require_once('nav.php');
 
 $countentries = 0;
 
-
 if(!isset($_GET["user"])) {
 	$user_pro_seite = 25;
 } elseif($_GET['user'] == "all") {
 	$user_pro_seite = $sumentries[0];
 } else {
-	$user_pro_seite = preg_replace('/\D/', '', $_GET["user"]);
+	$_GET["user"] = preg_replace('/\D/', '', $_GET["user"]);
+	if($_GET["user"] > 0) {
+		$user_pro_seite = $_GET["user"];
+	} else {
+		$user_pro_seite = 25;
+	}
 }
 
 $start = ($seite * $user_pro_seite) - $user_pro_seite;
@@ -180,7 +190,11 @@ if ($keysort == 'active' && $keyorder == 'asc') {
 	$dbdata->execute();
 }
 
-$seiten_anzahl_gerundet = ceil($sumentries[0] / $user_pro_seite);
+if($user_pro_seite > 0) {
+	$seiten_anzahl_gerundet = ceil($sumentries[0] / $user_pro_seite);
+} else {
+	$seiten_anzahl_gerundet = 0;
+}
 
 function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring) {
 	?>

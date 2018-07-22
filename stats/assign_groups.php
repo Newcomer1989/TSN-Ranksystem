@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 
@@ -24,12 +25,20 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-$uuid = $_SESSION[$rspathhex.'tsuid'];
+if(isset($_SESSION[$rspathhex.'tsuid'])) {
+	$uuid = $_SESSION[$rspathhex.'tsuid'];
+} else {
+	$uuid = "no_uuid_found";
+}
 if(($dbdata = $mysqlcon->query("SELECT `cldgroup` FROM `$dbname`.`user` WHERE `uuid`='$uuid'")->fetch()) === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
 $cld_groups = explode(',', $dbdata['cldgroup']);
-$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
+if(isset($_SESSION[$rspathhex.'multiple'])) {
+	$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
+}  else {
+	$multiple_uuid = array();
+}
 $disabled = '';
 $allowed_groups_arr = array();
 

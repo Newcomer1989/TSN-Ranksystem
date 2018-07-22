@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.7';
+	$newversion = '1.2.8';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -246,9 +246,11 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			}
 			if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_iphash` (`uuid` varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`iphash` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.7] Created table user_iphash successfully.");
-			}
+			}			
+		}
+		if(version_compare($currvers, '1.2.7', '<=')) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.7] Stored timestamp of last update successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.8] Stored timestamp of last update successfully.");
 			}			
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);

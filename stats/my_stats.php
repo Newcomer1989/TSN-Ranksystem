@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 
@@ -19,7 +20,11 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
+if(isset($_SESSION[$rspathhex.'multiple'])) {
+	$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
+} else {
+	$multiple_uuid = array();
+}
 
 if(count($multiple_uuid) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;

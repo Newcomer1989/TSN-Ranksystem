@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 $starttime = microtime(true);
@@ -41,7 +42,7 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h4><strong><span class="text-success"><?PHP echo $lang['stri0004']; ?></span></strong></h4>
-						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2018 <a href="//ts-n.net/" target="_blank">TeamSpeak Sponsoring TS-N.NET</a></p>
+						<p>The <a href="//ts-n.net/ranksystem.php" target="_blank" rel="noopener noreferrer">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2018 <a href="//ts-n.net/" target="_blank" rel="noopener noreferrer">TeamSpeak Sponsoring TS-N.NET</a></p>
 						<br>
 					</div>
 				</div>
@@ -59,20 +60,20 @@ require_once('nav.php');
 					<div class="col-lg-12">
 						<h4><strong><span class="text-danger"><?PHP echo $lang['stri0009'];?></span></strong></h4>
 						<p><?PHP echo $lang['stri0010']; ?></p>
-						<p><a href="//php.net/" target="_blank">PHP</a> - Copyright &copy; 2001-2016 the <a href="//secure.php.net/credits.php" target="_blank">PHP Group</a></p><br>
+						<p><a href="//php.net/" target="_blank" rel="noopener noreferrer">PHP</a> - Copyright &copy; 2001-2016 the <a href="//secure.php.net/credits.php" target="_blank" rel="noopener noreferrer">PHP Group</a></p><br>
 						<p><?PHP echo $lang['stri0011']; ?></p>
-						<p><a href="//jquery.com/" target="_blank">jQuery v3.1.1</a> - Copyright &copy; 2016 The jQuery Foundation</p> 
-						<p><a href="//fontawesome.io" target="_blank">Font Awesome 4.7.0</a> - Copyright &copy; davegandy</p>
-						<p><a href="//flag-icon-css.lip.is/" target="_blank">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
-						<p><a href="//planetteamspeak.com/" target="_blank">TeamSpeak 3 PHP Framework 1.1.33</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
-						<p><a href="//getbootstrap.com/" target="_blank">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2016 Twitter, Inc.</p>
-						<p><a href="//morrisjs.github.io/morris.js/" target="_blank">morris.js 0.5.0</a> - Copyright &copy; 2013 Olly Smith</p>
-						<p><a href="//raphaeljs.com" target="_blank">Rapha&euml;l 2.2.1 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>
-						<p><a href="//startbootstrap.com" target="_blank">SB Admin Bootstrap Admin Template</a> - Copyright &copy; 2013-2016 Blackrock Digital LLC.</p>
-						<p><a href="//www.bootstrap-switch.org" target="_blank">Bootstrap Switch 3.3.2</a> - Copyright &copy; 2013-2015 Mattia Larentis</p>
-						<p><a href="//www.virtuosoft.eu/code/bootstrap-touchspin" target="_blank">Bootstrap TouchSpin 3.1.2</a> - Copyright &copy; 2013-2016 István Ujj-Mészáros</p>
-						<p><a href="//developer.snapappointments.com/bootstrap-select" target="_blank">bootstrap-select v1.13.0-beta</a> - Copyright &copy; 2012-2018 SnapAppointments, LLC</p>
-						<p><a href="//wenzhixin.net.cn/" target="_blank">Bootstrap Show Password 1.0.3</a> - Copyright &copy; 2014 zhixin wen</p>
+						<p><a href="//jquery.com/" target="_blank" rel="noopener noreferrer">jQuery v3.1.1</a> - Copyright &copy; 2016 The jQuery Foundation</p> 
+						<p><a href="//fontawesome.io" target="_blank" rel="noopener noreferrer">Font Awesome 4.7.0</a> - Copyright &copy; davegandy</p>
+						<p><a href="//flag-icon-css.lip.is/" target="_blank" rel="noopener noreferrer">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
+						<p><a href="//planetteamspeak.com/" target="_blank" rel="noopener noreferrer">TeamSpeak 3 PHP Framework 1.1.33</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
+						<p><a href="//getbootstrap.com/" target="_blank" rel="noopener noreferrer">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2016 Twitter, Inc.</p>
+						<p><a href="//morrisjs.github.io/morris.js/" target="_blank" rel="noopener noreferrer">morris.js 0.5.0</a> - Copyright &copy; 2013 Olly Smith</p>
+						<p><a href="//raphaeljs.com" target="_blank" rel="noopener noreferrer">Rapha&euml;l 2.2.1 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>
+						<p><a href="//startbootstrap.com" target="_blank" rel="noopener noreferrer">SB Admin Bootstrap Admin Template</a> - Copyright &copy; 2013-2016 Blackrock Digital LLC.</p>
+						<p><a href="//www.bootstrap-switch.org" target="_blank" rel="noopener noreferrer">Bootstrap Switch 3.3.2</a> - Copyright &copy; 2013-2015 Mattia Larentis</p>
+						<p><a href="//www.virtuosoft.eu/code/bootstrap-touchspin" target="_blank" rel="noopener noreferrer">Bootstrap TouchSpin 3.1.2</a> - Copyright &copy; 2013-2016 István Ujj-Mészáros</p>
+						<p><a href="//developer.snapappointments.com/bootstrap-select" target="_blank" rel="noopener noreferrer">bootstrap-select v1.13.0-beta</a> - Copyright &copy; 2012-2018 SnapAppointments, LLC</p>
+						<p><a href="//wenzhixin.net.cn/" target="_blank" rel="noopener noreferrer">Bootstrap Show Password 1.0.3</a> - Copyright &copy; 2014 zhixin wen</p>
 						<br>
 					</div>
 				</div>

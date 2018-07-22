@@ -1,4 +1,13 @@
 <?PHP
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+if(in_array('sha512', hash_algos())) {
+	ini_set('session.hash_function', 'sha512');
+}
+if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
+	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+}
 session_start();
 
 require_once('../other/config.php');
@@ -66,9 +75,11 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_PO
 
 if(isset($_SESSION[$rspathhex.'multiple'])) {
 	$multi_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
+}  else {
+	$multi_uuid = array();
 }
 
-if($_SESSION[$rspathhex.'multiple'] == NULL && count($multi_uuid) < 2 && ($registercid == NULL || $registercid == 0)) {
+if(!isset($_SESSION[$rspathhex.'multiple']) && ($registercid == NULL || $registercid == 0)) {
 	$err_msg = $lang['verify0001']."<br><br>".$lang['verify0003'];
 	$err_lvl = 3;
 } elseif($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0) {
@@ -174,15 +185,15 @@ require_once('nav.php');
 											<div class="input-group col-sm-12">
 												<select class="selectpicker show-tick form-control" name="uuid" id="uuid" onchange="this.form.submit();">
 													<?PHP
-													if(count($multiple_uuid) == 0) {
+													if(count($multi_uuid) == 0) {
 														echo '<option disabled value="" selected>'.$lang['verify0004'].'</option>';
 													} else {
 														echo '<option disabled value=""';
 														if(!isset($_SESSION[$rspathhex.'temp_uuid'])) echo ' selected','>',$lang['stve0009'];
 														echo '</option>';
 													}
-													foreach($multiple_uuid as $uuid => $nickname) {
-														echo '<option data-subtext="',$uuid,'" value="',$uuid,'"'; if(isset($_SESSION[$rspathhex.'temp_uuid']) && $_SESSION[$rspathhex.'temp_uuid'] == $uuid) echo ' selected'; echo '>',$nickname,'</option>';
+													foreach($multi_uuid as $uuid => $nickname) {
+														echo '<option data-subtext="',$uuid,'" value="',$uuid,'"'; if(isset($_SESSION[$rspathhex.'temp_uuid']) && $_SESSION[$rspathhex.'temp_uuid'] == $uuid) echo ' selected'; echo '>',htmlspecialchars($nickname),'</option>';
 													}
 													?>
 												</select>

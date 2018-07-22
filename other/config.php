@@ -1,28 +1,33 @@
-<?PHP
+﻿<?PHP
 require_once('dbconfig.php');
-if(isset($db['type']) === false) {
-	$db['type']="mysql";
-}
-$dbname = $db['dbname'];
-$dbtype = $db['type'];
-if($db['type'] != "type") {
-	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$dbname.';charset=utf8mb4';
-	if ($db['type'] == 'mysql') {
-		$dboptions = array(
-			PDO::ATTR_PERSISTENT => true
-		);
+
+function set_language($language) {
+	if(strtolower($language) == "ar") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
+	} elseif(strtolower($language) == "cz") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_cz.php');
+	} elseif(strtolower($language) == "de") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
+	} elseif(strtolower($language) == "fr") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_fr.php');
+	} elseif(strtolower($language) == "it") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
+	} elseif(strtolower($language) == "nl") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_nl.php');
+	} elseif(strtolower($language) == "pl") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
+	} elseif(strtolower($language) == "ro") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
+	} elseif(strtolower($language) == "ru") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
+	} elseif(strtolower($language) == "pt") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
 	} else {
-		$dboptions = array();
+		include(substr(dirname(__FILE__),0,-5).'languages/core_en.php');
 	}
-	try {
-		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
-	} catch (PDOException $e) {
-		echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
-		exit;
-	}
+	return $lang;
 }
 
-$rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';
 function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'admin']);
 	unset($_SESSION[$rspathhex.'clientip']);
@@ -50,6 +55,35 @@ function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'upinfomsg']);
 	unset($_SESSION[$rspathhex.'username']);
 	unset($_SESSION[$rspathhex.'uuid_verified']);
+}
+
+if(isset($_GET["lang"])) {
+	$language = htmlspecialchars($_GET["lang"]);
+	$lang = set_language($language);
+}
+
+$rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';
+
+if(isset($db['type']) === false) {
+	$db['type']="mysql";
+}
+$dbname = $db['dbname'];
+$dbtype = $db['type'];
+if($db['type'] != "type") {
+	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$dbname.';charset=utf8mb4';
+	if ($db['type'] == 'mysql') {
+		$dboptions = array(
+			PDO::ATTR_PERSISTENT => true
+		);
+	} else {
+		$dboptions = array();
+	}
+	try {
+		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
+	} catch (PDOException $e) {
+		echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
+		exit;
+	}
 }
 
 if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`config`")->fetch())) {
@@ -101,6 +135,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 			$language = "en";
 			$_SESSION[$rspathhex.'language'] = "en";
 		}
+		$lang			 = set_language($language);
 		$queryname       = $config['queryname'];
 		$queryname2      = $config['queryname2'];
 		$slowmode        = $config['slowmode'];
@@ -177,28 +212,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 		$registercid	 = $config['registercid'];
 		$iphash			 = $config['iphash'];
 	}
-}
-if(!isset($language) || $language == "en") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_en.php');
-} elseif($language == "ar") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
-} elseif($language == "cz") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_cz.php');
-} elseif($language == "de") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
-} elseif($language == "fr") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_fr.php');
-} elseif($language == "it") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
-} elseif($language == "nl") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_nl.php');
-} elseif($language == "pl") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
-} elseif($language == "ro") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
-} elseif($language == "ru") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
-} elseif($language == "pt") {
-	require_once(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
+} elseif(!isset($_GET["lang"])) {
+	$lang = set_language("en");
 }
 ?>

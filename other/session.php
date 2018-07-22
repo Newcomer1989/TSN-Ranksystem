@@ -4,7 +4,7 @@ if (isset($_POST['refresh'])) {
 	rem_session_ts3($rspathhex);
 }
 function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) {
-	global $iphash;
+	global $iphash, $lang;
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		$hpclientip = $_SERVER['HTTP_CLIENT_IP'];
 	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -25,7 +25,7 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
     $allclients = $mysqlcon->query("SELECT `u`.`uuid`,`u`.`cldbid`,`u`.`name`,`u`.`firstcon`,`s`.`total_connections` FROM `$dbname`.`user` AS `u` LEFT JOIN `$dbname`.`stats_user` AS `s` ON `u`.`uuid`=`s`.`uuid` WHERE `online`='1'")->fetchAll();
 	$iptable = $mysqlcon->query("SELECT `uuid`,`iphash`,`ip` FROM `$dbname`.`user_iphash`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
     $_SESSION[$rspathhex.'connected'] = 0;
-	$_SESSION[$rspathhex.'tsname'] = "verification needed!";
+	$_SESSION[$rspathhex.'tsname'] = $lang['stag0016'];
     $_SESSION[$rspathhex.'serverport'] = $voiceport;
 	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 

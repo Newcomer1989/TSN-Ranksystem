@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 
@@ -317,42 +318,42 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="critical" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="critical" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('CRITICAL', $filters)) { echo "checked"; } ?>
 							>Critical</label>
 						</div>
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="error" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="error" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('ERROR', $filters)) { echo "checked"; } ?>
 							>Error</label>
 						</div>
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="warning" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="warning" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('WARNING', $filters)) { echo "checked"; } ?>
 							>Warning</label>
 						</div>
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="notice" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="notice" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('NOTICE', $filters)) { echo "checked"; } ?>
 							>Notice</label>
 						</div>
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="info" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="info" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('INFO', $filters)) { echo "checked"; } ?>
 							>Info</label>
 						</div>
 					</div>
 					<div class="col-lg-1">
 						<div class="checkbox">
-							<label><input id="switch-create-destroy" type="checkbox" name="logfilter[]" value="debug" data-switch-no-init onchange="this.form.submit();"
+							<label><input class="switch-create-destroy" type="checkbox" name="logfilter[]" value="debug" data-switch-no-init onchange="this.form.submit();"
 							<?PHP if(in_array('DEBUG', $filters)) { echo "checked"; } ?>
 							>Debug</label>
 						</div>

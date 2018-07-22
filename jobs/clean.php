@@ -11,7 +11,10 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$c
 			$break=200;
 			$count_tsuser['count'] = 0;
 			$clientdblist=array();
+			enter_logfile($logpath,$timezone,6,"Get TS3 Clientlist...".$start);
 			while($getclientdblist=$ts3->clientListDb($start, $break)) {
+				$ts3->serverInfoReset();   //TeamSpeak gets very slow on sending dblist.. needs to hold the connection
+				#enter_logfile($logpath,$timezone,6,"Round TS3 Clientlist ".$start);
 				$clientdblist=array_merge($clientdblist, $getclientdblist);
 				$start=$start+$break;
 				$count_tsuser=array_shift($getclientdblist);
@@ -20,6 +23,7 @@ function clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$c
 				}
 				usleep($slowmode);
 			}
+			enter_logfile($logpath,$timezone,6,"Get TS3 Clientlist [DONE]");
 			foreach($clientdblist as $uuidts) {
 				$single_uuid = $uuidts['client_unique_identifier']->toString();
 				$uidarrts[$single_uuid]= 1;

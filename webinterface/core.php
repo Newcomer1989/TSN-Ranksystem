@@ -6,6 +6,7 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
+	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
 }
 session_start();
 
@@ -152,7 +153,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<select class="selectpicker show-tick form-control" id="basic" name="substridle">
+									<select class="selectpicker show-tick form-control basic" name="substridle">
 									<?PHP
 									echo '<option value="0"'; if($substridle=="0") echo " selected=selected"; echo '>',$lang['wishcolot'],'</option>';
 									echo '<option value="1"'; if($substridle=="1") echo " selected=selected"; echo '>',$lang['wishcolat'],'</option>';
@@ -165,7 +166,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexresdesc"><?php echo $lang['wiexres']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<select class="selectpicker show-tick form-control" id="basic" name="resetexcept">
+											<select class="selectpicker show-tick form-control basic" name="resetexcept">
 											<?PHP
 											echo '<option value="0"'; if($resetexcept=="0") echo " selected=selected"; echo '>',$lang['wiexres1'],'</option>';
 											echo '<option value="1"'; if($resetexcept=="1") echo " selected=selected"; echo '>',$lang['wiexres2'],'</option>';

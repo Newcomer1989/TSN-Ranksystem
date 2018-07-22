@@ -104,11 +104,11 @@ require_once('other/config.php');
 
 function install($type, $host, $user, $pass, $dbname, $lang, $mysqlcon, &$err_msg, &$err_lvl, &$install_webuser) {
 	$newconfig='<?php
-$db[\'type\']="'.$type.'";
-$db[\'host\']="'.$host.'";
-$db[\'user\']="'.$user.'";
-$db[\'pass\']="'.$pass.'";
-$db[\'dbname\']="'.$dbname.'";
+$db[\'type\']=\''.$type.'\';
+$db[\'host\']=\''.$host.'\';
+$db[\'user\']=\''.$user.'\';
+$db[\'pass\']=\''.$pass.'\';
+$db[\'dbname\']=\''.$dbname.'\';
 ?>';
 	
 	$handle=fopen('./other/dbconfig.php','w');
@@ -314,7 +314,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`config` (`webuser`,`webpass`,`tshost`,`tsquery`,`tsvoice`,`tsuser`,`language`,`queryname`,`queryname2`,`grouptime`,`resetbydbchange`,`msgtouser`,`currvers`,`exceptuuid`,`exceptgroup`,`dateformat`,`showexcld`,`showcolcld`,`showcoluuid`,`showcoldbid`,`showcolot`,`showcolit`,`showcolat`,`showcolnx`,`showcolsg`,`showcolrg`,`showcolls`,`slowmode`,`cleanclients`,`cleanperiod`,`showhighest`,`showcolas`,`defchid`,`timezone`,`logpath`,`ignoreidle`,`rankupmsg`,`newversion`,`servernews`,`nextupinfo`,`nextupinfomsg1`,`nextupinfomsg2`,`nextupinfomsg3`,`shownav`,`showgrpsince`,`resetexcept`,`upchannel`,`avatar_delay`,`iphash`) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1.2.7','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.2.7',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1','0','version','0','0')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`config` (`webuser`,`webpass`,`tshost`,`tsquery`,`tsvoice`,`tsuser`,`language`,`queryname`,`queryname2`,`grouptime`,`resetbydbchange`,`msgtouser`,`currvers`,`exceptuuid`,`exceptgroup`,`dateformat`,`showexcld`,`showcolcld`,`showcoluuid`,`showcoldbid`,`showcolot`,`showcolit`,`showcolat`,`showcolnx`,`showcolsg`,`showcolrg`,`showcolls`,`slowmode`,`cleanclients`,`cleanperiod`,`showhighest`,`showcolas`,`defchid`,`timezone`,`logpath`,`ignoreidle`,`rankupmsg`,`newversion`,`servernews`,`nextupinfo`,`nextupinfomsg1`,`nextupinfomsg2`,`nextupinfomsg3`,`shownav`,`showgrpsince`,`resetexcept`,`upchannel`,`avatar_delay`,`iphash`) VALUES ('$user','$pass','localhost','10011','9987','serveradmin','en','Ranksystem','RankSystem','31536000=>47,31536060=>50','1','1','1.2.8','xrTKhT/HDl4ea0WoFDQH2zOpmKg=','2,6','%a days, %h hours, %i mins, %s secs','1','1','1','1','1','1','1','1','1','1','1','0','1','86400','1','1','0','Europe/Berlin','$logpath','600',$rankupmsg,'1.2.8',$servernews,'1',$nextupinfomsg1,$nextupinfomsg2,$nextupinfomsg3,'1','1','0','version','0','0')") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
