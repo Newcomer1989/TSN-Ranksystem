@@ -5,7 +5,7 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 	enter_logfile($logpath,$timezone,4,"    Backup the database due cloning tables...",$norotate);
 	$countbackuperr = 0;
 	
-	$tables = array('addons_config','addon_assign_groups','config','groups','job_check','server_usage','stats_nations','stats_platforms','stats_server','stats_user','stats_versions','user','user_snapshot');
+	$tables = array('addons_config','addon_assign_groups','admin_addtime','config','groups','job_check','server_usage','stats_nations','stats_platforms','stats_server','stats_user','stats_versions','user','user_iphash','user_snapshot');
 	
 	foreach ($tables as $table) {
 		if($mysqlcon->query("SELECT 1 FROM `$dbname`.`bak_$table` LIMIT 1") !== false) {
