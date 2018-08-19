@@ -49,7 +49,19 @@ if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csr
 }
 
 if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
-	if (isset($_POST['iphash'])) $iphash = 1; else $iphash = 0;
+	if (isset($_POST['iphash'])) {
+		if($iphash != 1) {
+			$err_msg2 = $lang['wisvinfo1'];
+			$err_lvl2 = 2;
+		}
+		$iphash = 1;
+	} else {
+		if($iphash == 1) {
+			$err_msg2 = $lang['wisvinfo1'];
+			$err_lvl2 = 2;
+		}
+		$iphash = 0;
+	}
 	$timezone 		= $_POST['timezone'];
 	$timeformat 	= $_POST['dateformat'];
 	$logpath		= addslashes($_POST['logpath']);
@@ -97,6 +109,7 @@ require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+<?PHP if(isset($err_msg2)) error_handling($err_msg2, $err_lvl2); ?>
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-lg-12">

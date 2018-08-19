@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.8';
+	$newversion = '1.2.9';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -57,6 +57,11 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		if(is_file(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
 			if(!unlink(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/combined_stats.js");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'webinterface/admin.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'webinterface/admin.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: webinterface/admin.php");
 			}
 		}
 	}
@@ -248,9 +253,9 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.7] Created table user_iphash successfully.");
 			}			
 		}
-		if(version_compare($currvers, '1.2.7', '<=')) {
+		if(version_compare($currvers, '1.2.8', '<=')) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.8] Stored timestamp of last update successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.9] Stored timestamp of last update successfully.");
 			}			
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);

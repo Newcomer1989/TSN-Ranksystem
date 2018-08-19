@@ -20,13 +20,7 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-if(isset($_SESSION[$rspathhex.'multiple'])) {
-	$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
-} else {
-	$multiple_uuid = array();
-}
-
-if(count($multiple_uuid) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
+if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } elseif ($_SESSION[$rspathhex.'connected'] == 0) {
 	$err_msg = sprintf("Du konntest nicht auf dem TeamSpeak gefunden werden. Bitte %sklicke hier%s um dich zun&auml;chst zu verifizieren.", '<a href="verify.php">', '</a>'); $err_lvl = 3;
@@ -117,7 +111,7 @@ require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 		<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); 
-		if(count($multiple_uuid) > 1 || $_SESSION[$rspathhex.'connected'] == 0) { echo "</div></div></body></html>"; exit; } ?>
+		if(count($_SESSION[$rspathhex.'multiple']) > 1 || $_SESSION[$rspathhex.'connected'] == 0) { echo "</div></div></body></html>"; exit; } ?>
 			<div class="container-fluid">
 				<div class="row">
 					<div class="col-lg-12">

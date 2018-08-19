@@ -17,13 +17,17 @@ require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
 
+if(!isset($_SESSION[$rspathhex.'tsuid'])) {
+	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+}
+
 if (isset($_POST['verify']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
 	echo $lang['errcsrf'];
 	rem_session_ts3($rspathhex);
 	exit;
 }
 
-if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	if($_REQUEST['token'] == NULL) {
 		$err_msg = $lang['stve0003']; $err_lvl = 1;
 	} elseif($_REQUEST['token'] != $_SESSION[$rspathhex.'token']) {
@@ -33,7 +37,7 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_PO
 		$_SESSION[$rspathhex.'serverport'] = $ts['voice'];
 		$_SESSION[$rspathhex.'uuid_verified'] = $_SESSION[$rspathhex.'temp_uuid'];
 		$_SESSION[$rspathhex.'tsuid'] = $_SESSION[$rspathhex.'temp_uuid'];
-		$_SESSION[$rspathhex.'multiple'] = '';
+		$_SESSION[$rspathhex.'multiple'] = array();
 		$_SESSION[$rspathhex.'connected'] = 1;
 		$_SESSION[$rspathhex.'tscldbid'] = $_SESSION[$rspathhex.'temp_cldbid'];
         $_SESSION[$rspathhex.'tsname']   = $_SESSION[$rspathhex.'temp_name'];
@@ -56,6 +60,7 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_PO
 		} else {
 			$_SESSION[$rspathhex.'tscreated'] = date('d-m-Y', $clientinfo[0]['firstcon']);
 		}
+		$convert = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p');
 		$uuidasbase16 = '';
 		for ($i = 0; $i < 20; $i++) {
 			$char = ord(substr(base64_decode($_SESSION[$rspathhex.'tsuid']), $i, 1));
@@ -73,31 +78,17 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid']) && $_PO
 	}
 }
 
-if(isset($_SESSION[$rspathhex.'multiple'])) {
-	$multi_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
-}  else {
-	$multi_uuid = array();
-}
-
-if(!isset($_SESSION[$rspathhex.'multiple']) && ($registercid == NULL || $registercid == 0)) {
+if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'multiple']) == 0) && ($registercid == NULL || $registercid == 0)) {
 	$err_msg = $lang['verify0001']."<br><br>".$lang['verify0003'];
 	$err_lvl = 3;
 } elseif($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0) {
 	$err_msg = $lang['verify0001']; $err_lvl = 1;
 	$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='$registercid' ORDER BY `name` ASC")->fetchAll();
 	foreach($uuids as $entry) {
-		$multiple_uuid[$entry['uuid']] = $entry['name'];
+		$_SESSION[$rspathhex.'multiple'][$entry['uuid']] = $entry['name'];
 	}
-} elseif(count($multi_uuid) == 1 && $_SESSION[$rspathhex.'connected'] == 1) {
+} elseif(count($_SESSION[$rspathhex.'multiple']) == 1 && $_SESSION[$rspathhex.'connected'] == 1) {
 	$err_msg = $lang['stve0005']; $err_lvl = 1;
-} elseif(count($multi_uuid) > 1) {
-	$multi_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
-	foreach ($multi_uuid as $entry) {
-		list($key, $value) = explode('=>', $entry);
-		$multiple_uuid[$key] = $value;
-	}
-} else {
-	$err_msg = $lang['stve0006']; $err_lvl = 3;
 }
 
 if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
@@ -118,7 +109,7 @@ if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST[
 		} catch (Exception $e) {
 			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 		}
-		
+
 		foreach ($allclients as $client) {
 			if($client['client_unique_identifier'] == $_POST['uuid']) {
 				$cldbid = $client['client_database_id'];
@@ -143,17 +134,13 @@ if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST[
 	}
 }
 
-if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
-}
-
 $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); 
-		if(count($multi_uuid) > 1 || ($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0)) {
+		if(count($_SESSION[$rspathhex.'multiple']) > 1 || ($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0)) {
 			?>
 			<div class="container-fluid">
 				<div id="login-overlay" class="modal-dialog">
@@ -185,14 +172,14 @@ require_once('nav.php');
 											<div class="input-group col-sm-12">
 												<select class="selectpicker show-tick form-control" name="uuid" id="uuid" onchange="this.form.submit();">
 													<?PHP
-													if(count($multi_uuid) == 0) {
+													if(count($_SESSION[$rspathhex.'multiple']) == 0) {
 														echo '<option disabled value="" selected>'.$lang['verify0004'].'</option>';
 													} else {
 														echo '<option disabled value=""';
 														if(!isset($_SESSION[$rspathhex.'temp_uuid'])) echo ' selected','>',$lang['stve0009'];
 														echo '</option>';
 													}
-													foreach($multi_uuid as $uuid => $nickname) {
+													foreach($_SESSION[$rspathhex.'multiple'] as $uuid => $nickname) {
 														echo '<option data-subtext="',$uuid,'" value="',$uuid,'"'; if(isset($_SESSION[$rspathhex.'temp_uuid']) && $_SESSION[$rspathhex.'temp_uuid'] == $uuid) echo ' selected'; echo '>',htmlspecialchars($nickname),'</option>';
 													}
 													?>

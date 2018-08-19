@@ -34,11 +34,6 @@ if(($dbdata = $mysqlcon->query("SELECT `cldgroup` FROM `$dbname`.`user` WHERE `u
 	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
 $cld_groups = explode(',', $dbdata['cldgroup']);
-if(isset($_SESSION[$rspathhex.'multiple'])) {
-	$multiple_uuid = explode(',', substr($_SESSION[$rspathhex.'multiple'], 0, -1));
-}  else {
-	$multiple_uuid = array();
-}
 $disabled = '';
 $allowed_groups_arr = array();
 
@@ -48,7 +43,7 @@ if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csr
 	exit;
 }
 
-if(count($multiple_uuid) > 1 and !isset($_SESSION[$rspathhex.'uuid_verified'])) {
+if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$disabled = 1;
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } elseif ($_SESSION[$rspathhex.'connected'] == 0) {

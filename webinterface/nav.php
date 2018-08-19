@@ -37,6 +37,11 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
             $('#password').password('toggle');
         });
     });
+	$(function() {
+		$("ul.dropdown-menu").on("click", "[data-keepOpenOnClick]", function(e) {
+			e.stopPropagation();
+		});
+	});
 	</script>
 </head>
 <body>
@@ -115,7 +120,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 					</ul>
 				</li>
 			</ul>
-			<div class="collapse navbar-collapse navbar-ex1-collapse">
+			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ts.php" ? ' class="active">' : '>'); ?>
 						<a href="ts.php"><i class="fa fa-fw fa-headphones"></i>&nbsp;<?PHP echo $lang['winav1']; ?></a>
@@ -145,11 +150,14 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						</ul>
 					</li>
 					<li class="divider"></li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin.php" ? ' class="active">' : '>'); ?>
+					<li>
 						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-users"></i>&nbsp;<?PHP echo $lang['winav7']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>
 						<ul id="demo" class="collapse">
+							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" ? ' class="dropdown-item active">' : '>'); ?>
+								<a href="admin_addtime.php" class="addtime"><?PHP echo $lang['wihladm1']; ?></a>
+							</li>
 							<li>
-								<a href="admin.php"><?PHP echo $lang['wihladm1']; ?></a>
+								<a href="admin_remtime.php"><?PHP echo $lang['wihladm2']; ?></a>
 							</li>
 						</ul>
 					</li>

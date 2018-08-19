@@ -28,6 +28,7 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
 	$_SESSION[$rspathhex.'tsname'] = $lang['stag0016'];
     $_SESSION[$rspathhex.'serverport'] = $voiceport;
 	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+	$_SESSION[$rspathhex.'multiple'] = array();
 
     foreach ($allclients as $client) {
 		if(isset($_SESSION[$rspathhex.'uuid_verified']) && $_SESSION[$rspathhex.'uuid_verified'] != $client['uuid']) {
@@ -46,11 +47,11 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
         if ($verify == TRUE) {
 			$_SESSION[$rspathhex.'tsname'] = htmlspecialchars($client['name']);
 			if(isset($_SESSION[$rspathhex.'tsuid']) && $_SESSION[$rspathhex.'tsuid'] != $client['uuid']) {
-				$_SESSION[$rspathhex.'multiple'] .= htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';
+				$_SESSION[$rspathhex.'multiple'][$client['uuid']] = htmlspecialchars($client['name']);
 				$_SESSION[$rspathhex.'tsname'] = "verification needed (multiple)!";
 				unset($_SESSION[$rspathhex.'admin']);
 			} elseif (!isset($_SESSION[$rspathhex.'tsuid'])) {
-				$_SESSION[$rspathhex.'multiple'] = htmlspecialchars($client['uuid']).'=>'.htmlspecialchars($client['name']).',';
+				$_SESSION[$rspathhex.'multiple'][$client['uuid']] = htmlspecialchars($client['name']);
 			}
             $_SESSION[$rspathhex.'tsuid'] = $client['uuid'];
 			foreach ($adminuuid as $auuid) {
