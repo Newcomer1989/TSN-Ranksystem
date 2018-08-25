@@ -165,6 +165,29 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
   }
 
   /**
+   * Creates or updates a custom property for the client.
+   *
+   * @param  string $ident
+   * @param  string $value
+   * @return void
+   */
+  public function customSet($ident, $value)
+  {
+    $this->getParent()->customSet($this["client_database_id"], $ident, $value);
+  }
+
+  /**
+   * Removes a custom property from the client.
+   *
+   * @param  string $ident
+   * @return void
+   */
+  public function customDelete($ident)
+  {
+    $this->getParent()->customDelete($this["client_database_id"], $ident);
+  }
+
+  /**
    * Returns an array containing the permission overview of the client.
    *
    * @param  integer $cid
@@ -282,7 +305,7 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
    */
   public function avatarDownload()
   {
-    if($this["client_flag_avatar"]->toString() == NULL) return;
+    if($this["client_flag_avatar"] == NULL) return;
 
     $download = $this->getParent()->transferInitDownload(rand(0x0000, 0xFFFF), 0, $this->avatarGetName());
     $transfer = TeamSpeak3::factory("filetransfer://" . (strstr($download["host"], ":") !== FALSE ? "[" . $download["host"] . "]" : $download["host"]) . ":" . $download["port"]);
@@ -468,4 +491,3 @@ class TeamSpeak3_Node_Client extends TeamSpeak3_Node_Abstract
     return (string) $this["client_nickname"];
   }
 }
-

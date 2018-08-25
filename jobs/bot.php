@@ -5,12 +5,10 @@ ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
 error_reporting(0);
 
-function shutdown($mysqlcon = NULL, $logpath, $timezone, $loglevel, $reason, $nodestroypid = NULL) {
-	if($nodestroypid == NULL) {
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			exec("del /F ".substr(__DIR__,0,-4).'logs/pid');
-		} else {
-			exec("rm -f ".substr(__DIR__,0,-4).'logs/pid');
+function shutdown($mysqlcon = NULL, $logpath, $timezone, $loglevel, $reason, $nodestroypid = TRUE) {
+	if($nodestroypid === TRUE) {
+		if (file_exists(substr(__DIR__,0,-4).'logs/pid')) {
+			unlink(substr(__DIR__,0,-4).'logs/pid');
 		}
 	}
 	enter_logfile($logpath,$timezone,$loglevel,$reason." Shutting down!");
@@ -44,7 +42,9 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) 
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
-		if (file_exists($file2)) unlink($file2);
+		if (file_exists($file2)) {
+			unlink($file2);
+		}
 		rename($file, $file2);
 		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
@@ -56,7 +56,7 @@ require_once(substr(__DIR__,0,-4).'other/config.php');
 require_once(substr(__DIR__,0,-4).'other/phpcommand.php');
 
 if(isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) {
-	shutdown($mysqlcon, $logpath, $timezone, 1, "Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line!", 1);
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line!");
 }
 if(version_compare(phpversion(), '5.5.0', '<')) {
 	shutdown($mysqlcon, $logpath, $timezone, 1, "Your PHP version (".phpversion().") is below 5.5.0. Update of PHP is required!");
@@ -69,6 +69,9 @@ if(!in_array('curl', get_loaded_extensions())) {
 }
 if(!in_array('zip', get_loaded_extensions())) {
 	shutdown($mysqlcon, $logpath, $timezone, 1, "PHP Zip is missed. Installation of PHP Zip is required!");
+}
+if(!in_array('ssh2', get_loaded_extensions()) && $ts['tsencrypt'] == 1) {
+	shutdown($mysqlcon, $logpath, $timezone, 1, "PHP SSH2 is missed. Installation of PHP SSH2 is required, when using secured (SSH) connection to TeamSpeak! If you are not able to install PHP SSH2 (i.e. hosted webspace), you need to deactivate the TS3 Query encryption inside the Webinterface.");
 }
 
 enter_logfile($logpath,$timezone,5,"###################################################################");
@@ -100,7 +103,7 @@ enter_logfile($logpath,$timezone,5,"Check Ranksystem files for updates [done]");
 
 function check_shutdown($timezone,$logpath) {
 	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
-		shutdown($mysqlcon, $logpath, $timezone, 5, "Received signal to stop!");
+		shutdown(NULL, $logpath, $timezone, 5, "Received signal to stop!");
 	}
 }
 
@@ -117,10 +120,21 @@ if($addons_config['assign_groups_active']['value'] == '1') {
 }
 enter_logfile($logpath,$timezone,5,"Loading addons [done]");
 
-enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\").");
+enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\" SSH: \"".$ts['tsencrypt']."\").");
 try {
-    $ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
-	enter_logfile($logpath,$timezone,5,"  Connection to TS3 Server established.");
+	if($ts['tsencrypt'] == 1) {
+		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&ssh=1");
+	} else {
+		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+	}
+	enter_logfile($logpath,$timezone,5,"Connection to TS3 Server established.");
+	try{
+		$ts3version = $ts3->version();
+		enter_logfile($logpath,$timezone,5,"  TS3 Server version: ".$ts3version['version']." on ".$ts3version['platform']." [Build: ".$ts3version['build']." from ".date("Y-m-d H:i:s",$ts3version['build'])."]");
+	} catch (Exception $e) {
+		enter_logfile($logpath,$timezone,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
+	}
+	
 	try {
 		usleep($slowmode);
 		$ts3->notifyRegister("server");
@@ -130,7 +144,7 @@ try {
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", "event_userenter");
 	} catch (Exception $e) {
-		enter_logfile($logpath,$timezone,2,"  Error due register notifyTextmessage ".$e->getCode().': '.$e->getMessage());
+		enter_logfile($logpath,$timezone,2,"  Error due notifyRegister on TS3 server - ".$e->getCode().': '.$e->getMessage());
 	}
 	
     try {
@@ -143,7 +157,7 @@ try {
             $ts3->selfUpdate(array('client_nickname' => $queryname2));
         }
         catch (Exception $e) {
-            enter_logfile($logpath,$timezone,2,$lang['error'].$e->getCode().': '.$e->getMessage());
+            enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
         }
     }
 	
@@ -156,9 +170,9 @@ try {
 			enter_logfile($logpath,$timezone,5,"  Joined to specified Channel.");
 		} catch (Exception $e) {
 			if($e->getCode() != 770) {
-				enter_logfile($logpath,$timezone,5,"  Could not join specified channel.");
+				enter_logfile($logpath,$timezone,2,"  Could not join specified channel (Channel ID: ".$defchid.") - ".$e->getCode().': '.$e->getMessage());
 			} else {
-				enter_logfile($logpath,$timezone,5,"  Joined to specified channel.");
+				enter_logfile($logpath,$timezone,5,"  Joined to specified channel (already member of it).");
 			}
 		}
 	} else {
@@ -390,14 +404,14 @@ try {
 			}
 		}
 	}
-}
-catch (Exception $e) {
-    enter_logfile($logpath,$timezone,2,$lang['error'].$e->getCode().': '.$e->getMessage());
+} catch (Exception $e) {
+    enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
 	$offline_status = array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793);
 	if(in_array($e->getCode(), $offline_status)) {
 		if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
 			enter_logfile($logpath,$timezone,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
 		}
 	}
+	shutdown($mysqlcon, $logpath, $timezone, 1, "Critical TS3 error on core function!");
 }
 ?>

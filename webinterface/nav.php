@@ -173,7 +173,7 @@ if($adminuuid==NULL && $_SESSION[$rspathhex.'username'] == $webuser && !isset($e
 	$err_msg = $lang['winav11']; $err_lvl = 3;
 }
 
-if(!isset($_SERVER['HTTPS']) && !isset($err_msg) || $_SERVER['HTTPS'] != "on" && !isset($err_msg)) {
+if(!isset($_SERVER['HTTPS']) && !isset($err_msg) || isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "on" && !isset($err_msg)) {
 	$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."\">";
 	$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
 }

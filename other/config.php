@@ -90,6 +90,7 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 	if(count($config) != 0) {
 		$ts['host']      = $config['tshost'];
 		$ts['query']     = $config['tsquery'];
+		$ts['tsencrypt'] = $config['tsencrypt'];
 		$ts['voice']     = $config['tsvoice'];
 		$ts['user']      = $config['tsuser'];
 		$ts['pass']      = $config['tspass'];

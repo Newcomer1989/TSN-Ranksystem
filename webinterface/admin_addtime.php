@@ -51,14 +51,14 @@ require_once('nav.php');
 
 if(!isset($_POST['number']) || $_POST['number'] == "yes") {
 	$_SESSION[$rspathhex.'showexcepted'] = "yes";
-	$filter = " `except`='0'";
+	$filter = " WHERE `except`='0'";
 } else {
 	$_SESSION[$rspathhex.'showexcepted'] = "no";
 	$filter = "";
 }
 
-if(($dbuserdata = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE $filter ORDER BY `name` ASC")) === false) {
-	$err_msg = "DB Error: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+if(($dbuserdata = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` $filter ORDER BY `name` ASC")) === false) {
+	$err_msg = "DB Error1: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
 $user_arr = $dbuserdata->fetchAll(PDO::FETCH_ASSOC);
 

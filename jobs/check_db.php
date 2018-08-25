@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.9';
+	$newversion = '1.2.10';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -64,8 +64,53 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: webinterface/admin.php");
 			}
 		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/Exception.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/Exception.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist/Exception.php");
+			}
+		}
+		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist/");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/Exception.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/Exception.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS/Exception.php");
+			}
+		}
+		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS/");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/Exception.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/Exception.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Update/Exception.php");
+			}
+		}
+		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/')) {
+			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/Update/");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS.php");
+			}
+		}
+		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update.php')) {
+			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update.php')) {
+				enter_logfile($logpath,$timezone,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Update.php");
+			}
+		}
 	}
-	
+
 	function check_writable($timezone,$logpath) {
 		enter_logfile($logpath,$timezone,5,"  Check files permissions...");
 		$counterr=0;
@@ -76,7 +121,6 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				if (!$object->isDir()) {
 					if(!is_writable($object->getPathname())) {
 						enter_logfile($logpath,$timezone,3,"    File is not writeable ".$object);
-						echo "\nhier: ".$object."\n";
 						$counterr++;
 					}
 				} else {
@@ -94,7 +138,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			enter_logfile($logpath,$timezone,5,"  Check files permissions [done]");
 		}
 	}
-	
+
 	if($currvers==$newversion) {
 		enter_logfile($logpath,$timezone,5,"  No newer version detected; Database check finished.");
 		old_files($timezone,$logpath);
@@ -253,10 +297,13 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.7] Created table user_iphash successfully.");
 			}			
 		}
-		if(version_compare($currvers, '1.2.8', '<=')) {
+		if(version_compare($currvers, '1.2.9', '<=')) {
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` ADD (`tsencrypt` tinyint(1) NOT NULL default '0')") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.10] Adjusted table config successfully.");
+			}
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.9] Stored timestamp of last update successfully.");
-			}			
+				enter_logfile($logpath,$timezone,4,"    [1.2.10] Stored timestamp of last update successfully.");
+			}
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone,$logpath);

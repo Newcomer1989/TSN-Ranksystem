@@ -18,7 +18,7 @@ if (substr(php_uname(), 0, 7) == "Windows") {
 function checkProcess($pid = null) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if(!empty($pid)) {
-			exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid."\"\" get processid 2>nul", $result);
+			exec("wmic process where \"processid=".$pid."\" get processid 2>nul", $result);
 			if(isset($result[1]) && is_numeric($result[1])) {
 				return TRUE;
 			} else {
@@ -27,7 +27,7 @@ function checkProcess($pid = null) {
 		} else {
 			if (file_exists($GLOBALS['pidfile'])) {
 				$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
-				exec("wmic process where \"Name=\"php.exe\" and processid=\"".$pid."\"\" get processid", $result);
+				exec("wmic process where \"processid=".$pid."\" get processid 2>nul", $result);
 				if(isset($result[1]) && is_numeric($result[1])) {
 					return TRUE;
 				} else {
@@ -85,18 +85,19 @@ function start() {
 				echo "\n Error due loading the PHP COM module (wrong server configuration!): ",$e->getMessage(),"\n";
 			}
 			try {
-				$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".__DIR__."\jobs\bot.php", 0, false);
+				$wcmd = "cmd /C ".$phpcommand." ".__DIR__."\jobs\bot.php";
+				$oExec = $WshShell->Run($wcmd, 0, false);
 			} catch (Exception $e) {
 				echo "\n Error due starting Bot (exec command enabled?): ",$e->getMessage(),"\n";
 			}
 			try {
-				exec("wmic process WHERE \"Name=\"php.exe\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
+				exec("wmic process where \"Name LIKE \"%php%\" AND CommandLine LIKE \"%bot.php%\"\" get ProcessId", $pid);
 			} catch (Exception $e) {
 				echo "\n Error due getting process list (wmic command enabled?): ",$e->getMessage(),"\n";
 			}
 			if(isset($pid[1]) && is_numeric($pid[1])) {
 				exec("echo ".$pid[1]." > ".$GLOBALS['pidfile']);
-				echo " [OK]\n";
+				echo " [OK]";
 				if (file_exists($GLOBALS['autostart'])) {
 					unlink($GLOBALS['autostart']);
 				}
@@ -110,7 +111,7 @@ function start() {
 	} else {
 		if (checkProcess() == FALSE) {
 			echo "Starting the Ranksystem Bot.";
-			exec($phpcommand." ".dirname(__FILE__)."/jobs/bot.php >/dev/null 2>&1 & echo $! > ".$GLOBALS['pidfile']);
+			exec($phpcommand." ".__DIR__."/jobs/bot.php >/dev/null 2>&1 & echo $! > ".$GLOBALS['pidfile']);
 			if (checkProcess() == FALSE) {
 				echo " [Failed]\n";
 			} else {
@@ -127,59 +128,35 @@ function start() {
 }
 
 function stop() {
-	if (substr(php_uname(), 0, 7) == "Windows") {
-		if (checkProcess() == TRUE) {
-			echo "Stopping the Ranksystem Bot.\n";
-			$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
-			exec("del /F ".$GLOBALS['pidfile']);
-			echo "Wait until Bot is down";
-			$count_check=0;
-			while (checkProcess($pid) == TRUE) {
-				sleep(1);
-				echo ".";
-				$count_check ++;
-				if($count_check > 10) {
+	if (checkProcess() == TRUE) {
+		echo "Stopping the Ranksystem Bot.\n";
+		$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
+		unlink($GLOBALS['pidfile']);
+		echo "Wait until Bot is down";
+		$count_check=0;
+		while (checkProcess($pid) == TRUE) {
+			sleep(1);
+			echo ".";
+			$count_check ++;
+			if($count_check > 10) {
+				if (substr(php_uname(), 0, 7) == "Windows") {
 					exec("taskkill /F /PID ".$pid);
-					break;
-				}
-			}
-			if (checkProcess($pid) == TRUE) {
-				echo " [Failed]\n";
-			} else {
-				echo " [OK]\n";
-				touch($GLOBALS['autostart']);
-			}
-		} else {
-			echo "The Ranksystem seems not running.\n";
-		}
-		$GLOBALS['exec'] = TRUE;
-	} else {
-		if (checkProcess() == TRUE) {
-			echo "Stopping the Ranksystem Bot.\n";
-			$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
-			exec("rm -f ".$GLOBALS['pidfile']);
-			echo "Wait until Bot is down";
-			$count_check=0;
-			while (checkProcess($pid) == TRUE) {
-				sleep(1);
-				echo ".";
-				$count_check ++;
-				if($count_check > 10) {
+				} else {
 					exec("kill -9 ".$pid);
-					break;
 				}
+				break;
 			}
-			if (checkProcess($pid) == TRUE) {
-				echo " [Failed]\n";
-			} else {
-				echo " [OK]\n";
-				touch($GLOBALS['autostart']);
-			}
-		} else {
-			echo "The Ranksystem seems not running.\n";
 		}
-		$GLOBALS['exec'] = TRUE;
+		if (checkProcess($pid) == TRUE) {
+			echo " [Failed]\n";
+		} else {
+			echo " [OK]\n";
+			touch($GLOBALS['autostart']);
+		}
+	} else {
+		echo "The Ranksystem seems not running.\n";
 	}
+	$GLOBALS['exec'] = TRUE;
 }
 	
 function check() {

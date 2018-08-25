@@ -69,23 +69,6 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
 
     $this->nodeId = $this->nodeInfo[$index];
   }
-
-  /**
-   * Sends a prepared command to the server and returns the result.
-   *
-   * @param  string  $cmd
-   * @param  boolean $throw
-   * @return TeamSpeak3_Adapter_ServerQuery_Reply
-   */
-  public function request($cmd, $throw = TRUE)
-  {
-    if($this->getId() != $this->getParent()->serverSelectedId())
-    {
-      $this->getParent()->serverSelect($this->getId());
-    }
-
-    return $this->getParent()->request($cmd, $throw);
-  }
   
   /**
    * Returns an array filled with TeamSpeak3_Node_Server objects.
@@ -107,6 +90,23 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   {
     $this->resetNodeList();
     $this->serverInfo = null;
+  }
+
+  /**
+   * Sends a prepared command to the server and returns the result.
+   *
+   * @param  string  $cmd
+   * @param  boolean $throw
+   * @return TeamSpeak3_Adapter_ServerQuery_Reply
+   */
+  public function request($cmd, $throw = TRUE)
+  {
+    if($this->getId() != $this->getParent()->serverSelectedId())
+    {
+      $this->getParent()->serverSelect($this->getId());
+    }
+
+    return $this->getParent()->request($cmd, $throw);
   }
 
   /**
@@ -660,7 +660,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns an array filled with TeamSpeak3_Node_Client objects.
    *
    * @param  array $filter
-   * @return array | TeamSpeak3_Node_Client[]
+   * @return array|TeamSpeak3_Node_Client[]
    */
   public function clientList(array $filter = array())
   {
@@ -1058,7 +1058,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns a list of server groups available.
    *
    * @param  filter $filter
-   * @return array | TeamSpeak3_Node_Servergroup[]
+   * @return array|TeamSpeak3_Node_Servergroup[]
    */
   public function serverGroupList(array $filter = array())
   {
@@ -1386,7 +1386,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns a list of channel groups available.
    *
    * @param  array $filter
-   * @return array | TeamSpeak3_Node_Channelgroup[]
+   * @return array|TeamSpeak3_Node_Channelgroup[]
    */
   public function channelGroupList(array $filter = array())
   {
@@ -1941,7 +1941,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
 
     $detail = $this->request("serversnapshotdeploy -mapping " . $data)->toList();
 
-    if(array_key_exists("sid", $detail[0]))
+    if(isset($detail[0]["sid"]))
     {
       TeamSpeak3_Helper_Signal::getInstance()->emit("notifyServercreated", $this->getParent(), $detail[0]["sid"]);
 
@@ -2128,6 +2128,31 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   public function customInfo($cldbid)
   {
     return $this->execute("custominfo", array("cldbid" => $cldbid))->toArray();
+  }
+
+  /**
+   * Creates or updates a custom property for the client specified by $cldbid.
+   *
+   * @param  integer $cldbid
+   * @param  string  $ident
+   * @param  string  $value
+   * @return void
+   */
+  public function customSet($cldbid, $ident, $value)
+  {
+    $this->execute("customset", array("cldbid" => $cldbid, "ident" => $ident, "value" => $value));
+  }
+
+  /**
+   * Removes a custom property from the client specified by $cldbid.
+   *
+   * @param  integer $cldbid
+   * @param  string  $ident
+   * @return void
+   */
+  public function customDelete($cldbid, $ident)
+  {
+    $this->execute("customdelete", array("cldbid" => $cldbid, "ident" => $ident));
   }
 
   /**
@@ -2347,11 +2372,12 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   /**
    * Stops the virtual server.
    *
+   * @param  string $msg
    * @return void
    */
-  public function stop()
+  public function stop($msg = null)
   {
-    $this->getParent()->serverStop($this->getId());
+    $this->getParent()->serverStop($this->getId(), $msg);
   }
   
   /**

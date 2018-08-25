@@ -52,6 +52,7 @@ $newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
 if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
 	$tshost     = $_POST['tshost'];
     $tsquery    = $_POST['tsquery'];
+	if (isset($_POST['tsencrypt'])) $tsencrypt = 1; else $tsencrypt = 0;
     $tsvoice    = $_POST['tsvoice'];
     $tsuser     = $_POST['tsuser'];
     $tspass     = $_POST['tspass'];
@@ -60,7 +61,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
     $defchid 	= $_POST['defchid'];
 	$slowmode 	= $_POST['slowmode'];
 	$avatar_delay= $_POST['avatar_delay'];
-    if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `tshost`='$tshost',`tsquery`='$tsquery',`tsvoice`='$tsvoice',`tsuser`='$tsuser',`tspass`='$tspass',`queryname`='$queryname',`queryname2`='$queryname2',`slowmode`='$slowmode',`defchid`='$defchid',`avatar_delay`='$avatar_delay'") === false) {
+    if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `tshost`='$tshost',`tsencrypt`='$tsencrypt',`tsquery`='$tsquery',`tsvoice`='$tsvoice',`tsuser`='$tsuser',`tspass`='$tspass',`queryname`='$queryname',`queryname2`='$queryname2',`slowmode`='$slowmode',`defchid`='$defchid',`avatar_delay`='$avatar_delay'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -70,6 +71,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
     }
 	$ts['host']		= $_POST['tshost'];
 	$ts['query']	= $_POST['tsquery'];
+	$ts['tsencrypt']= $tsencrypt;
 	$ts['voice']	= $_POST['tsvoice'];
 	$ts['user']		= $_POST['tsuser'];
 	$ts['pass']		= $_POST['tspass'];
@@ -101,6 +103,16 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
+									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3encryptdesc"><?php echo $lang['wits3encrypt']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<div class="col-sm-8">
+											<?PHP if ($ts['tsencrypt'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="tsencrypt" value="',$ts['tsencrypt'],'">';
+											} else {
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="tsencrypt" value="',$ts['tsencrypt'],'">';
+											} ?>
+										</div>
+									</div>									
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
@@ -241,6 +253,22 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
       </div>
       <div class="modal-body">
         <?php echo $lang['wits3hostdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wits3encryptdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wits3encrypt']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wits3encryptdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

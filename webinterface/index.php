@@ -13,7 +13,7 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 
-function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
+function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) {
 	$file = $logpath.'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
@@ -25,27 +25,22 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 		$loglevel = "  NOTICE    ";
 	} elseif ($loglevel == 5) {
 		$loglevel = "  INFO      ";
+	} elseif ($loglevel == 6) {
+		$loglevel = "  DEBUG     ";
 	}
-	$input = DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n";
 	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, $input);
-	if (filesize($file) > 5242880) {
+	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
+	fclose($loghandle);
+	if($norotate == false && filesize($file) > 5242880) {
+		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Restart Bot to continue with new log file...\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
 		if (file_exists($file2)) unlink($file2);
 		rename($file, $file2);
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			exec("del /F ".substr(__DIR__,0,-12).'logs/pid');
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."worker.php start", 0, false);
-			exit;
-		} else {
-			exec("rm -f ".substr(__DIR__,0,-12).'logs/pid');
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start");
-			exit;
-		}
+		$loghandle = fopen($file, 'a');
+		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
+		fclose($loghandle);
 	}
 }
 
@@ -87,11 +82,13 @@ if(($last_access[0]['last_access'] + 1) >= time()) {
 	$_SESSION[$rspathhex.'clientip'] = getclientip();
 	$_SESSION[$rspathhex.'newversion'] = $newversion;
 	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
+	enter_logfile($logpath,$timezone,6,sprintf($lang['brute2'], getclientip()));
 	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `count_access`='0'") === false) { }
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 } elseif(isset($_POST['username'])) {
 	$nowtime = time();
+	enter_logfile($logpath,$timezone,5,sprintf($lang['brute1'], getclientip(), $_POST['username']));
 	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$nowtime',`count_access`=`count_access` + 1") === false) { }
 	$err_msg = $lang['errlogin'];
 	$err_lvl = 3;

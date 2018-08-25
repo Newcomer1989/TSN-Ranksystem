@@ -21,12 +21,6 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
 }
 
-if (isset($_POST['verify']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
-}
-
 if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	if($_REQUEST['token'] == NULL) {
 		$err_msg = $lang['stve0003']; $err_lvl = 1;
@@ -91,10 +85,14 @@ if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'mult
 	$err_msg = $lang['stve0005']; $err_lvl = 1;
 }
 
-if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	require_once('../libs/ts3_lib/TeamSpeak3.php');
 	try {
-		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		if($ts['tsencrypt'] == 1) {
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&ssh=1");
+		} else {
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		}
 		
 		try {
 			usleep($slowmode);
@@ -134,8 +132,6 @@ if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid']) && $_POST[
 	}
 }
 
-$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
-
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -152,7 +148,6 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form name="verify" method="POST">
-									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
 										<?PHP
 										if($_SESSION[$rspathhex.'connected'] == 0) {
 											$ts3link = '<a href="ts3server://';
