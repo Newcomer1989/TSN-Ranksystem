@@ -49,7 +49,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $currvers;?></a>
-				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare(substr($_SESSION[$rspathhex.'newversion'], 0, 5), substr($currvers, 0, 5), '>') && $_SESSION[$rspathhex.'newversion'] != '') {
+				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare(substr($_SESSION[$rspathhex.'newversion'], 0, 6), substr($currvers, 0, 6), '>') && $_SESSION[$rspathhex.'newversion'] != '') {
 					echo '<a class="navbar-brand" href="//ts-n.net/ranksystem.php?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
 				} ?>
 			</div>
