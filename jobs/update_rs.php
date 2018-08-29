@@ -40,7 +40,7 @@ function update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpco
 		enter_logfile($logpath,$timezone,4,"    Database-tables successfully backuped.",$norotate);
 	}
 	
-	if(!is_file(substr(__DIR__,0,-4).'update/'.$newversion.'.zip')) {
+	if(!is_file(substr(__DIR__,0,-4).'update/ranksystem_'.$newversion.'.zip')) {
 		enter_logfile($logpath,$timezone,4,"    Downloading new update...",$norotate);
 		$newUpdate = file_get_contents('https://ts-n.net/downloads/ranksystem_'.$newversion.'.zip');
 		if(!is_dir(substr(__DIR__,0,-4).'update/')) {
