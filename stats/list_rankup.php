@@ -356,7 +356,7 @@ if($adminlogin == 1) {
 									if ($value['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
 									} elseif ($sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" alt="groupicon" width="16px" height="16px">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									} else {
 										echo '<td class="text-center">' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									}
@@ -388,7 +388,7 @@ if($adminlogin == 1) {
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon" width="16px" height="16px">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} else {
