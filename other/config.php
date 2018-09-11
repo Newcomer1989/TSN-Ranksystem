@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 require_once('dbconfig.php');
 
 function set_language($language) {
