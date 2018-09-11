@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_strict_mode', 1);
 if(in_array('sha512', hash_algos())) {
