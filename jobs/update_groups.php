@@ -1,5 +1,5 @@
 <?PHP
-function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$nobreak = 0) {
+function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$adminuuid,$nobreak = 0) {
 	$sqlexec = '';
 	try {
 		usleep($slowmode);
@@ -125,12 +125,42 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 				$delsgroupids .= "'" . $sgid . "',";
 				if(in_array($sgid, $grouptime)) {
 					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+					if(isset($adminuuid) && $adminuuid != NULL) {
+						foreach ($adminuuid as $clientid) {
+							usleep($slowmode);
+							try {
+								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+							} catch (Exception $e) {
+								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+							}
+						}
+					}
 				}
 				if(isset($boostarr[$sgid])) {
 					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiboost']));
+					if(isset($adminuuid) && $adminuuid != NULL) {
+						foreach ($adminuuid as $clientid) {
+							usleep($slowmode);
+							try {
+								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+							} catch (Exception $e) {
+								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+							}
+						}
+					}
 				}
 				if(isset($exceptgroup[$sgid])) {
 					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiexgrp']));
+					if(isset($adminuuid) && $adminuuid != NULL) {
+						foreach ($adminuuid as $clientid) {
+							usleep($slowmode);
+							try {
+								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+							} catch (Exception $e) {
+								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+							}
+						}
+					}
 				}
 			}
 		}

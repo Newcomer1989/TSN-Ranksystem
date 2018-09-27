@@ -172,14 +172,18 @@ class TeamSpeak3_Node_Host extends TeamSpeak3_Node_Abstract
    * @param  boolean $virtual
    * @return void
    */
-  public function serverSelectByPort($port, $virtual = null)
+  public function serverSelectByPort($port, $virtual = null, $clientname = null)
   {
     if($this->whoami !== null && $this->serverSelectedPort() == $port) return;
 
     $virtual = ($virtual !== null) ? $virtual : $this->start_offline_virtual;
     $getargs = func_get_args();
 
-    $this->execute("use", array("port" => $port, $virtual ? "-virtual" : null));
+	if(isset($clientname)) {
+		$this->execute("use", array("port" => $port, "client_nickname" => $clientname, $virtual ? "-virtual" : null));
+	} else {
+		$this->execute("use", array("port" => $port, $virtual ? "-virtual" : null));
+	}
 
     if($port != 0 && $this->predefined_query_name !== null)
     {
@@ -263,9 +267,13 @@ class TeamSpeak3_Node_Host extends TeamSpeak3_Node_Abstract
    * @param  integer $port
    * @return TeamSpeak3_Node_Server
    */
-  public function serverGetByPort($port)
+  public function serverGetByPort($port, $clientname = null)
   {
-    $this->serverSelectByPort($port);
+	if(isset($clientname)) {
+		$this->serverSelectByPort($port, null, $clientname);
+	} else {
+		$this->serverSelectByPort($port);
+	}
 
     return new TeamSpeak3_Node_Server($this, array("virtualserver_id" => $this->serverSelectedId()));
   }

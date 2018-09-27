@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_strict_mode', 1);
 if(in_array('sha512', hash_algos())) {
@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 $starttime = microtime(true);

@@ -88,29 +88,6 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 			</div>
 		</div>
 	</div>
-	<div id="battlesystem" class="modal fade">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title"><?PHP echo $lang['stnv0007']; ?></h4>
-				</div>
-				<div class="modal-body">
-					<p><?PHP echo $lang['stnv0008']; ?></p>
-					<p><?PHP echo $lang['stnv0009']; ?></p>
-					<p><?PHP echo $lang['stnv0010']; ?></p>
-					<p><?PHP echo $lang['stnv0011']; ?></p>
-					<p><?PHP echo $lang['stnv0012']; ?></p>
-					<p><?PHP echo $lang['stnv0013']; ?></p>
-					<p><?PHP echo $lang['stnv0014']; ?></p>
-					<p><?PHP echo $lang['stnv0015']; ?></p>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-				</div>
-			</div>
-		</div>
-	</div>
 	<div id="myStatsModal" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -218,7 +195,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				<li class="navbar-form navbar-right">
 					<form method="post">
 						<div class="form-group">
-							<input class="form-control" type="text" name="usersuche" placeholder="Search"<?PHP if(isset($getstring)) echo ' value="'.$getstring.'"'; ?>>
+							<input class="form-control" type="text" name="usersuche" placeholder="Search"<?PHP if(isset($getstring)) echo ' value="'.rawurldecode($getstring).'"'; ?>>
 						</div>
 						<button class="btn btn-primary" type="submit" name="username"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
 					</form>

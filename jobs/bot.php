@@ -123,50 +123,64 @@ enter_logfile($logpath,$timezone,5,"Loading addons [done]");
 enter_logfile($logpath,$timezone,5,"Connect to TS3 Server (Address: \"".$ts['host']."\" Voice-Port: \"".$ts['voice']."\" Query-Port: \"".$ts['query']."\" SSH: \"".$ts['tsencrypt']."\").");
 try {
 	if($ts['tsencrypt'] == 1) {
-		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&ssh=1");
+		$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?ssh=1");
 	} else {
-		$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?blocking=0");
 	}
 	enter_logfile($logpath,$timezone,5,"Connection to TS3 Server established.");
 	try{
-		$ts3version = $ts3->version();
+		$ts3version = $ts3host->version();
 		enter_logfile($logpath,$timezone,5,"  TS3 Server version: ".$ts3version['version']." on ".$ts3version['platform']." [Build: ".$ts3version['build']." from ".date("Y-m-d H:i:s",$ts3version['build'])."]");
 	} catch (Exception $e) {
 		enter_logfile($logpath,$timezone,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
 	}
-	
+
+	enter_logfile($logpath,$timezone,5,"    Select virtual server...");
+	try {
+		if(version_compare($ts3version['version'],'3.4.0','>=')) {
+			usleep($slowmode);
+			$ts3server = $ts3host->serverGetByPort($ts['voice'], $queryname);
+		} else {
+			enter_logfile($logpath,$timezone,3,"      Your TS3 server is outdated, please update it!");
+			usleep($slowmode);
+			$ts3server = $ts3host->serverGetByPort($ts['voice']);
+			for ($updcld = 0; $updcld < 10; $updcld++) {
+				try {
+					usleep($slowmode);
+					if($updcld == 0) {
+						$ts3server->selfUpdate(array('client_nickname' => $queryname));
+					} else {
+						$ts3server->selfUpdate(array('client_nickname' => $queryname.$updcld));
+					}
+					break;
+				}
+				catch (Exception $e) {
+					enter_logfile($logpath,$timezone,3,'      '.$lang['errorts3'].$e->getCode().': '.$e->getMessage());
+				}
+			}
+		}
+		enter_logfile($logpath,$timezone,5,"    Select virtual server [done]");
+	} catch (Exception $e) {
+		enter_logfile($logpath,$timezone,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage());
+	}
+
 	try {
 		usleep($slowmode);
-		$ts3->notifyRegister("server");
-		$ts3->notifyRegister("textprivate");
-		$ts3->notifyRegister("textchannel");
-		$ts3->notifyRegister("textserver");
+		$ts3server->notifyRegister("server");
+		$ts3server->notifyRegister("textprivate");
+		$ts3server->notifyRegister("textchannel");
+		$ts3server->notifyRegister("textserver");
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
 		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", "event_userenter");
 	} catch (Exception $e) {
 		enter_logfile($logpath,$timezone,2,"  Error due notifyRegister on TS3 server - ".$e->getCode().': '.$e->getMessage());
 	}
-	
-    try {
-		usleep($slowmode);
-        $ts3->selfUpdate(array('client_nickname' => $queryname));
-    }
-    catch (Exception $e) {
-        try {
-			usleep($slowmode);
-            $ts3->selfUpdate(array('client_nickname' => $queryname2));
-        }
-        catch (Exception $e) {
-            enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
-        }
-    }
-	
-	usleep($slowmode);
-	$whoami = $ts3->whoami();
+
+	$whoami = $ts3server->whoami();
 	if($defchid != 0) {
 		try {
 			usleep($slowmode);
-			$ts3->clientMove($whoami['client_id'],$defchid);
+			$ts3server->clientMove($whoami['client_id'],$defchid);
 			enter_logfile($logpath,$timezone,5,"  Joined to specified Channel.");
 		} catch (Exception $e) {
 			if($e->getCode() != 770) {
@@ -216,9 +230,9 @@ try {
 		}
 		$nobreak = 1;
 		$sqlexec = '';
-		$serverinfo = $ts3->serverInfo();
+		$serverinfo = $ts3server->serverInfo();
 		$select_arr = array();
-		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$nobreak);
+		$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$adminuuid,$nobreak);
 		if($mysqlcon->exec($sqlexec) === false) {
 			enter_logfile($logpath,$timezone,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 		}
@@ -269,7 +283,7 @@ try {
 				foreach ($adminuuid as $clientid) {
 					usleep($slowmode);
 					try {
-						$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg2'], $currvers));
+						$ts3server->clientGetByUid($clientid)->message(sprintf($lang['upmsg2'], $currvers));
 						enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
 					}
 					catch (Exception $e) {
@@ -343,18 +357,18 @@ try {
 
 		check_shutdown($timezone,$logpath);
 		$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
-		$ts3->clientListReset();
+		$ts3server->clientListReset();
 		usleep($slowmode);
-		$allclients = $ts3->clientList();
-		$ts3->serverInfoReset();
+		$allclients = $ts3server->clientList();
+		$ts3server->serverInfoReset();
 		usleep($slowmode);
-		$serverinfo = $ts3->serverInfo();
-		$sqlexec .= calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr);
-		get_avatars($ts3,$slowmode,$timezone,$logpath,$avatar_delay);
-		$sqlexec .= clean($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath,$select_arr);
-		$sqlexec .= calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr,$phpcommand,$adminuuid);
-		$sqlexec .= calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr);
-		$sqlexec .= update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr);
+		$serverinfo = $ts3server->serverInfo();
+		$sqlexec .= calc_user($ts3server,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$boostarr,$resetbydbchange,$msgtouser,$currvers,$substridle,$exceptuuid,$exceptgroup,$allclients,$logpath,$rankupmsg,$ignoreidle,$exceptcid,$resetexcept,$phpcommand,$select_arr);
+		get_avatars($ts3server,$slowmode,$timezone,$logpath,$avatar_delay);
+		$sqlexec .= clean($ts3server,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$cleanclients,$cleanperiod,$logpath,$select_arr);
+		$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr,$phpcommand,$adminuuid);
+		$sqlexec .= calc_userstats($ts3server,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr);
+		$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$adminuuid);
 		$sqlexec .= $sqlexec2;
 		
 		if($addons_config['assign_groups_active']['value'] == '1') {
@@ -365,7 +379,7 @@ try {
 				define('assign_groups',1);
 				enter_logfile($logpath,$timezone,5,"Loading new addon [done]");
 			}
-			$sqlexec .= addon_assign_groups($addons_config,$ts3,$dbname,$slowmode,$timezone,$logpath,$allclients,$select_arr);
+			$sqlexec .= addon_assign_groups($addons_config,$ts3server,$dbname,$slowmode,$timezone,$logpath,$allclients,$select_arr);
 		}
 		
 		if($mysqlcon->exec($sqlexec) === false) {
@@ -397,7 +411,7 @@ try {
 					foreach ($uniqueid as $clientid) {
 						usleep($slowmode);
 						try {
-							$ts3->clientGetByUid($clientid)->message("\nYour Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.\nHere you'll find some information to optimize it: [URL]https://ts-n.net/ranksystem.php#optimize[/URL]\nLast 10 runtimes in seconds (lower values are better):\n".$rotated);
+							$ts3server->clientGetByUid($clientid)->message("\nYour Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.\nHere you'll find some information to optimize it: [URL]https://ts-n.net/ranksystem.php#optimize[/URL]\nLast 10 runtimes in seconds (lower values are better):\n".$rotated);
 						} catch (Exception $e) { }
 					}
 				}

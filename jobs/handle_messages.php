@@ -71,7 +71,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 		}
 		
 		if(strstr($event["msg"], '!version')) {
-			if(version_compare(substr($newversion, 0, 5), substr($currvers, 0, 5), '>') && $newversion != '') {
+			if(version_compare($newversion, $currvers, '>') && $newversion != '') {
 				usleep($slowmode);
 				try {
 					$host->serverGetSelected()->clientGetByUid($event["invokeruid"])->message(sprintf($lang['upmsg'], $currvers, $newversion));

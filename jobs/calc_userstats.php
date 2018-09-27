@@ -62,7 +62,7 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);;
 				$allupdateuuid .= "('" . $uuid . "','" .$userstats['rank'] . "','" . $count_week . "','" . $count_month . "','" . $idle_week . "','" . $idle_month . "','" . $active_week . "','" . $active_month . "','" . $clientinfo['client_totalconnections'] . "','" . $clientinfo['client_base64HashClientUID'] . "','" . $clientinfo['client_total_bytes_uploaded'] . "','" . $clientinfo['client_total_bytes_downloaded'] . "'," . $clientdesc . "),";
 			} catch (Exception $e) {
-				//enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted".);
+				#enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted");
 			}
 		}
 		unset($sqlhis, $userdataweekbegin, $userdataend, $userdatamonthbegin);
@@ -70,7 +70,9 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
 			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit'; INSERT INTO `$dbname`.`stats_user` (`uuid`,`rank`,`count_week`,`count_month`,`idle_week`,`idle_month`,`active_week`,`active_month`,`total_connections`,`base64hash`,`client_total_up`,`client_total_down`,`client_description`) VALUES $allupdateuuid ON DUPLICATE KEY UPDATE `rank`=VALUES(`rank`),`count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`),`idle_month`=VALUES(`idle_month`),`active_week`=VALUES(`active_week`),`active_month`=VALUES(`active_month`),`total_connections`=VALUES(`total_connections`),`base64hash`=VALUES(`base64hash`),`client_total_up`=VALUES(`client_total_up`),`client_total_down`=VALUES(`client_total_down`),`client_description`=VALUES(`client_description`); ";
-			unset($updategroups, $allupdateuuid);
+			unset($allupdateuuid);
+		} else {
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit'; ";
 		}
 	}
 	return($sqlexec);

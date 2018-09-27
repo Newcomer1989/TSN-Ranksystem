@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -40,16 +42,20 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
+require_once('nav.php');
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
 }
 
-require_once('nav.php');
-$newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$rankupmsg	= addslashes($_POST['rankupmsg']);
 	$servernews	= addslashes($_POST['servernews']);
 	$nextupinfomsg1	= addslashes($_POST['nextupinfomsg1']);
@@ -61,7 +67,7 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
-        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$newcsrf.'"><button
+        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
@@ -70,9 +76,11 @@ if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $
 	$nextupinfomsg1	= $_POST['nextupinfomsg1'];
 	$nextupinfomsg2	= $_POST['nextupinfomsg2'];
 	$nextupinfomsg3	= $_POST['nextupinfomsg3'];
+} elseif(isset($_POST['update'])) {
+	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+	rem_session_ts3($rspathhex);
+	exit;
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -80,12 +88,12 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 				<div class="row">
 					<div class="col-lg-12">
 						<h1 class="page-header">
-							<?php echo $lang['wihlmsg']; ?>
+							<?php echo $lang['winav5'],' ',$lang['wihlset']; ?>
 						</h1>
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
-				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="panel panel-default">
@@ -190,7 +198,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
         <h4 class="modal-title"><?php echo $lang['wimsgmsg']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wimsgmsgdesc']; ?>
+	    <?php echo sprintf($lang['wimsgmsgdesc'], '<a href="https://ts-n.net/lexicon.php?showid=97#lexindex" target="_blank">https://ts-n.net/lexicon.php?showid=97#lexindex</a>'); ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

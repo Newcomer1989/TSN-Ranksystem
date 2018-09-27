@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -37,10 +39,16 @@ $cld_groups = explode(',', $dbdata['cldgroup']);
 $disabled = '';
 $allowed_groups_arr = array();
 
-if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
+
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
 }
 
 if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'uuid_verified'])) {
@@ -65,7 +73,7 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 
 	$allowed_groups_arr = explode(',', $addons_config['assign_groups_groupids']['value']);
 
-	if(isset($_POST['update']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+	if(isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		if(($sumentries = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`addon_assign_groups` WHERE `uuid`='$uuid'")->fetch(PDO::FETCH_NUM)) === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 		} else {
@@ -104,11 +112,12 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 				}
 			}
 		}
+	} elseif(isset($_POST['update'])) {
+		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+		rem_session_ts3($rspathhex);
+		exit;
 	}
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
-
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -122,7 +131,7 @@ require_once('nav.php');
 					</div>
 				</div>
 				<form class="form-horizontal" name="update" method="POST">
-				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">
 						<div class="col-md-6">
 						</div>

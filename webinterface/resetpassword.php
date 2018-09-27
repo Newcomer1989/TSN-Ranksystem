@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -66,30 +68,40 @@ function getclientip() {
 		return false;
 }
 
-if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")) === false) {
+if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")->fetchAll()) === false) {
 	$err_msg .= print_r($mysqlcon->errorInfo(), true);
 }
-$last_access = $last_access->fetchAll();
 
-if (isset($_POST['resetpw']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
+require_once('nav.php');
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
+
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
 }
 
 if (($last_access[0]['last_access'] + 1) >= time()) {
 	$again = $last_access[0]['last_access'] + 2 - time();
 	$err_msg = sprintf($lang['errlogin2'],$again);
 	$err_lvl = 3;
-} elseif (isset($_POST['resetpw']) && ($adminuuid==NULL || count($adminuuid) == 0)) {
+} elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']]) && ($adminuuid==NULL || count($adminuuid) == 0)) {
 	$err_msg = $lang['wirtpw1']; $err_lvl=3;
-} elseif (isset($_POST['resetpw']) && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+} elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$nowtime = time();
 	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$nowtime',`count_access`=`count_access` + 1") === false) { }
 	
 	require_once(substr(__DIR__,0,-12).'libs/ts3_lib/TeamSpeak3.php');
 	try {
-		$ts3 = TeamSpeak3::factory("serverquery://".$ts['user'].":".$ts['pass']."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		if($ts['tsencrypt'] == 1) {
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&ssh=1");
+		} else {
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+		}
 		
 		try {
 			usleep($slowmode);
@@ -99,13 +111,27 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 		usleep($slowmode);
 		$allclients = $ts3->clientList();
 		$adminuuid_flipped = array_flip($adminuuid);
+		$pwd = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&$§!()"),0,12);
+		$webpass = password_hash($pwd, PASSWORD_DEFAULT);
 
 		foreach ($allclients as $client) {
 			if(in_array($client['client_unique_identifier'] , $adminuuid)) {
-				$uuid = $client['client_unique_identifier'];
 				$checkuuid = 1;
 				if($client['connection_client_ip'] == getclientip()) {
 					$checkip = 1;
+					
+					if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `webpass`='$webpass',`last_access`='0'") === false) { 
+						$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+					} else {
+						try {
+							usleep($slowmode);
+							$ts3->clientGetByUid($client['client_unique_identifier'])->message(sprintf($lang['wirtpw4'], $webuser, $pwd, '[URL=http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).']','[/URL]'));
+							$err_msg = sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
+							enter_logfile($logpath,$timezone,3,sprintf($lang['wirtpw6'],getclientip()));
+						} catch (Exception $e) {
+							$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+						}
+					}
 				}
 			}
 		}
@@ -114,30 +140,15 @@ if (($last_access[0]['last_access'] + 1) >= time()) {
 			$err_msg = $lang['wirtpw2']; $err_lvl = 3;
 		} elseif (!isset($checkip)) {
 			$err_msg = $lang['wirtpw3']; $err_lvl = 3;
-		} else {
-			usleep($slowmode);
-			$pwd = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&$§!()"),0,12);
-			$webpass = password_hash($pwd, PASSWORD_DEFAULT);
-			if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `webpass`='$webpass',`last_access`='0'") === false) { 
-				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
-			} else {
-				try {
-					$ts3->clientGetByUid($uuid)->message(sprintf($lang['wirtpw4'], $webuser, $pwd, '[URL=http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).']','[/URL]'));
-					$err_msg = sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
-					enter_logfile($logpath,$timezone,3,sprintf($lang['wirtpw6'],getclientip()));
-				} catch (Exception $e) {
-					$err_msg = 'TeamSpeak '.$lang['error'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
-				}
-			}
 		}
 	} catch (Exception $e) {
-		$err_msg = 'TeamSpeak '.$lang['error'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+		$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 	}
+} elseif(isset($_POST['resetpw'])) {
+	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+	rem_session_ts3($rspathhex);
+	exit;
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
-
-require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -151,7 +162,7 @@ require_once('nav.php');
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
-									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+									<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 										<p><?PHP echo $lang['wirtpw8']; ?></p>
 										<p><?PHP echo $lang['wirtpw9']; ?>
 											<ul>

@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
-	$newversion = '1.2.10';
+	$newversion = '1.2.11';
 	enter_logfile($logpath,$timezone,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath) {
@@ -147,7 +147,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 		check_writable($timezone,$logpath);
 	} else {
 		enter_logfile($logpath,$timezone,4,"  Update the Ranksystem Database to new version...");
-		if(version_compare($currvers, '1.2.0', '<=')) {
+		if(version_compare($currvers, '1.2.1', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_server` MODIFY COLUMN `server_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `server_platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `server_weblist` tinyint(1) NOT NULL default '0', MODIFY COLUMN `server_version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `total_user` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_1` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_2` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_3` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_4` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_5` int(10) NOT NULL default '0', MODIFY COLUMN `country_nation_other` int(10) NOT NULL default '0', MODIFY COLUMN `platform_1` int(10) NOT NULL default '0', MODIFY COLUMN `platform_2` int(10) NOT NULL default '0', MODIFY COLUMN `platform_3` int(10) NOT NULL default '0', MODIFY COLUMN `platform_4` int(10) NOT NULL default '0', MODIFY COLUMN `platform_5` int(10) NOT NULL default '0', MODIFY COLUMN `platform_other` int(10) NOT NULL default '0', MODIFY COLUMN `version_1` int(10) NOT NULL default '0', MODIFY COLUMN `version_2` int(10) NOT NULL default '0', MODIFY COLUMN `version_3` int(10) NOT NULL default '0', MODIFY COLUMN `version_4` int(10) NOT NULL default '0', MODIFY COLUMN `version_5` int(10) NOT NULL default '0', MODIFY COLUMN `version_other` int(10) NOT NULL default '0', MODIFY COLUMN `server_status` tinyint(1) NOT NULL default '0', MODIFY COLUMN `server_free_slots` smallint(5) NOT NULL default '0', MODIFY COLUMN `server_used_slots` smallint(5) NOT NULL default '0', MODIFY COLUMN `server_channel_amount` smallint(5) NOT NULL default '0', MODIFY COLUMN `server_ping` smallint(5) NOT NULL default '0', MODIFY COLUMN `server_id` smallint(5) NOT NULL default '0', MODIFY COLUMN `server_pass` tinyint(1) NOT NULL default '0'") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.1] Adjusted table stats_server (part1) successfully.");
 			}
@@ -182,7 +182,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.1] Created table stats_platforms successfully.");
 			}
 		}
-		if(version_compare($currvers, '1.2.1', '<=')) {
+		if(version_compare($currvers, '1.2.2', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_user` ADD (`active_week` int(10) NOT NULL default '0',`active_month` int(10) NOT NULL default '0')") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.2] Adjusted table stats_user successfully.");
 			}
@@ -203,7 +203,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.2] Created table addon_assign_groups successfully.");
 			}
 		}
-		if(version_compare($currvers, '1.2.2', '<=')) {
+		if(version_compare($currvers, '1.2.3', '<')) {
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.3] Cleaned table groups successfully. (cause new icon folder tsicons - redownload)");
 			}
@@ -217,7 +217,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.3] Recreated index on table server_usage successfully.");
 			}
 		}
-		if(version_compare($currvers, '1.2.3', '<=')) {
+		if(version_compare($currvers, '1.2.4', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` MODIFY COLUMN `adminuuid` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.4] Adjusted table config (part 1) successfully.");
 			}
@@ -255,12 +255,12 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.4] Added new primary key on table stats_versions successfully.");
 			}
 		}
-		if(version_compare($currvers, '1.2.4', '<=')) {
+		if(version_compare($currvers, '1.2.5', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` MODIFY COLUMN `sgidname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.5] Adjusted table groups successfully.");
 			}
 		}
-		if(version_compare($currvers, '1.2.5', '<=')) {
+		if(version_compare($currvers, '1.2.6', '<')) {
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('last_update')") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.6] Set missed value to table job_check successfully.");
 			}
@@ -268,7 +268,7 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 				enter_logfile($logpath,$timezone,4,"    [1.2.6] Dropped old values from table config sucessfully.");
 			}		
 		}
-		if(version_compare($currvers, '1.2.6', '<=')) {
+		if(version_compare($currvers, '1.2.7', '<')) {
 			if($mysqlcon->exec("CREATE TABLE `$dbname`.`admin_addtime` (`uuid` varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`timestamp` bigint(11) NOT NULL default '0',`timecount` int(10) NOT NULL default '0', PRIMARY KEY (`uuid`,`timestamp`))") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.7] Created table admin_addtime successfully.");
 			}
@@ -295,15 +295,29 @@ function check_db($mysqlcon,$lang,$dbname,$timezone,$currvers,$logpath) {
 			}
 			if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_iphash` (`uuid` varchar(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`iphash` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.7] Created table user_iphash successfully.");
-			}			
+			}
 		}
-		if(version_compare($currvers, '1.2.9', '<=')) {
+		if(version_compare($currvers, '1.2.10', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` ADD (`tsencrypt` tinyint(1) NOT NULL default '0')") === false) { } else {
 				enter_logfile($logpath,$timezone,4,"    [1.2.10] Adjusted table config successfully.");
 			}
+		}
+		if(version_compare($currvers, '1.2.11', '<')) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update'") === false) { } else {
-				enter_logfile($logpath,$timezone,4,"    [1.2.10] Stored timestamp of last update successfully.");
+				enter_logfile($logpath,$timezone,4,"    [1.2.11] Stored timestamp of last update successfully.");
 			}
+			if($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (`token` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `timestamp` bigint(11) NOT NULL default '0', `sessionid` varchar(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.11] Created table csrf_token successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` DROP COLUMN `queryname2`") === false) { } else {
+				enter_logfile($logpath,$timezone,4,"    [1.2.11] Dropped old value from table config successfully.");
+			}
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`") === false) { }
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_stats_nations`") === false) { }
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_stats_platforms`") === false) { }
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_stats_versions`") === false) { }
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_addon_assign_groups`") === false) { }
 		}
 		$currvers = set_new_version($mysqlcon,$dbname,$timezone,$newversion,$logpath);
 		old_files($timezone,$logpath);

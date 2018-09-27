@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -159,10 +161,9 @@ if (!isset($_SESSION[$rspathhex.'logfilter'])) {
 
 $filters = explode(',', $_SESSION[$rspathhex.'logfilter']);
 
-
 if (isset($_POST['logout'])) {
 	echo "logout";
-    rem_session_ts3($rspathhex);
+	rem_session_ts3($rspathhex);
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
@@ -173,16 +174,28 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-if ((isset($_POST['start']) || isset($_POST['stop']) || isset($_POST['restart']) || isset($_POST['logfilter'])) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
+require_once('nav.php');
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
+
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
+
+if ((isset($_POST['start']) || isset($_POST['stop']) || isset($_POST['restart']) || isset($_POST['logfilter'])) && !isset($db_csrf[$_POST['csrf_token']])) {
+	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
 	rem_session_ts3($rspathhex);
 	exit;
 }
 
-require_once('nav.php');
 $logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
 
-if (isset($_POST['start']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
 	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel start request!"; $err_lvl = 3;
 	} else {
@@ -205,14 +218,14 @@ if (isset($_POST['start']) && $_SESSION[$rspathhex.'username'] == $webuser && $_
 	}
 }
 
-if (isset($_POST['stop']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if (isset($_POST['stop']) && isset($db_csrf[$_POST['csrf_token']])) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		$WshShell = new COM("WScript.Shell");
 		$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php stop", 0, false); 
-		file_put_contents(substr(__DIR__,0,-12)."\logs\autostart_deactivated");
+		file_put_contents(substr(__DIR__,0,-12)."\logs\autostart_deactivated","");
 	} else {
 		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php stop");
-		file_put_contents(substr(__DIR__,0,-12)."logs/autostart_deactivated");
+		file_put_contents(substr(__DIR__,0,-12)."logs/autostart_deactivated","");
 	}
 	$err_msg = $lang['wibot1'];
 	$err_lvl = 1;
@@ -220,7 +233,7 @@ if (isset($_POST['stop']) && $_SESSION[$rspathhex.'username'] == $webuser && $_S
 	$logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
 }
 
-if (isset($_POST['restart']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if (isset($_POST['restart']) && isset($db_csrf[$_POST['csrf_token']])) {
 	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel restart request!"; $err_lvl = 3;
 	} else {
@@ -244,13 +257,11 @@ if (isset($_POST['restart']) && $_SESSION[$rspathhex.'username'] == $webuser && 
 }
 
 $disabled = '';
-if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['user'] == NULL || $ts['pass'] == NULL || $queryname == NULL || $queryname2 == NULL || $grouptime == NULL || $logpath == NULL) {
+if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['user'] == NULL || $ts['pass'] == NULL || $queryname == NULL || $grouptime == NULL || $logpath == NULL) {
 	$disabled = 1;
 	$err_msg = $lang['wibot9'];
 	$err_lvl = 2;
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -263,7 +274,7 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 					</div>
 				</div>
 				<form class="form-horizontal" name="start" method="POST">
-				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -275,7 +286,7 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 					<div class="row">&nbsp;</div>
 				</form>
 				<form class="form-horizontal" name="stop" method="POST">
-				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -287,7 +298,7 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 					<div class="row">&nbsp;</div>
 				</form>
 				<form class="form-horizontal" name="restart" method="POST">
-				<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
@@ -306,7 +317,7 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 						</h4>
 					</div>
 					<form class="form-horizontal" name="logfilter" method="POST">
-					<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+					<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="col-lg-2">
 						<div class="col-sm-12">
 							<?PHP if($filter2!=NULL) { ?>

@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -112,6 +114,7 @@ if(isset($getstring)) {
 	$dbdata_full->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata_full->execute();
 	$sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
+	$getstring = rawurlencode($getstring);
 } else {
 	$getstring = '';
 	$sumentries = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`user`")->fetch(PDO::FETCH_NUM);
@@ -356,7 +359,7 @@ if($adminlogin == 1) {
 									if ($value['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
 									} elseif ($sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									} else {
 										echo '<td class="text-center">' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									}
@@ -388,7 +391,7 @@ if($adminlogin == 1) {
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} else {

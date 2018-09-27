@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -40,44 +42,49 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-if (isset($_POST['update']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
+require_once('nav.php');
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
 }
 
-require_once('nav.php');
-$newcsrf = bin2hex(openssl_random_pseudo_bytes(32));
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
 
-if (isset($_POST['update']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
-	$tshost     = $_POST['tshost'];
-    $tsquery    = $_POST['tsquery'];
+if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+	$tshost		= $_POST['tshost'];
+	$tsquery	= $_POST['tsquery'];
 	if (isset($_POST['tsencrypt'])) $tsencrypt = 1; else $tsencrypt = 0;
-    $tsvoice    = $_POST['tsvoice'];
-    $tsuser     = $_POST['tsuser'];
-    $tspass     = $_POST['tspass'];
-    $queryname  = $_POST['queryname'];
-    $queryname2 = $_POST['queryname2'];
-    $defchid 	= $_POST['defchid'];
-	$slowmode 	= $_POST['slowmode'];
+	$tsvoice	= $_POST['tsvoice'];
+	$tsuser		= $_POST['tsuser'];
+	$tspass		= $_POST['tspass'];
+	$queryname	= $_POST['queryname'];
+	$defchid	= $_POST['defchid'];
+	$slowmode	= $_POST['slowmode'];
 	$avatar_delay= $_POST['avatar_delay'];
-    if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `tshost`='$tshost',`tsencrypt`='$tsencrypt',`tsquery`='$tsquery',`tsvoice`='$tsvoice',`tsuser`='$tsuser',`tspass`='$tspass',`queryname`='$queryname',`queryname2`='$queryname2',`slowmode`='$slowmode',`defchid`='$defchid',`avatar_delay`='$avatar_delay'") === false) {
-        $err_msg = print_r($mysqlcon->errorInfo(), true);
+	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `tshost`='$tshost',`tsencrypt`='$tsencrypt',`tsquery`='$tsquery',`tsvoice`='$tsvoice',`tsuser`='$tsuser',`tspass`='$tspass',`queryname`='$queryname',`slowmode`='$slowmode',`defchid`='$defchid',`avatar_delay`='$avatar_delay'; DELETE FROM `$dbname`.`csrf_token` WHERE `token`='".$_POST['csrf_token']."'") === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
-    } else {
-        $err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$newcsrf.'"><button
+	} else {
+		$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
-    }
+	}
 	$ts['host']		= $_POST['tshost'];
 	$ts['query']	= $_POST['tsquery'];
 	$ts['tsencrypt']= $tsencrypt;
 	$ts['voice']	= $_POST['tsvoice'];
 	$ts['user']		= $_POST['tsuser'];
 	$ts['pass']		= $_POST['tspass'];
+} elseif(isset($_POST['update'])) {
+	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+	rem_session_ts3($rspathhex);
+	exit;
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -85,12 +92,12 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 				<div class="row">
 					<div class="col-lg-12">
 						<h1 class="page-header">
-							<?php echo $lang['wihlts']; ?>
+							<?php echo $lang['winav1'],' ',$lang['wihlset']; ?>
 						</h1>
 					</div>
 				</div>
 				<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
-					<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+					<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 					<div class="row">
 						<div class="col-md-6">
 							<div class="panel panel-default">
@@ -166,25 +173,15 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
 							</div>
 						</div>
 						<div class="col-md-6 ">
-							<div class="panel panel-default">
-								<div class="panel-body">
-									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="queryname" value="<?php echo $queryname; ?>" maxlength="30" required>
-											<div class="required-icon"><div class="text">*</div></div>
-										</div>
-									</div>
-									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnm2desc"><?php echo $lang['wits3qnm2']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
-										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="queryname2" value="<?php echo $queryname2; ?>" maxlength="30" required>
-											<div class="required-icon"><div class="text">*</div></div>
-										</div>
+							<div class="panel-body">
+								<div class="form-group">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+									<div class="col-sm-8 required-field-block">
+										<input type="text" class="form-control" name="queryname" value="<?php echo $queryname; ?>" maxlength="30" required>
+										<div class="required-icon"><div class="text">*</div></div>
 									</div>
 								</div>
 							</div>
-							<div class="row">&nbsp;</div>
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
@@ -268,7 +265,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
         <h4 class="modal-title"><?php echo $lang['wits3encrypt']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wits3encryptdesc']; ?>
+        <?php echo sprintf($lang['wits3encryptdesc'], '<pre>sudo apt-get install php-ssh2</pre>', '<pre>query_ssh_ip=0.0.0.0,::<br>query_ssh_port=10022<br>query_protocols=ssh,raw<br>query_ssh_rsa_host_key=ssh_host_rsa_key</pre>'); ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -316,7 +313,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
         <h4 class="modal-title"><?php echo $lang['wits3querusr']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wits3querusrdesc']; ?>
+        <?php echo sprintf($lang['wits3querusrdesc'], '<a href="https://ts-n.net/ranksystem.php#requirements" target="_blank">https://ts-n.net/ranksystem.php#requirements</a>'); ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -356,22 +353,6 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
     </div>
   </div>
 </div>
-<div class="modal fade" id="wits3qnm2desc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wits3qnm2']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wits3qnm2desc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
 <div class="modal fade" id="wits3dchdesc" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -396,7 +377,7 @@ $_SESSION[$rspathhex.'csrf_token'] = $newcsrf;
         <h4 class="modal-title"><?php echo $lang['wits3sm']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wits3smdesc']; ?>
+        <?php echo sprintf($lang['wits3smdesc'], '<pre>disabled	(0,0)		0,10<br>low delay	(0,2)		2,60<br>middle delay	(0,5)		6,50<br>high delay	(1,0)		13,00<br>huge delay	(2,0)		26,00<br>ultra delay	(5,0)		65,00</pre>'); ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

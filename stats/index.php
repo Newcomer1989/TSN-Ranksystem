@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 require_once('../other/config.php');
@@ -388,7 +390,7 @@ require_once('nav.php');
 										<td><?PHP echo $lang['stix0036']; ?></td>
 										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
 										$img_content = file_get_contents("../tsicons/servericon.png");
-										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" alt="servericon"></div>';
+										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" width="16" height="16" alt="servericon"></div>';
 										} else { echo $sql_res['server_name']; } ?></td>
 									</tr>
 									<tr>

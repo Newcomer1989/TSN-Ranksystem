@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -61,10 +63,9 @@ function getclientip() {
 		return false;
 }
 
-if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")) === false) {
+if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")->fetchAll()) === false) {
 	$err_msg .= print_r($mysqlcon->errorInfo(), true);
 }
-$last_access = $last_access->fetchAll();
 
 if(($last_access[0]['last_access'] + 1) >= time()) {
 	$again = $last_access[0]['last_access'] + 2 - time();
@@ -81,7 +82,6 @@ if(($last_access[0]['last_access'] + 1) >= time()) {
 	$_SESSION[$rspathhex.'password'] = $webpass;
 	$_SESSION[$rspathhex.'clientip'] = getclientip();
 	$_SESSION[$rspathhex.'newversion'] = $newversion;
-	$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 	enter_logfile($logpath,$timezone,6,sprintf($lang['brute2'], getclientip()));
 	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `count_access`='0'") === false) { }
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");

@@ -32,7 +32,6 @@ function rem_session_ts3($rspathhex) {
 	unset($_SESSION[$rspathhex.'admin']);
 	unset($_SESSION[$rspathhex.'clientip']);
 	unset($_SESSION[$rspathhex.'connected']);
-	unset($_SESSION[$rspathhex.'csrf_token']);
 	unset($_SESSION[$rspathhex.'inactivefilter']);
 	unset($_SESSION[$rspathhex.'language']);
 	unset($_SESSION[$rspathhex.'logfilter']);
@@ -138,7 +137,6 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 		}
 		$lang			 = set_language($language);
 		$queryname       = $config['queryname'];
-		$queryname2      = $config['queryname2'];
 		$slowmode        = $config['slowmode'];
 		if(empty($config['grouptime'])) {
 			$grouptime = null;

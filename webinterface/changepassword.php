@@ -6,7 +6,9 @@ if(in_array('sha512', hash_algos())) {
 }
 if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
 	ini_set('session.cookie_secure', 1);
-	header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	if(!headers_sent()) {
+		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
+	}
 }
 session_start();
 
@@ -77,15 +79,20 @@ if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username']
 	exit;
 }
 
-if (isset($_POST['changepw']) && $_POST['csrf_token'] != $_SESSION[$rspathhex.'csrf_token']) {
-	echo $lang['errcsrf'];
-	rem_session_ts3($rspathhex);
-	exit;
+require_once('nav.php');
+$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
 }
 
-require_once('nav.php');
+if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true);
+	$err_lvl = 3;
+}
 
-if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass && $_SESSION[$rspathhex.'clientip'] == getclientip() && $_POST['csrf_token'] == $_SESSION[$rspathhex.'csrf_token']) {
+if (isset($_POST['changepw']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$newpass = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
 	if (!password_verify($_POST['oldpwd'], $webpass)) {
 		$err_msg = $lang['wichpw1']; $err_lvl = 3;
@@ -97,9 +104,11 @@ if (isset($_POST['changepw']) && $_SESSION[$rspathhex.'username'] == $webuser &&
         enter_logfile($logpath,$timezone,3,sprintf($lang['wichpw3'],getclientip()));
 		$err_msg = $lang['wisvsuc']; $err_lvl = NULL;
     }
+} elseif(isset($_POST['changepw'])) {
+	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+	rem_session_ts3($rspathhex);
+	exit;
 }
-
-$_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -113,7 +122,7 @@ $_SESSION[$rspathhex.'csrf_token'] = bin2hex(openssl_random_pseudo_bytes(32));
 							<div class="row">
 								<div class="col-xs-12">
 									<form id="resetForm" method="POST">
-									<input type="hidden" name="csrf_token" value="<?PHP echo $_SESSION[$rspathhex.'csrf_token']; ?>">
+									<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 										<div class="form-group">
 											<label for="password" class="control-label"><?PHP echo $lang['pass3']; ?>:</label>
 											<div class="input-group-justified">
