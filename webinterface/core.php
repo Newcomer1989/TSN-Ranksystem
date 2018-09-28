@@ -116,6 +116,8 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$resetexcept	= $_POST['resetexcept'];
     if (isset($_POST['resetbydbchange'])) $resetbydbchange = 1; else $resetbydbchange = 0;
 	if (isset($_POST['cleanclients'])) $cleanclients = 1; else $cleanclients = 0;
+	if (isset($_POST['forceremovelowerranks'])) $forceremovelowerranks = 1; else $forceremovelowerranks = 0;
+	if (isset($_POST['keephigherranks'])) $keephigherranks = 1; else $keephigherranks = 0;
 	$cleanperiod 	= $_POST['cleanperiod'];
     $boost          = $_POST['boost'];
 	if($_POST['registercid'] == NULL) {
@@ -124,7 +126,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$registercid = $_POST['registercid'];
 	}
 	if($errcnf == 0) {
-		if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `substridle`='$substridle',`exceptuuid`='$exceptuuid',`exceptgroup`='$exceptgroup',`exceptcid`='$exceptcid',`grouptime`='$grouptime',`ignoreidle`='$ignoreidle',`resetbydbchange`='$resetbydbchange',`cleanclients`='$cleanclients',`cleanperiod`='$cleanperiod',`boost`='$boost',`resetexcept`='$resetexcept',`registercid`='$registercid'") === false) {
+		if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `substridle`='$substridle',`exceptuuid`='$exceptuuid',`exceptgroup`='$exceptgroup',`exceptcid`='$exceptcid',`grouptime`='$grouptime',`ignoreidle`='$ignoreidle',`resetbydbchange`='$resetbydbchange',`cleanclients`='$cleanclients',`cleanperiod`='$cleanperiod',`boost`='$boost',`resetexcept`='$resetexcept',`registercid`='$registercid',`forceremovelowerranks`='$forceremovelowerranks',`keephigherranks`='$keephigherranks'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
@@ -213,6 +215,18 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<textarea class="form-control" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="grouptime" maxlength="5000" required><?php echo $config['grouptime']; ?></textarea>
 									<div class="required-icon"><div class="text">*</div></div>
 									<div class="help-block with-errors"></div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#forceremovelowerranksdesc"><?php echo $lang['forceremovelowerranks']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-lg-8">
+									<input class="switch-animate" type="checkbox" <?php echo $forceremovelowerranks == 1 ? 'checked':''; ?> data-size="mini" name="forceremovelowerranks" value="<?php echo $forceremovelowerranks; ?>">
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#keephigherranksdesc"><?php echo $lang['keephigherranks']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<div class="col-lg-8">
+									<input class="switch-animate" type="checkbox" <?php echo $keephigherranks == 1 ? 'checked':''; ?> data-size="mini" name="keephigherranks" value="<?php echo $keephigherranks; ?>">
 								</div>
 							</div>
 						</div>
@@ -431,6 +445,38 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
       </div>
       <div class="modal-body">
         <?php echo $lang['wichdbiddesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="forceremovelowerranksdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['forceremovelowerranks']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['forceremovelowerranksdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="keephigherranksdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['keephigherranks']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['keephigherranksdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

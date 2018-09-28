@@ -210,6 +210,8 @@ if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 		$avatar_delay	 = $config['avatar_delay'];
 		$registercid	 = $config['registercid'];
 		$iphash			 = $config['iphash'];
+		$forceremovelowerranks = (int)$config['forceremovelowerranks'];
+		$keephigherranks = (int)$config['keephigherranks'];
 	}
 } elseif(!isset($_GET["lang"])) {
 	$lang = set_language("en");
