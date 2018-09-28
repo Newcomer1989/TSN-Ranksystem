@@ -301,15 +301,25 @@ if($adminlogin == 1) {
 				ksort($grouptime);
 				if (count($sqlhis) > 0) {
 					foreach ($sqlhis as $uuid => $value) {
-						if ($substridle == 1) {
-							$activetime = $value['count'] - $value['idle'];
-						} else {
-							$activetime = $value['count'];
+						// Get client next rank group and this group required online time
+						$grpcount = $curgroupid = $curgrpidTime = 0;
+						foreach ($grouptime as $time => $groupid) {
+							$grpcount++;
+							if ($grpcount === 1) {
+								$curgroupid = $groupid;
+								$curgrpidTime = $time;
+							}
+							if ($value['grpid'] == $groupid) {
+								$curgroupid = $groupid;
+								$curgrpidTime = $time;
+								break;
+							}
 						}
+
 						$grpcount=0;
 						foreach ($grouptime as $time => $groupid) {
 							$grpcount++;
-							if ($activetime < $time || $grpcount == count($grouptime) && $value['nextup'] <= 0 && $showhighest == 1 || $grpcount == count($grouptime) && $value['nextup'] == 0 && $adminlogin == 1) {
+							if (($curgrpidTime < $time) || ($grpcount == count($grouptime) && $value['nextup'] <= 0 && $showhighest == 1) || ($grpcount == count($grouptime) && $value['nextup'] == 0 && $adminlogin == 1)) {
 								echo '<tr>';
 								if ($showcolrg == 1 || $adminlogin == 1) {
 									if($value['except'] == 2 || $value['except'] == 3) {
