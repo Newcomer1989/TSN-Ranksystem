@@ -71,7 +71,8 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 			// Check if client exists in rank database
 			if(isset($select_arr['all_user'][$uid])) {
 				$idle   = $select_arr['all_user'][$uid]['idle'] + $clientidle;
-				$grpid  = $select_arr['all_user'][$uid]['grpid'];
+				$grpid  = null;
+				$grpidTime  = null;
 				$nextup = $select_arr['all_user'][$uid]['nextup'];
 				$grpsince = $select_arr['all_user'][$uid]['grpsince'];
 				if ($select_arr['all_user'][$uid]['cldbid'] != $cldbid && $resetbydbchange == 1) {
@@ -123,7 +124,6 @@ function calc_user($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$grouptime,$
 				$dtT = new DateTime("@$activetime");
 
 				// Get client acquired top ranked group and this group required online time
-				$grpidTime = NULL;
 				foreach ($grouptime as $time => $groupid) {
 					if (isset($sgroups[$groupid])) {
 						$grpid = $groupid;
