@@ -69,7 +69,7 @@ require_once('nav.php');
 						<p><a href="//flag-icon-css.lip.is/" target="_blank" rel="noopener noreferrer">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
 						<p><a href="//planetteamspeak.com/" target="_blank" rel="noopener noreferrer">TeamSpeak 3 PHP Framework 1.1.33</a> - Copyright &copy; 2010 Planet TeamSpeak</p> 
 						<p><a href="//getbootstrap.com/" target="_blank" rel="noopener noreferrer">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2016 Twitter, Inc.</p>
-						<p><a href="//morrisjs.github.io/morris.js/" target="_blank" rel="noopener noreferrer">morris.js 0.5.0</a> - Copyright &copy; 2013 Olly Smith</p>
+						<p><a href="//morrisjs.github.io/morris.js/" target="_blank" rel="noopener noreferrer">morris.js 0.5.1</a> - Copyright &copy; 2013 Olly Smith</p>
 						<p><a href="//raphaeljs.com" target="_blank" rel="noopener noreferrer">Rapha&euml;l 2.2.1 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>
 						<p><a href="//startbootstrap.com" target="_blank" rel="noopener noreferrer">SB Admin Bootstrap Admin Template</a> - Copyright &copy; 2013-2016 Blackrock Digital LLC.</p>
 						<p><a href="//www.bootstrap-switch.org" target="_blank" rel="noopener noreferrer">Bootstrap Switch 3.3.2</a> - Copyright &copy; 2013-2015 Mattia Larentis</p>
