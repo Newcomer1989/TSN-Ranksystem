@@ -8,15 +8,15 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?PHP echo $language; ?>">
+<html lang="<?PHP echo $cfg['default_language']; ?>">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="version" content="<?PHP echo $currvers; ?>">
+	<meta name="version" content="<?PHP echo $cfg['version_current_using']; ?>">
 	<link rel="icon" href="../tsicons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/combined_st.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
+	<link href="../libs/combined_st.css?v=<?PHP echo $cfg['version_current_using']; ?>" rel="stylesheet">
 <?PHP
 	$sitescript = basename($_SERVER['SCRIPT_NAME']);
 	switch($sitescript) {
@@ -44,7 +44,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 		default:
 			?><script src="../libs/qb.js"></script><?PHP
 	}
-	if(isset($shownav) && $shownav == 0) { ?>
+	if(isset($cfg['stats_show_site_navigation_switch']) && $cfg['stats_show_site_navigation_switch'] == 0) { ?>
 	<style>
 		body{margin-top:0px!important}
 		.affix{top:0px!important;width:calc(100% - 50px)!important;position:fixed;color:#000;background-color:#fff!important;}
@@ -60,7 +60,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 					<h4 class="modal-title"><?PHP echo $lang['stnv0001']; ?></h4>
 				</div>
 				<div class="modal-body">
-					<p><?PHP echo $servernews; ?></p>
+					<p><?PHP echo $cfg['stats_server_news']; ?></p>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -162,7 +162,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 		</div>
 	</div>
 <?PHP
-	if($shownav == 1) {
+	if($cfg['stats_show_site_navigation_switch'] == 1) {
 ?>
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
@@ -184,12 +184,12 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						<span class="caret"></span>
 					</button>
 					<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=50&amp;lang=$language&amp;search=$getstring"; ?>">50</a></li>
-						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=100&amp;lang=$language&amp;search=$getstring"; ?>">100</a></li>
-						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=250&amp;lang=$language&amp;search=$getstring"; ?>">250</a></li>
-						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=500&amp;lang=$language&amp;search=$getstring"; ?>">500</a></li>
+			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=50&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">50</a></li>
+			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=100&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">100</a></li>
+			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=250&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">250</a></li>
+			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=500&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">500</a></li>
 						<li role="separator" class="divider"></li>
-						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=all&amp;lang=$language&amp;search=$getstring"; ?>"><?PHP echo $lang['stnv0026']; ?></a></li>
+			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=all&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>"><?PHP echo $lang['stnv0026']; ?></a></li>
 					</ul>
 				</li>
 				<li class="navbar-form navbar-right">
@@ -224,14 +224,14 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 							}
 						} elseif ($_SESSION[$rspathhex.'connected'] == 0) {
 							echo '<li><a href="ts3server://';
-								if (($ts['host']=='localhost' || $ts['host']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
+								if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
 									echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-								} elseif ($ts['host']=='localhost' || $ts['host']=='127.0.0.1') {
+								} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
 									echo $_SERVER['HTTP_HOST'];
 								} else {
-									echo $ts['host'];
+									echo $cfg['teamspeak_host_address'];
 								}
-								echo ':'.$ts['voice'];
+								echo ':'.$cfg['teamspeak_voice_port'];
 							echo '"><i class="fa fa-fw fa-headphones"></i>&nbsp;'.$lang['stnv0043'].'</a></li>';
 						}
 						?>
@@ -266,6 +266,9 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						</li>
 						<li>
 							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
+						</li>
+						<li>
+							<a href="?lang=es"><span class="flag-icon flag-icon-es"></span>&nbsp;&nbsp;ES - español</a>
 						</li>
 						<li>
 							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>

@@ -8,6 +8,8 @@ function set_language($language) {
 		include(substr(dirname(__FILE__),0,-5).'languages/core_cz.php');
 	} elseif(strtolower($language) == "de") {
 		include(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
+	} elseif(strtolower($language) == "es") {
+		include(substr(dirname(__FILE__),0,-5).'languages/core_es.php');
 	} elseif(strtolower($language) == "fr") {
 		include(substr(dirname(__FILE__),0,-5).'languages/core_fr.php');
 	} elseif(strtolower($language) == "it") {
@@ -85,131 +87,228 @@ if($db['type'] != "type") {
 	}
 }
 
-if (isset($mysqlcon) && ($config = $mysqlcon->query("SELECT * FROM `$dbname`.`config`")->fetch())) {
-	if(count($config) != 0) {
-		$ts['host']      = $config['tshost'];
-		$ts['query']     = $config['tsquery'];
-		$ts['tsencrypt'] = $config['tsencrypt'];
-		$ts['voice']     = $config['tsvoice'];
-		$ts['user']      = $config['tsuser'];
-		$ts['pass']      = $config['tspass'];
-		$webuser         = $config['webuser'];
-		$webpass         = $config['webpass'];
+if (isset($mysqlcon) && ($oldcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`config`"))) {
+	if(isset($oldcfg) && $oldcfg != NULL) {
+		$config = $oldcfg->fetch();
+		$cfg['teamspeak_host_address'] = $config['tshost'];
+		$cfg['teamspeak_query_port'] = $config['tsquery'];
+		$cfg['teamspeak_query_encrypt_switch'] = $config['tsencrypt'];
+		$cfg['teamspeak_voice_port'] = $config['tsvoice'];
+		$cfg['teamspeak_query_user'] = $config['tsuser'];
+		$cfg['teamspeak_query_pass'] = $config['tspass'];
+		$cfg['webinterface_user'] = $config['webuser'];
+		$cfg['webinterface_pass'] = $config['webpass'];
 		if(!isset($_GET["lang"])) {
 			if(isset($_SESSION[$rspathhex.'language'])) {
-				$language = $_SESSION[$rspathhex.'language'];
+				$cfg['default_language'] = $_SESSION[$rspathhex.'language'];
 			} else {
-				$language = $config['language'];
+				$cfg['default_language'] = $config['language'];
 			}
 		} elseif($_GET["lang"] == "ar") {
-			$language = "ar";
+			$cfg['default_language'] = "ar";
 			$_SESSION[$rspathhex.'language'] = "ar";
 		} elseif($_GET["lang"] == "cz") {
-			$language = "cz";
+			$cfg['default_language'] = "cz";
 			$_SESSION[$rspathhex.'language'] = "cz";
 		} elseif($_GET["lang"] == "de") {
-			$language = "de";
+			$cfg['default_language'] = "de";
 			$_SESSION[$rspathhex.'language'] = "de";
 		} elseif($_GET["lang"] == "fr") {
-			$language = "fr";
+			$cfg['default_language'] = "fr";
 			$_SESSION[$rspathhex.'language'] = "fr";
 		} elseif($_GET["lang"] == "it") {
-			$language = "it";
+			$cfg['default_language'] = "it";
 			$_SESSION[$rspathhex.'language'] = "it";
 		} elseif($_GET["lang"] == "nl") {
-			$language = "nl";
+			$cfg['default_language'] = "nl";
 			$_SESSION[$rspathhex.'language'] = "nl";
 		} elseif($_GET["lang"] == "pl") {
-			$language = "pl";
+			$cfg['default_language'] = "pl";
 			$_SESSION[$rspathhex.'language'] = "pl";
 		} elseif($_GET["lang"] == "ro") {
-			$language = "ro";
+			$cfg['default_language'] = "ro";
 			$_SESSION[$rspathhex.'language'] = "ro";
 		} elseif($_GET["lang"] == "ru") {
-			$language = "ru";
+			$cfg['default_language'] = "ru";
 			$_SESSION[$rspathhex.'language'] = "ru";
 		} elseif($_GET["lang"] == "pt") {
-			$language = "pt";
+			$cfg['default_language'] = "pt";
 			$_SESSION[$rspathhex.'language'] = "pt";
 		} else {
-			$language = "en";
+			$cfg['default_language'] = "en";
 			$_SESSION[$rspathhex.'language'] = "en";
 		}
-		$lang			 = set_language($language);
-		$queryname       = $config['queryname'];
-		$slowmode        = $config['slowmode'];
+		$lang = set_language($cfg['default_language']);
+		$cfg['teamspeak_query_nickname'] = $config['queryname'];
+		$cfg['teamspeak_query_command_delay'] = $config['slowmode'];
 		if(empty($config['grouptime'])) {
-			$grouptime = null;
+			$cfg['rankup_definition'] = null;
 		} else {
 			$grouptimearr = explode(',', $config['grouptime']);
 			foreach ($grouptimearr as $entry) {
 				list($key, $value) = explode('=>', $entry);
-				$grouptime[$key] = $value;
+				$addnewvalue1[$key] = $value;
+				$cfg['rankup_definition'] = $addnewvalue1;
 			}
 		}
 		if(empty($config['boost'])) {
-			$boostarr = null;
+			$cfg['rankup_boost_definition'] = null;
 		} else {
 			$boostexp = explode(',', $config['boost']);
 			foreach ($boostexp as $entry) {
 				list($key, $value1, $value2) = explode('=>', $entry);
-				$boostarr[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
+				$addnewvalue2[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
+				$cfg['rankup_boost_definition'] = $addnewvalue2;
 			}
 		}
-		$resetbydbchange = $config['resetbydbchange'];
-		$msgtouser       = $config['msgtouser'];
-		$currvers        = $config['currvers'];
-		$substridle      = $config['substridle'];
-		$exceptuuid      = array_flip(explode(',', $config['exceptuuid']));
-		$exceptgroup     = array_flip(explode(',', $config['exceptgroup']));
-		$exceptcid		 = array_flip(explode(',', $config['exceptcid']));
-		$timeformat      = $config['dateformat'];
-		$showexcld       = $config['showexcld'];
-		$showhighest     = $config['showhighest'];
-		$showcolrg       = $config['showcolrg'];
-		$showcolcld      = $config['showcolcld'];
-		$showcoluuid     = $config['showcoluuid'];
-		$showcoldbid     = $config['showcoldbid'];
-		$showcolls       = $config['showcolls'];
-		$showcolot       = $config['showcolot'];
-		$showcolit       = $config['showcolit'];
-		$showcolat       = $config['showcolat'];
-		$showcolas       = $config['showcolas'];
-		$showcolnx       = $config['showcolnx'];
-		$showcolsg       = $config['showcolsg'];
-		$cleanclients    = $config['cleanclients'];
-		$cleanperiod     = $config['cleanperiod'];
-		$defchid         = $config['defchid'];
-		$logpath         = $config['logpath'];
+		$cfg['rankup_client_database_id_change_switch'] = $config['resetbydbchange'];
+		$cfg['rankup_message_to_user_switch'] = $config['msgtouser'];
+		$cfg['version_current_using'] = $config['currvers'];
+		$cfg['rankup_time_assess_mode'] = $config['substridle'];
+		$cfg['rankup_excepted_unique_client_id_list'] = array_flip(explode(',', $config['exceptuuid']));
+		$cfg['rankup_excepted_group_id_list'] = array_flip(explode(',', $config['exceptgroup']));
+		$cfg['rankup_excepted_channel_id_list'] = array_flip(explode(',', $config['exceptcid']));
+		$cfg['default_date_format'] = $config['dateformat'];
+		$cfg['stats_show_excepted_clients_switch'] = $config['showexcld'];
+		$cfg['stats_show_clients_in_highest_rank_switch'] = $config['showhighest'];
+		$cfg['stats_column_rank_switch'] = $config['showcolrg'];
+		$cfg['stats_column_client_name_switch'] = $config['showcolcld'];
+		$cfg['stats_column_unique_id_switch'] = $config['showcoluuid'];
+		$cfg['stats_column_client_db_id_switch'] = $config['showcoldbid'];
+		$cfg['stats_column_last_seen_switch'] = $config['showcolls'];
+		$cfg['stats_column_online_time_switch'] = $config['showcolot'];
+		$cfg['stats_column_idle_time_switch'] = $config['showcolit'];
+		$cfg['stats_column_active_time_switch'] = $config['showcolat'];
+		$cfg['stats_column_current_server_group_switch'] = $config['showcolas'];
+		$cfg['stats_column_next_rankup_switch'] = $config['showcolnx'];
+		$cfg['stats_column_next_server_group_switch'] = $config['showcolsg'];
+		$cfg['rankup_clean_clients_switch'] = $config['cleanclients'];
+		$cfg['rankup_clean_clients_period'] = $config['cleanperiod'];
+		$cfg['teamspeak_default_channel_id'] = $config['defchid'];
+		$cfg['logs_path'] = $config['logpath'];
 		if ($config['timezone'] == NULL) {
-			$timezone    = "Europe/Berlin";
+			$cfg['logs_timezone'] = "Europe/Berlin";
 		} else {
-			$timezone    = $config['timezone'];
+			$cfg['logs_timezone'] = $config['timezone'];
 		}
-		date_default_timezone_set($timezone);
-		$advancemode	 = $config['advancemode'];
-		$count_access	 = $config['count_access'];
-		$last_access	 = $config['last_access'];
-		$ignoreidle		 = $config['ignoreidle'];
-		$rankupmsg		 = $config['rankupmsg'];
-		$newversion		 = $config['newversion'];
-		$servernews		 = $config['servernews'];
+		date_default_timezone_set($cfg['logs_timezone']);
+		$cfg['webinterface_access_count'] = $config['count_access'];
+		$cfg['webinterface_access_last'] = $config['last_access'];
+		$cfg['rankup_ignore_idle_time'] = $config['ignoreidle'];
+		$cfg['rankup_message_to_user'] = $config['rankupmsg'];
+		$cfg['version_latest_available'] = $config['newversion'];
+		$cfg['stats_server_news'] = $config['servernews'];
 		if(empty($config['adminuuid'])) {
-			$adminuuid = NULL;
+			$cfg['webinterface_admin_client_unique_id_list'] = NULL;
 		} else {
-			$adminuuid = explode(',', $config['adminuuid']);
+			$cfg['webinterface_admin_client_unique_id_list'] = explode(',', $config['adminuuid']);
 		}
-		$nextupinfo		 = $config['nextupinfo'];
-		$nextupinfomsg1	 = $config['nextupinfomsg1'];
-		$nextupinfomsg2	 = $config['nextupinfomsg2'];
-		$nextupinfomsg3	 = $config['nextupinfomsg3'];
-		$shownav		 = $config['shownav'];
-		$showgrpsince	 = $config['showgrpsince'];
-		$resetexcept	 = $config['resetexcept'];
-		$upchannel		 = $config['upchannel'];
-		$avatar_delay	 = $config['avatar_delay'];
-		$registercid	 = $config['registercid'];
-		$iphash			 = $config['iphash'];
+		$cfg['rankup_next_message_mode'] = $config['nextupinfo'];
+		$cfg['rankup_next_message_1'] = $config['nextupinfomsg1'];
+		$cfg['rankup_next_message_2'] = $config['nextupinfomsg2'];
+		$cfg['rankup_next_message_3'] = $config['nextupinfomsg3'];
+		$cfg['stats_show_site_navigation_switch'] = $config['shownav'];
+		$cfg['stats_column_current_group_since_switch'] = $config['showgrpsince'];
+		$cfg['rankup_excepted_mode'] = $config['resetexcept'];
+		$cfg['version_update_channel'] = $config['upchannel'];
+		$cfg['teamspeak_avatar_download_delay'] = $config['avatar_delay'];
+		$cfg['teamspeak_verification_channel_id'] = $config['registercid'];
+		$cfg['rankup_hash_ip_addresses_mode'] = $config['iphash'];
+		unset($addnewvalue1, $addnewvalue2, $oldcfd, $config);
+	}
+} elseif(!isset($_GET["lang"])) {
+	$lang = set_language("en");
+}
+
+if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cfg_params`"))) {
+	if(isset($newcfg) && $newcfg != NULL) {
+		$cfg = $newcfg->fetchAll(PDO::FETCH_KEY_PAIR);
+		if (!isset($cfg['logs_timezone']) || $cfg['logs_timezone'] == NULL) {
+			$cfg['logs_timezone'] = "Europe/Berlin";
+		}
+		date_default_timezone_set($cfg['logs_timezone']);
+		
+		if(empty($cfg['webinterface_admin_client_unique_id_list'])) {
+			$cfg['webinterface_admin_client_unique_id_list'] = NULL;
+		} else {
+			$cfg['webinterface_admin_client_unique_id_list'] = array_flip(explode(',', $cfg['webinterface_admin_client_unique_id_list']));
+		}
+		if(empty($cfg['rankup_excepted_unique_client_id_list'])) {
+			$cfg['rankup_excepted_unique_client_id_list'] = NULL;
+		} else {
+			$cfg['rankup_excepted_unique_client_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_unique_client_id_list']));
+		}
+		if(empty($cfg['rankup_excepted_group_id_list'])) {
+			$cfg['rankup_excepted_group_id_list'] = NULL;
+		} else {
+			$cfg['rankup_excepted_group_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_group_id_list']));
+		}
+		if(empty($cfg['rankup_excepted_channel_id_list'])) {
+			$cfg['rankup_excepted_channel_id_list'] = NULL;
+		} else {
+			$cfg['rankup_excepted_channel_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_channel_id_list']));
+		}
+		if(empty($cfg['rankup_definition'])) {
+			$cfg['rankup_definition'] = NULL;
+		} else {
+			foreach (explode(',', $cfg['rankup_definition']) as $entry) {
+				list($key, $value) = explode('=>', $entry);
+				$addnewvalue1[$key] = $value;
+				$cfg['rankup_definition'] = $addnewvalue1;
+			}
+		}
+		if(empty($cfg['rankup_boost_definition'])) {
+			$cfg['rankup_boost_definition'] = NULL;
+		} else {
+			foreach (explode(',', $cfg['rankup_boost_definition']) as $entry) {
+				list($key, $value1, $value2) = explode('=>', $entry);
+				$addnewvalue2[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
+				$cfg['rankup_boost_definition'] = $addnewvalue2;
+			}
+		}
+		if(!isset($_GET["lang"])) {
+			if(isset($_SESSION[$rspathhex.'language'])) {
+				$cfg['default_language'] = $_SESSION[$rspathhex.'language'];
+			}
+		} elseif($_GET["lang"] == "ar") {
+			$cfg['default_language'] = "ar";
+			$_SESSION[$rspathhex.'language'] = "ar";
+		} elseif($_GET["lang"] == "cz") {
+			$cfg['default_language'] = "cz";
+			$_SESSION[$rspathhex.'language'] = "cz";
+		} elseif($_GET["lang"] == "de") {
+			$cfg['default_language'] = "de";
+			$_SESSION[$rspathhex.'language'] = "de";
+		} elseif($_GET["lang"] == "es") {
+			$cfg['default_language'] = "es";
+			$_SESSION[$rspathhex.'language'] = "es";
+		}  elseif($_GET["lang"] == "fr") {
+			$cfg['default_language'] = "fr";
+			$_SESSION[$rspathhex.'language'] = "fr";
+		} elseif($_GET["lang"] == "it") {
+			$cfg['default_language'] = "it";
+			$_SESSION[$rspathhex.'language'] = "it";
+		} elseif($_GET["lang"] == "nl") {
+			$cfg['default_language'] = "nl";
+			$_SESSION[$rspathhex.'language'] = "nl";
+		} elseif($_GET["lang"] == "pl") {
+			$cfg['default_language'] = "pl";
+			$_SESSION[$rspathhex.'language'] = "pl";
+		} elseif($_GET["lang"] == "ro") {
+			$cfg['default_language'] = "ro";
+			$_SESSION[$rspathhex.'language'] = "ro";
+		} elseif($_GET["lang"] == "ru") {
+			$cfg['default_language'] = "ru";
+			$_SESSION[$rspathhex.'language'] = "ru";
+		} elseif($_GET["lang"] == "pt") {
+			$cfg['default_language'] = "pt";
+			$_SESSION[$rspathhex.'language'] = "pt";
+		} else {
+			$cfg['default_language'] = "en";
+			$_SESSION[$rspathhex.'language'] = "en";
+		}
+		$lang = set_language($cfg['default_language']);
+		unset($addnewvalue1, $addnewvalue2, $newcfd);
 	}
 } elseif(!isset($_GET["lang"])) {
 	$lang = set_language("en");

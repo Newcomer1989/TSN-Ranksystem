@@ -4,8 +4,8 @@ error_reporting(0);
 require_once(__DIR__.'/other/config.php');
 require_once(__DIR__.'/other/phpcommand.php');
 $GLOBALS['exec'] = FALSE;
-if($logpath == NULL) { $logpath = "./logs/"; }
-$GLOBALS['logfile'] = $logpath.'ranksystem.log';
+if($cfg['logs_path'] == NULL) { $cfg['logs_path'] = "./logs/"; }
+$GLOBALS['logfile'] = $cfg['logs_path'].'ranksystem.log';
 
 if (substr(php_uname(), 0, 7) == "Windows") {
 	$GLOBALS['pidfile'] = __DIR__.'\logs\pid';
@@ -69,8 +69,8 @@ function start() {
 		sleep(10);
 	}
 	
-	global $logpath;
-	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
+	global $cfg;
+	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
 		echo "\n !!!! Logs folder is not writable !!!!\n\n";
 		echo " Cancel start request...\n\n";
 		exit;

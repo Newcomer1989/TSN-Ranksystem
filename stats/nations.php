@@ -15,34 +15,36 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
-if($language == "ar") {
+if($cfg['default_language'] == "ar") {
 	require_once('../languages/nations_en.php');
-} elseif($language == "cz") {
+} elseif($cfg['default_language'] == "cz") {
 	require_once('../languages/nations_en.php');
-} elseif($language == "de") {
+} elseif($cfg['default_language'] == "de") {
 	require_once('../languages/nations_de.php');
-} elseif($language == "en") {
+} elseif($cfg['default_language'] == "en") {
 	require_once('../languages/nations_en.php');
-} elseif($language == "fr") {
+} elseif($cfg['default_language'] == "es") {
+	require_once('../languages/nations_es.php');
+} elseif($cfg['default_language'] == "fr") {
 	require_once('../languages/nations_fr.php');
-} elseif($language == "it") {
+} elseif($cfg['default_language'] == "it") {
 	require_once('../languages/nations_it.php');
-} elseif($language == "nl") {
+} elseif($cfg['default_language'] == "nl") {
 	require_once('../languages/nations_en.php');
-} elseif($language == "pl") {
+} elseif($cfg['default_language'] == "pl") {
 	require_once('../languages/nations_pl.php');
-} elseif($language == "ro") {
-	require_once('../languages/nations_en.php');
-} elseif($language == "ru") {
-	require_once('../languages/nations_ru.php');
-} elseif($language == "pt") {
+} elseif($cfg['default_language'] == "pt") {
 	require_once('../languages/nations_pt.php');
+} elseif($cfg['default_language'] == "ro") {
+	require_once('../languages/nations_en.php');
+} elseif($cfg['default_language'] == "ru") {
+	require_once('../languages/nations_ru.php');
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
 $sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_nations` ORDER BY `count` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);

@@ -16,13 +16,13 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
-if ($substridle == 1) {
+if ($cfg['rankup_time_assess_mode'] == 1) {
 	$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM `$dbname`.`stats_user` AS `s` INNER JOIN `$dbname`.`user` AS `u` ON `s`.`uuid`=`u`.`uuid` WHERE `s`.`removed`='0' ORDER BY (`s`.`count_month` - `s`.`idle_month`) DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 	$texttime = $lang['sttw0013'];
 } else {
@@ -39,9 +39,9 @@ $top10_idle_sum = 0;
 
 foreach ($db_arr as $uuid => $client) {
 	$sgroups = array_flip(explode(",", $client['cldgroup']));
-	if (!isset($exceptuuid[$uuid]) && !array_intersect_key($sgroups, $exceptgroup)) {
+	if (!isset($cfg['rankup_excepted_unique_client_id_list'][$uuid]) && !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list'])) {
 		if ($count10 == 10) break;
-		if ($substridle == 1) {
+		if ($cfg['rankup_time_assess_mode'] == 1) {
 			$hours = $client['count_month'] - $client['idle_month'];
 		} else {
 			$hours = $client['count_month'];

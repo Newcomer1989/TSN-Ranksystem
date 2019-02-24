@@ -37,7 +37,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
@@ -56,17 +56,17 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 }
 
 if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-	$tshost		= $_POST['tshost'];
-	$tsquery	= $_POST['tsquery'];
-	if (isset($_POST['tsencrypt'])) $tsencrypt = 1; else $tsencrypt = 0;
-	$tsvoice	= $_POST['tsvoice'];
-	$tsuser		= $_POST['tsuser'];
-	$tspass		= $_POST['tspass'];
-	$queryname	= $_POST['queryname'];
-	$defchid	= $_POST['defchid'];
-	$slowmode	= $_POST['slowmode'];
-	$avatar_delay= $_POST['avatar_delay'];
-	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `tshost`='$tshost',`tsencrypt`='$tsencrypt',`tsquery`='$tsquery',`tsvoice`='$tsvoice',`tsuser`='$tsuser',`tspass`='$tspass',`queryname`='$queryname',`slowmode`='$slowmode',`defchid`='$defchid',`avatar_delay`='$avatar_delay'; DELETE FROM `$dbname`.`csrf_token` WHERE `token`='".$_POST['csrf_token']."'") === false) {
+	$cfg['teamspeak_host_address'] = $_POST['teamspeak_host_address'];
+	$cfg['teamspeak_query_port'] = $_POST['teamspeak_query_port'];
+	if (isset($_POST['teamspeak_query_encrypt_switch'])) $cfg['teamspeak_query_encrypt_switch'] = 1; else $cfg['teamspeak_query_encrypt_switch'] = 0;
+	$cfg['teamspeak_voice_port'] = $_POST['teamspeak_voice_port'];
+	$cfg['teamspeak_query_user'] = $_POST['teamspeak_query_user'];
+	$cfg['teamspeak_query_pass'] = $_POST['teamspeak_query_pass'];
+	$cfg['teamspeak_query_nickname'] = $_POST['teamspeak_query_nickname'];
+	$cfg['teamspeak_default_channel_id'] = $_POST['teamspeak_default_channel_id'];
+	$cfg['teamspeak_query_command_delay'] = $_POST['teamspeak_query_command_delay'];
+	$cfg['teamspeak_avatar_download_delay']= $_POST['teamspeak_avatar_download_delay'];
+if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('teamspeak_host_address','{$cfg['teamspeak_host_address']}'),('teamspeak_query_encrypt_switch','{$cfg['teamspeak_query_encrypt_switch']}'),('teamspeak_query_port','{$cfg['teamspeak_query_port']}'),('teamspeak_voice_port','{$cfg['teamspeak_voice_port']}'),('teamspeak_query_user','{$cfg['teamspeak_query_user']}'),('teamspeak_query_pass','{$cfg['teamspeak_query_pass']}'),('teamspeak_query_nickname','{$cfg['teamspeak_query_nickname']}'),('teamspeak_default_channel_id','{$cfg['teamspeak_default_channel_id']}'),('teamspeak_query_command_delay','{$cfg['teamspeak_query_command_delay']}'),('teamspeak_avatar_download_delay','{$cfg['teamspeak_avatar_download_delay']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 		$err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
 	} else {
@@ -74,12 +74,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
 	}
-	$ts['host']		= $_POST['tshost'];
-	$ts['query']	= $_POST['tsquery'];
-	$ts['tsencrypt']= $tsencrypt;
-	$ts['voice']	= $_POST['tsvoice'];
-	$ts['user']		= $_POST['tsuser'];
-	$ts['pass']		= $_POST['tspass'];
 } elseif(isset($_POST['update'])) {
 	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
 	rem_session_ts3($rspathhex);
@@ -105,7 +99,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group required-field-block">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<input type="text" class="form-control" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="tshost" value="<?php echo $ts['host']; ?>" maxlength="64" required>
+											<input type="text" class="form-control" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="teamspeak_host_address" value="<?php echo $cfg['teamspeak_host_address']; ?>" maxlength="64" required>
 											<div class="required-icon"><div class="text">*</div></div>
 											<div class="help-block with-errors"></div>
 										</div>
@@ -113,19 +107,19 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3encryptdesc"><?php echo $lang['wits3encrypt']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($ts['tsencrypt'] == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="tsencrypt" value="',$ts['tsencrypt'],'">';
+											<?PHP if ($cfg['teamspeak_query_encrypt_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="tsencrypt" value="',$ts['tsencrypt'],'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
 											} ?>
 										</div>
 									</div>									
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
-											<input type="text" class="form-control" name="tsquery" value="<?php echo $ts['query']; ?>" required>
+											<input type="text" class="form-control" name="teamspeak_query_port" value="<?php echo $cfg['teamspeak_query_port']; ?>" required>
 											<script>
-											$("input[name='tsquery']").TouchSpin({
+											$("input[name='teamspeak_query_port']").TouchSpin({
 												min: 0,
 												max: 65535,
 												verticalbuttons: true,
@@ -138,9 +132,9 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3voicedesc"><?php echo $lang['wits3voice']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
-											<input type="text" class="form-control" name="tsvoice" value="<?php echo $ts['voice']; ?>" required>
+											<input type="text" class="form-control" name="teamspeak_voice_port" value="<?php echo $cfg['teamspeak_voice_port']; ?>" required>
 											<script>
-											$("input[name='tsvoice']").TouchSpin({
+											$("input[name='teamspeak_voice_port']").TouchSpin({
 												min: 0,
 												max: 65535,
 												verticalbuttons: true,
@@ -158,14 +152,14 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querusrdesc"><?php echo $lang['wits3querusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="tsuser" value="<?php echo $ts['user']; ?>" required>
+											<input type="text" class="form-control" name="teamspeak_query_user" value="<?php echo $cfg['teamspeak_query_user']; ?>" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querpwdesc"><?php echo $lang['wits3querpw']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="password" class="form-control" name="tspass" id="tspass" value="<?php echo $ts['pass']; ?>" data-toggle="password" data-placement="before" required>
+											<input type="password" class="form-control" name="teamspeak_query_pass" value="<?php echo $cfg['teamspeak_query_pass']; ?>" data-toggle="password" data-placement="before" required>
 											<div class="required-icon"><div class="text">*</div></div>
 										</div>
 									</div>
@@ -177,7 +171,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" class="form-control" name="queryname" value="<?php echo $queryname; ?>" maxlength="30" required>
+										<input type="text" class="form-control" name="teamspeak_query_nickname" value="<?php echo $cfg['teamspeak_query_nickname']; ?>" maxlength="30" required>
 										<div class="required-icon"><div class="text">*</div></div>
 									</div>
 								</div>
@@ -185,9 +179,9 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<input type="text" class="form-control" name="defchid" value="<?php echo $defchid; ?>">
+									<input type="text" class="form-control" name="teamspeak_default_channel_id" value="<?php echo $cfg['teamspeak_default_channel_id']; ?>">
 									<script>
-									$("input[name='defchid']").TouchSpin({
+									$("input[name='teamspeak_default_channel_id']").TouchSpin({
 										min: 0,
 										max: 2147483647,
 										verticalbuttons: true,
@@ -200,15 +194,15 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<select class="selectpicker show-tick form-control" id="basic" name="slowmode">
+									<select class="selectpicker show-tick form-control" id="basic" name="teamspeak_query_command_delay">
 									<?PHP
-									echo '<option data-subtext="[recommended]" value="0"'; if($slowmode=="0") echo ' selected="selected"'; echo '>disabled (Realtime)</option>';
+									echo '<option data-subtext="[recommended]" value="0"'; if($cfg['teamspeak_query_command_delay']=="0") echo ' selected="selected"'; echo '>disabled (Realtime)</option>';
 									echo '<option data-divider="true">&nbsp;</option>';
-									echo '<option data-subtext="(0,2 seconds)" value="200000"'; if($slowmode=="200000") echo ' selected="selected"'; echo '>Low delay</option>';
-									echo '<option data-subtext="(0,5 seconds)" value="500000"'; if($slowmode=="500000") echo ' selected="selected"'; echo '>Middle delay</option>';
-									echo '<option data-subtext="(1,0 seconds)" value="1000000"'; if($slowmode=="1000000") echo ' selected="selected"'; echo '>High delay</option>';
-									echo '<option data-subtext="(2,0 seconds)" value="2000000"'; if($slowmode=="2000000") echo ' selected="selected"'; echo '>Huge delay</option>';
-									echo '<option data-subtext="(5,0 seconds)" value="5000000"'; if($slowmode=="5000000") echo ' selected="selected"'; echo '>Ultra delay</option>';
+									echo '<option data-subtext="(0,2 seconds)" value="200000"'; if($cfg['teamspeak_query_command_delay']=="200000") echo ' selected="selected"'; echo '>Low delay</option>';
+									echo '<option data-subtext="(0,5 seconds)" value="500000"'; if($cfg['teamspeak_query_command_delay']=="500000") echo ' selected="selected"'; echo '>Middle delay</option>';
+									echo '<option data-subtext="(1,0 seconds)" value="1000000"'; if($cfg['teamspeak_query_command_delay']=="1000000") echo ' selected="selected"'; echo '>High delay</option>';
+									echo '<option data-subtext="(2,0 seconds)" value="2000000"'; if($cfg['teamspeak_query_command_delay']=="2000000") echo ' selected="selected"'; echo '>Huge delay</option>';
+									echo '<option data-subtext="(5,0 seconds)" value="5000000"'; if($cfg['teamspeak_query_command_delay']=="5000000") echo ' selected="selected"'; echo '>Ultra delay</option>';
 									?>
 									</select>
 								</div>
@@ -217,9 +211,9 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3avatdesc"><?php echo $lang['wits3avat']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<input type="text" class="form-control" name="avatar_delay" value="<?php echo $avatar_delay; ?>">
+									<input type="text" class="form-control" name="teamspeak_avatar_download_delay" value="<?php echo $cfg['teamspeak_avatar_download_delay']; ?>">
 									<script>
-									$("input[name='avatar_delay']").TouchSpin({
+									$("input[name='teamspeak_avatar_download_delay']").TouchSpin({
 										min: 0,
 										max: 65535,
 										verticalbuttons: true,

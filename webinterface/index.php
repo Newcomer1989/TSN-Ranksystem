@@ -15,8 +15,8 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 
-function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) {
-	$file = $logpath.'ranksystem.log';
+function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
+	$file = $cfg['logs_path'].'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
 	} elseif ($loglevel == 2) {
@@ -31,17 +31,17 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext,$norotate = false) 
 		$loglevel = "  DEBUG     ";
 	}
 	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
+	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
 	fclose($loghandle);
 	if($norotate == false && filesize($file) > 5242880) {
 		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
+		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
 		if (file_exists($file2)) unlink($file2);
 		rename($file, $file2);
 		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
+		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
 		fclose($loghandle);
 	}
 }
@@ -63,38 +63,35 @@ function getclientip() {
 		return false;
 }
 
-if(($last_access = $mysqlcon->query("SELECT `last_access`,`count_access` FROM `$dbname`.`config`")->fetchAll()) === false) {
-	$err_msg .= print_r($mysqlcon->errorInfo(), true);
-}
-
-if(($last_access[0]['last_access'] + 1) >= time()) {
-	$again = $last_access[0]['last_access'] + 2 - time();
-	$err_msg = sprintf($lang['errlogin2'],$again);
+if(($cfg['webinterface_access_last'] + 1) >= time()) {
+	$waittime = $cfg['webinterface_access_last'] + 2 - time();
+	$err_msg = sprintf($lang['errlogin2'],$waittime);
 	$err_lvl = 3;
-} elseif ($last_access[0]['count_access'] >= 10) {
-	enter_logfile($logpath,$timezone,3,sprintf($lang['brute'], getclientip()));
+} elseif ($cfg['webinterface_access_count'] >= 10) {
+	enter_logfile($cfg,3,sprintf($lang['brute'], getclientip()));
 	$err_msg = $lang['errlogin3'];
 	$err_lvl = 3;
 	$bantime = time() + 299;
-	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$bantime',`count_access`='0'") === false) { }
-} elseif (isset($_POST['username']) && $_POST['username'] == $webuser && password_verify($_POST['password'], $webpass)) {
-	$_SESSION[$rspathhex.'username'] = $webuser;
-	$_SESSION[$rspathhex.'password'] = $webpass;
+	if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$bantime}'),('webinterface_access_count','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
+} elseif (isset($_POST['username']) && $_POST['username'] == $cfg['webinterface_user'] && password_verify($_POST['password'], $cfg['webinterface_pass'])) {
+	$_SESSION[$rspathhex.'username'] = $cfg['webinterface_user'];
+	$_SESSION[$rspathhex.'password'] = $cfg['webinterface_pass'];
 	$_SESSION[$rspathhex.'clientip'] = getclientip();
-	$_SESSION[$rspathhex.'newversion'] = $newversion;
-	enter_logfile($logpath,$timezone,6,sprintf($lang['brute2'], getclientip()));
-	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `count_access`='0'") === false) { }
+	$_SESSION[$rspathhex.'newversion'] = $cfg['version_latest_available'];
+	enter_logfile($cfg,6,sprintf($lang['brute2'], getclientip()));
+	if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_count','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 } elseif(isset($_POST['username'])) {
 	$nowtime = time();
-	enter_logfile($logpath,$timezone,5,sprintf($lang['brute1'], getclientip(), $_POST['username']));
-	if($mysqlcon->exec("UPDATE `$dbname`.`config` SET `last_access`='$nowtime',`count_access`=`count_access` + 1") === false) { }
+	enter_logfile($cfg,5,sprintf($lang['brute1'], getclientip(), $_POST['username']));
+	$cfg['webinterface_access_count']++;
+	if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$nowtime}'),('webinterface_access_count','{$cfg['webinterface_access_count']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 	$err_msg = $lang['errlogin'];
 	$err_lvl = 3;
 }
 
-if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass) {
+if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 }

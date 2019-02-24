@@ -1,5 +1,5 @@
 <?PHP
-function addon_assign_groups($addons_config,$ts3,$dbname,$slowmode,$timezone,$logpath,$allclients,$select_arr) {
+function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,$select_arr) {
 	$sqlexec = '';
 	
 	if(isset($select_arr['addon_assign_groups']) && count($select_arr['addon_assign_groups']) != 0) {
@@ -16,20 +16,20 @@ function addon_assign_groups($addons_config,$ts3,$dbname,$slowmode,$timezone,$lo
 				if(isset($cldbid)) {
 					if(strstr($group, '-')) {
 						$group = str_replace('-','',$group);
-						usleep($slowmode);
+						usleep($cfg['teamspeak_query_command_delay']);
 						try {
 							$ts3->serverGroupClientDel($group, $cldbid);
 						}
 						catch (Exception $e) {
-							enter_logfile($logpath,$timezone,2,"addon_assign_groups:".$e->getCode().': '."Error while removing group: ".$e->getMessage());
+							enter_logfile($cfg,2,"addon_assign_groups:".$e->getCode().': '."Error while removing group: ".$e->getMessage());
 						}
 					} else {
-						usleep($slowmode);
+						usleep($cfg['teamspeak_query_command_delay']);
 						try {
 							$ts3->serverGroupClientAdd($group, $cldbid);
 						}
 						catch (Exception $e) {
-							enter_logfile($logpath,$timezone,2,"addon_assign_groups:".$e->getCode().': '."Error while adding group: ".$e->getMessage());
+							enter_logfile($cfg,2,"addon_assign_groups:".$e->getCode().': '."Error while adding group: ".$e->getMessage());
 						}
 					}
 				}

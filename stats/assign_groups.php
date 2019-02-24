@@ -16,7 +16,7 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 if($addons_config['assign_groups_active']['value'] != '1') {
 	echo "addon is disabled";
@@ -24,7 +24,7 @@ if($addons_config['assign_groups_active']['value'] != '1') {
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
 if(isset($_SESSION[$rspathhex.'tsuid'])) {

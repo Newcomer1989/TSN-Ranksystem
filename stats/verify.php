@@ -17,10 +17,10 @@ require_once('../other/phpcommand.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
 if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
@@ -30,14 +30,14 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 		$err_msg = $lang['stve0004']; $err_lvl = 3;
 	} elseif($_REQUEST['token'] == $_SESSION[$rspathhex.'token']) {
 		$err_msg = $lang['stve0005']; $err_lvl = NULL;
-		$_SESSION[$rspathhex.'serverport'] = $ts['voice'];
+		$_SESSION[$rspathhex.'serverport'] = $cfg['teamspeak_voice_port'];
 		$_SESSION[$rspathhex.'uuid_verified'] = $_SESSION[$rspathhex.'temp_uuid'];
 		$_SESSION[$rspathhex.'tsuid'] = $_SESSION[$rspathhex.'temp_uuid'];
 		$_SESSION[$rspathhex.'multiple'] = array();
 		$_SESSION[$rspathhex.'connected'] = 1;
 		$_SESSION[$rspathhex.'tscldbid'] = $_SESSION[$rspathhex.'temp_cldbid'];
         $_SESSION[$rspathhex.'tsname']   = $_SESSION[$rspathhex.'temp_name'];
-		foreach ($adminuuid as $auuid) {
+		foreach ($cfg['webinterface_admin_client_unique_id_list'] as $auuid) {
 			if ($_SESSION[$rspathhex.'uuid_verified'] == $auuid) {
 				$_SESSION[$rspathhex.'admin'] = TRUE;
 			}
@@ -68,18 +68,18 @@ if(isset($_REQUEST['token']) && isset($_SESSION[$rspathhex.'temp_uuid'])) {
 		} else {
 			$_SESSION[$rspathhex.'tsavatar'] = "none";
 		}
-		$_SESSION[$rspathhex.'language']  = $language;
+		$_SESSION[$rspathhex.'language']  = $cfg['default_language'];
 	} else {
 		$err_msg = $lang['stve0006']; $err_lvl = 3;
 	}
 }
 
-if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'multiple']) == 0) && ($registercid == NULL || $registercid == 0)) {
+if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'multiple']) == 0) && ($cfg['teamspeak_verification_channel_id'] == NULL || $cfg['teamspeak_verification_channel_id'] == 0)) {
 	$err_msg = $lang['verify0001']."<br><br>".$lang['verify0003'];
 	$err_lvl = 3;
-} elseif($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0) {
+} elseif($_SESSION[$rspathhex.'connected'] == 0 && $cfg['teamspeak_verification_channel_id'] != NULL && $cfg['teamspeak_verification_channel_id'] != 0) {
 	$err_msg = $lang['verify0001']; $err_lvl = 1;
-	$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='$registercid' ORDER BY `name` ASC")->fetchAll();
+$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='{$cfg['teamspeak_verification_channel_id']}' ORDER BY `name` ASC")->fetchAll();
 	foreach($uuids as $entry) {
 		$_SESSION[$rspathhex.'multiple'][$entry['uuid']] = $entry['name'];
 	}
@@ -90,21 +90,21 @@ if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'mult
 if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid'])) {
 	require_once('../libs/ts3_lib/TeamSpeak3.php');
 	try {
-		if($ts['tsencrypt'] == 1) {
-			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&ssh=1");
+		if($cfg['teamspeak_query_encrypt_switch'] == 1) {
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&ssh=1");
 		} else {
-			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($ts['user']).":".rawurlencode($ts['pass'])."@".$ts['host'].":".$ts['query']."/?server_port=".$ts['voice']."&blocking=0");
+			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&blocking=0");
 		}
 		
 		try {
-			usleep($slowmode);
+			usleep($cfg['teamspeak_query_command_delay']);
 			$ts3->selfUpdate(array('client_nickname' => "Ranksystem - Verification"));
 		} catch (Exception $e) {
 			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 		}
 
 		try {
-			usleep($slowmode);
+			usleep($cfg['teamspeak_query_command_delay']);
 			$allclients = $ts3->clientList();
 		} catch (Exception $e) {
 			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
@@ -138,7 +138,7 @@ require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); 
-		if(count($_SESSION[$rspathhex.'multiple']) > 1 || ($_SESSION[$rspathhex.'connected'] == 0 && $registercid != NULL && $registercid != 0)) {
+		if(count($_SESSION[$rspathhex.'multiple']) > 1 || ($_SESSION[$rspathhex.'connected'] == 0 && $cfg['teamspeak_verification_channel_id'] != NULL && $cfg['teamspeak_verification_channel_id'] != 0)) {
 			?>
 			<div class="container-fluid">
 				<div id="login-overlay" class="modal-dialog">
@@ -153,14 +153,14 @@ require_once('nav.php');
 										<?PHP
 										if($_SESSION[$rspathhex.'connected'] == 0) {
 											$ts3link = '<a href="ts3server://';
-											if (($ts['host']=='localhost' || $ts['host']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
+											if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
 												$ts3link .= preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
-											} elseif ($ts['host']=='localhost' || $ts['host']=='127.0.0.1') {
+											} elseif ($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') {
 												$ts3link .= $_SERVER['HTTP_HOST'];
 											} else {
-												$ts3link .= $ts['host'];
+												$ts3link .= $cfg['teamspeak_host_address'];
 											}
-											$ts3link .= ':'.$ts['voice'].'?cid='.$registercid.'">';
+											$ts3link .= ':'.$cfg['teamspeak_voice_port'].'?cid='.$cfg['teamspeak_verification_channel_id'].'">';
 											echo '<p>1. ',sprintf($lang['verify0002'], $ts3link, '</a>'),'</p>';
 										}
 										?>

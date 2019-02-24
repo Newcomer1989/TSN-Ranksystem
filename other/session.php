@@ -3,8 +3,7 @@ if (isset($_POST['refresh'])) {
 	$rspathhex = 'rs_'.dechex(crc32(__DIR__)).'_';
 	rem_session_ts3($rspathhex);
 }
-function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) {
-	global $iphash, $lang;
+function set_session_ts3($mysqlcon,$cfg,$lang,$dbname) {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		$hpclientip = $_SERVER['HTTP_CLIENT_IP'];
 	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
@@ -26,20 +25,29 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
 	$iptable = $mysqlcon->query("SELECT `uuid`,`iphash`,`ip` FROM `$dbname`.`user_iphash`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 	$_SESSION[$rspathhex.'connected'] = 0;
 	$_SESSION[$rspathhex.'tsname'] = $lang['stag0016'];
-	$_SESSION[$rspathhex.'serverport'] = $voiceport;
+	$_SESSION[$rspathhex.'serverport'] = $cfg['teamspeak_voice_port'];
 	$_SESSION[$rspathhex.'multiple'] = array();
+	
+	if($cfg['rankup_hash_ip_addresses_mode'] == 2) {
+		$salt = md5(dechex(crc32(substr(__DIR__,0,-5))));
+		$hashedip = password_hash($hpclientip, PASSWORD_DEFAULT, array("cost" => 10, "salt" => $salt));
+	}
 
     foreach ($allclients as $client) {
 		if(isset($_SESSION[$rspathhex.'uuid_verified']) && $_SESSION[$rspathhex.'uuid_verified'] != $client['uuid']) {
 			continue;
 		}
 		$verify = FALSE;
-		if($iphash == 1) {
-			if (isset($iptable[$client['uuid']]['iphash']) && password_verify($hpclientip, $iptable[$client['uuid']]['iphash'])) {
+		if($cfg['rankup_hash_ip_addresses_mode'] == 1) {
+			if (isset($iptable[$client['uuid']]['iphash']) && $iptable[$client['uuid']]['iphash'] != NULL && password_verify($hpclientip, $iptable[$client['uuid']]['iphash'])) {
+				$verify = TRUE;
+			}
+		} elseif($cfg['rankup_hash_ip_addresses_mode'] == 2) {
+			if (isset($iptable[$client['uuid']]['iphash']) && $hashedip == $iptable[$client['uuid']]['iphash'] && $iptable[$client['uuid']]['iphash'] != NULL) {
 				$verify = TRUE;
 			}
 		} else {
-			if (isset($iptable[$client['uuid']]['ip']) && $hpclientip == $iptable[$client['uuid']]['ip']) {
+			if (isset($iptable[$client['uuid']]['ip']) && $hpclientip == $iptable[$client['uuid']]['ip'] && $iptable[$client['uuid']]['ip'] != NULL) {
 				$verify = TRUE;
 			}
 		}
@@ -53,7 +61,7 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
 				$_SESSION[$rspathhex.'multiple'][$client['uuid']] = htmlspecialchars($client['name']);
 			}
 			$_SESSION[$rspathhex.'tsuid'] = $client['uuid'];
-			foreach ($adminuuid as $auuid) {
+			foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $auuid) {
 				if ($_SESSION[$rspathhex.'tsuid'] == $auuid) {
 					$_SESSION[$rspathhex.'admin'] = TRUE;
 				}
@@ -82,7 +90,7 @@ function set_session_ts3($voiceport, $mysqlcon, $dbname, $language, $adminuuid) 
 				$_SESSION[$rspathhex.'tsavatar'] = "none";
 			}
 			$_SESSION[$rspathhex.'connected'] = 1;
-			$_SESSION[$rspathhex.'language'] = $language;
+			$_SESSION[$rspathhex.'language'] = $cfg['default_language'];
 		}
 	}
 }

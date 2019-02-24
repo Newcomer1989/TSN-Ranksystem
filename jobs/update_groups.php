@@ -1,12 +1,12 @@
 <?PHP
-function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serverinfo,$logpath,$grouptime,$boostarr,$exceptgroup,$select_arr,$adminuuid,$nobreak = 0) {
+function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,$nobreak = 0) {
 	$sqlexec = '';
 	try {
-		usleep($slowmode);
+		usleep($cfg['teamspeak_query_command_delay']);
 		$iconlist = $ts3->channelFileList($cid="0", $cpw="", $path="/icons/");
 	} catch (Exception $e) {
 		if ($e->getCode() != 1281) {
-			enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+			enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 		}
 	}
 
@@ -16,11 +16,11 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 	}
 	
 	try {
-		usleep($slowmode);
+		usleep($cfg['teamspeak_query_command_delay']);
 		$ts3->serverGroupListReset();
 		$ts3groups = $ts3->serverGroupList();
 	} catch (Exception $e) {
-		enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+		enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 	}
 	
 	// ServerIcon
@@ -33,21 +33,21 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 	if (!isset($select_arr['groups']['0']) || $select_arr['groups']['0']['iconid'] != $sIconId || $iconarr["i".$sIconId] > $select_arr['groups']['0']['icondate']) {
 		if($sIconId > 600) {
 			try {
-				usleep($slowmode);
-				enter_logfile($logpath,$timezone,5,$lang['upgrp0002']);
+				usleep($cfg['teamspeak_query_command_delay']);
+				enter_logfile($cfg,5,$lang['upgrp0002']);
 				$sIconFile = $ts3->iconDownload();
 				if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png", $sIconFile) === false) {
-					enter_logfile($logpath,$timezone,2,$lang['upgrp0003'].' '.sprintf($lang['errperm'], 'tsicons'));
+					enter_logfile($cfg,2,$lang['upgrp0003'].' '.sprintf($lang['errperm'], 'tsicons'));
 				}
 			} catch (Exception $e) {
-				enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().'; '.$lang['upgrp0004'].$e->getMessage());
+				enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().'; '.$lang['upgrp0004'].$e->getMessage());
 			}
 		} elseif($sIconId == 0) {
 			if(file_exists(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png")) {
 				if(unlink(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png") === false) {
-					enter_logfile($logpath,$timezone,2,$lang['upgrp0005'].' '.sprintf($lang['errperm'], 'tsicons'));
+					enter_logfile($cfg,2,$lang['upgrp0005'].' '.sprintf($lang['errperm'], 'tsicons'));
 				} else {
-					enter_logfile($logpath,$timezone,5,$lang['upgrp0006']);
+					enter_logfile($cfg,5,$lang['upgrp0006']);
 				}
 			}
 			$iconarr["i".$sIconId] = 0;
@@ -73,23 +73,23 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 		if($iconid > 600) {
 			if (!isset($select_arr['groups'][$sgid]) || $select_arr['groups'][$sgid]['iconid'] != $iconid || $iconarr["i".$iconid] > $select_arr['groups'][$sgid]['icondate']) {
 				try {
-					check_shutdown($timezone,$logpath); usleep($slowmode);
-					enter_logfile($logpath,$timezone,5,sprintf($lang['upgrp0011'], $sgname, $sgid));
+					check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
+					enter_logfile($cfg,5,sprintf($lang['upgrp0011'], $sgname, $sgid));
 					$iconfile = $servergroup->iconDownload();
 					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png", $iconfile) === false) {
-						enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0007'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
+						enter_logfile($cfg,2,sprintf($lang['upgrp0007'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 					}
 					$iconcount++;
 				} catch (Exception $e) {
-					enter_logfile($logpath,$timezone,2,$lang['errorts3'].$e->getCode().': '.sprintf($lang['upgrp0008'], $sgname, $sgid).$e->getMessage());
+					enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.sprintf($lang['upgrp0008'], $sgname, $sgid).$e->getMessage());
 				}
 			}
 		} elseif($iconid == 0) {
 			if(file_exists(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png")) {
 				if(unlink(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png") === false) {
-					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0009'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
+					enter_logfile($cfg,2,sprintf($lang['upgrp0009'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 				} else {
-					enter_logfile($logpath,$timezone,5,sprintf($lang['upgrp0010'], $sgname, $sgid));
+					enter_logfile($cfg,5,sprintf($lang['upgrp0010'], $sgname, $sgid));
 				}
 			}
 			$iconarr["i".$iconid] = 0;
@@ -123,41 +123,41 @@ function update_groups($ts3,$mysqlcon,$lang,$dbname,$slowmode,$timezone,$serveri
 		foreach ($select_arr['groups'] as $sgid => $groups) {
 			if(!isset($tsgroupids[$sgid]) && $sgid != 0 && $sgid != NULL) {
 				$delsgroupids .= "'" . $sgid . "',";
-				if(in_array($sgid, $grouptime)) {
-					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
-					if(isset($adminuuid) && $adminuuid != NULL) {
-						foreach ($adminuuid as $clientid) {
-							usleep($slowmode);
+				if(in_array($sgid, $cfg['rankup_definition'])) {
+					enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+					if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+						foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
+							usleep($cfg['teamspeak_query_command_delay']);
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}
 				}
-				if(isset($boostarr[$sgid])) {
-					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiboost']));
-					if(isset($adminuuid) && $adminuuid != NULL) {
-						foreach ($adminuuid as $clientid) {
-							usleep($slowmode);
+				if(isset($cfg['rankup_boost_definition'][$sgid])) {
+					enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiboost']));
+					if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+						foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
+							usleep($cfg['teamspeak_query_command_delay']);
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}
 				}
-				if(isset($exceptgroup[$sgid])) {
-					enter_logfile($logpath,$timezone,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiexgrp']));
-					if(isset($adminuuid) && $adminuuid != NULL) {
-						foreach ($adminuuid as $clientid) {
-							usleep($slowmode);
+				if(isset($cfg['rankup_excepted_group_id_list'][$sgid])) {
+					enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiexgrp']));
+					if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+						foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
+							usleep($cfg['teamspeak_query_command_delay']);
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}

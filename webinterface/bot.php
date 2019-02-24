@@ -32,10 +32,10 @@ function getclientip() {
 		return false;
 }
 
-function getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
+function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 	$lines=array();
-	if(file_exists($logpath."ranksystem.log")) {
-		$fp = fopen($logpath."ranksystem.log", "r");
+	if(file_exists($cfg['logs_path']."ranksystem.log")) {
+		$fp = fopen($cfg['logs_path']."ranksystem.log", "r");
 		$buffer=array();
 		while($line = fgets($fp, 4096)) {
 			array_push($buffer, $line);
@@ -168,7 +168,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	rem_session_ts3($rspathhex);
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
@@ -193,10 +193,10 @@ if ((isset($_POST['start']) || isset($_POST['stop']) || isset($_POST['restart'])
 	exit;
 }
 
-$logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
+$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 
 if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
+	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel start request!"; $err_lvl = 3;
 	} else {
 		if (substr(php_uname(), 0, 7) == "Windows") {
@@ -214,7 +214,7 @@ if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$err_msg = $lang['wibot2'];
 		$err_lvl = 1;
 		usleep(80000);
-		$logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
+		$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 	}
 }
 
@@ -230,11 +230,11 @@ if (isset($_POST['stop']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$err_msg = $lang['wibot1'];
 	$err_lvl = 1;
 	usleep(80000);
-	$logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
+	$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 }
 
 if (isset($_POST['restart']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if(substr(sprintf('%o', fileperms($logpath)), -3, 1)!='7') {
+	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel restart request!"; $err_lvl = 3;
 	} else {
 		if (substr(php_uname(), 0, 7) == "Windows") {
@@ -252,12 +252,12 @@ if (isset($_POST['restart']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$err_msg = $lang['wibot3'];
 		$err_lvl = 1;
 		usleep(80000);
-		$logoutput = getlog($logpath,$number_lines,$filters,$filter2,$inactivefilter);
+		$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 	}
 }
 
 $disabled = '';
-if($ts['host'] == NULL || $ts['query'] == NULL || $ts['voice'] == NULL || $ts['user'] == NULL || $ts['pass'] == NULL || $queryname == NULL || $grouptime == NULL || $logpath == NULL) {
+if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NULL || $cfg['teamspeak_voice_port'] == NULL || $cfg['teamspeak_query_user'] == NULL || $cfg['teamspeak_query_pass'] == NULL || $cfg['teamspeak_query_nickname'] == NULL || $cfg['rankup_definition'] == NULL || $cfg['logs_path'] == NULL) {
 	$disabled = 1;
 	$err_msg = $lang['wibot9'];
 	$err_lvl = 2;

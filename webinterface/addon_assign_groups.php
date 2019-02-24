@@ -15,7 +15,7 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
@@ -41,7 +41,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }

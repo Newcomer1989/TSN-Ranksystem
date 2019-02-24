@@ -17,10 +17,10 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 require_once('nav.php');
 ?>
@@ -94,6 +94,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0020']; ?></p>
 						<p><?PHP echo $lang['stri0024']; ?></p>
 						<p><?PHP echo $lang['stri0025']; ?></p>
+						<p><?PHP echo $lang['stri0026']; ?></p>
 						<br>
 					</div>
 				</div>

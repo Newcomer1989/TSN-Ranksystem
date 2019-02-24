@@ -37,7 +37,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
@@ -56,14 +56,14 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 }
 
 if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-	$rankupmsg	= addslashes($_POST['rankupmsg']);
-	$servernews	= addslashes($_POST['servernews']);
-	$nextupinfomsg1	= addslashes($_POST['nextupinfomsg1']);
-	$nextupinfomsg2	= addslashes($_POST['nextupinfomsg2']);
-	$nextupinfomsg3	= addslashes($_POST['nextupinfomsg3']);
-	$nextupinfo = $_POST['nextupinfo'];
-	if (isset($_POST['msgtouser'])) $msgtouser = 1; else $msgtouser = 0;
-	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `msgtouser`='$msgtouser',`rankupmsg`='$rankupmsg',`servernews`='$servernews',`nextupinfo`='$nextupinfo',`nextupinfomsg1`='$nextupinfomsg1',`nextupinfomsg2`='$nextupinfomsg2',`nextupinfomsg3`='$nextupinfomsg3'") === false) {
+	$cfg['rankup_message_to_user']	= addslashes($_POST['rankup_message_to_user']);
+	$cfg['stats_server_news'] = addslashes($_POST['stats_server_news']);
+	$cfg['rankup_next_message_1'] = addslashes($_POST['rankup_next_message_1']);
+	$cfg['rankup_next_message_2'] = addslashes($_POST['rankup_next_message_2']);
+	$cfg['rankup_next_message_3'] = addslashes($_POST['rankup_next_message_3']);
+	$cfg['rankup_next_message_mode'] = $_POST['rankup_next_message_mode'];
+	if (isset($_POST['rankup_message_to_user_switch'])) $cfg['rankup_message_to_user_switch'] = 1; else $cfg['rankup_message_to_user_switch'] = 0;
+	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_message_to_user_switch','{$cfg['rankup_message_to_user_switch']}'),('rankup_message_to_user','{$cfg['rankup_message_to_user']}'),('stats_server_news','{$cfg['stats_server_news']}'),('rankup_next_message_mode','{$cfg['rankup_next_message_mode']}'),('rankup_next_message_1','{$cfg['rankup_next_message_1']}'),('rankup_next_message_2','{$cfg['rankup_next_message_2']}'),('rankup_next_message_3','{$cfg['rankup_next_message_3']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -71,11 +71,11 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
-	$rankupmsg	= $_POST['rankupmsg'];
-	$servernews	= $_POST['servernews'];
-	$nextupinfomsg1	= $_POST['nextupinfomsg1'];
-	$nextupinfomsg2	= $_POST['nextupinfomsg2'];
-	$nextupinfomsg3	= $_POST['nextupinfomsg3'];
+	$cfg['rankup_message_to_user'] = $_POST['rankup_message_to_user'];
+	$cfg['stats_server_news'] = $_POST['stats_server_news'];
+	$cfg['rankup_next_message_1'] = $_POST['rankup_next_message_1'];
+	$cfg['rankup_next_message_2'] = $_POST['rankup_next_message_2'];
+	$cfg['rankup_next_message_3'] = $_POST['rankup_next_message_3'];
 } elseif(isset($_POST['update'])) {
 	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
 	rem_session_ts3($rspathhex);
@@ -101,17 +101,17 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgusrdesc"><?php echo $lang['wimsgusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($msgtouser == 1) {
-												echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="msgtouser" value="',$msgtouser,'">';
+											<?PHP if ($cfg['rankup_message_to_user_switch'] == 1) {
+												echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="rankup_message_to_user_switch" value="',$cfg['rankup_message_to_user_switch'],'">';
 											} else {
-												echo '<input id="switch-animate" type="checkbox" data-size="mini" name="msgtouser" value="',$msgtouser,'">';
+												echo '<input id="switch-animate" type="checkbox" data-size="mini" name="rankup_message_to_user_switch" value="',$cfg['rankup_message_to_user_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgmsgdesc"><?php echo $lang['wimsgmsg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankupmsg" maxlength="500"><?php echo $rankupmsg; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_message_to_user" maxlength="500"><?php echo $cfg['rankup_message_to_user']; ?></textarea>
 										</div>
 									</div>
 								</div>
@@ -120,7 +120,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgsndesc"><?php echo $lang['wimsgsn']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 									<div class="col-sm-8">
-										<textarea class="form-control" rows="15" name="servernews" maxlength="5000"><?php echo $servernews; ?></textarea>
+										<textarea class="form-control" rows="15" name="stats_server_news" maxlength="5000"><?php echo $cfg['stats_server_news']; ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -131,11 +131,11 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxinfodesc"><?php echo $lang['winxinfo']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<select class="selectpicker show-tick form-control" id="basic" name="nextupinfo">
+											<select class="selectpicker show-tick form-control" id="basic" name="rankup_next_message_mode">
 											<?PHP
-											echo '<option value="0"'; if($nextupinfo=="0") echo " selected=selected"; echo '>',$lang['winxmode1'],'</option>';
-											echo '<option value="1"'; if($nextupinfo=="1") echo " selected=selected"; echo '>',$lang['winxmode2'],'</option>';
-											echo '<option value="2"'; if($nextupinfo=="2") echo " selected=selected"; echo '>',$lang['winxmode3'],'</option>';
+											echo '<option value="0"'; if($cfg['rankup_next_message_mode']=="0") echo " selected=selected"; echo '>',$lang['winxmode1'],'</option>';
+											echo '<option value="1"'; if($cfg['rankup_next_message_mode']=="1") echo " selected=selected"; echo '>',$lang['winxmode2'],'</option>';
+											echo '<option value="2"'; if($cfg['rankup_next_message_mode']=="2") echo " selected=selected"; echo '>',$lang['winxmode3'],'</option>';
 											?>
 											</select>
 										</div>
@@ -143,19 +143,19 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc1"><?php echo $lang['winxmsg1']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg1" maxlength="500"><?php echo $nextupinfomsg1; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_1" maxlength="500"><?php echo $cfg['rankup_next_message_1']; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc2"><?php echo $lang['winxmsg2']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg2" maxlength="500"><?php echo $nextupinfomsg2; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_2" maxlength="500"><?php echo $cfg['rankup_next_message_2']; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc3"><?php echo $lang['winxmsg3']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="nextupinfomsg3" maxlength="500"><?php echo $nextupinfomsg3; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_3" maxlength="500"><?php echo $cfg['rankup_next_message_3']; ?></textarea>
 										</div>
 									</div>
 								</div>

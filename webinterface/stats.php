@@ -37,7 +37,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
@@ -56,22 +56,23 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 }
 
 if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if (isset($_POST['showexcld'])) $showexcld = 1; else $showexcld = 0;
-	if (isset($_POST['showcolrg'])) $showcolrg = 1; else $showcolrg = 0;
-	if (isset($_POST['showcolcld'])) $showcolcld = 1; else $showcolcld = 0;
-	if (isset($_POST['showcoluuid'])) $showcoluuid = 1; else $showcoluuid = 0;
-	if (isset($_POST['showcoldbid'])) $showcoldbid = 1; else $showcoldbid = 0;
-	if (isset($_POST['showcolls'])) $showcolls = 1; else $showcolls = 0;
-	if (isset($_POST['showcolot'])) $showcolot = 1; else $showcolot = 0;
-	if (isset($_POST['showcolit'])) $showcolit = 1; else $showcolit = 0;
-	if (isset($_POST['showcolat'])) $showcolat = 1; else $showcolat = 0;
-	if (isset($_POST['showcolas'])) $showcolas = 1; else $showcolas = 0;
-	if (isset($_POST['showcolnx'])) $showcolnx = 1; else $showcolnx = 0;
-	if (isset($_POST['showcolsg'])) $showcolsg = 1; else $showcolsg = 0;
-	if (isset($_POST['showhighest'])) $showhighest = 1; else $showhighest = 0;
-	if (isset($_POST['showgrpsince'])) $showgrpsince = 1; else $showgrpsince = 0;
-	if (isset($_POST['shownav'])) $shownav = 1; else $shownav = 0;
-	if ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `showexcld`='$showexcld',`showcolrg`='$showcolrg',`showcolcld`='$showcolcld',`showcoluuid`='$showcoluuid',`showcoldbid`='$showcoldbid',`showcolls`='$showcolls',`showcolot`='$showcolot',`showcolit`='$showcolit',`showcolat`='$showcolat',`showcolas`='$showcolas',`showcolnx`='$showcolnx',`showcolsg`='$showcolsg',`showhighest`='$showhighest',`showgrpsince`='$showgrpsince',`shownav`='$shownav'") === false) {
+	if (isset($_POST['stats_column_rank_switch'])) $cfg['stats_column_rank_switch'] = 1; else $cfg['stats_column_rank_switch'] = 0;
+	if (isset($_POST['stats_column_client_name_switch'])) $cfg['stats_column_client_name_switch'] = 1; else $cfg['stats_column_client_name_switch'] = 0;
+	if (isset($_POST['stats_column_unique_id_switch'])) $cfg['stats_column_unique_id_switch'] = 1; else $cfg['stats_column_unique_id_switch'] = 0;
+	if (isset($_POST['stats_column_client_db_id_switch'])) $cfg['stats_column_client_db_id_switch'] = 1; else $cfg['stats_column_client_db_id_switch'] = 0;
+	if (isset($_POST['stats_column_last_seen_switch'])) $cfg['stats_column_last_seen_switch'] = 1; else $cfg['stats_column_last_seen_switch'] = 0;
+	if (isset($_POST['stats_column_online_time_switch'])) $cfg['stats_column_online_time_switch'] = 1; else $cfg['stats_column_online_time_switch'] = 0;
+	if (isset($_POST['stats_column_idle_time_switch'])) $cfg['stats_column_idle_time_switch'] = 1; else $cfg['stats_column_idle_time_switch'] = 0;
+	if (isset($_POST['stats_column_active_time_switch'])) $cfg['stats_column_active_time_switch'] = 1; else $cfg['stats_column_active_time_switch'] = 0;
+	if (isset($_POST['stats_column_current_server_group_switch'])) $cfg['stats_column_current_server_group_switch'] = 1; else $cfg['stats_column_current_server_group_switch'] = 0;
+	if (isset($_POST['stats_column_next_rankup_switch'])) $cfg['stats_column_next_rankup_switch'] = 1; else $cfg['stats_column_next_rankup_switch'] = 0;
+	if (isset($_POST['stats_column_next_server_group_switch'])) $cfg['stats_column_next_server_group_switch'] = 1; else $cfg['stats_column_next_server_group_switch'] = 0;
+	if (isset($_POST['stats_column_current_group_since_switch'])) $cfg['stats_column_current_group_since_switch'] = 1; else $cfg['stats_column_current_group_since_switch'] = 0;
+	if (isset($_POST['stats_show_excepted_clients_switch'])) $cfg['stats_show_excepted_clients_switch'] = 1; else $cfg['stats_show_excepted_clients_switch'] = 0;
+	if (isset($_POST['stats_show_clients_in_highest_rank_switch'])) $cfg['stats_show_clients_in_highest_rank_switch'] = 1; else $cfg['stats_show_clients_in_highest_rank_switch'] = 0;
+	if (isset($_POST['stats_show_site_navigation_switch'])) $cfg['stats_show_site_navigation_switch'] = 1; else $cfg['stats_show_site_navigation_switch'] = 0;
+	
+	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}'),('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -103,120 +104,120 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolrgdesc"><?php echo $lang['wishcolrg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolrg == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolrg" value="',$showcolrg,'">';
+											<?PHP if ($cfg['stats_column_rank_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_rank_switch" value="',$cfg['stats_column_rank_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolrg" value="',$showcolrg,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_rank_switch" value="',$cfg['stats_column_rank_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolclddesc"><?php echo $lang['wishcolcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolcld == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolcld" value="',$showcolcld,'">';
+											<?PHP if ($cfg['stats_column_client_name_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_client_name_switch" value="',$cfg['stats_column_client_name_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolcld" value="',$showcolcld,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_client_name_switch" value="',$cfg['stats_column_client_name_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoluuiddesc"><?php echo $lang['wishcoluuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcoluuid == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcoluuid" value="',$showcoluuid,'">';
+											<?PHP if ($cfg['stats_column_unique_id_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_unique_id_switch" value="',$cfg['stats_column_unique_id_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcoluuid" value="',$showcoluuid,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_unique_id_switch" value="',$cfg['stats_column_unique_id_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldbiddesc"><?php echo $lang['wishcoldbid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcoldbid == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcoldbid" value="',$showcoldbid,'">';
+											<?PHP if ($cfg['stats_column_client_db_id_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_client_db_id_switch" value="',$cfg['stats_column_client_db_id_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcoldbid" value="',$showcoldbid,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_client_db_id_switch" value="',$cfg['stats_column_client_db_id_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcollsdesc"><?php echo $lang['wishcolls']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolls == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolls" value="',$showcolls,'">';
+											<?PHP if ($cfg['stats_column_last_seen_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_last_seen_switch" value="',$cfg['stats_column_last_seen_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolls" value="',$showcolls,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_last_seen_switch" value="',$cfg['stats_column_last_seen_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolotdesc"><?php echo $lang['wishcolot']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolot == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolot" value="',$showcolot,'">';
+											<?PHP if ($cfg['stats_column_online_time_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_online_time_switch" value="',$cfg['stats_column_online_time_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolot" value="',$showcolot,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_online_time_switch" value="',$cfg['stats_column_online_time_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolitdesc"><?php echo $lang['wishcolit']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolit == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolit" value="',$showcolit,'">';
+											<?PHP if ($cfg['stats_column_idle_time_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_idle_time_switch" value="',$cfg['stats_column_idle_time_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolit" value="',$showcolit,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_idle_time_switch" value="',$cfg['stats_column_idle_time_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolatdesc"><?php echo $lang['wishcolat']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolat == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolat" value="',$showcolat,'">';
+											<?PHP if ($cfg['stats_column_active_time_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_active_time_switch" value="',$cfg['stats_column_active_time_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolat" value="',$showcolat,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_active_time_switch" value="',$cfg['stats_column_active_time_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolasdesc"><?php echo $lang['wishcolas']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolas == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolas" value="',$showcolas,'">';
+											<?PHP if ($cfg['stats_column_current_server_group_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_current_server_group_switch" value="',$cfg['stats_column_current_server_group_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolas" value="',$showcolas,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_current_server_group_switch" value="',$cfg['stats_column_current_server_group_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolgsdesc"><?php echo $lang['wishcolgs']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showgrpsince == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showgrpsince" value="',$showgrpsince,'">';
+											<?PHP if ($cfg['stats_column_current_group_since_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_current_group_since_switch" value="',$cfg['stats_column_current_group_since_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showgrpsince" value="',$showgrpsince,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_current_group_since_switch" value="',$cfg['stats_column_current_group_since_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolnxdesc"><?php echo $lang['wishcolnx']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolnx == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolnx" value="',$showcolnx,'">';
+											<?PHP if ($cfg['stats_column_next_rankup_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_next_rankup_switch" value="',$cfg['stats_column_next_rankup_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolnx" value="',$showcolnx,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_next_rankup_switch" value="',$cfg['stats_column_next_rankup_switch'],'">';
 											} ?>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcolsgdesc"><?php echo $lang['wishcolsg']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 										<div class="col-sm-8">
-											<?PHP if ($showcolsg == 1) {
-												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showcolsg" value="',$showcolsg,'">';
+											<?PHP if ($cfg['stats_column_next_server_group_switch'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_next_server_group_switch" value="',$cfg['stats_column_next_server_group_switch'],'">';
 											} else {
-												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showcolsg" value="',$showcolsg,'">';
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_next_server_group_switch" value="',$cfg['stats_column_next_server_group_switch'],'">';
 											} ?>
 										</div>
 									</div>
@@ -227,20 +228,20 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishexclddesc"><?php echo $lang['wishexcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<?PHP if ($showexcld == 1) {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showexcld" value="',$showexcld,'">';
+									<?PHP if ($cfg['stats_show_excepted_clients_switch'] == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_excepted_clients_switch" value="',$cfg['stats_show_excepted_clients_switch'],'">';
 									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showexcld" value="',$showexcld,'">';
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_excepted_clients_switch" value="',$cfg['stats_show_excepted_clients_switch'],'">';
 									} ?>
 								</div>
 							</div>
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishhiclddesc"><?php echo $lang['wishhicld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<?PHP if ($showhighest == 1) {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="showhighest" value="',$showhighest,'">';
+									<?PHP if ($cfg['stats_show_clients_in_highest_rank_switch'] == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_clients_in_highest_rank_switch" value="',$cfg['stats_show_clients_in_highest_rank_switch'],'">';
 									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="showhighest" value="',$showhighest,'">';
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_clients_in_highest_rank_switch" value="',$cfg['stats_show_clients_in_highest_rank_switch'],'">';
 									} ?>
 								</div>
 							</div>
@@ -248,10 +249,10 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishnavdesc"><?php echo $lang['wishnav']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
 								<div class="col-sm-8">
-									<?PHP if ($shownav == 1) {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="shownav" value="',$shownav,'">';
+									<?PHP if ($cfg['stats_show_site_navigation_switch'] == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
 									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="shownav" value="',$shownav,'">';
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
 									} ?>
 								</div>
 							</div>

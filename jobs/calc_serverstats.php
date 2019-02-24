@@ -1,5 +1,5 @@
 <?PHP
-function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$serverinfo,$substridle,$grouptime,$logpath,$ts,$currvers,$upchannel,$select_arr,$phpcommand,$adminuuid) {
+function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$select_arr,$phpcommand) {
 	$nowtime = time();
 	$sqlexec = '';
 
@@ -190,16 +190,16 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 	// Stats for Server Usage
 	if(key($select_arr['max_timestamp_server_usage'])  == 0 || ($nowtime - key($select_arr['max_timestamp_server_usage'])) > 898) { // every 15 mins
 		//Calc time next rankup
-		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user");
+		//enter_logfile($cfg,6,"Calc next rankup for offline user");
 		$upnextuptime = $nowtime - 1800;
 		if(($uuidsoff = $mysqlcon->query("SELECT `uuid`,`idle`,`count` FROM `$dbname`.`user` WHERE `online`<>1 AND `lastseen`>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($cfg,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(count($uuidsoff) != 0) {
-			krsort($grouptime);
+			krsort($cfg['rankup_definition']);
 			foreach($uuidsoff as $uuid) {
 				$count    = $uuid['count'];
-				if ($substridle == 1) {
+				if ($cfg['rankup_time_assess_mode'] == 1) {
 					$activetime = $count - $uuid['idle'];
 					$dtF        = new DateTime("@0");
 					$dtT        = new DateTime("@$activetime");
@@ -209,7 +209,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 					$dtT        = new DateTime("@$count");
 				}
 				$grpcount=0;
-				foreach ($grouptime as $time => $groupid) {
+				foreach ($cfg['rankup_definition'] as $time => $groupid) {
 					$grpcount++;
 					if ($activetime > $time) {
 						if($grpcount == 1) {
@@ -240,18 +240,18 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		} else {
 			$sqlexec .= "INSERT INTO `$dbname`.`server_usage` (`timestamp`,`clients`,`channel`) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
 		}
-		//enter_logfile($logpath,$timezone,6,"Calc next rankup for offline user [DONE]");
+		//enter_logfile($cfg,6,"Calc next rankup for offline user [DONE]");
 	}
 
 	// Calc Values for server stats
-	if($select_arr['job_check']['calc_server_stats']['timestamp'] < ($nowtime-900)) {
+	if($select_arr['job_check']['calc_server_stats']['timestamp'] < ($nowtime - 900)) {
 		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(`timestamp`)) AS `timestamp` FROM `$dbname`.`user_snapshot`")->fetch(PDO::FETCH_ASSOC)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_serverstats 19:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($cfg,2,"calc_serverstats 19:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if ($entry_snapshot_count['timestamp'] > 27) {
 			// Calc total_online_week
 			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`s2`.`timestamp`) AS `value1` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 28) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 28) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
-				enter_logfile($logpath,$timezone,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
+				enter_logfile($cfg,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_week['count'] == NULL) {
 				$total_online_week = 0;
@@ -264,7 +264,7 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		if ($entry_snapshot_count['timestamp'] > 119) {
 			// Calc total_online_month
 			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`s2`.`timestamp`) AS `value1` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 120) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 120) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
-				enter_logfile($logpath,$timezone,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
+				enter_logfile($cfg,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_month['count'] == NULL) {
 				$total_online_month = 0;
@@ -278,16 +278,16 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 		
 		if ($select_arr['job_check']['get_version']['timestamp'] < ($nowtime - 43200)) {
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$upchannel);
+			curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$cfg['version_update_channel']);
 			curl_setopt($ch, CURLOPT_REFERER, 'TSN Ranksystem');
 			curl_setopt($ch, CURLOPT_USERAGENT, 
-				$currvers.";".
+				$cfg['version_current_using'].";".
 				php_uname("s").";".
 				php_uname("r").";".
 				phpversion().";".
 				$dbtype.";".
-				$ts['host'].";".
-				$ts['voice'].";".
+				$cfg['teamspeak_host_address'].";".
+				$cfg['teamspeak_voice_port'].";".
 				__DIR__.";".
 				$total_user.";".
 				$user_today.";".
@@ -305,29 +305,29 @@ function calc_serverstats($ts3,$mysqlcon,$dbname,$dbtype,$slowmode,$timezone,$se
 			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-			$newversion = curl_exec($ch);
+			$cfg['version_latest_available'] = curl_exec($ch);
 			curl_close($ch);
 			
-			if(version_compare($newversion, $currvers, '>') && $newversion != NULL) {
-				enter_logfile($logpath,$timezone,4,$lang['upinf']);
-				if(isset($adminuuid) && $adminuuid != NULL) {
-					foreach ($adminuuid as $clientid) {
-						usleep($slowmode);
+			if(version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>') && $cfg['version_latest_available'] != NULL) {
+				enter_logfile($cfg,4,$lang['upinf']);
+				if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+					foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientid) {
+						usleep($cfg['teamspeak_query_command_delay']);
 						try {
-							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $currvers, $newversion));
-							enter_logfile($logpath,$timezone,4,"  ".sprintf($lang['upusrinf'], $clientid));
-						}
-						catch (Exception $e) {
-							enter_logfile($logpath,$timezone,6,"  ".sprintf($lang['upusrerr'], $clientid));
+							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $cfg['version_current_using'], $cfg['version_latest_available']));
+							enter_logfile($cfg,4,"  ".sprintf($lang['upusrinf'], $clientid));
+						} catch (Exception $e) {
+							enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 						}
 					}
 				}
-				update_rs($mysqlcon,$lang,$dbname,$logpath,$timezone,$newversion,$phpcommand);
+				update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
 			}
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='get_version'; ";
 		}
 		
 		//Calc Rank
-		if ($substridle == 1) {
+		if ($cfg['rankup_time_assess_mode'] == 1) {
 			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY (`count` - `idle`) DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";
 		} else {
 			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY `count` DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";

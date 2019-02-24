@@ -15,8 +15,8 @@ session_start();
 require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 
-function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
-	$file = $logpath.'ranksystem.log';
+function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
+	$file = $cfg['logs_path'].'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
 	} elseif ($loglevel == 2) {
@@ -27,27 +27,22 @@ function enter_logfile($logpath,$timezone,$loglevel,$logtext) {
 		$loglevel = "  NOTICE    ";
 	} elseif ($loglevel == 5) {
 		$loglevel = "  INFO      ";
+	} elseif ($loglevel == 6) {
+		$loglevel = "  DEBUG     ";
 	}
-	$input = DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n";
 	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, $input);
-	if (filesize($file) > 5242880) {
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($timezone))->format("Y-m-d H:i:s.u ")."  NOTICE    Restart Bot to continue with new log file...\n");
+	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
+	fclose($loghandle);
+	if($norotate == false && filesize($file) > 5242880) {
+		$loghandle = fopen($file, 'a');
+		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
 		if (file_exists($file2)) unlink($file2);
 		rename($file, $file2);
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			exec("del /F ".substr(__DIR__,0,-12).'logs/pid');
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."worker.php start", 0, false);
-			exit;
-		} else {
-			exec("rm -f ".substr(__DIR__,0,-12).'logs/pid');
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start");
-			exit;
-		}
+		$loghandle = fopen($file, 'a');
+		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
+		fclose($loghandle);
 	}
 }
 
@@ -74,7 +69,7 @@ if (isset($_POST['logout'])) {
 	exit;
 }
 
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $webuser || $_SESSION[$rspathhex.'password'] != $webpass || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
+if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
 	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
 	exit;
 }
@@ -93,15 +88,15 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 }
 
 if (isset($_POST['changepw']) && isset($db_csrf[$_POST['csrf_token']])) {
-	$newpass = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
-	if (!password_verify($_POST['oldpwd'], $webpass)) {
+	$cfg['webinterface_pass'] = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
+	if (!password_verify($_POST['oldpwd'], $cfg['webinterface_pass'])) {
 		$err_msg = $lang['wichpw1']; $err_lvl = 3;
 	} elseif ($_POST['newpwd1'] != $_POST['newpwd2'] || $_POST['newpwd1'] == NULL) {
 		$err_msg = $lang['wichpw2']; $err_lvl = 3;
-	} elseif ($mysqlcon->exec("UPDATE `$dbname`.`config` SET `webpass`='$newpass'") === false) {
+	} elseif($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_pass','{$cfg['webinterface_pass']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
     } else {
-        enter_logfile($logpath,$timezone,3,sprintf($lang['wichpw3'],getclientip()));
+        enter_logfile($cfg,3,sprintf($lang['wichpw3'],getclientip()));
 		$err_msg = $lang['wisvsuc']; $err_lvl = NULL;
     }
 } elseif(isset($_POST['changepw'])) {

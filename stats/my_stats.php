@@ -16,10 +16,10 @@ require_once('../other/config.php');
 require_once('../other/session.php');
 require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$dbname,$timezone,$logpath);
+$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($ts['voice'], $mysqlcon, $dbname, $language, $adminuuid);
+	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
 if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
@@ -31,17 +31,17 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 	$count_hours = round($dbdata_fetched['count']/3600);
 	$idle_hours = round($dbdata_fetched['idle']/3600);
 
-	if ($substridle == 1) {
+	if ($cfg['rankup_time_assess_mode'] == 1) {
 		$activetime = $dbdata_fetched['count'] - $dbdata_fetched['idle'];
 	} else {
 		$activetime = $dbdata_fetched['count'];
 	}
 	$active_count = $dbdata_fetched['count'] - $dbdata_fetched['idle'];
 
-	krsort($grouptime);
+	krsort($cfg['rankup_definition']);
 	$nextgrp = '';
 
-	foreach ($grouptime as $time => $groupid) {
+	foreach ($cfg['rankup_definition'] as $time => $groupid) {
 		$actualgrp = $time;
 		if ($activetime > $time) {
 			break;
@@ -63,16 +63,16 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 	$stats_user = $mysqlcon->query("SELECT `count_week`,`active_week`,`count_month`,`active_month` FROM `$dbname`.`stats_user` WHERE `uuid`='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
 
 	if (isset($stats_user['count_week'])) $count_week = $stats_user['count_week']; else $count_week = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	if (isset($stats_user['active_week'])) $active_week = $stats_user['active_week']; else $active_week = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_week"); $active_week = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_week"); $active_week = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	if (isset($stats_user['count_month'])) $count_month = $stats_user['count_month']; else $count_month = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_month"); $count_month = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_month"); $count_month = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	if (isset($stats_user['active_month'])) $active_month = $stats_user['active_month']; else $active_month = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	if (isset($dbdata_fetched['count'])) $count_total = $dbdata_fetched['count']; else $count_total = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($timeformat);
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($timeformat);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($cfg['default_date_format']);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($cfg['default_date_format']);
 
 	$time_for_bronze = 50;
 	$time_for_silver = 100;

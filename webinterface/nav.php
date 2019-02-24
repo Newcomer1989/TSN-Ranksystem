@@ -8,16 +8,16 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?PHP echo $language; ?>">
+<html lang="<?PHP echo $cfg['default_language']; ?>">
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="version" content="<?PHP echo $currvers; ?>">
+	<meta name="version" content="<?PHP echo $cfg['version_current_using']; ?>">
 	<link rel="icon" href="../tsicons/rs.png">
 	<title>TS-N.NET Ranksystem</title>
-	<link href="../libs/combined_wi.css?v=<?PHP echo $currvers; ?>" rel="stylesheet">
-	<script src="../libs/combined_wi.js?v=<?PHP echo $currvers; ?>"></script>
+	<link href="../libs/combined_wi.css?v=<?PHP echo $cfg['version_current_using']; ?>" rel="stylesheet">
+	<script src="../libs/combined_wi.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
 	<script>
 	$(function() {
 		$('.required-icon').tooltip({
@@ -48,8 +48,8 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $currvers;?></a>
-				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare($_SESSION[$rspathhex.'newversion'], $currvers, '>') && $_SESSION[$rspathhex.'newversion'] != '') {
+				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $cfg['version_current_using'];?></a>
+				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare($_SESSION[$rspathhex.'newversion'], $cfg['version_current_using'], '>') && $_SESSION[$rspathhex.'newversion'] != '') {
 					echo '<a class="navbar-brand" href="//ts-n.net/ranksystem.php?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
 				} ?>
 			</div>
@@ -69,7 +69,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				} else {
 					echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fa fa-fw fa-bar-chart"></i>&nbsp;',$lang['winav6'],'</a></li>';
 				}
-				if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $webuser && $_SESSION[$rspathhex.'password'] == $webpass) { ?>
+				if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) { ?>
 				<li>
 					<a href="changepassword.php"><i class="fa fa-lock"></i>&nbsp;<?PHP echo $lang['pass2']; ?></a>
 				</li>
@@ -95,6 +95,9 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						</li>
 						<li>
 							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - English</a>
+						</li>
+						<li>
+							<a href="?lang=es"><span class="flag-icon flag-icon-es"></span>&nbsp;&nbsp;ES - español</a>
 						</li>
 						<li>
 							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
@@ -169,7 +172,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 			</div>
 		</nav>
 <?PHP
-if($adminuuid==NULL && $_SESSION[$rspathhex.'username'] == $webuser && !isset($err_msg)) {
+if($cfg['webinterface_admin_client_unique_id_list'] == NULL && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && !isset($err_msg)) {
 	$err_msg = $lang['winav11']; $err_lvl = 3;
 }
 

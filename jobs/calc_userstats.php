@@ -1,5 +1,5 @@
 <?PHP
-function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$select_arr) {
+function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,$select_arr) {
 	$sqlexec = '';
 	$max_timestamp = key($select_arr['max_timestamp_user_snapshot']);
 	$min_timestamp_week = key($select_arr['usersnap_min_week']);
@@ -23,21 +23,21 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 	$uuids = substr($uuids, 0, -1);
 
 	if(isset($sqlhis) && $max_timestamp != NULL && $min_timestamp_week != NULL && $min_timestamp_month != NULL) {
-		#enter_logfile($logpath,$timezone,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
+		#enter_logfile($cfg,6,"Update User Stats between ".$job_begin." and ".$job_end.":");
 		if(($userdataweekbegin = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$min_timestamp_week AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($cfg,2,"calc_userstats 6:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(($userdatamonthbegin = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$min_timestamp_month AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($cfg,2,"calc_userstats 8:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(($userdataend = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `timestamp`=$max_timestamp AND `uuid` IN ($uuids)")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-			enter_logfile($logpath,$timezone,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile($cfg,2,"calc_userstats 7:".print_r($mysqlcon->errorInfo(), true));
 		}
 
 		$allupdateuuid = '';
 		
 		foreach ($sqlhis as $uuid => $userstats) {
-			check_shutdown($timezone,$logpath); usleep($slowmode);
+			check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
 			try {
 				$clientinfo = $ts3->clientInfoDb($userstats['cldbid']);
 
@@ -62,7 +62,7 @@ function calc_userstats($ts3,$mysqlcon,$dbname,$slowmode,$timezone,$logpath,$sel
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);;
 				$allupdateuuid .= "('" . $uuid . "','" .$userstats['rank'] . "','" . $count_week . "','" . $count_month . "','" . $idle_week . "','" . $idle_month . "','" . $active_week . "','" . $active_month . "','" . $clientinfo['client_totalconnections'] . "','" . $clientinfo['client_base64HashClientUID'] . "','" . $clientinfo['client_total_bytes_uploaded'] . "','" . $clientinfo['client_total_bytes_downloaded'] . "'," . $clientdesc . "),";
 			} catch (Exception $e) {
-				#enter_logfile($logpath,$timezone,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted");
+				#enter_logfile($cfg,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") was missing in TS database, perhaps its already deleted");
 			}
 		}
 		unset($sqlhis, $userdataweekbegin, $userdataend, $userdatamonthbegin);
