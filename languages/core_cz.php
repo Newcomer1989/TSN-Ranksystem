@@ -263,7 +263,7 @@ $lang['stnv0038']			= "Zobrazit pouze klienty, kteří jsou online.";
 $lang['stnv0039']			= "Zobrazit pouze klienty, kteří nejsou online.";
 $lang['stnv0040']			= "Zobrazit pouze klienty, kteří jsou v definované skupině. Reprezentace pozice / úrovně aktu.<br>Nahradit <i> GROUPID </ i> s požadovaným identifikátorem serverové skupiny.";
 $lang['stnv0041']			= "Zobrazit pouze klienty, kteří jsou vybrány podle lastseen.<br>Nahradit <i> OPERATOR </ i> 's' & lt; nebo \">\" nebo '=' nebo '! ='.<br>A nahradit <i> TIME </ i> časovým razítkem nebo datem s formátem 'Ymd Hi' (příklad: 2016-06-18 20-25). Příklad: filtr: lastseen: & lt;: 2016-06-18 20-25:";
-$lang['stnv0042']			= "Zobrazit pouze klienty, které jsou z definované země<br><br>Nahradit <i> TS3-COUNTRY-CODE </ i> se zamýšlenou zemí.<br>Seznam kódů google pro ISO 3166-1 alpha-2";
+$lang['stnv0042']			= "Zobrazit pouze klienty, kteří jsou z definované země<br><br>Nahradit <i> TS3-COUNTRY-CODE </ i> se zamýšlenou zemí.<br>Seznam kódů google pro ISO 3166-1 alpha-2";
 $lang['stnv0043']			= "Připojit se na TS3";
 $lang['stri0001']			= "Informace o Ranksystemu";
 $lang['stri0002']			= "Co je to Ranksystem?";
