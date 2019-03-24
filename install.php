@@ -47,7 +47,7 @@ $rsversion = '1.2.12';
 							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
 						</li>
 						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - čeština</a>
+							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
 						</li>
 						<li>
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>

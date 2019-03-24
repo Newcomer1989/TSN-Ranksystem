@@ -161,7 +161,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<select class="selectpicker show-tick form-control" name="default_language">
 									<?PHP
 									echo '<option data-subtext="العربية" value="ar"'.($cfg['default_language'] === 'ar' ? ' selected="selected"' : '').'>AR</option>';
-									echo '<option data-subtext="čeština" value="cz"'.($cfg['default_language'] === 'cz' ? ' selected="selected"' : '').'>CZ</option>';
+									echo '<option data-subtext="Čeština" value="cz"'.($cfg['default_language'] === 'cz' ? ' selected="selected"' : '').'>CZ</option>';
 									echo '<option data-subtext="Deutsch" value="de"'.($cfg['default_language'] === 'de' ? ' selected="selected"' : '').'>DE</option>';
 									echo '<option data-subtext="English" value="en"'.($cfg['default_language'] === 'en' ? ' selected="selected"' : '').'>EN</option>';
 									echo '<option data-subtext="español" value="es"'.($cfg['default_language'] === 'es' ? ' selected="selected"' : '').'>ES</option>';

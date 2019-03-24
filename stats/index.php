@@ -20,7 +20,7 @@ $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 if($cfg['default_language'] == "ar") {
 	require_once('../languages/nations_en.php');
 } elseif($cfg['default_language'] == "cz") {
-	require_once('../languages/nations_en.php');
+	require_once('../languages/nations_cz.php');
 } elseif($cfg['default_language'] == "de") {
 	require_once('../languages/nations_de.php');
 } elseif($cfg['default_language'] == "en") {

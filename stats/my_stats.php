@@ -25,7 +25,7 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } elseif ($_SESSION[$rspathhex.'connected'] == 0) {
-	$err_msg = sprintf("Du konntest nicht auf dem TeamSpeak gefunden werden. Bitte %sklicke hier%s um dich zun&auml;chst zu verifizieren.", '<a href="verify.php">', '</a>'); $err_lvl = 3;
+	$err_msg = sprintf($lang['stag0015'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } else {
 	$dbdata_fetched = $mysqlcon->query("SELECT * FROM `$dbname`.`user` WHERE `uuid` LIKE '%".$_SESSION[$rspathhex.'tsuid']."%'")->fetch();
 	$count_hours = round($dbdata_fetched['count']/3600);
