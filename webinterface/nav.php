@@ -15,7 +15,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $cfg['version_current_using']; ?>">
 	<link rel="icon" href="../tsicons/rs.png">
-	<title>TS-N.NET Ranksystem</title>
+	<title>SCL Ranksystem</title>
 	<link href="../libs/combined_wi.css?v=<?PHP echo $cfg['version_current_using']; ?>" rel="stylesheet">
 	<script src="../libs/combined_wi.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
 	<script>
@@ -48,7 +48,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $cfg['version_current_using'];?></a>
+				<a class="navbar-brand" href="index.php">SCL RANKSYSTEM - Webinterface <?PHP echo $cfg['version_current_using'];?></a>
 				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare($_SESSION[$rspathhex.'newversion'], $cfg['version_current_using'], '>') && $_SESSION[$rspathhex.'newversion'] != '') {
 					echo '<a class="navbar-brand" href="//ts-n.net/ranksystem.php?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
 				} ?>
@@ -149,6 +149,10 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						<ul id="addons" class="collapse">
 							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
 								<a href="addon_assign_groups.php"><?PHP echo $lang['stag0001']; ?></a>
+							</li>
+							<!-- Required for ClientCleaner -->
+							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "cleaner.php" ? ' class="active">' : '>'); ?>
+								<a href="cleaner.php"><?PHP echo $lang['clean0005']; ?></a>
 							</li>
 						</ul>
 					</li>
