@@ -169,6 +169,12 @@ if (isset($mysqlcon) && ($oldcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`co
 		$cfg['rankup_excepted_group_id_list'] = array_flip(explode(',', $config['exceptgroup']));
 		$cfg['rankup_excepted_channel_id_list'] = array_flip(explode(',', $config['exceptcid']));
 		$cfg['default_date_format'] = $config['dateformat'];
+		/* Required for ClientCleaner*/
+		$cfg['simulate_mode'] = $config['simmosw'];
+		$cfg['cc_slowmode'] = $config['ccslw'];
+		$cfg['cc_query_nickname'] = $config['ccslw'];
+		$cfg['cc_deletiontime'] = $config['ccdel'];
+		/*Require End */
 		$cfg['stats_show_excepted_clients_switch'] = $config['showexcld'];
 		$cfg['stats_show_clients_in_highest_rank_switch'] = $config['showhighest'];
 		$cfg['stats_column_rank_switch'] = $config['showcolrg'];
