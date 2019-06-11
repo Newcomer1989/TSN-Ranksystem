@@ -7,18 +7,23 @@ assignees: ''
 
 ---
 
-Is this about an existing or new feature?
-
-**Existing feature**
-
-which one is it about and what exactly should be changed, how and why and what is the use of it.
-
+Distinguish whether it refers to an existing or new feature..
+ 
+**Existing Feature**
+ 
+***1) I am referring to the following existing feature:***
+ 
+***2) What do want to add or change on it?***
+ 
+***3) What would be the benefit?***
+_Please only report this feature, when you think also other people would have a benefit of it._
+ 
 **New Feature**
-
-***What does this feature do?***
-_pls think exactly over it and describe it as good as you can, like what should it do, when, where and why? Also what do you need for it and does it fit to the ranksystem (like has it something to do with"time")_
-
-____
-
-***Why do you think the new or modified feature is good for the rest of the Ranksystem-users?***
-_just because we saw in the past people make suggestion only for themself, do you think other will also profit from it - prove it! :)_
+ 
+***1) What shoud this feature do?***
+ 
+***2) Where it should be located?***
+_On which existing part of the Ranksystem you would add this new feature?_
+ 
+***3) What would be the benefit?***
+_Please only report this feature, when you think also other people would have a benefit of it._
