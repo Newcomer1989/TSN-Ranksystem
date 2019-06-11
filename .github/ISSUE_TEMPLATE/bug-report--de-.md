@@ -18,4 +18,4 @@ assignees: ''
 
 **Ranksystem Log**
 _Poste einen Log vom letzten Start des Ranksystems._
-_Den Log teilst am besten z.B. mit https://pastebin.com/ (Das macht es übersichtlicher)._
+_Den Log teilst du am besten z.B. mit https://pastebin.com/ (Das macht es übersichtlicher)._
