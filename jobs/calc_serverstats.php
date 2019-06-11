@@ -1,5 +1,5 @@
 <?PHP
-function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$select_arr,$phpcommand) {
+function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$select_arr,$phpcommand,$lang) {
 	$nowtime = time();
 	$sqlexec = '';
 
@@ -35,7 +35,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				$sqlexec .= "INSERT INTO $dbname.user_snapshot (timestamp, uuid, count, idle) VALUES $allinsertsnap; ";
+				$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`timestamp`, `uuid`, `count`, `idle`) VALUES $allinsertsnap; ";
 			}
 		}
 		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL25hdi5waHAiLCAiciIpOw=="));
@@ -47,7 +47,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 				array_push($buffer, $line);
 			}
 			fclose($fp);
-			$checkarr = array_flip(array('CQkJCQkJPGEgaHJlZj0iaW5mby5waHAiPjxpIGNsYXNzPSJmYSBmYS1mdyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107','CQkJCQk8P1BIUCBlY2hvICc8bGknLihiYXNlbmFtZSgkX1NFUlZFUlsnU0NSSVBUX05BTUUnXSkgPT0gImluZm8ucGhwIiA/ICcgY2xhc3M9ImFjdGl2ZSI+JyA6ICc+Jyk7'));
+			$checkarr = array_flip(array('PD9QSFAgZWNobyAnPGxpJy4oYmFzZW5hbWUoJF9TRVJWRVJbJ1NDUklQVF9OQU1FJ10pID09ICJpbmZvLnBocCIgPyAnIGNsYXNzPSJhY3RpdmUiPicgOiAnPicpOyA/PgoJCQkJCQk8YSBocmVmPSJpbmZvLnBocCI+PGkgY2xhc3M9ImZhcyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107ID8+PC9hPg=='));
 			$countcheck = 0;
 			foreach($buffer as $line) {
 				if(isset($checkarr[substr(base64_encode($line), 0, 132)])) {
@@ -66,7 +66,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 			}
 			fclose($fp);
 			foreach($buffer as $line) {
-				if(strstr(base64_encode($line), "VGhlIDxhIGhyZWY9Ii8vdHMtbi5uZXQvcmFua3N5c3RlbS5waHAiIHRhcmdldD0iX2JsYW5rIj5SYW5rc3lzdGVtPC9hPiB3YXMgY29kZWQgYnkgPHN0cm9uZz5OZXdjb21lcjE5ODk8L3N0cm9uZz4gQ29weXJpZ2h0ICZjb3B5OyAyMDA5LTIwMTggPGEgaHJlZj0iLy90cy1uLm5ldC8iIHRhcmdldD0iX2JsYW5rIj5UZWFtU3BlYWsgU3BvbnNvcmluZyBUUy1OLk5FVDwvYT4=")) {
+				if(strstr(base64_encode($line), "PHA+VGhlIDxhIGhyZWY9Ii8vdHMtcmFua3N5c3RlbS5jb20iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiPlJhbmtzeXN0ZW08L2E+IHdhcyBjb2RlZCBieSA8c3Ryb25nPk5ld2NvbWVyMTk4OTwvc3Ryb25nPiBDb3B5cmlnaHQgJmNvcHk7IDIwMDktMjAxOSBwb3dlcmVkIGJ5IDxhIGhyZWY9Ii8vdHMtbi5uZXQvIiB0YXJnZXQ9Il9ibGFuayIgcmVsPSJub29wZW5lciBub3JlZmVycmVyIj5UUy1OLk5FVDwvYT48L3A+")) {
 					$countcheck++;
 				}
 			}
@@ -190,7 +190,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 	// Stats for Server Usage
 	if(key($select_arr['max_timestamp_server_usage'])  == 0 || ($nowtime - key($select_arr['max_timestamp_server_usage'])) > 898) { // every 15 mins
 		//Calc time next rankup
-		//enter_logfile($cfg,6,"Calc next rankup for offline user");
+		enter_logfile($cfg,6,"Calc next rankup for offline user");
 		$upnextuptime = $nowtime - 1800;
 		if(($uuidsoff = $mysqlcon->query("SELECT `uuid`,`idle`,`count` FROM `$dbname`.`user` WHERE `online`<>1 AND `lastseen`>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($cfg,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
@@ -202,11 +202,11 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 				if ($cfg['rankup_time_assess_mode'] == 1) {
 					$activetime = $count - $uuid['idle'];
 					$dtF        = new DateTime("@0");
-					$dtT        = new DateTime("@$activetime");
+					$dtT        = new DateTime("@".round($activetime));
 				} else {
 					$activetime = $count;
 					$dtF        = new DateTime("@0");
-					$dtT        = new DateTime("@$count");
+					$dtT        = new DateTime("@".round($count));
 				}
 				$grpcount=0;
 				foreach ($cfg['rankup_definition'] as $time => $groupid) {
@@ -240,7 +240,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 		} else {
 			$sqlexec .= "INSERT INTO `$dbname`.`server_usage` (`timestamp`,`clients`,`channel`) VALUES ($nowtime,$server_used_slots,$server_channel_amount); ";
 		}
-		//enter_logfile($cfg,6,"Calc next rankup for offline user [DONE]");
+		enter_logfile($cfg,6,"Calc next rankup for offline user [DONE]");
 	}
 
 	// Calc Values for server stats
@@ -297,7 +297,9 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 				$total_online_week.";".
 				$total_online_month.";".
 				$total_active_time.";".
-				$total_inactive_time
+				$total_inactive_time.";".
+				$cfg['temp_ts_version'].";".
+				$cfg['temp_db_version']
 			);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
@@ -314,7 +316,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 					foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientid) {
 						usleep($cfg['teamspeak_query_command_delay']);
 						try {
-							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $cfg['version_current_using'], $cfg['version_latest_available']));
+							$ts3->clientGetByUid($clientid)->message(sprintf($lang['upmsg'], $cfg['version_current_using'], $cfg['version_latest_available'], 'https://ts-ranksystem.com/#changelog'));
 							enter_logfile($cfg,4,"  ".sprintf($lang['upusrinf'], $clientid));
 						} catch (Exception $e) {
 							enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
@@ -323,14 +325,18 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$s
 				}
 				update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
 			}
-			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='get_version'; ";
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='get_version'; UPDATE `$dbname`.`cfg_params` SET `value`='{$cfg['version_latest_available']}' WHERE `param`='version_latest_available';";
 		}
 		
 		//Calc Rank
 		if ($cfg['rankup_time_assess_mode'] == 1) {
 			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY (`count` - `idle`) DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";
+			//MySQL 8 or above
+			//UPDATE `user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY (`count` - `idle`) DESC) AS `rank`, `uuid` FROM `user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;
 		} else {
 			$sqlexec .= "SET @a:=0; UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY `count` DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`; ";
+			//MySQL 8 or above
+			//UPDATE `user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY `count` DESC) AS `rank`, `uuid` FROM `user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;
 		}
 	}
 	return($sqlexec);

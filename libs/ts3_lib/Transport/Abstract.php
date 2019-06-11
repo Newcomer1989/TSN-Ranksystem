@@ -271,4 +271,31 @@ abstract class TeamSpeak3_Transport_Abstract
     }
     while(@stream_select($read, $null, $null, $this->config["timeout"]) == 0);
   }
+  
+  protected function waitForReadyReadtsn($time, $microbegin, $lefttime, $delay)
+  {
+    if(!$this->isConnected() || $this->config["blocking"]) return;
+
+    do
+    {
+	  $read = array($this->stream);
+      $null = null;
+
+      if($time)
+      {
+        TeamSpeak3_Helper_Signal::getInstance()->emit(strtolower($this->getAdapterType()) . "WaitTimeout", $time, $this->getAdapter());
+      }
+
+      $time = $time+$this->config["timeout"];
+  	  $now = microtime(true);
+	  
+	  if($now > ($microbegin + $lefttime)) return;
+	  if(stream_select($read, $null, $null, $this->config["timeout"]) === false) {
+	    throw new TeamSpeak3_Transport_Exception("connection to server '" . $this->config["host"] . ":" . $this->config["port"] . "' lost");
+	  } else {
+	    usleep($delay);
+	  }
+    }
+    while($now < ($microbegin + $lefttime));
+  }
 }

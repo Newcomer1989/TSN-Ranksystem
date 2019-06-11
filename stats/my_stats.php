@@ -25,7 +25,7 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'uuid_verified'])) {
 	$err_msg = sprintf($lang['stag0006'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } elseif ($_SESSION[$rspathhex.'connected'] == 0) {
-	$err_msg = sprintf("Du konntest nicht auf dem TeamSpeak gefunden werden. Bitte %sklicke hier%s um dich zun&auml;chst zu verifizieren.", '<a href="verify.php">', '</a>'); $err_lvl = 3;
+	$err_msg = sprintf($lang['stag0015'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 } else {
 	$dbdata_fetched = $mysqlcon->query("SELECT * FROM `$dbname`.`user` WHERE `uuid` LIKE '%".$_SESSION[$rspathhex.'tsuid']."%'")->fetch();
 	$count_hours = round($dbdata_fetched['count']/3600);
@@ -57,7 +57,7 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 	} else {
 		$takedtime = $activetime - $actualgrp;
 		$neededtime = $nextgrp - $actualgrp;
-		$percentage_rankup = round($takedtime/$neededtime*100);
+		$percentage_rankup = round($takedtime/$neededtime*100, 2);
 	}
 
 	$stats_user = $mysqlcon->query("SELECT `count_week`,`active_week`,`count_month`,`active_month` FROM `$dbname`.`stats_user` WHERE `uuid`='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
@@ -71,35 +71,25 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 	if (isset($stats_user['active_month'])) $active_month = $stats_user['active_month']; else $active_month = 0;
 	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_month"); $active_month = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	if (isset($dbdata_fetched['count'])) $count_total = $dbdata_fetched['count']; else $count_total = 0;
-	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_total"); $count_total = $dtF->diff($dtT)->format($cfg['default_date_format']);
+	$dtF = new DateTime("@0"); $dtT = new DateTime("@".round($count_total)); $count_total = $dtF->diff($dtT)->format($cfg['default_date_format']);
 	$dtF = new DateTime("@0"); $dtT = new DateTime("@$active_count"); $active_count = $dtF->diff($dtT)->format($cfg['default_date_format']);
-
-	$time_for_bronze = 50;
-	$time_for_silver = 100;
-	$time_for_gold = 250;
-	$time_for_legendary = 500;
-
-	$connects_for_bronze = 50;
-	$connects_for_silver = 100;
-	$connects_for_gold = 250;
-	$connects_for_legendary = 500;
 
 	$achievements_done = 0;
 
-	if($count_hours >= $time_for_legendary) {
-		$achievements_done = $achievements_done + 4; 
-	} elseif($count_hours >= $time_for_gold) {
+	if($count_hours >= $cfg['stats_time_legend']) {
+		$achievements_done = $achievements_done + 4;
+	} elseif($count_hours >= $cfg['stats_time_gold']) {
 		$achievements_done = $achievements_done + 3;
-	} elseif($count_hours >= $time_for_silver) {
+	} elseif($count_hours >= $cfg['stats_time_silver']) {
 		$achievements_done = $achievements_done + 2;
 	} else {
 		$achievements_done = $achievements_done + 1;
 	}
-	if($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_legendary) {
+	if($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_legend']) {
 		$achievements_done = $achievements_done + 4;
-	} elseif($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_gold) {
+	} elseif($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_gold']) {
 		$achievements_done = $achievements_done + 3;
-	} elseif($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_silver) {
+	} elseif($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_silver']) {
 		$achievements_done = $achievements_done + 2;
 	} else {
 		$achievements_done = $achievements_done + 1;
@@ -120,7 +110,7 @@ require_once('nav.php');
 						<h1 class="page-header">
 							<?PHP echo $lang['stmy0001']; ?>
 							<a href="#infoModal" data-toggle="modal" class="btn btn-primary">
-								<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+								<span class="fas fa-info-circle" aria-hidden="true"></span>
 							</a>
 						</h1>
 					</div>
@@ -190,7 +180,7 @@ require_once('nav.php');
 					<?PHP } ?>
 					<div class="col-lg-6">
 						<h3><?PHP echo $lang['stmy0011']; ?></h3>
-						<?PHP if($count_hours >= $time_for_legendary) { ?>
+						<?PHP if($count_hours >= $cfg['stats_time_legend']) { ?>
 						<div class="panel panel-green">
 							<div class="panel-heading">
 								<div class="row">
@@ -208,7 +198,7 @@ require_once('nav.php');
 								<?PHP echo $lang['stmy0014']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($count_hours >= $time_for_gold) { ?>
+						<?PHP } elseif($count_hours >= $cfg['stats_time_gold']) { ?>
 						<div class="panel panel-green">
 							<div class="panel-heading">
 								<div class="row">
@@ -222,11 +212,11 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo  get_percentage($time_for_legendary, $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($time_for_legendary, $count_hours); ?>%;">
-								<?PHP echo get_percentage($time_for_legendary, $count_hours), $lang['stmy0016']; ?>
+							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo  get_percentage($cfg['stats_time_legend'], $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($cfg['stats_time_legend'], $count_hours); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_time_legend'], $count_hours), $lang['stmy0016']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($count_hours >= $time_for_silver) { ?>
+						<?PHP } elseif($count_hours >= $cfg['stats_time_silver']) { ?>
 						<div class="panel panel-green">
 							<div class="panel-heading">
 								<div class="row">
@@ -240,11 +230,11 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($time_for_gold, $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($time_for_gold, $count_hours); ?>%;">
-								<?PHP echo get_percentage($time_for_gold, $count_hours), $lang['stmy0018']; ?>
+							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_time_gold'], $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($cfg['stats_time_gold'], $count_hours); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_time_gold'], $count_hours), $lang['stmy0018']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($count_hours >= $time_for_bronze) { ?>
+						<?PHP } elseif($count_hours >= $cfg['stats_time_bronze']) { ?>
 						<div class="panel panel-green">
 							<div class="panel-heading">
 								<div class="row">
@@ -258,8 +248,8 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($time_for_silver, $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($time_for_silver, $count_hours); ?>%;">
-								<?PHP echo get_percentage($time_for_silver, $count_hours), $lang['stmy0020']; ?>
+							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_time_silver'], $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($cfg['stats_time_silver'], $count_hours); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_time_silver'], $count_hours), $lang['stmy0020']; ?>
 							</div>
 						</div>
 						<?PHP } else { ?>
@@ -276,15 +266,15 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($time_for_bronze, $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($time_for_bronze, $count_hours); ?>%;">
-								<?PHP echo get_percentage($time_for_bronze, $count_hours), $lang['stmy0022']; ?>
+							<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_time_bronze'], $count_hours); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width: <?PHP echo get_percentage($cfg['stats_time_bronze'], $count_hours); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_time_bronze'], $count_hours), $lang['stmy0022']; ?>
 							</div>
 						</div>
 						<?PHP } ?>
 					</div>
 					<div class="col-lg-6">
 						<h3><?PHP echo $lang['stmy0023']; ?></h3>
-						<?PHP if($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_legendary) { ?>
+						<?PHP if($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_legend']) { ?>
 						<div class="panel panel-yellow">
 							<div class="panel-heading">
 								<div class="row">
@@ -301,7 +291,7 @@ require_once('nav.php');
 								<?PHP echo $lang['stmy0014']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_gold) { ?>
+						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_gold']) { ?>
 						<div class="panel panel-yellow">
 							<div class="panel-heading">
 								<div class="row">
@@ -314,11 +304,11 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($connects_for_legendary, $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_legendary, $_SESSION[$rspathhex.'tsconnections']); ?>%;">
-								<?PHP echo get_percentage($connects_for_legendary, $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0016']; ?>
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_connects_legend'], $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($cfg['stats_connects_legend'], $_SESSION[$rspathhex.'tsconnections']); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_connects_legend'], $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0016']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_silver) { ?>
+						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_silver']) { ?>
 						<div class="panel panel-yellow">
 							<div class="panel-heading">
 								<div class="row">
@@ -331,11 +321,11 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($connects_for_gold, $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_gold, $_SESSION[$rspathhex.'tsconnections']); ?>%;">
-								<?PHP echo get_percentage($connects_for_gold, $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0018']; ?>
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_connects_gold'], $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($cfg['stats_connects_gold'], $_SESSION[$rspathhex.'tsconnections']); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_connects_gold'], $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0018']; ?>
 							</div>
 						</div>
-						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $connects_for_bronze) { ?>				
+						<?PHP } elseif($_SESSION[$rspathhex.'tsconnections'] >= $cfg['stats_connects_bronze']) { ?>				
 						<div class="panel panel-yellow">
 							<div class="panel-heading">
 								<div class="row">
@@ -348,8 +338,8 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($connects_for_silver, $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_silver, $_SESSION[$rspathhex.'tsconnections']); ?>%;">
-								<?PHP echo get_percentage($connects_for_silver, $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0020']; ?>
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="<?PHP echo get_percentage($cfg['stats_connects_silver'], $_SESSION[$rspathhex.'tsconnections']); ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($cfg['stats_connects_silver'], $_SESSION[$rspathhex.'tsconnections']); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_connects_silver'], $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0020']; ?>
 							</div>
 						</div>
 						<?PHP } else { ?>
@@ -365,8 +355,8 @@ require_once('nav.php');
 							</div>
 						</div>
 						<div class="progress">
-							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($connects_for_bronze, $_SESSION[$rspathhex.'tsconnections']); ?>%;">
-								<?PHP echo get_percentage($connects_for_bronze, $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0022']; ?>
+							<div class="progress-bar progress-bar-warning progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="min-width: 15em; width:<?PHP echo get_percentage($cfg['stats_connects_bronze'], $_SESSION[$rspathhex.'tsconnections']); ?>%;">
+								<?PHP echo get_percentage($cfg['stats_connects_bronze'], $_SESSION[$rspathhex.'tsconnections']),$lang['stmy0022']; ?>
 							</div>
 						</div>
 						<?PHP } ?>

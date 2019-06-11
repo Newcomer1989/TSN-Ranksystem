@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.2.12';
+	$cfg['version_latest_available'] = '1.3.0';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$cfg,$dbname) {
@@ -13,128 +13,77 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			return $cfg;
 		}
 	}
-	
-	function check_chmod($cfg,$lang) {
-		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'tsicons/')), -3, 1)!='7') {
-			enter_logfile($cfg,2,sprintf($lang['isntwichm'],'tsicons'));
-		}
-		if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
-			enter_logfile($cfg,2,sprintf($lang['isntwichm'],'logs'));
-		}
-		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'avatars/')), -3, 1)!='7') {
-			enter_logfile($cfg,2,sprintf($lang['isntwichm'],'avatars'));
-		}
-		if(substr(sprintf('%o', fileperms(substr(__DIR__,0,-4).'update/')), -3, 1)!='7') {
-			enter_logfile($cfg,2,sprintf($lang['isntwichm'],'update'));
-		}
-	}
 
 	function old_files($cfg) {
-		if(is_file(substr(__DIR__,0,-4).'install.php')) {
-			if(!unlink('install.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: install.php");
-			}
-		}
-		if(is_dir(substr(__DIR__,0,-4).'icons/')) {
-			if(!rmdir(substr(__DIR__,0,-4).'icons/')) {
-				enter_logfile($cfg,4,"Unnecessary folder, please delete it from your webserver: icons/");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/combined_stats.css')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/combined_stats.css')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/combined_stats.css");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/combined_stats.js')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/combined_stats.js");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'webinterface/admin.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'webinterface/admin.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: webinterface/admin.php");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/Exception.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/Exception.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist/Exception.php");
-			}
-		}
-		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/')) {
-			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist/')) {
-				enter_logfile($cfg,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist/");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/Exception.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/Exception.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS/Exception.php");
-			}
-		}
-		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/')) {
-			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS/')) {
-				enter_logfile($cfg,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS/");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/Exception.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/Exception.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Update/Exception.php");
-			}
-		}
-		if(is_dir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/')) {
-			if(!rmdir(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update/')) {
-				enter_logfile($cfg,4,"Unnecessary folder, please delete it from your webserver: libs/ts3_lib/Adapter/Update/");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Blacklist.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Blacklist.php");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/TSDNS.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/TSDNS.php");
-			}
-		}
-		if(is_file(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update.php')) {
-			if(!unlink(substr(__DIR__,0,-4).'libs/ts3_lib/Adapter/Update.php')) {
-				enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: libs/ts3_lib/Adapter/Update.php");
-			}
-		}
-	}
-
-	function check_writable($cfg) {
-		enter_logfile($cfg,5,"  Check files permissions...");
-		$counterr=0;
-		$scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(substr(__DIR__,0,-4)));
-		$files = array(); 
-		foreach ($scandir as $object) {
-			if(!strstr($object, '/.') && !strstr($object, '\.')) {
-				if (!$object->isDir()) {
-					if(!is_writable($object->getPathname())) {
-						enter_logfile($cfg,3,"    File is not writeable ".$object);
-						$counterr++;
-					}
+		$del_folder = array('icons/','libs/ts3_lib/Adapter/Blacklist/','libs/ts3_lib/Adapter/TSDNS/','libs/ts3_lib/Adapter/Update/','libs/fonts/');
+		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php');
+		function rmdir_recursive($folder) {
+			foreach(scandir($folder) as $file) {
+				if ('.' === $file || '..' === $file) continue;
+				if (is_dir("$folder/$file")) {
+					rmdir_recursive("$folder/$file");
 				} else {
-					if(!is_writable($object->getPathname())) {
-						enter_logfile($cfg,3,"    Folder is not writeable ".$object);
-						$counterr++;
+					if(!unlink("$folder/$file")) {
+						enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: ".$folder."/".$file);
 					}
 				}
 			}
+			if(!rmdir($folder)) {
+				enter_logfile($cfg,4,"Unnecessary folder, please delete it from your webserver: ".$folder);
+			}
+		}
+				
+		foreach($del_folder as $folder) {
+			if(is_dir(substr(__DIR__,0,-4).$folder)) {
+				rmdir_recursive(substr(__DIR__,0,-4).$folder);
+			}
+		}
+		foreach($del_files as $file) {
+			if(is_file(substr(__DIR__,0,-4).$file)) {
+				if(!unlink($file)) {
+					enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: ".$file);
+				}
+			}
+		}
+	}
+
+	function check_writable($cfg,$mysqlcon) {
+		enter_logfile($cfg,5,"  Check files permissions...");
+		$counterr=0;
+		try {
+			$scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(substr(__DIR__,0,-4)));
+			$files = array(); 
+			foreach ($scandir as $object) {
+				if(!strstr($object, '/.') && !strstr($object, '\.')) {
+					if (!$object->isDir()) {
+						if(!is_writable($object->getPathname())) {
+							enter_logfile($cfg,3,"    File is not writeable ".$object);
+							$counterr++;
+						}
+					} else {
+						if(!is_writable($object->getPathname())) {
+							enter_logfile($cfg,3,"    Folder is not writeable ".$object);
+							$counterr++;
+						}
+					}
+				}
+			}
+		} catch (Exception $e) {
+			shutdown($mysqlcon,$cfg,1,"File Permissions Error: ".$e->getCode()." ".$e->getMessage());
+			enter_logfile($cfg,3,"File Permissions Error: ".$e->getCode()." ".$e->getMessage());
 		}
 		if($counterr!=0) {
-			enter_logfile($cfg,1,"Please check the files pemissions. Shutting down!\n\n");
-			exit;
+			shutdown($mysqlcon,$cfg,1,"Wrong file/folder permissions (see messages before!)! Check and correct the owner (chown) and access permissions (chmod)!");
 		} else {
 			enter_logfile($cfg,5,"  Check files permissions [done]");
 		}
 	}
+	
+	check_writable($cfg,$mysqlcon);
+	old_files($cfg);
 
 	if($cfg['version_current_using'] == $cfg['version_latest_available']) {
 		enter_logfile($cfg,5,"  No newer version detected; Database check finished.");
-		old_files($cfg);
-		check_chmod($cfg,$lang);
-		check_writable($cfg);
 	} else {
 		enter_logfile($cfg,4,"  Update the Ranksystem Database to new version...");
 		if(version_compare($cfg['version_current_using'], '1.2.1', '<')) {
@@ -305,11 +254,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_addon_assign_groups`") === false) { }
 		}
 		if(version_compare($cfg['version_current_using'], '1.2.12', '<')) {
-			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update'") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.12] Stored timestamp of last update successfully.");
-			}
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`") === false) { }
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user_iphash` MODIFY COLUMN `uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `iphash` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
 				enter_logfile($cfg,4,"    [1.2.12] Adjusted table user_iphash successfully.");
 			}
@@ -335,6 +279,57 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`admin_addtime` MODIFY COLUMN `uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
 				enter_logfile($cfg,4,"    [1.2.12] Adjusted table admin_addtime successfully.");
 			}
+		}
+		if(version_compare($cfg['version_current_using'], '1.3.0', '<')) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Stored timestamp of last update successfully.");
+			}
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
+
+			if(empty($cfg['teamspeak_host_address']) || $cfg['teamspeak_host_address'] == '') {
+				enter_logfile($cfg,4,"    [1.3.0] Table cfg_params needs to be repaired.");
+				$oldconfigs = $mysqlcon->query("SELECT * FROM `$dbname`.`config`")->fetch();
+				if($mysqlcon->exec("CREATE TABLE `$dbname`.`cfg_params` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `value` varchar(65535) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) { }
+				if($mysqlcon->exec("DELETE FROM `$dbname`.`cfg_params`") === false) { }
+				if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', '".$oldconfigs['dateformat']."'), ('default_language', '".$oldconfigs['language']."'), ('logs_path', '".$oldconfigs['logpath']."'), ('logs_timezone', '".$oldconfigs['timezone']."'), ('rankup_boost_definition', '".$oldconfigs['boost']."'), ('rankup_clean_clients_period', '".$oldconfigs['cleanperiod']."'), ('rankup_clean_clients_switch', '".$oldconfigs['cleanclients']."'), ('rankup_client_database_id_change_switch', '".$oldconfigs['resetbydbchange']."'), ('rankup_definition', '".$oldconfigs['grouptime']."'), ('rankup_excepted_channel_id_list', '".$oldconfigs['exceptcid']."'), ('rankup_excepted_group_id_list', '".$oldconfigs['exceptgroup']."'), ('rankup_excepted_mode', '".$oldconfigs['resetexcept']."'), ('rankup_excepted_unique_client_id_list', '".$oldconfigs['exceptuuid']."'), ('rankup_hash_ip_addresses_mode', '".$oldconfigs['iphash']."'), ('rankup_ignore_idle_time', '".$oldconfigs['ignoreidle']."'), ('rankup_message_to_user_switch', '".$oldconfigs['msgtouser']."'), ('rankup_next_message_mode', '".$oldconfigs['nextupinfo']."'), ('rankup_time_assess_mode', '".$oldconfigs['substridle']."'), ('stats_column_active_time_switch', '".$oldconfigs['showcolat']."'), ('stats_column_current_group_since_switch', '".$oldconfigs['showgrpsince']."'), ('stats_column_current_server_group_switch', '".$oldconfigs['showcolas']."'), ('stats_column_client_db_id_switch', '".$oldconfigs['showcoldbid']."'), ('stats_column_client_name_switch', '".$oldconfigs['showcolcld']."'), ('stats_column_idle_time_switch', '".$oldconfigs['showcolit']."'), ('stats_column_last_seen_switch', '".$oldconfigs['showcolls']."'), ('stats_column_next_rankup_switch', '".$oldconfigs['showcolnx']."'), ('stats_column_next_server_group_switch', '".$oldconfigs['showcolsg']."'), ('stats_column_online_time_switch', '".$oldconfigs['showcolot']."'), ('stats_column_rank_switch', '".$oldconfigs['showcolrg']."'), ('stats_column_unique_id_switch', '".$oldconfigs['showcoluuid']."'), ('stats_server_news', '".$oldconfigs['servernews']."'), ('stats_show_clients_in_highest_rank_switch', '".$oldconfigs['showhighest']."'), ('stats_show_excepted_clients_switch', '".$oldconfigs['showexcld']."'), ('stats_show_site_navigation_switch', '".$oldconfigs['shownav']."'), ('teamspeak_avatar_download_delay', '".$oldconfigs['avatar_delay']."'), ('teamspeak_default_channel_id', '".$oldconfigs['defchid']."'), ('teamspeak_host_address', '".$oldconfigs['tshost']."'), ('teamspeak_query_command_delay', '".$oldconfigs['slowmode']."'), ('teamspeak_query_encrypt_switch', '".$oldconfigs['tsencrypt']."'), ('teamspeak_query_nickname', '".$oldconfigs['queryname']."'), ('teamspeak_query_pass', '".$oldconfigs['tspass']."'), ('teamspeak_query_port', '".$oldconfigs['tsquery']."'), ('teamspeak_query_user', '".$oldconfigs['tsuser']."'), ('teamspeak_verification_channel_id', '".$oldconfigs['registercid']."'), ('teamspeak_voice_port', '".$oldconfigs['tsvoice']."'), ('version_current_using', '".$oldconfigs['currvers']."'), ('version_latest_available', '".$oldconfigs['newversion']."'), ('version_update_channel', '".$oldconfigs['upchannel']."'), ('webinterface_access_count', '".$oldconfigs['count_access']."'), ('webinterface_access_last', '".$oldconfigs['last_access']."'), ('webinterface_admin_client_unique_id_list', '".$oldconfigs['adminuuid']."'), ('webinterface_advanced_mode', '".$oldconfigs['advancemode']."'), ('webinterface_pass', '".$oldconfigs['webpass']."'), ('webinterface_user', '".$oldconfigs['webuser']."')") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.0] Repaired new config table cfg_params (part 1).");
+				}
+				
+				$oldmsg0 = $mysqlcon->quote($oldconfigs['rankupmsg']);
+				$oldmsg1 = $mysqlcon->quote($oldconfigs['nextupinfomsg1']);
+				$oldmsg2 = $mysqlcon->quote($oldconfigs['nextupinfomsg2']);
+				$oldmsg3 = $mysqlcon->quote($oldconfigs['nextupinfomsg3']);
+				
+				if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_message_to_user', {$oldmsg0}), ('rankup_next_message_1', {$oldmsg1}), ('rankup_next_message_2', {$oldmsg2}), ('rankup_next_message_3', {$oldmsg3})") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.0] Repaired new config table cfg_params (part 2).");
+				}
+			}
+			
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_config`;") === false) { }
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_debug_level', '5'),('logs_rotation_size', '5'),('stats_column_default_sort', 'rank'),('stats_column_default_order', 'asc'),('stats_time_bronze','50'),('stats_time_silver','100'),('stats_time_gold','250'),('stats_time_legend','500'),('stats_connects_bronze','50'),('stats_connects_silver','100'),('stats_connects_gold','250'),('stats_connects_legend','500');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Added new cfg_params value.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`cfg_params` MODIFY COLUMN `value` varchar(21588) CHARACTER SET utf8 COLLATE utf8_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Adjusted table cfg_params successfully.");
+			}
+			if($mysqlcon->exec("UPDATE TABLE `$dbname`.`cfg_params` SET `value`='stable' WHERE `param`='version_update_channel' AND `value`='version';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Updated table cfg_params successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` MODIFY COLUMN `count` DECIMAL(14,3);") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Adjusted table user (part 1) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` MODIFY COLUMN `idle` DECIMAL(14,3);") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Adjusted table user (part 2) successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` MODIFY COLUMN `rank` int(10) NOT NULL default '9999999'") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Adjusted table user successfully.");
+			}
+			
+			if($mysqlcon->exec("DROP TABLE `$dbname`.`config`;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.0] Dropped old table config.");
+			}
+
 			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
@@ -342,8 +337,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
-		old_files($cfg);
-		check_chmod($cfg,$lang);
 	}
 	enter_logfile($cfg,5,"Check Ranksystem database for updates [done]");
 	return $cfg;

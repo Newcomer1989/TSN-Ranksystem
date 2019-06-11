@@ -169,6 +169,42 @@ class TeamSpeak3_Transport_TCP extends TeamSpeak3_Transport_Abstract
 
     return $line->trim();
   }
+  
+  public function readLinetsn($token, $microbegin, $lefttime, $delay)
+  {
+    $this->connect();
+
+    $line = TeamSpeak3_Helper_String::factory("");
+
+    while(!$line->endsWith($token))
+    {
+		
+	  $time = 0;
+		
+      $this->waitForReadyReadtsn($time, $microbegin, $lefttime, $delay);
+
+      $data = @fgets($this->stream, 4096);
+
+      TeamSpeak3_Helper_Signal::getInstance()->emit(strtolower($this->getAdapterType()) . "DataRead", $data);
+
+      if($data === FALSE)
+      {
+        if($line->count())
+        {
+          $line->append($token);
+        } else {
+		  return;
+        }
+      }
+      else
+      {
+        $line->append($data);
+      }
+	  
+    }
+
+    return $line->trim();
+  }
 
   /**
    * Writes data to the stream.

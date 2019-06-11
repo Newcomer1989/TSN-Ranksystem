@@ -42,6 +42,7 @@ function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 		}
 		fclose($fp);
 		$buffer = array_reverse($buffer);
+		$lastfilter = 'init';
 		foreach($buffer as $line) {
 			if(substr($line, 0, 2) != "20" && in_array($lastfilter, $filters)) {
 				array_push($lines, $line);
@@ -66,10 +67,8 @@ function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 					foreach($inactivefilter as $defilter) {
 						if($defilter != NULL && strstr($line, $defilter)) {
 							$lastfilter = $defilter;
-							continue;
 						}
 					}
-					continue;
 				}
 			}
 		}		
@@ -92,6 +91,8 @@ if (isset($_POST['number'])) {
 		$number_lines = 200;
 	} elseif($_POST['number'] == 500) {
 		$number_lines = 500;
+	} elseif($_POST['number'] == 2000) {
+		$number_lines = 2000;
 	} elseif($_POST['number'] == 9999) {
 		$number_lines = 9999;
 	} else {
@@ -196,22 +197,16 @@ if ((isset($_POST['start']) || isset($_POST['stop']) || isset($_POST['restart'])
 $logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 
 if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
+	if(!is_writable($cfg['logs_path'])) {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel start request!"; $err_lvl = 3;
 	} else {
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php start", 0, false); 
-			if (file_exists(substr(__DIR__,0,-12)."\logs\autostart_deactivated")) {
-				unlink(substr(__DIR__,0,-12)."\logs\autostart_deactivated");
-			}
-		} else {
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start");
-			if (file_exists(substr(__DIR__,0,-12)."logs/autostart_deactivated")) {
-				unlink(substr(__DIR__,0,-12)."logs/autostart_deactivated");
-			}
+		$output = '';
+		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start", $resultexec);
+		if (file_exists($cfg['logs_path']."autostart_deactivated")) {
+			unlink($cfg['logs_path']."autostart_deactivated");
 		}
-		$err_msg = $lang['wibot2'];
+		foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
+		$err_msg = $lang['wibot2'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';
 		$err_lvl = 1;
 		usleep(80000);
 		$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
@@ -219,37 +214,31 @@ if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
 }
 
 if (isset($_POST['stop']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if (substr(php_uname(), 0, 7) == "Windows") {
-		$WshShell = new COM("WScript.Shell");
-		$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php stop", 0, false); 
-		file_put_contents(substr(__DIR__,0,-12)."\logs\autostart_deactivated","");
+	if(!is_writable($cfg['logs_path'])) {
+		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel start request!"; $err_lvl = 3;
 	} else {
-		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php stop");
+		$output = '';
+		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php stop", $resultexec);
 		file_put_contents(substr(__DIR__,0,-12)."logs/autostart_deactivated","");
+		foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
+		$err_msg = $lang['wibot1'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';;
+		$err_lvl = 1;
+		usleep(80000);
+		$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 	}
-	$err_msg = $lang['wibot1'];
-	$err_lvl = 1;
-	usleep(80000);
-	$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
 }
 
 if (isset($_POST['restart']) && isset($db_csrf[$_POST['csrf_token']])) {
-	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
+	if(!is_writable($cfg['logs_path'])) {
 		$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel restart request!"; $err_lvl = 3;
 	} else {
-		if (substr(php_uname(), 0, 7) == "Windows") {
-			$WshShell = new COM("WScript.Shell");
-			$oExec = $WshShell->Run("cmd /C ".$phpcommand." ".substr(__DIR__,0,-12)."\worker.php restart", 0, false); 
-			if (file_exists(substr(__DIR__,0,-12)."\logs\autostart_deactivated")) {
-				unlink(substr(__DIR__,0,-12)."\logs\autostart_deactivated");
-			}
-		} else {
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php restart");
-			if (file_exists(substr(__DIR__,0,-12)."logs/autostart_deactivated")) {
-				unlink(substr(__DIR__,0,-12)."logs/autostart_deactivated");
-			}
+		$output = '';
+		exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php restart", $resultexec);
+		if (file_exists($cfg['logs_path']."autostart_deactivated")) {
+			unlink($cfg['logs_path']."autostart_deactivated");
 		}
-		$err_msg = $lang['wibot3'];
+		foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
+		$err_msg = $lang['wibot3'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';
 		$err_lvl = 1;
 		usleep(80000);
 		$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
@@ -279,7 +268,7 @@ if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NUL
 					<div class="row">
 						<div class="text-center">
 							<button type="submit" class="btn btn-primary" name="start"<?PHP if($disabled == 1) echo " disabled"; ?>>
-							<i class="fa fa-fw fa-power-off"></i>&nbsp;<?PHP echo $lang['wibot5']; ?>
+							<i class="fas fa-power-off"></i>&nbsp;<?PHP echo $lang['wibot5']; ?>
 							</button>
 						</div>
 					</div>
@@ -291,7 +280,7 @@ if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NUL
 					<div class="row">
 						<div class="text-center">
 							<button type="submit" class="btn btn-primary" name="stop">
-							<i class="fa fa-fw fa-close"></i>&nbsp;<?PHP echo $lang['wibot6']; ?>
+							<i class="fas fa-times"></i>&nbsp;<?PHP echo $lang['wibot6']; ?>
 							</button>
 						</div>
 					</div>
@@ -303,7 +292,7 @@ if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NUL
 					<div class="row">
 						<div class="text-center">
 							<button type="submit" class="btn btn-primary" name="restart"<?PHP if($disabled == 1) echo " disabled"; ?>>
-							<i class="fa fa-fw fa-refresh"></i>&nbsp;<?PHP echo $lang['wibot7']; ?>
+							<i class="fas fa-sync"></i>&nbsp;<?PHP echo $lang['wibot7']; ?>
 							</button>
 						</div>
 					</div>
@@ -378,6 +367,7 @@ if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NUL
 							echo '<option value="100"'; if($number_lines=="100") echo " selected=selected"; echo '>100</option>';
 							echo '<option value="200"'; if($number_lines=="200") echo " selected=selected"; echo '>200</option>';
 							echo '<option value="500"'; if($number_lines=="500") echo " selected=selected"; echo '>500</option>';
+							echo '<option value="2000"'; if($number_lines=="2000") echo " selected=selected"; echo '>2000</option>';
 							echo '<option value="9999"'; if($number_lines=="9999") echo " selected=selected"; echo '>9999</option>';
 							?>
 							</select>

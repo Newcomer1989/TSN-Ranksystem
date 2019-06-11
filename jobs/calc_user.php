@@ -46,7 +46,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 		$name = $mysqlcon->quote($client['client_nickname'], ENT_QUOTES);
 		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$sgroups = array_flip(explode(",", $client['client_servergroups']));
-		if (!isset($yetonline[$uid]) && $client['client_version'] != "ServerQuery") {
+		if (!isset($yetonline[$uid]) && $client['client_version'] != "ServerQuery" && $client['client_type']!="1") {
 			$clientidle = floor($client['client_idle_time'] / 1000);
 			if(isset($cfg['rankup_ignore_idle_time']) && $clientidle < $cfg['rankup_ignore_idle_time']) {
 				$clientidle = 0;
@@ -116,7 +116,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 				} else {
 					$activetime = $count;
 				}
-				$dtT = new DateTime("@$activetime");
+				$dtT = new DateTime("@".round($activetime));
 				foreach ($cfg['rankup_definition'] as $time => $groupid) {
 					if (isset($sgroups[$groupid])) {
 						$grpid = $groupid;
@@ -157,16 +157,11 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 							}
 							$grpid = $groupid;
 							if ($cfg['rankup_message_to_user_switch'] == 1) {
-								usleep($cfg['teamspeak_query_command_delay']);
 								$days  = $dtF->diff($dtT)->format('%a');
 								$hours = $dtF->diff($dtT)->format('%h');
 								$mins  = $dtF->diff($dtT)->format('%i');
 								$secs  = $dtF->diff($dtT)->format('%s');
-								try {
-									$ts3->clientGetByUid($uid)->message(sprintf($cfg['rankup_message_to_user'], $days, $hours, $mins, $secs, $select_arr['groups'][$groupid]['sgidname'], $client['client_nickname']));
-								} catch (Exception $e) {
-									enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $cldbid, $select_arr['groups'][$groupid]['sgidname'], $groupid));
-								}
+								sendmessage($ts3, $cfg, $uid, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$select_arr['groups'][$groupid]['sgidname'],$client['client_nickname']), sprintf($lang['sgrprerr'], $name, $uid, $cldbid, $select_arr['groups'][$groupid]['sgidname'],$groupid), 2);
 							}
 						}
 						if($grpcount == 1) {

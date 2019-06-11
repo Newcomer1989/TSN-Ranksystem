@@ -135,12 +135,14 @@ $sortarr = array_flip(array("name","uuid","cldbid","rank","lastseen","count","id
 if(isset($_GET['sort']) && isset($sortarr[$_GET['sort']])) {
 	$keysort = $_GET['sort'];
 } else {
-	$keysort = 'nextup';
+	$keysort = $cfg['stats_column_default_sort'];
 }
 if(isset($_GET['order']) && $_GET['order'] == 'desc') {
 	$keyorder = 'desc';
-} else {
+} elseif(isset($_GET['order']) && $_GET['order'] == 'asc') {
 	$keyorder = 'asc';
+} else {
+	$keyorder = $cfg['stats_column_default_order'];
 }
 
 if(isset($_GET['admin'])) {
@@ -205,7 +207,7 @@ function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$
 			<ul class="pagination">
 				<li>
 					<a href="<?PHP echo '?sort='.$keysort.'&amp;order='.$keyorder.'&amp;seite=1&amp;user='.$user_pro_seite.'&amp;search='.$getstring; ?>" aria-label="backward">
-						<span aria-hidden="true"><span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>&nbsp;</span>
+						<span aria-hidden="true"><span class="fas fa-caret-square-left" aria-hidden="true"></span>&nbsp;</span>
 					</a>
 				</li>
 				<?PHP
@@ -220,7 +222,7 @@ function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$
 				?>
 				<li>
 					<a href="<?PHP echo '?sort='.$keysort.'&amp;order='.$keyorder.'&amp;seite='.$seiten_anzahl_gerundet.'&amp;user='.$user_pro_seite.'&amp;search='.$getstring; ?>" aria-label="forward">
-						<span aria-hidden="true">&nbsp;<span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span></span>
+						<span aria-hidden="true">&nbsp;<span class="fas fa-caret-square-right" aria-hidden="true"></span></span>
 					</a>
 				</li>
 			</ul>
@@ -340,19 +342,19 @@ if($adminlogin == 1) {
 								if ($cfg['stats_column_online_time_switch'] == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@".$value['count']);
+									$dtT	   = new DateTime("@".round($value['count']));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
 								}
 								if ($cfg['stats_column_idle_time_switch'] == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@".$value['idle']);
+									$dtT	   = new DateTime("@".round($value['idle']));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
 								}
 								if ($cfg['stats_column_active_time_switch'] == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';
 									$dtF	   = new DateTime("@0");
-									$dtT	   = new DateTime("@".($value['count']-$value['idle']));
+									$dtT	   = new DateTime("@".(round($value['count'])-round($value['idle'])));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
 								}
 								if ($cfg['stats_column_current_server_group_switch'] == 1 || $adminlogin == 1) {

@@ -35,9 +35,8 @@ function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,$selec
 				}
 			}
 		}
-		
 		$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups`; ";
 	}
-	return($sqlexec);
+	return $sqlexec;
 }
 ?>

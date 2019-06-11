@@ -163,6 +163,27 @@ class TeamSpeak3_Adapter_ServerQuery extends TeamSpeak3_Adapter_Abstract
 
     return new TeamSpeak3_Adapter_ServerQuery_Event($evt, $this->getHost());
   }
+  
+  public function waittsn($lefttime = 0, $delay = 50000)
+  {
+	$microbegin = microtime(true);
+	$token = "\n";
+
+    if($this->getTransport()->getConfig("blocking"))
+    {
+      throw new TeamSpeak3_Adapter_Exception("only available in non-blocking mode");
+    }
+
+    do {
+      $evt = $this->getTransport()->readLinetsn($token, $microbegin, $lefttime, $delay);
+    } while($evt instanceof TeamSpeak3_Helper_String && !$evt->section(TeamSpeak3::SEPARATOR_CELL)->startsWith(TeamSpeak3::EVENT) && (microtime(true) < ($microbegin + $lefttime)));
+	
+	if($evt instanceof TeamSpeak3_Helper_String && !$evt->section(TeamSpeak3::SEPARATOR_CELL)->startsWith(TeamSpeak3::EVENT)) {
+	  return;
+	} else {
+	  return new TeamSpeak3_Adapter_ServerQuery_Event($evt, $this->getHost());
+	}
+  }
 
   /**
    * Uses given parameters and returns a prepared ServerQuery command.

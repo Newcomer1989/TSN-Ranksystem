@@ -89,11 +89,13 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 				$errcnf++;
 			}
 		}
-		foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
-			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-				$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']).'<br>';
-				$err_lvl = 3;
-				$errcnf++;
+		if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
+			foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
+				if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+					$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']).'<br>';
+					$err_lvl = 3;
+					$errcnf++;
+				}
 			}
 		}
 		foreach(array_flip(explode(',', $_POST['rankup_excepted_group_id_list'])) as $groupid => $value) {
@@ -129,7 +131,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 			$err_lvl = 3;
 		} else {
 			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
-			type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 			$err_lvl = NULL;
 		}
 	} else {
@@ -176,7 +178,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control basic" name="rankup_time_assess_mode">
 									<?PHP
@@ -189,7 +191,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexresdesc"><?php echo $lang['wiexres']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexresdesc"><?php echo $lang['wiexres']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control basic" name="rankup_excepted_mode">
 											<?PHP
@@ -201,23 +203,23 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="rankup_excepted_unique_client_id_list" maxlength="999"><?php if(!empty($cfg['rankup_excepted_unique_client_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_unique_client_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="rankup_excepted_unique_client_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_unique_client_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_unique_client_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_group_id_list" maxlength="999"><?php if(!empty($cfg['rankup_excepted_group_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_group_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_group_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_group_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_group_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_channel_id_list" maxlength="999"><?php if(!empty($cfg['rankup_excepted_channel_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_channel_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_channel_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_channel_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_channel_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
@@ -225,17 +227,16 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group required-field-block">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="5000" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
-									<div class="required-icon"><div class="text">*</div></div>
+									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="65535" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="rankup_ignore_idle_time" value="<?php echo $cfg['rankup_ignore_idle_time']; ?>">
 									<script>
@@ -249,7 +250,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-lg-8">
 									<?PHP if ($cfg['rankup_client_database_id_change_switch'] == 1) {
 											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="rankup_client_database_id_change_switch" value="',$cfg['rankup_client_database_id_change_switch'],'">';
@@ -262,7 +263,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleancdesc"><?php echo $lang['cleanc']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleancdesc"><?php echo $lang['cleanc']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 										<?PHP if ($cfg['rankup_clean_clients_switch'] == 1) {
 											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="rankup_clean_clients_switch" value="',$cfg['rankup_clean_clients_switch'],'">';
@@ -273,7 +274,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									</div>
 									<div class="row">&nbsp;</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleanpdesc"><?php echo $lang['cleanp']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleanpdesc"><?php echo $lang['cleanp']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control" name="rankup_clean_clients_period" value="<?php echo $cfg['rankup_clean_clients_period']; ?>">
 											<script>
@@ -291,7 +292,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="row">&nbsp;</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiverifydesc"><?php echo $lang['wiverify']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiverifydesc"><?php echo $lang['wiverify']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="teamspeak_verification_channel_id" value="<?php echo $cfg['teamspeak_verification_channel_id']; ?>">
 									<script>
@@ -307,9 +308,18 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="row">&nbsp;</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_boost_definition" maxlength="999"><?php $implode_boost = ''; foreach ($cfg['rankup_boost_definition'] as $r) { $implode_boost .= $r['group']."=>".$r['factor']."=>".$r['time'].","; } $implode_boost = substr($implode_boost, 0, -1); echo $implode_boost; ?></textarea>
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_boost_definition" maxlength="65535"><?php
+									$implode_boost = '';
+									if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
+										foreach ($cfg['rankup_boost_definition'] as $r) {
+											$implode_boost .= $r['group']."=>".$r['factor']."=>".$r['time'].",";
+										}
+										$implode_boost = substr($implode_boost, 0, -1);
+									}
+									echo $implode_boost;
+									?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>

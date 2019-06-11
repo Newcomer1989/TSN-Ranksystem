@@ -70,8 +70,14 @@ function start() {
 	}
 	
 	global $cfg;
-	if(substr(sprintf('%o', fileperms($cfg['logs_path'])), -3, 1)!='7') {
+	if(!is_writable($cfg['logs_path'])) {
 		echo "\n !!!! Logs folder is not writable !!!!\n\n";
+		echo " Cancel start request...\n\n";
+		exit;
+	}
+	
+	if(file_exists($GLOBALS['logfile']) && !is_writable($GLOBALS['logfile'])) {
+		echo "\n !!!! Log file is not writable !!!!\n\n";
 		echo " Cancel start request...\n\n";
 		exit;
 	}
@@ -154,6 +160,7 @@ function stop() {
 			touch($GLOBALS['autostart']);
 		}
 	} else {
+		unlink($GLOBALS['pidfile']);
 		echo "The Ranksystem seems not running.\n";
 	}
 	$GLOBALS['exec'] = TRUE;
@@ -181,9 +188,9 @@ function restart() {
 
 function status() {
 	if (checkProcess() == FALSE) {
-		echo "The Ranksystem does not seem to run.\n";
+		echo "The Ranksystem Bot is stopped.\n";
 	} else {
-		echo "The Ranksystem seems to be running.\n";
+		echo "The Ranksystem process is running.\n";
 	}
 	$GLOBALS['exec'] = TRUE;
 }

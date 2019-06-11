@@ -2,7 +2,7 @@
 $job_check = $mysqlcon->query("SELECT * FROM `$dbname`.`job_check`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
 	if(!isset($err_msg)) {
-		$err_msg = '<i class="fa fa-fw fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<a href="//ts-n.net/ranksystem.php?changelog" target="_blank"><i class="fa fa-fw fa-book"></i>&nbsp;', '</a>'); $err_lvl = 1;
+		$err_msg = '<i class="fas fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<a href="//ts-ranksystem.com/#changelog" target="_blank"><i class="fas fa-book"></i>&nbsp;', '</a>'); $err_lvl = 1;
 		$_SESSION[$rspathhex.'upinfomsg'] = 1;
 	}
 }
@@ -15,34 +15,39 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="version" content="<?PHP echo $cfg['version_current_using']; ?>">
 	<link rel="icon" href="../tsicons/rs.png">
-	<title>TS-N.NET Ranksystem</title>
+	<title>TSN Ranksystem - ts-ranksystem.com</title>
 	<link href="../libs/combined_st.css?v=<?PHP echo $cfg['version_current_using']; ?>" rel="stylesheet">
 <?PHP
-	$sitescript = basename($_SERVER['SCRIPT_NAME']);
-	switch($sitescript) {
+	switch(basename($_SERVER['SCRIPT_NAME'])) {
 		case "index.php":
-			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"async"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qbrm.js','../libs/statsindex.js'])</script><?PHP
+			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"async"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qbrm.js?v=<?PHP echo $cfg['version_current_using']; ?>','../libs/statsindex.js?v=<?PHP echo $cfg['version_current_using']; ?>','../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "assign_groups.php":
-			?><script src="../libs/qbh_bsw.js"></script><?PHP
+			?><script src="../libs/qbh_bsw.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "top_all.php":
-			?><script src="../libs/qbrm.js"></script><?PHP
+			?><script src="../libs/qbrm.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "top_month.php":
-			?><script src="../libs/qbrm.js"></script><?PHP
+			?><script src="../libs/qbrm.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "top_week.php":
-			?><script src="../libs/qbrm.js"></script><?PHP
+			?><script src="../libs/qbrm.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "verify.php":
-			?><script src="../libs/qbh_bse.js"></script><?PHP
+			?><script src="../libs/qbh_bse.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		case "list_rankup.php":
-			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qb.js'])</script><?PHP
+			?><script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"async"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/qb.js?v=<?PHP echo $cfg['version_current_using']; ?>','../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 			break;
 		default:
-			?><script src="../libs/qb.js"></script><?PHP
+			?><script src="../libs/qb.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
+			<script>!function(e,t,r){function n(){for(;d[0]&&"loaded"==d[0][f];)c=d.shift(),c[o]=!i.parentNode.insertBefore(c,i)}for(var s,a,c,d=[],i=e.scripts[0],o="onreadystatechange",f="readyState";s=r.shift();)a=e.createElement(t),"defer"in i?(a.async=!1,e.head.appendChild(a)):i[f]?(d.push(a),a[o]=n):e.write("<"+t+' src="'+s+'" defer></'+t+">"),a.src=s}(document,"script",['../libs/fa.js?v=<?PHP echo $cfg['version_current_using']; ?>'])</script><?PHP
 	}
 	if(isset($cfg['stats_show_site_navigation_switch']) && $cfg['stats_show_site_navigation_switch'] == 0) { ?>
 	<style>
@@ -174,7 +179,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				<li class="navbar-form navbar-left dropdown">
 					<div class="btn-group">
 						<a href="#filteroptions" data-toggle="modal" class="btn btn-primary">
-							<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+							<span class="fas fa-info-circle" aria-hidden="true"></span>
 						</a>
 					</div>
 				</li>
@@ -197,7 +202,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						<div class="form-group">
 							<input class="form-control" type="text" name="usersuche" placeholder="Search"<?PHP if(isset($getstring)) echo ' value="'.rawurldecode($getstring).'"'; ?>>
 						</div>
-						<button class="btn btn-primary" type="submit" name="username"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+						<button class="btn btn-primary" type="submit" name="username"><span class="fas fa-search" aria-hidden="true"></span></button>
 					</form>
 				</li>
 			</ul>
@@ -214,13 +219,13 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 					<b class="caret"></b></a><ul class="dropdown-menu">
 						<?PHP
 						if($_SESSION[$rspathhex.'tsname'] == $lang['stag0016'] || $_SESSION[$rspathhex.'tsname'] == "verification needed (multiple)!" || $_SESSION[$rspathhex.'connected'] == 0) {
-							echo '<li><a href="verify.php"><i class="fa fa-fw fa-key"></i>&nbsp;'.$lang['stag0017'].'</a></li>';
+							echo '<li><a href="verify.php"><i class="fas fa-key"></i>&nbsp;'.$lang['stag0017'].'</a></li>';
 						}
 						if(isset($_SESSION[$rspathhex.'admin']) && $_SESSION[$rspathhex.'admin'] == TRUE) {
 							if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
-								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
+								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fas fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
 							} else {
-								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fa fa-fw fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
+								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fas fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
 							}
 						} elseif ($_SESSION[$rspathhex.'connected'] == 0) {
 							echo '<li><a href="ts3server://';
@@ -232,14 +237,14 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 									echo $cfg['teamspeak_host_address'];
 								}
 								echo ':'.$cfg['teamspeak_voice_port'];
-							echo '"><i class="fa fa-fw fa-headphones"></i>&nbsp;'.$lang['stnv0043'].'</a></li>';
+							echo '"><i class="fas fa-headset"></i>&nbsp;'.$lang['stnv0043'].'</a></li>';
 						}
 						?>
 						<li>
-							<a href="my_stats.php"><i class="fa fa-fw fa-user"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
+							<a href="my_stats.php"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
 						</li>
 						<li>
-							<a href="#myModal" data-toggle="modal"><i class="fa fa-fw fa-envelope"></i>&nbsp;<?PHP echo $lang['stnv0001']; ?></a>
+							<a href="#myModal" data-toggle="modal"><i class="fas fa-envelope"></i>&nbsp;<?PHP echo $lang['stnv0001']; ?></a>
 						</li>
 					</ul>
 				</li>
@@ -247,19 +252,19 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 					<div class="navbar-form navbar-center">
 						<div class="btn-group">
 							<a href="#myModal2" data-toggle="modal" class="btn btn-primary">
-								<span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+								<span class="fas fa-sync" aria-hidden="true"></span>
 							</a>
 						</div>
 					</div>
 				</li>
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe"></i>&nbsp;<b class="caret"></b></a>
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li>
 							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
 						</li>
 						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - čeština</a>
+							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
 						</li>
 						<li>
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
@@ -297,19 +302,19 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "index.php" ? ' class="active">' : '>'); ?>
-						<a href="index.php"><i class="fa fa-fw fa-area-chart"></i>&nbsp;<?PHP echo $lang['stix0001']; ?></a>
+						<a href="index.php"><i class="fas fa-chart-area"></i>&nbsp;<?PHP echo $lang['stix0001']; ?></a>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "my_stats.php" ? ' class="active">' : '>'); ?>
-						<a href="my_stats.php"><i class="fa fa-fw fa-bar-chart-o"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
+						<a href="my_stats.php"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
 					</li>
 					<?PHP if($addons_config['assign_groups_active']['value'] == '1') {
 							echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "assign_groups.php" ? ' class="active">' : '>'); ?>
-							<a href="assign_groups.php"><i class="fa fa-fw fa-address-card-o"></i>&nbsp;<?PHP echo $lang['stag0001']; ?></a>
+							<a href="assign_groups.php"><i class="fas fa-address-card"></i>&nbsp;<?PHP echo $lang['stag0001']; ?></a>
 						<?PHP }	?>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "top_all.php" ? ' class="active">' : '>'); ?>
-						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-trophy"></i>&nbsp;<?PHP echo $lang['sttw0001']; ?>&nbsp;<i class="fa fa-fw fa-caret-down"></i></a>
-						<ul id="demo" class="collapse">
+						<a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fas fa-trophy"></i>&nbsp;<?PHP echo $lang['sttw0001']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+						<?PHP echo '<ul id="demo" class="'.(basename($_SERVER['SCRIPT_NAME']) == "top_week.php" || basename($_SERVER['SCRIPT_NAME']) == "top_month.php" || basename($_SERVER['SCRIPT_NAME']) == "top_all.php" ? 'in collapse">' : 'collapse">'); ?>
 							<li>
 								<a href="top_week.php"><?PHP echo $lang['sttw0002']; ?></a>
 							</li>
@@ -322,10 +327,10 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						</ul>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "list_rankup.php" ? ' class="active">' : '>'); ?>
-						<a href="list_rankup.php"><i class="fa fa-fw fa-list-ul"></i>&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
+						<a href="list_rankup.php"><i class="fas fa-list-ul"></i>&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
 					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "info.php" ? ' class="active">' : '>'); ?>
-						<a href="info.php"><i class="fa fa-fw fa-info-circle"></i>&nbsp;<?PHP echo $lang['stnv0030']; ?></a>
+						<a href="info.php"><i class="fas fa-info-circle"></i>&nbsp;<?PHP echo $lang['stnv0030']; ?></a>
 					</li>
 				</ul>
 			</div>

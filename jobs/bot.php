@@ -12,14 +12,15 @@ function shutdown($mysqlcon = NULL,$cfg,$loglevel,$reason,$nodestroypid = TRUE) 
 		}
 	}
 	enter_logfile($cfg,$loglevel,$reason." Shutting down!");
+	enter_logfile($cfg,4,"###################################################################");
 	if(isset($mysqlcon)) {
-		$mysqlcon->close();
+		$mysqlcon = null;
 	}
 	exit;
 }
 
 function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
-	global $phpcommand;
+	if($loglevel > $cfg['logs_debug_level']) return;
 	$file = $cfg['logs_path'].'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
@@ -37,14 +38,12 @@ function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
 	fclose($loghandle);
-	if($norotate == false && filesize($file) > 5242880) {
+	if($norotate == false && filesize($file) > ($cfg['logs_rotation_size'] * 1048576)) {
 		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
-		if (file_exists($file2)) {
-			unlink($file2);
-		}
+		if(file_exists($file2)) unlink($file2);
 		rename($file, $file2);
 		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
@@ -74,10 +73,9 @@ if(!in_array('ssh2', get_loaded_extensions()) && $cfg['teamspeak_query_encrypt_s
 	shutdown($mysqlcon,$cfg,1,"PHP SSH2 is missed. Installation of PHP SSH2 is required, when using secured (SSH) connection to TeamSpeak! If you are not able to install PHP SSH2 (i.e. hosted webspace), you need to deactivate the TS3 Query encryption inside the Webinterface.");
 }
 
-enter_logfile($cfg,5,"###################################################################");
-enter_logfile($cfg,5,"");
-enter_logfile($cfg,5,"###################################################################");
-enter_logfile($cfg,5,"Initialize Bot...");
+enter_logfile($cfg,4,"");
+enter_logfile($cfg,4,"###################################################################");
+enter_logfile($cfg,4,"Initialize Bot...");
 require_once(substr(__DIR__,0,-4).'libs/ts3_lib/TeamSpeak3.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
 require_once(substr(__DIR__,0,-4).'jobs/get_avatars.php');
@@ -90,11 +88,14 @@ require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
 require_once(substr(__DIR__,0,-4).'jobs/event_userenter.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 
-enter_logfile($cfg,6,"Running on OS: ".php_uname("s")." ".php_uname("r"));
-enter_logfile($cfg,6,"Using PHP Version: ".phpversion());
-enter_logfile($cfg,6,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
+enter_logfile($cfg,5,"Running on OS: ".php_uname("s")." ".php_uname("r"));
+enter_logfile($cfg,5,"Using PHP Version: ".phpversion());
+enter_logfile($cfg,5,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
 
 $cfg = check_db($mysqlcon,$lang,$cfg,$dbname);
+$cfg['temp_db_version'] = $mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION);
+$cfg['temp_last_botstart'] = time();
+$cfg['temp_reconnect_attempts'] = 0;
 enter_logfile($cfg,5,"Check Ranksystem files for updates...");
 if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available']) && $cfg['version_latest_available'] != NULL && version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>')) {
 	update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
@@ -102,8 +103,8 @@ if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available'
 enter_logfile($cfg,5,"Check Ranksystem files for updates [done]");
 
 function check_shutdown($cfg) {
-	if(!is_file(substr(__DIR__,0,-4).'logs/pid')) {
-		shutdown(NULL,$cfg,5,"Received signal to stop!");
+	if(!file_exists(substr(__DIR__,0,-4).'logs/pid')) {
+		shutdown(NULL,$cfg,4,"Received signal to stop!");
 	}
 }
 
@@ -114,318 +115,379 @@ $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 if($addons_config['assign_groups_active']['value'] == '1') {
 	enter_logfile($cfg,5,"  Addon: 'assign_groups' [ON]");
 	include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
-	define('assign_groups',1);
+	$cfg['temp_addon_assign_groups'] = "enabled";
 } else {
 	enter_logfile($cfg,5,"  Addon: 'assign_groups' [OFF]");
+	$cfg['temp_addon_assign_groups'] = "disabled";
 }
 enter_logfile($cfg,5,"Loading addons [done]");
 
-enter_logfile($cfg,5,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\").");
-
+function sendmessage($ts3, $cfg, $uuid, $msg, $erromsg=NULL, $errcode=NULL, $successmsg=NULL, $nolog=NULL) {
 try {
-	if($cfg['teamspeak_query_encrypt_switch'] == 1) {
-		$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?ssh=1");
-	} else {
-		$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?blocking=0");
-	}
-	enter_logfile($cfg,5,"Connection to TS3 Server established.");
-	try{
-		$ts3version = $ts3host->version();
-		enter_logfile($cfg,5,"  TS3 Server version: ".$ts3version['version']." on ".$ts3version['platform']." [Build: ".$ts3version['build']." from ".date("Y-m-d H:i:s",$ts3version['build'])."]");
-	} catch (Exception $e) {
-		enter_logfile($cfg,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
-	}
-
-	enter_logfile($cfg,5,"    Select virtual server...");
-	try {
-		if(version_compare($ts3version['version'],'3.4.0','>=')) {
+	if(strlen($msg) > 1024) {
+		$fragarr = explode("##*##", wordwrap($msg, 1022, "##*##", TRUE), 1022);
+		foreach($fragarr as $frag) {
 			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3server = $ts3host->serverGetByPort($cfg['teamspeak_voice_port'], $cfg['teamspeak_query_nickname']);
-		} else {
-			enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it!");
-			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3server = $ts3host->serverGetByPort($cfg['teamspeak_voice_port']);
-			for ($updcld = 0; $updcld < 10; $updcld++) {
-				try {
-					usleep($cfg['teamspeak_query_command_delay']);
-					if($updcld == 0) {
-						$ts3server->selfUpdate(array('client_nickname' => $cfg['teamspeak_query_nickname']));
-					} else {
-						$ts3server->selfUpdate(array('client_nickname' => $cfg['teamspeak_query_nickname'].$updcld));
-					}
-					break;
-				}
-				catch (Exception $e) {
-					enter_logfile($cfg,3,'      '.$lang['errorts3'].$e->getCode().': '.$e->getMessage());
-				}
+			$ts3->serverGetSelected()->clientGetByUid($uuid)->message("\n".$frag);
+			if($nolog==NULL) {
+				enter_logfile($cfg,6,"sendmessage to uuid $uuid (fragment): ".$frag);
 			}
 		}
-		enter_logfile($cfg,5,"    Select virtual server [done]");
-	} catch (Exception $e) {
-		enter_logfile($cfg,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage());
+	} else {
+		usleep($cfg['teamspeak_query_command_delay']);
+		$ts3->serverGetSelected()->clientGetByUid($uuid)->message($msg);
+		if($nolog==NULL) {
+			enter_logfile($cfg,6,"sendmessage to uuid $uuid: ".$msg);
+		}
 	}
+	if($successmsg!=NULL) {
+		enter_logfile($cfg,5,$successmsg);
+	}
+} catch (Exception $e) {
+	if($errcode!=NULL) {
+		enter_logfile($cfg,$errcode,$erromsg." TS3: ".$e->getCode().': '.$e->getMessage());
+	} else {
+		enter_logfile($cfg,2,"sendmessage: ".$e->getCode().': '.$e->getMessage());
+	}
+}
+}
+
+$sqlexec = '';
+
+function run_bot() {
+	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $sqlexec;
+	
+	enter_logfile($cfg,4,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\").");
 
 	try {
-		usleep($cfg['teamspeak_query_command_delay']);
-		$ts3server->notifyRegister("server");
-		$ts3server->notifyRegister("textprivate");
-		$ts3server->notifyRegister("textchannel");
-		$ts3server->notifyRegister("textserver");
-		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
-		TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", "event_userenter");
-	} catch (Exception $e) {
-		enter_logfile($cfg,2,"  Error due notifyRegister on TS3 server - ".$e->getCode().': '.$e->getMessage());
-	}
+		if($cfg['teamspeak_query_encrypt_switch'] == 1) {
+			$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?ssh=1");
+		} else {
+			$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?blocking=0");
+		}
 
-	$whoami = $ts3server->whoami();
-	if($cfg['teamspeak_default_channel_id'] != 0) {
+		enter_logfile($cfg,4,"Connection to TS3 Server established.");
+		try{
+			$ts3version = $ts3host->version();
+			enter_logfile($cfg,5,"  TS3 Server version: ".$ts3version['version']." on ".$ts3version['platform']." [Build: ".$ts3version['build']." from ".date("Y-m-d H:i:s",$ts3version['build'])."]");
+			$cfg['temp_ts_version'] = $ts3version['version'];
+		} catch (Exception $e) {
+			enter_logfile($cfg,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
+		}
+		
+		if(version_compare($ts3version['version'],'3.6.9','=<')) {
+			enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it.. also to be ready for TS5!");
+		}
+
+		enter_logfile($cfg,5,"    Select virtual server...");
+		try {
+			if(version_compare($ts3version['version'],'3.4.0','>=')) {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$ts3server = $ts3host->serverGetByPort($cfg['teamspeak_voice_port'], $cfg['teamspeak_query_nickname']);
+			} else {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$ts3server = $ts3host->serverGetByPort($cfg['teamspeak_voice_port']);
+				for ($updcld = 0; $updcld < 10; $updcld++) {
+					try {
+						usleep($cfg['teamspeak_query_command_delay']);
+						if($updcld == 0) {
+							$ts3server->selfUpdate(array('client_nickname' => $cfg['teamspeak_query_nickname']));
+						} else {
+							$ts3server->selfUpdate(array('client_nickname' => $cfg['teamspeak_query_nickname'].$updcld));
+						}
+						break;
+					} catch (Exception $e) {
+						enter_logfile($cfg,3,'      '.$lang['errorts3'].$e->getCode().': '.$e->getMessage());
+						shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");
+					}
+				}
+			}
+			enter_logfile($cfg,5,"    Select virtual server [done]");
+			$cfg['temp_reconnect_attempts'] = 0;
+		} catch (Exception $e) {
+			enter_logfile($cfg,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage());
+		}
+
 		try {
 			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3server->clientMove($whoami['client_id'],$cfg['teamspeak_default_channel_id']);
-			enter_logfile($cfg,5,"  Joined to specified Channel.");
+			$ts3server->notifyRegister("server");
+			$ts3server->notifyRegister("textprivate");
+			$ts3server->notifyRegister("textchannel");
+			$ts3server->notifyRegister("textserver");
+			TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", "handle_messages");
+			TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", "event_userenter");
 		} catch (Exception $e) {
-			if($e->getCode() != 770) {
-				enter_logfile($cfg,2,"  Could not join specified channel (Channel ID: ".$cfg['teamspeak_default_channel_id'].") - ".$e->getCode().': '.$e->getMessage());
-			} else {
-				enter_logfile($cfg,5,"  Joined to specified channel (already member of it).");
-			}
+			enter_logfile($cfg,2,"  Error due notifyRegister on TS3 server - ".$e->getCode().': '.$e->getMessage());
 		}
-	} else {
-		enter_logfile($cfg,4,"  No channel defined where the Ranksystem Bot should be entered.");
-	}
 
-	enter_logfile($cfg,5,"Config check started...");
-	
-	if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		enter_logfile($cfg,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
-	}
-	
-	$checkgroups = 0;
-	if(isset($groupslist) && $groupslist != NULL) {
-		if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
-			foreach($cfg['rankup_definition'] as $time => $groupid) {
-				if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-					$checkgroups++;
+		$whoami = $ts3server->whoami();
+		if($cfg['teamspeak_default_channel_id'] != 0) {
+			try {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$ts3server->clientMove($whoami['client_id'],$cfg['teamspeak_default_channel_id']);
+				enter_logfile($cfg,5,"  Joined to specified TS channel with channel-ID ".$cfg['teamspeak_default_channel_id'].".");
+			} catch (Exception $e) {
+				if($e->getCode() != 770) {
+					enter_logfile($cfg,2,"  Could not join specified TS channel (channel-ID: ".$cfg['teamspeak_default_channel_id'].") - ".$e->getCode().': '.$e->getMessage());
+				} else {
+					enter_logfile($cfg,5,"  Joined to specified TS channel with channel-ID ".$cfg['teamspeak_default_channel_id']." (already member of it).");
 				}
 			}
+		} else {
+			enter_logfile($cfg,5,"  No channel defined where the Ranksystem Bot should be entered.");
 		}
-		if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
-			foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
-				if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-					$checkgroups++;
-				}
-			}
-		}
-		if(isset($cfg['rankup_excepted_group_id_list']) && $cfg['rankup_excepted_group_id_list'] != NULL) {
-			foreach($cfg['rankup_excepted_group_id_list'] as $groupid => $value) {
-				if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-					$checkgroups++;
-				}
-			}
-		}
-	}
-	if($checkgroups > 0) {
-		enter_logfile($cfg,4,"  Found servergroups in config, which are unknown. Redownload all servergroups from TS3 server.");
-		if($mysqlcon->exec("DELETE FROM groups;") === false) {
-			enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
-		}
-		$nobreak = 1;
-		$sqlexec = '';
-		$serverinfo = $ts3server->serverInfo();
-		$select_arr = array();
-		$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,$nobreak);
-		if($mysqlcon->exec($sqlexec) === false) {
-			enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
-		}
-		unset($sqlexec, $select_arr, $groupslist);
-		$errcnf = 0;
-		enter_logfile($cfg,4,"  Downloading of servergroups finished. Recheck the config.");
+
+		enter_logfile($cfg,4,"Config check started...");
 		
 		if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($cfg,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
 		}
 		
+		$checkgroups = 0;
 		if(isset($groupslist) && $groupslist != NULL) {
 			if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
 				foreach($cfg['rankup_definition'] as $time => $groupid) {
 					if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-						enter_logfile($cfg,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
-						$errcnf++;
+						$checkgroups++;
 					}
 				}
 			}
 			if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
 				foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
 					if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-						enter_logfile($cfg,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']));
+						$checkgroups++;
 					}
 				}
 			}
 			if(isset($cfg['rankup_excepted_group_id_list']) && $cfg['rankup_excepted_group_id_list'] != NULL) {
 				foreach($cfg['rankup_excepted_group_id_list'] as $groupid => $value) {
 					if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-						enter_logfile($cfg,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']));
+						$checkgroups++;
 					}
 				}
 			}
 		}
-		if($errcnf > 0) {
-			shutdown($mysqlcon,$cfg,1,"Critical Config error!");
+		if($checkgroups > 0) {
+			enter_logfile($cfg,4,"  Found servergroups in config, which are unknown. Redownload all servergroups from TS3 server.");
+			if($mysqlcon->exec("DELETE FROM groups;") === false) {
+				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+			}
+			$nobreak = 1;
+			
+			$serverinfo = $ts3server->serverInfo();
+			$select_arr = array();
+			$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,$nobreak);
+			if($mysqlcon->exec($sqlexec2) === false) {
+				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+			}
+			unset($sqlexec2, $select_arr, $groupslist);
+			$errcnf = 0;
+			enter_logfile($cfg,4,"  Downloading of servergroups finished. Recheck the config.");
+			
+			if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+				enter_logfile($cfg,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
+			}
+			
+			if(isset($groupslist) && $groupslist != NULL) {
+				if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
+					foreach($cfg['rankup_definition'] as $time => $groupid) {
+						if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+							enter_logfile($cfg,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
+							$errcnf++;
+						}
+					}
+				}
+				if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
+					foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
+						if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+							enter_logfile($cfg,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']));
+						}
+					}
+				}
+				if(isset($cfg['rankup_excepted_group_id_list']) && $cfg['rankup_excepted_group_id_list'] != NULL) {
+					foreach($cfg['rankup_excepted_group_id_list'] as $groupid => $value) {
+						if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+							enter_logfile($cfg,2,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wiexgrp']));
+						}
+					}
+				}
+			}
+			if($errcnf > 0) {
+				shutdown($mysqlcon,$cfg,1,"Critical Config error!");
+			} else {
+				enter_logfile($cfg,4,"  No critical problems found! All seems to be fine...");
+			}
+		}
+
+		if(($lastupdate = $mysqlcon->query("SELECT `timestamp` FROM `$dbname`.`job_check` WHERE `job_name`='last_update'")->fetch()) === false) {
+			enter_logfile($cfg,1,"  Select on DB failed for job check: ".print_r($mysqlcon->errorInfo(), true));
 		} else {
-			enter_logfile($cfg,4,"  No critical problems found! All seems to be fine...");
-		}
-	}
-	
-	if(($lastupdate = $mysqlcon->query("SELECT `timestamp` FROM `$dbname`.`job_check` WHERE `job_name`='last_update'")->fetch()) === false) {
-		enter_logfile($cfg,1,"  Select on DB failed for job check: ".print_r($mysqlcon->errorInfo(), true));
-	} else {
-		if($lastupdate['timestamp'] != 0 && ($lastupdate['timestamp'] + 10) > time()) {
-			if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
-				foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientid) {
-					usleep($cfg['teamspeak_query_command_delay']);
-					try {
-						$ts3server->clientGetByUid($clientid)->message(sprintf($lang['upmsg2'], $cfg['version_current_using']));
-						enter_logfile($cfg,4,"  ".sprintf($lang['upusrinf'], $clientid));
-					} catch (Exception $e) {
-						enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+			if($lastupdate['timestamp'] != 0 && ($lastupdate['timestamp'] + 10) > time()) {
+				if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+					foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientid) {
+						sendmessage($ts3server, $cfg, $clientid, sprintf($lang['upmsg2'], $cfg['version_current_using'], 'https://ts-ranksystem.com/#changelog'), sprintf($lang['upusrerr'], $clientid), 6, sprintf($lang['upusrinf'], $clientid));
 					}
 				}
 			}
 		}
-	}
-	
-	unset($groupslist,$errcnf,$checkgroups);
-	enter_logfile($cfg,5,"Config check [done]");
-
-	enter_logfile($cfg,5,"Bot starts now his work!");
-	$looptime = $rotated_cnt = 0; $rotated = '';
-	usleep(3000000);
-	while(1) {
-		$sqlexec = $sqlexec2 = '';
-		$starttime = microtime(true);
-		$weekago = time() - 604800;
-		$monthago = time() - 2592000;
 		
-		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`user_snapshot`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$weekago ORDER BY `timestamp` ASC LIMIT 1; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$monthago ORDER BY `timestamp` ASC LIMIT 1; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
-			shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
-		}
+		unset($groupslist,$errcnf,$checkgroups);
+		enter_logfile($cfg,4,"Config check [done]");
 
-		$count_select = 0;
-		$select_arr = array();
-		while($single_select = $get_db_data) {
-			$fetched_array = $single_select->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
-			$count_select++;
+		enter_logfile($cfg,4,"Bot starts now his work!");
+		$looptime = 0; $cfg['temp_last_laptime'] = '';
+		usleep(3000000);
 
-			switch ($count_select) {
-				case 1:
-					$select_arr['all_user'] = $fetched_array;
-					break;
-				case 2:
-					$select_arr['max_timestamp_user_snapshot'] = $fetched_array;
-					break;
-				case 3:
-					$select_arr['count_version_user'] = $fetched_array;
-					break;
-				case 4:
-					$select_arr['max_timestamp_server_usage'] = $fetched_array;
-					break;
-				case 5:
-					$select_arr['job_check'] = $fetched_array;
-					break;
-				case 6:
-					$select_arr['uuid_stats_user'] = $fetched_array;
-					break;
-				case 7:
-					$select_arr['usersnap_min_week'] = $fetched_array;
-					break;
-				case 8:
-					$select_arr['usersnap_min_month'] = $fetched_array;
-					break;
-				case 9:
-					$select_arr['groups'] = $fetched_array;
-					break;
-				case 10:
-					$select_arr['addon_assign_groups'] = $fetched_array;
-					break;
-				case 11:
-					$select_arr['admin_addtime'] = $fetched_array;
-					break 2;
+		while(1) {
+			$starttime = microtime(true);
+			$weekago = time() - 604800;
+			$monthago = time() - 2592000;
+			
+			if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`user_snapshot`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$weekago ORDER BY `timestamp` ASC LIMIT 1; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$monthago ORDER BY `timestamp` ASC LIMIT 1; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
+				shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
-			$get_db_data->nextRowset();
-		}
-		unset($get_db_data, $fetched_array, $single_select);
 
-		check_shutdown($cfg);
-		$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
-		$ts3server->clientListReset();
-		usleep($cfg['teamspeak_query_command_delay']);
-		$allclients = $ts3server->clientList();
-		$ts3server->serverInfoReset();
-		usleep($cfg['teamspeak_query_command_delay']);
-		$serverinfo = $ts3server->serverInfo();
-		$sqlexec .= calc_user($ts3server,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$select_arr);
-		get_avatars($ts3server,$cfg);
-		$sqlexec .= clean($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
-		$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$ts,$select_arr,$phpcommand);
-		$sqlexec .= calc_userstats($ts3server,$mysqlcon,$cfg,$dbname,$select_arr);
-		$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr);
-		$sqlexec .= $sqlexec2;
-		
-		if($addons_config['assign_groups_active']['value'] == '1') {
-			if(!defined('assign_groups')) {
-				enter_logfile($cfg,5,"Loading new addon...");
-				enter_logfile($cfg,5,"  Addon: 'assign_groups' [ON]");
-				include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
-				define('assign_groups',1);
-				enter_logfile($cfg,5,"Loading new addon [done]");
-			}
-			$sqlexec .= addon_assign_groups($addons_config,$ts3server,$cfg,$dbname,$allclients,$select_arr);
-		}
-		
-		if($mysqlcon->exec($sqlexec) === false) {
-			enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
-		}
-		unset($sqlexec, $sqlexec2, $select_arr);
+			$count_select = 0;
+			$select_arr = array();
+			while($single_select = $get_db_data) {
+				$fetched_array = $single_select->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+				$count_select++;
 
-		$looptime = microtime(true) - $starttime;
-		$rotated = substr((number_format(round($looptime, 5),5) . ';' . $rotated),0,79);
-
-		if($looptime < 1) {
-			$loopsleep = (1 - $looptime) * 1000000;
-			#enter_logfile($cfg,6,"last loop: ".round($looptime, 5)." sec.");
-			usleep($loopsleep);
-		} elseif($cfg['teamspeak_query_command_delay'] == 0) {
-			#enter_logfile($cfg,6,"last loop: ".round($looptime, 5)." sec.");
-			$rotated_cnt++;
-			if($rotated_cnt > 3600) {
-				$rotated_arr = explode(';', $rotated);
-				$sum_time = 0;
-				foreach ($rotated_arr as $time) {
-					$sum_time = $sum_time + $time;
+				switch ($count_select) {
+					case 1:
+						$select_arr['all_user'] = $fetched_array;
+						break;
+					case 2:
+						$select_arr['max_timestamp_user_snapshot'] = $fetched_array;
+						break;
+					case 3:
+						$select_arr['count_version_user'] = $fetched_array;
+						break;
+					case 4:
+						$select_arr['max_timestamp_server_usage'] = $fetched_array;
+						break;
+					case 5:
+						$select_arr['job_check'] = $fetched_array;
+						break;
+					case 6:
+						$select_arr['uuid_stats_user'] = $fetched_array;
+						break;
+					case 7:
+						$select_arr['usersnap_min_week'] = $fetched_array;
+						break;
+					case 8:
+						$select_arr['usersnap_min_month'] = $fetched_array;
+						break;
+					case 9:
+						$select_arr['groups'] = $fetched_array;
+						break;
+					case 10:
+						$select_arr['addon_assign_groups'] = $fetched_array;
+						break;
+					case 11:
+						$select_arr['admin_addtime'] = $fetched_array;
+						break 2;
 				}
-				if(($sum_time / 10) > 1) {
-					$rotated_cnt = 0;
-					enter_logfile($cfg,4,"  Your Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.");
-					enter_logfile($cfg,4,"  Here you'll find some information to optimize it: https://ts-n.net/ranksystem.php#optimize");
-					enter_logfile($cfg,4,"  Last 10 runtimes in seconds (lower values are better): ".$rotated);
-					foreach ($uniqueid as $clientid) {
-						usleep($cfg['teamspeak_query_command_delay']);
-						try {
-							$ts3server->clientGetByUid($clientid)->message("\nYour Ranksystem seems to be slow. This is not a big deal, but it needs more ressources then necessary.\nHere you'll find some information to optimize it: [URL]https://ts-n.net/ranksystem.php#optimize[/URL]\nLast 10 runtimes in seconds (lower values are better):\n".$rotated);
-						} catch (Exception $e) { }
+				$get_db_data->nextRowset();
+			}
+			unset($get_db_data, $fetched_array, $single_select);
+
+			check_shutdown($cfg);
+			$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+			$ts3server->clientListReset();
+			usleep($cfg['teamspeak_query_command_delay']);
+			$allclients = $ts3server->clientList();
+			usleep($cfg['teamspeak_query_command_delay']);
+			$ts3server->serverInfoReset();
+			usleep($cfg['teamspeak_query_command_delay']);
+			$serverinfo = $ts3server->serverInfo();
+			$sqlexec .= calc_user($ts3server,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$select_arr);
+			get_avatars($ts3server,$cfg);
+			$sqlexec .= clean($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
+			$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$select_arr,$phpcommand,$lang);
+			$sqlexec .= calc_userstats($ts3server,$mysqlcon,$cfg,$dbname,$select_arr);
+			$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr);
+			
+			if($addons_config['assign_groups_active']['value'] == '1') {
+				if($cfg['temp_addon_assign_groups'] == "disabled") {
+					enter_logfile($cfg,5,"Loading new addon...");
+					enter_logfile($cfg,5,"  Addon: 'assign_groups' [ON]");
+					if(!function_exists('addon_assign_groups')) {
+						include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
 					}
+					$cfg['temp_addon_assign_groups'] = "enabled";
+					enter_logfile($cfg,5,"Loading new addon [done]");
 				}
+				$sqlexec .= addon_assign_groups($addons_config,$ts3server,$cfg,$dbname,$allclients,$select_arr);
+			} elseif ($cfg['temp_addon_assign_groups'] == "enabled") {
+				enter_logfile($cfg,5,"Disable addon...");
+				enter_logfile($cfg,5,"  Addon: 'assign_groups' [OFF]");
+				$cfg['temp_addon_assign_groups'] = "disabled";
+				enter_logfile($cfg,5,"Disable addon [done]");
+			}
+			
+			if($mysqlcon->exec($sqlexec) === false) {
+				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+			}
+			if($cfg['logs_debug_level'] > 5) {
+				$sqlfile = $cfg['logs_path'].'temp_sql_dump.sql';
+				$sqldump = fopen($sqlfile, 'wa+');
+				fwrite($sqldump, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").' SQL: '.$sqlexec."\n");
+				fclose($sqldump);
+			}
+
+			unset($sqlexec, $select_arr);
+			$sqlexec = '';
+			
+			$looptime = microtime(true) - $starttime;
+			$cfg['temp_last_laptime'] = substr((number_format(round($looptime, 5),5) . ';' . $cfg['temp_last_laptime']),0,79);
+
+			enter_logfile($cfg,6,"last loop: ".round($looptime, 5)." sec.");
+			if($looptime < 1) {
+				$loopsleep = (1 - $looptime);
+				$ts3server->getAdapter()->waittsn($loopsleep, 50000);  // 50ms delay for CPU reason
 			}
 		}
-	}
-} catch (Exception $e) {
-    enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
-	$offline_status = array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793);
-	if(in_array($e->getCode(), $offline_status)) {
-		if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
-			enter_logfile($cfg,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
+	} catch (Exception $e) {
+		enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
+		$offline_status = array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793);
+		if(in_array($e->getCode(), $offline_status)) {
+			if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
+				enter_logfile($cfg,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
+			}
+		}
+		
+		if($cfg['temp_last_botstart'] < (time() - 10)) {
+			if($cfg['temp_reconnect_attempts'] < 4) {
+				$wait_reconnect = 5;
+			} elseif($cfg['temp_reconnect_attempts'] < 10) {
+				$wait_reconnect = 60;
+			} elseif($cfg['temp_reconnect_attempts'] < 20) {
+				$wait_reconnect = 300;
+			} elseif($cfg['temp_reconnect_attempts'] < 66) {
+				$wait_reconnect = 1800;
+			} elseif($cfg['temp_reconnect_attempts'] < 288) {
+				$wait_reconnect = 3600;
+			} else {
+				$wait_reconnect = 43200;
+			}
+
+			enter_logfile($cfg,4,"Try to reconnect in ".$wait_reconnect." seconds.");
+
+			for($z = 1; $z <= $wait_reconnect; $z++) {
+				sleep(1);
+				check_shutdown($cfg);
+			}
+
+			$cfg['temp_reconnect_attempts'] = $cfg['temp_reconnect_attempts'] + 1;
+			return $cfg;
+		} else {
+			shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");
 		}
 	}
-	shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");
+}
+
+while(1) {
+	run_bot();
 }
 ?>

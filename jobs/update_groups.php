@@ -131,7 +131,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}
@@ -144,7 +144,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}
@@ -157,7 +157,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 							try {
 								$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 							} catch (Exception $e) {
-								#enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+								enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
 							}
 						}
 					}

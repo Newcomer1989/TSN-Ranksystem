@@ -16,6 +16,7 @@ require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 
 function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
+	if($loglevel > $cfg['logs_debug_level']) return;
 	$file = $cfg['logs_path'].'ranksystem.log';
 	if ($loglevel == 1) {
 		$loglevel = "  CRITICAL  ";
@@ -33,12 +34,12 @@ function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
 	fclose($loghandle);
-	if($norotate == false && filesize($file) > 5242880) {
+	if($norotate == false && filesize($file) > ($cfg['logs_rotation_size'] * 1048576)) {
 		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
 		fclose($loghandle);
 		$file2 = "$file.old";
-		if (file_exists($file2)) unlink($file2);
+		if(file_exists($file2)) unlink($file2);
 		rename($file, $file2);
 		$loghandle = fopen($file, 'a');
 		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");

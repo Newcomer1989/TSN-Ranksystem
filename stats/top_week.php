@@ -312,7 +312,7 @@ require_once('nav.php');
 						</div>
 						<h4>#10 <?PHP echo htmlspecialchars($client_data[9]['name']) ?><?PHP echo ($client_data[9]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 						<div class="progress">
-							<div class="progress-bar progress-bar-striped <?PHP echo ($client_data[9]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[9]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[9]['count'])); ?>
+							<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[9]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[9]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[9]['count'])); ?>
 							</div>
 						</div>
 					</div>
@@ -323,7 +323,7 @@ require_once('nav.php');
 						<div class="col-lg-3">
 							<div class="panel panel-primary">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fa fa-long-arrow-right"></i>&nbsp;<?PHP echo $lang['sttw0008']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0008']; ?></h3>
 								</div>
 								<div class="panel-body">
 									<div id="top10vs_donut1"></div>
@@ -334,7 +334,7 @@ require_once('nav.php');
 
 							<div class="panel panel-green">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fa fa-long-arrow-right"></i>&nbsp;<?PHP echo $lang['sttw0009']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0009']; ?></h3>
 								</div>
 								<div class="panel-body">
 									<div id="top10vs_donut2"></div>
@@ -345,7 +345,7 @@ require_once('nav.php');
 
 							<div class="panel panel-yellow">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fa fa-long-arrow-right"></i>&nbsp;<?PHP echo $lang['sttw0010']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0010']; ?></h3>
 								</div>
 								<div class="panel-body">
 									<div id="top10vs_donut3"></div>

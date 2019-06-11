@@ -71,7 +71,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 		$err_lvl = 3;
 	} else {
 		$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
-		type="submit" class="btn btn-primary" name="restart"><i class="fa fa-fw fa-refresh"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+		type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
 	}
 } elseif(isset($_POST['update'])) {
@@ -97,15 +97,14 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group required-field-block">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<input type="text" class="form-control" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="teamspeak_host_address" value="<?php echo $cfg['teamspeak_host_address']; ?>" maxlength="64" required>
-											<div class="required-icon"><div class="text">*</div></div>
+											<input type="text" class="form-control required" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="teamspeak_host_address" value="<?php echo $cfg['teamspeak_host_address']; ?>" maxlength="65535" required>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3encryptdesc"><?php echo $lang['wits3encrypt']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3encryptdesc"><?php echo $lang['wits3encrypt']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<?PHP if ($cfg['teamspeak_query_encrypt_switch'] == 1) {
 												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
@@ -115,9 +114,9 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 										</div>
 									</div>									
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querydesc"><?php echo $lang['wits3query']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
-											<input type="text" class="form-control" name="teamspeak_query_port" value="<?php echo $cfg['teamspeak_query_port']; ?>" required>
+											<input type="text" class="form-control required" name="teamspeak_query_port" value="<?php echo $cfg['teamspeak_query_port']; ?>" required>
 											<script>
 											$("input[name='teamspeak_query_port']").TouchSpin({
 												min: 0,
@@ -126,13 +125,13 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 												prefix: 'TCP:'
 											});
 											</script>
-											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>	
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3voicedesc"><?php echo $lang['wits3voice']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3voicedesc"><?php echo $lang['wits3voice']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 required-field-block-spin">
-											<input type="text" class="form-control" name="teamspeak_voice_port" value="<?php echo $cfg['teamspeak_voice_port']; ?>" required>
+											<input type="text" class="form-control required" name="teamspeak_voice_port" value="<?php echo $cfg['teamspeak_voice_port']; ?>" required>
 											<script>
 											$("input[name='teamspeak_voice_port']").TouchSpin({
 												min: 0,
@@ -141,7 +140,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 												prefix: 'UDP:'
 											});
 											</script>
-											<div class="required-icon"><div class="text">*</div></div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 								</div>
@@ -150,17 +149,21 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querusrdesc"><?php echo $lang['wits3querusr']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querusrdesc"><?php echo $lang['wits3querusr']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control" name="teamspeak_query_user" value="<?php echo $cfg['teamspeak_query_user']; ?>" required>
-											<div class="required-icon"><div class="text">*</div></div>
+											<input type="text" class="form-control required" name="teamspeak_query_user" value="<?php echo $cfg['teamspeak_query_user']; ?>" required>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querpwdesc"><?php echo $lang['wits3querpw']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3querpwdesc"><?php echo $lang['wits3querpw']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="password" class="form-control" name="teamspeak_query_pass" value="<?php echo $cfg['teamspeak_query_pass']; ?>" data-toggle="password" data-placement="before" required>
-											<div class="required-icon"><div class="text">*</div></div>
+											<div class="input-group">
+												<span id="toggle-password2" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79 47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z"></path></svg></span>
+											    <span id="toggle-password1" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all; display: none;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M320 400c-75.85 0-137.25-58.71-142.9-133.11L72.2 185.82c-13.79 17.3-26.48 35.59-36.72 55.59a32.35 32.35 0 0 0 0 29.19C89.71 376.41 197.07 448 320 448c26.91 0 52.87-4 77.89-10.46L346 397.39a144.13 144.13 0 0 1-26 2.61zm313.82 58.1l-110.55-85.44a331.25 331.25 0 0 0 81.25-102.07 32.35 32.35 0 0 0 0-29.19C550.29 135.59 442.93 64 320 64a308.15 308.15 0 0 0-147.32 37.7L45.46 3.37A16 16 0 0 0 23 6.18L3.37 31.45A16 16 0 0 0 6.18 53.9l588.36 454.73a16 16 0 0 0 22.46-2.81l19.64-25.27a16 16 0 0 0-2.82-22.45zm-183.72-142l-39.3-30.38A94.75 94.75 0 0 0 416 256a94.76 94.76 0 0 0-121.31-92.21A47.65 47.65 0 0 1 304 192a46.64 46.64 0 0 1-1.54 10l-73.61-56.89A142.31 142.31 0 0 1 320 112a143.92 143.92 0 0 1 144 144c0 21.63-5.29 41.79-13.9 60.11z"></path></svg></span>
+												<input id="password" type="password" class="form-control required" name="teamspeak_query_pass" value="<?php echo $cfg['teamspeak_query_pass']; ?>" required>
+											</div>
+											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 								</div>
@@ -169,15 +172,15 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 						<div class="col-md-6 ">
 							<div class="panel-body">
 								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" class="form-control" name="teamspeak_query_nickname" value="<?php echo $cfg['teamspeak_query_nickname']; ?>" maxlength="30" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<input type="text" class="form-control required" name="teamspeak_query_nickname" value="<?php echo $cfg['teamspeak_query_nickname']; ?>" maxlength="30" required>
+										<div class="help-block with-errors"></div>
 									</div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="teamspeak_default_channel_id" value="<?php echo $cfg['teamspeak_default_channel_id']; ?>">
 									<script>
@@ -192,7 +195,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" id="basic" name="teamspeak_query_command_delay">
 									<?PHP
@@ -209,7 +212,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 							</div>
 							<div class="row">&nbsp;</div>
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3avatdesc"><?php echo $lang['wits3avat']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3avatdesc"><?php echo $lang['wits3avat']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<input type="text" class="form-control" name="teamspeak_avatar_download_delay" value="<?php echo $cfg['teamspeak_avatar_download_delay']; ?>">
 									<script>
@@ -307,7 +310,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
         <h4 class="modal-title"><?php echo $lang['wits3querusr']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo sprintf($lang['wits3querusrdesc'], '<a href="https://ts-n.net/ranksystem.php#requirements" target="_blank">https://ts-n.net/ranksystem.php#requirements</a>'); ?>
+        <?php echo sprintf($lang['wits3querusrdesc'], '<a href="https://ts-ranksystem.com/#linux" target="_blank">https://ts-ranksystem.com/</a>'); ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -407,7 +410,7 @@ $('form[data-toggle="validator"]').validator({
 	errors: {
 		pattern: "There should be an error in your value, please check all could be right!"
 	}
-});
+}); 
 </script>
 </body>
 </html>

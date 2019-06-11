@@ -119,7 +119,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmhidedesc"><?php echo $lang['wiadmhide']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmhidedesc"><?php echo $lang['wiadmhide']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 pull-right">
 											<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 											<?PHP
@@ -130,7 +130,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiselclddesc"><?php echo $lang['wiselcld']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiselclddesc"><?php echo $lang['wiselcld']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control" data-live-search="true" multiple name="user[]">
 											<?PHP
@@ -142,7 +142,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#setontimedesc"><?php echo $lang['setontime']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#setontimedesc"><?php echo $lang['setontime']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control" name="setontime_day">
 											<script>

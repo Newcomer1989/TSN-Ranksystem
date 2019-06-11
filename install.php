@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.2.12';
+$rsversion = '1.3.0';
 ?>
 <!DOCTYPE html>
 <html>
@@ -12,26 +12,6 @@ $rsversion = '1.2.12';
 	<title>TS-N.NET Ranksystem</title>
 	<link href="libs/combined_wi.css" rel="stylesheet">
 	<script src="libs/combined_wi.js"></script>
-	<script>
-	$(function() {
-		$('.required-icon').tooltip({
-			placement: 'left',
-			title: 'Required field'
-		});
-	});
-	$(function() {
-        $('#password').password().on('show.bs.password', function(e) {
-            $('#eventLog').text('On show event');
-            $('#methods').prop('checked', true);
-        }).on('hide.bs.password', function(e) {
-				$('#eventLog').text('On hide event');
-				$('#methods').prop('checked', false);
-			});
-        $('#methods').click(function() {
-            $('#password').password('toggle');
-        });
-    });
-	</script>
 </head>
 <body>
 	<div id="wrapper">
@@ -41,13 +21,13 @@ $rsversion = '1.2.12';
 			</div>
 			<ul class="nav navbar-right top-nav">
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe"></i>&nbsp;<b class="caret"></b></a>
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li>
 							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
 						</li>
 						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - čeština</a>
+							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
 						</li>
 						<li>
 							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
@@ -127,7 +107,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`cldbid` int(10) NOT NULL default '0',`count` int(10) NOT NULL default '0',`name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`lastseen` bigint(11) NOT NULL default '0',`grpid` int(10) NOT NULL default '0',`nextup` int(10) NOT NULL default '0',`idle` int(10) NOT NULL default '0',`cldgroup` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`online` tinyint(1) NOT NULL default '0',`boosttime` int(10) NOT NULL default '0',`rank` int(10) NOT NULL default '0',`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`nation` varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`firstcon` bigint(11) NOT NULL default '0',`except` tinyint(1) NOT NULL default '0',`grpsince` bigint(11) NOT NULL default '0',`cid` int(10) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`cldbid` int(10) NOT NULL default '0',`count` DECIMAL(14,3),`name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`lastseen` bigint(11) NOT NULL default '0',`grpid` int(10) NOT NULL default '0',`nextup` int(10) NOT NULL default '0',`idle` DECIMAL(14,3),`cldgroup` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`online` tinyint(1) NOT NULL default '0',`boosttime` int(10) NOT NULL default '0',`rank` int(10) NOT NULL default '9999999',`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`nation` varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`firstcon` bigint(11) NOT NULL default '0',`except` tinyint(1) NOT NULL default '0',`grpsince` bigint(11) NOT NULL default '0',`cid` int(10) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		} else {
@@ -150,7 +130,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`cfg_params` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `value` varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`cfg_params` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `value` varchar(65535) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -286,7 +266,7 @@ if (isset($_POST['install'])) {
 			}
 		}
 		
-		if(!is_writeable('./other/dbconfig.php')) {
+		if(!is_writable('./other/dbconfig.php')) {
 			$err_msg = $lang['isntwicfg'];
 			$err_lvl = 2;
 		}
@@ -329,7 +309,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>47,31536060=>50'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', '2,6'), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', 'xrTKhT/HDL4ea0WoFDQH2zOpmKg='), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_site_navigation_switch', '1'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>47,31536060=>50'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', '2,6'), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', 'xrTKhT/HDL4ea0WoFDQH2zOpmKg='), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'rank'), ('stats_column_default_order', 'asc'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
@@ -351,21 +331,41 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 		$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF'])."/install.php", '/\\')."\">";
 		$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
 	}
-	if(!is_writeable('./other/dbconfig.php')) {
+	if(!is_writable('./other/dbconfig.php')) {
 		unset($err_msg); $err_msg = $lang['isntwicfg']; $err_lvl = 3;
 	}
-	if(substr(sprintf('%o', fileperms('./avatars/')), -4)!='0777') {
-		unset($err_msg); $err_msg = sprintf($lang['isntwichm'],"avatars"); $err_lvl = 3;
+
+	$file_err_count=0;
+	$file_err_msg = '';
+	try {
+		$scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__));
+		$files = array(); 
+		foreach ($scandir as $object) {
+			if(!strstr($object, '/.') && !strstr($object, '\.')) {
+				if (!$object->isDir()) {
+					if(!is_writable($object->getPathname())) {
+						$file_err_msg .= "File is not writeable ".$object."<br>";
+						$file_err_count++;
+					}
+				} else {
+					if(!is_writable($object->getPathname())) {
+						$file_err_msg .= "Folder is not writeable ".$object."<br>";
+						$file_err_count++;
+					}
+				}
+			}
+		}
+	} catch (Exception $e) {
+		$err_msg .= "File Permissions Error: ".$e->getCode()." ".$e->getMessage();
+		$err_lvl = 3;
 	}
-	if(substr(sprintf('%o', fileperms('./tsicons/')), -4)!='0777') {
-		unset($err_msg); $err_msg = sprintf($lang['isntwichm'],"tsicons"); $err_lvl = 3;
+	
+	if($file_err_count!=0) {
+		$err_msg = "<b>Wrong file/folder permissions!</b><br>You need to correct the owner and access permissions of the named files/folders!<br><br>The <u>owner</u> of all files and folders of the Ranksystem installation folder must be the user of your webserver (e.g.: www-data).<br>On Linux systems you may do something like this (linux shell command):<br>chown -R www-data:www-data ".__DIR__."<br><br>Also the <u>access permission</u> must be set, that the user of your webserver is able to read, write and execute files.<br>On Linux systems you may do something like this (linux shell command):<br>chmod -R 640 ".__DIR__."<br><br><br>List of concerned files/folders:<br>";
+		$err_lvl = 3;
+		$err_msg .= $file_err_msg;
 	}
-	if(substr(sprintf('%o', fileperms('./logs/')), -4)!='0777') {
-		unset($err_msg); $err_msg = sprintf($lang['isntwichm'],"logs"); $err_lvl = 3;
-	}
-	if(substr(sprintf('%o', fileperms('./update/')), -4)!='0777') {
-		unset($err_msg); $err_msg = sprintf($lang['isntwichm'],"update"); $err_lvl = 3;
-	}
+
 	if(!class_exists('PDO')) {
 		unset($err_msg); $err_msg = $lang['insterr2']; $err_lvl = 3;
 	}
@@ -411,8 +411,8 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 		$dbuser = $_POST['dbuser'];
 		$dbpass = $_POST['dbpass'];
 	} else {
-		$dbhost = "localhost";
-		$dbname = "ts3_ranksystem";
+		$dbhost = "";
+		$dbname = "";
 		$dbuser = "";
 		$dbpass = "";
 	}
@@ -423,7 +423,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<div class="row">
 				<div class="col-lg-12">
 					<h1 class="page-header">
-						<?php echo $lang['wihldb']; ?>
+						<?php echo $lang['winav2'],' ',$lang['wihlset']; ?>
 					</h1>
 				</div>
 			</div>
@@ -435,9 +435,9 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 						<div class="panel panel-default">
 							<div class="panel-body">
 								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbtypedesc"><?php echo $lang['isntwidbtype']; ?></label>
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbtypedesc"><?php echo $lang['isntwidbtype']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<select class="selectpicker show-tick form-control" id="basic" name="dbtype" required>
+										<select class="selectpicker show-tick form-control required" id="basic" name="dbtype" required>
 										<option disabled value=""> -- select database -- </option>
 										<option data-subtext="Cubrid" value="cubrid">cubrid</option>
 										<option data-subtext="FreeTDS / Microsoft SQL Server / Sybase" value="dblib">dblib</option>
@@ -455,17 +455,15 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 									</div>
 								</div>
 								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbhostdesc"><?php echo $lang['isntwidbhost']; ?></label>
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbhostdesc"><?php echo $lang['isntwidbhost']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" class="form-control" name="dbhost" value="<?php echo $dbhost; ?>" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<input type="text" class="form-control required" name="dbhost" placeholder="localhost" value="<?php echo $dbhost; ?>" required>
 									</div>
 								</div>
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbnamedesc"><?php echo $lang['isntwidbname']; ?></label>
+								<div class="form-group required-field-block">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbnamedesc"><?php echo $lang['isntwidbname']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" data-pattern="^([A-Za-z0-9$_]){1,64}$" data-error="Please do not use special characters or more then 64 characters inside the database name!" class="form-control" name="dbname" value="<?php echo $dbname; ?>" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<input type="text" data-pattern="^([A-Za-z0-9$_]){1,64}$" data-error="Please do not use special characters or more then 64 characters inside the database name!" class="form-control required" name="dbname" placeholder="ts3_ranksystem" value="<?php echo $dbname; ?>" required>
 										<div class="help-block with-errors"></div>
 									</div>
 								</div>
@@ -474,19 +472,21 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 						<div class="row">&nbsp;</div>
 						<div class="panel panel-default">
 							<div class="panel-body">
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbusrdesc"><?php echo $lang['isntwidbusr']; ?></label>
+								<div class="form-group required-field-block">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbusrdesc"><?php echo $lang['isntwidbusr']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not use more then 64 characters inside the database user!" class="form-control" name="dbuser" value="<?php echo $dbuser; ?>" maxlength="64" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<input type="text" placeholder="<?php echo $lang['user'] ?>" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not use more then 64 characters inside the database user!" class="form-control required" name="dbuser" value="<?php echo $dbuser; ?>" maxlength="64" required>
 										<div class="help-block with-errors"></div>
 									</div>
 								</div>
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbpassdesc"><?php echo $lang['isntwidbpass']; ?></label>
+								<div class="form-group required-field-block">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwidbpassdesc"><?php echo $lang['isntwidbpass']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="password" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not use more then 64 characters inside the database password!" class="form-control" name="dbpass" value="<?php echo $dbpass; ?>" data-toggle="password" data-placement="before" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<div class="input-group">
+											<span id="toggle-password2" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79 47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z"></path></svg></span>
+											<span id="toggle-password1" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all; display: none;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M320 400c-75.85 0-137.25-58.71-142.9-133.11L72.2 185.82c-13.79 17.3-26.48 35.59-36.72 55.59a32.35 32.35 0 0 0 0 29.19C89.71 376.41 197.07 448 320 448c26.91 0 52.87-4 77.89-10.46L346 397.39a144.13 144.13 0 0 1-26 2.61zm313.82 58.1l-110.55-85.44a331.25 331.25 0 0 0 81.25-102.07 32.35 32.35 0 0 0 0-29.19C550.29 135.59 442.93 64 320 64a308.15 308.15 0 0 0-147.32 37.7L45.46 3.37A16 16 0 0 0 23 6.18L3.37 31.45A16 16 0 0 0 6.18 53.9l588.36 454.73a16 16 0 0 0 22.46-2.81l19.64-25.27a16 16 0 0 0-2.82-22.45zm-183.72-142l-39.3-30.38A94.75 94.75 0 0 0 416 256a94.76 94.76 0 0 0-121.31-92.21A47.65 47.65 0 0 1 304 192a46.64 46.64 0 0 1-1.54 10l-73.61-56.89A142.31 142.31 0 0 1 320 112a143.92 143.92 0 0 1 144 144c0 21.63-5.29 41.79-13.9 60.11z"></path></svg></span>
+											<input id="password" placeholder="<?php echo $lang['pass'] ?>" type="password" data-pattern="^[^&quot;'\\-\s]+$" data-error="Please do not use one of the following special characters: ' \ &quot; - also no whitespace and do not use more then 64 characters inside the database password!" class="form-control required" name="dbpass" value="<?php echo $dbpass; ?>" data-toggle="password" data-placement="before" maxlength="64" required>
+										</div>
 										<div class="help-block with-errors"></div>
 									</div>
 								</div>
@@ -522,7 +522,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<h4 class="modal-title"><?php echo $lang['isntwidbtype']; ?></h4>
 		  </div>
 		  <div class="modal-body">
-			<?php echo $lang['isntwidbtypedesc']; ?>
+			<?php echo sprintf($lang['isntwidbtypedesc'], '<a href="https://ts-ranksystem.com/#linux" target="_blank">https://ts-ranksystem.com/#linux</a>'); ?>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -633,15 +633,17 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwiusrdesc"><?php echo $lang['user']; ?></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" class="form-control" name="user" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<input type="text" placeholder="<?php echo $lang['user'] ?>" class="form-control required" name="user" maxlength="65536" required>
 									</div>
 								</div>
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#isntwiusrdesc"><?php echo $lang['pass']; ?></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="password" class="form-control" name="pass" data-toggle="password" data-placement="before" required>
-										<div class="required-icon"><div class="text">*</div></div>
+										<div class="input-group">
+											<span id="toggle-password2" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 0 0 0 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 0 0 0-29.19zM288 400a144 144 0 1 1 144-144 143.93 143.93 0 0 1-144 144zm0-240a95.31 95.31 0 0 0-25.31 3.79 47.85 47.85 0 0 1-66.9 66.9A95.78 95.78 0 1 0 288 160z"></path></svg></span>
+											<span id="toggle-password1" class="input-group-addon" onclick="togglepwd()" style="cursor: pointer; pointer-events: all; display: none;"><svg class="svg-inline--fa fa-eye fa-w-18" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="eye" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M320 400c-75.85 0-137.25-58.71-142.9-133.11L72.2 185.82c-13.79 17.3-26.48 35.59-36.72 55.59a32.35 32.35 0 0 0 0 29.19C89.71 376.41 197.07 448 320 448c26.91 0 52.87-4 77.89-10.46L346 397.39a144.13 144.13 0 0 1-26 2.61zm313.82 58.1l-110.55-85.44a331.25 331.25 0 0 0 81.25-102.07 32.35 32.35 0 0 0 0-29.19C550.29 135.59 442.93 64 320 64a308.15 308.15 0 0 0-147.32 37.7L45.46 3.37A16 16 0 0 0 23 6.18L3.37 31.45A16 16 0 0 0 6.18 53.9l588.36 454.73a16 16 0 0 0 22.46-2.81l19.64-25.27a16 16 0 0 0-2.82-22.45zm-183.72-142l-39.3-30.38A94.75 94.75 0 0 0 416 256a94.76 94.76 0 0 0-121.31-92.21A47.65 47.65 0 0 1 304 192a46.64 46.64 0 0 1-1.54 10l-73.61-56.89A142.31 142.31 0 0 1 320 112a143.92 143.92 0 0 1 144 144c0 21.63-5.29 41.79-13.9 60.11z"></path></svg></span>
+											<input id="password" placeholder="<?php echo $lang['pass'] ?>" type="password" class="form-control required" name="pass" data-toggle="password" maxlength="65536" required>
+										</div>
 									</div>
 								</div>
 							</div>

@@ -101,7 +101,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="panel panel-default">
 								<div class="panel-body">
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0014"><?php echo $lang['stag0013']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0014"><?php echo $lang['stag0013']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 										<?PHP if ($addons_config['assign_groups_active']['value'] == '1') {
 											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="assign_groups_active" value="',$assign_groups_active,'">';
@@ -113,7 +113,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="row">&nbsp;</div>
 									<div class="row">&nbsp;</div>
 									<div class="form-group required-field-block">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0003"><?php echo $lang['stag0002']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0003"><?php echo $lang['stag0002']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<textarea class="form-control" data-pattern="^([0-9]+,)*[0-9]+$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="assign_groups_groupids" maxlength="5000" required><?php echo $addons_config['assign_groups_groupids']['value']; ?></textarea>
 											<div class="required-icon"><div class="text">*</div></div>
@@ -121,7 +121,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										</div>
 									</div>
 									<div class="form-group">
-										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0005"><?php echo $lang['stag0004']; ?><i class="help-hover glyphicon glyphicon-question-sign"></i></label>
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0005"><?php echo $lang['stag0004']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<input type="text" class="form-control" name="assign_groups_limit" value="<?php echo $addons_config['assign_groups_limit']['value']; ?>">
 											<script>

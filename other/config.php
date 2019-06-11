@@ -82,7 +82,7 @@ if($db['type'] != "type") {
 	try {
 		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
 	} catch (PDOException $e) {
-		echo "Database Connection failed: ".$e->getMessage()."\n"; $err_lvl = 3;
+		echo 'Database Connection failed: <b>'.$e->getMessage().'</b><br><br>Check:<br>- You have already installed the Ranksystem? Run <a href="../install.php">install.php</a> first!<br>- Is the database reachable?<br>- You have installed all needed PHP extenstions? Have a look here for <a href="//ts-ranksystem.com/#windows">Windows</a> or <a href="//ts-ranksystem.com/#linux">Linux</a>?'; $err_lvl = 3;
 		exit;
 	}
 }
@@ -227,7 +227,7 @@ if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cf
 			$cfg['logs_timezone'] = "Europe/Berlin";
 		}
 		date_default_timezone_set($cfg['logs_timezone']);
-		
+
 		if(empty($cfg['webinterface_admin_client_unique_id_list'])) {
 			$cfg['webinterface_admin_client_unique_id_list'] = NULL;
 		} else {
@@ -307,10 +307,21 @@ if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cf
 			$cfg['default_language'] = "en";
 			$_SESSION[$rspathhex.'language'] = "en";
 		}
-		$lang = set_language($cfg['default_language']);
+		if(isset($cfg['default_language'])) {
+			$lang = set_language($cfg['default_language']);
+		} else {
+			$lang = set_language("en");
+		}
 		unset($addnewvalue1, $addnewvalue2, $newcfd);
 	}
 } elseif(!isset($_GET["lang"])) {
 	$lang = set_language("en");
+}
+
+if(empty($cfg['logs_debug_level'])) {
+	$cfg['logs_debug_level'] = "5";
+}
+if(empty($cfg['logs_rotation_size'])) {
+	$cfg['logs_rotation_size'] = "5";
 }
 ?>
