@@ -60,6 +60,23 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
 	}
+
+	// Convert groups to string
+	$rankup_definition = "";
+	if(isset($_POST['rankuptime']) && isset($_POST['rankupgroup'])) {
+		$rankupgroups = [];
+		foreach ($_POST['rankuptime'] as $key => $entry) {
+			$servergroupId = isset($_POST["rankupgroup"][$key]) ? $_POST["rankupgroup"][$key] : 0;
+			if (empty($servergroupId)) {
+				$servergroupId = 0;
+			}
+			if (empty($entry)) {
+				$entry = 0; 
+			}
+			$rankupgroups[] = "$entry=>$servergroupId";
+		}
+		$rankup_definition = implode(",", $rankupgroups);
+	}
 	
 	if(empty($_POST['rankup_boost_definition'])) {
 		$cfg['rankup_boost_definition'] = NULL;
@@ -70,10 +87,10 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 			$cfg['rankup_boost_definition'] = $addnewvalue2;
 		}
 	}
-	if(empty($_POST['rankup_definition'])) {
+	if(empty($rankup_definition)) {
 		$grouparr = null;
 	} else {
-		foreach (explode(',', $_POST['rankup_definition']) as $entry) {
+		foreach (explode(',', $rankup_definition) as $entry) {
 			list($time, $groupid) = explode('=>', $entry);
 			$grouparr[$groupid] = $time;
 		}
@@ -113,7 +130,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$cfg['rankup_excepted_unique_client_id_list'] = $_POST['rankup_excepted_unique_client_id_list'];
     $cfg['rankup_excepted_group_id_list'] = $_POST['rankup_excepted_group_id_list'];
     $cfg['rankup_excepted_channel_id_list'] = $_POST['rankup_excepted_channel_id_list'];
-	$cfg['rankup_definition'] = $_POST['rankup_definition'];
+	$cfg['rankup_definition'] = $rankup_definition;
 	$cfg['rankup_boost_definition'] = $_POST['rankup_boost_definition'];
 	$cfg['rankup_ignore_idle_time']	= $_POST['rankup_ignore_idle_time'];
 	
@@ -140,10 +157,10 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$cfg['rankup_excepted_unique_client_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_unique_client_id_list']));
 	$cfg['rankup_excepted_group_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_group_id_list']));
 	$cfg['rankup_excepted_channel_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_channel_id_list']));
-	if(empty($_POST['rankup_definition'])) {
+	if(empty($rankup_definition)) {
 		$cfg['rankup_definition'] = NULL;
 	} else {
-		$grouptimearr = explode(',', $_POST['rankup_definition']);
+		$grouptimearr = explode(',', $rankup_definition);
 		foreach ($grouptimearr as $entry) {
 			list($key, $value) = explode('=>', $entry);
 			$addnewvalue1[$key] = $value;
@@ -229,7 +246,44 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group required-field-block">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="65535" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
+									<div class="row">
+										<div class="col-sm-8">
+											<b>Time in Seconds</b>
+										</div>
+										<div class="col-sm-4">
+											<b>Servergroup ID</b>
+										</div>
+									</div>
+									<?php
+										foreach ($cfg['rankup_definition'] as $time => $sgroup) {
+											echo '
+											<div name="rankupgroup" class="row" style="margin-top: 5px;">
+												<div class="col-sm-8">
+													<input type="text" class="form-control rankuptime" name="rankuptime[]" value="'.$time.'">
+												</div>
+												<div class="col-sm-4">
+													<input type="text" class="form-control" name="rankupgroup[]" value="'.$sgroup.'">
+												</div>
+											</div>
+											';
+										} 
+									?>
+									<button type="button" class="btn btn-primary" id="addrankupgroup" style="margin-top: 5px;">Add</button>
+									<script>
+										$(".rankuptime").TouchSpin({
+											min: 0,
+											max: 999999999,
+											verticalbuttons: true,
+											prefix: 'Sec.:'
+										});
+
+										$("#addrankupgroup").click(function(){
+											var elm = $("div[name='rankupgroup']").first().clone();
+											elm.find("input[type=text], textarea").val("0");
+											elm.insertBefore("#addrankupgroup");
+										});
+									</script>
+									<!-- </textarea> -->
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
