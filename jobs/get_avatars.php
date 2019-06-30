@@ -1,5 +1,6 @@
 <?PHP
 function get_avatars($ts3,$cfg) {
+	$starttime = microtime(true);
 	try {
 		usleep($cfg['teamspeak_query_command_delay']);
 		$tsfilelist = $ts3->channelFileList($cid="0", $cpw="", $path="/");
@@ -38,8 +39,14 @@ function get_avatars($ts3,$cfg) {
 					}
 				}
 			}
+			if((microtime(true) - $starttime) > 5) {
+				enter_logfile($cfg,6,"get_avatars needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+				return;
+			}
 		}
 		unset($fsfilelistarray);
 	}
+	
+	enter_logfile($cfg,6,"get_avatars needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 }
 ?>

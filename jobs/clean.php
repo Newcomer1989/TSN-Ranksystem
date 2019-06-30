@@ -1,5 +1,6 @@
 <?PHP
 function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
+	$starttime = microtime(true);
 	$nowtime = time();
 	$sqlexec = '';
 
@@ -28,7 +29,7 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 				$single_uuid = $uuidts['client_unique_identifier']->toString();
 				$uidarrts[$single_uuid]= 1;
 			}
-			unset($clientdblist);
+			unset($clientdblist,$getclientdblist,$start,$break,$single_uuid);
 			
 			foreach($select_arr['all_user'] as $uuid => $value) {
 				if(isset($uidarrts[$uuid])) {
@@ -38,10 +39,9 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 					$countdel++;
 				}
 			}
-			unset($uidarrts);
 			enter_logfile($cfg,4,"  ".sprintf($lang['cleants'], $countts, $count_tsuser['count']));
 			enter_logfile($cfg,4,"  ".sprintf($lang['cleanrs'], count($select_arr['all_user'])));
-
+			unset($uidarrts,$count_tsuser,$countts);
 			if(isset($deleteuuids)) {
 				$alldeldata = '';
 				$fsfilelist = opendir(substr(__DIR__,0,-4).'avatars/');
@@ -50,7 +50,7 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 						$fsfilelistarray[$fsfile] = filemtime(substr(__DIR__,0,-4).'avatars/'.$fsfile);
 					}
 				}
-				unset($fsfilelist);
+				unset($fsfilelist,$fsfile);
 				$avatarfilepath	= substr(__DIR__,0,-4).'avatars/';
 				$convert = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p');
 				foreach ($deleteuuids as $uuid) {
@@ -69,7 +69,7 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 						}
 					}
 				}
-				unset($$deleteuuids);
+				unset($deleteuuids,$avatarfilepath,$convert,$uuidasbase16);
 				$alldeldata = substr($alldeldata, 0, -1);
 				$alldeldata = "(".$alldeldata.")";
 				if ($alldeldata != '') {
@@ -93,6 +93,7 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 		enter_logfile($cfg,4,$lang['clean0003']);
 	}
 
+	enter_logfile($cfg,6,"clean needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);
 }
 ?>

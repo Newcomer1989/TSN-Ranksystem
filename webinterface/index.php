@@ -167,14 +167,14 @@ require_once('nav.php');
 											<label class="control-label"><?PHP echo $lang['user']; ?>:</label>
 											<div class="input-group">
 												<span class="input-group-addon"><i class="fas fa-user"></i></span>
-												<input type="text" class="form-control" name="username" placeholder="<?PHP echo $lang['user']; ?>" maxlength="65535" autofocus>
+												<input type="text" class="form-control" name="username" placeholder="<?PHP echo $lang['user']; ?>" maxlength="21588" autofocus>
 											</div>
 										</div>
 										<div class="form-group">
 											<label class="control-label"><?PHP echo $lang['pass']; ?>:</label>
 											<div class="input-group">
 												<span class="input-group-addon"><i class="fas fa-lock"></i></span>
-												<input type="password" class="form-control" name="password" placeholder="<?PHP echo $lang['pass']; ?>" maxlength="65535">
+												<input type="password" class="form-control" name="password" placeholder="<?PHP echo $lang['pass']; ?>" maxlength="21588">
 											</div>
 										</div>
 										<br>

@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.0';
+	$cfg['version_latest_available'] = '1.3.1';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$cfg,$dbname) {
@@ -16,15 +16,15 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 
 	function old_files($cfg) {
 		$del_folder = array('icons/','libs/ts3_lib/Adapter/Blacklist/','libs/ts3_lib/Adapter/TSDNS/','libs/ts3_lib/Adapter/Update/','libs/fonts/');
-		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php');
-		function rmdir_recursive($folder) {
+		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php','languages/core_ar.php','languages/core_cz.php','languages/core_de.php','languages/core_en.php','languages/core_es.php','languages/core_fr.php','languages/core_it.php','languages/core_nl.php','languages/core_pl.php','languages/core_pt.php','languages/core_ro.php','languages/core_ru.php');
+		function rmdir_recursive($folder,$cfg) {
 			foreach(scandir($folder) as $file) {
 				if ('.' === $file || '..' === $file) continue;
-				if (is_dir("$folder/$file")) {
-					rmdir_recursive("$folder/$file");
+				if (is_dir($folder.$file)) {
+					rmdir_recursive($folder.$file);
 				} else {
-					if(!unlink("$folder/$file")) {
-						enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: ".$folder."/".$file);
+					if(!unlink($folder.$file)) {
+						enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: ".$folder.$file);
 					}
 				}
 			}
@@ -35,12 +35,12 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 				
 		foreach($del_folder as $folder) {
 			if(is_dir(substr(__DIR__,0,-4).$folder)) {
-				rmdir_recursive(substr(__DIR__,0,-4).$folder);
+				rmdir_recursive(substr(__DIR__,0,-4).$folder,$cfg);
 			}
 		}
 		foreach($del_files as $file) {
 			if(is_file(substr(__DIR__,0,-4).$file)) {
-				if(!unlink($file)) {
+				if(!unlink(substr(__DIR__,0,-4).$file)) {
 					enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: ".$file);
 				}
 			}
@@ -281,12 +281,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			}
 		}
 		if(version_compare($cfg['version_current_using'], '1.3.0', '<')) {
-			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
-				enter_logfile($cfg,4,"    [1.3.0] Stored timestamp of last update successfully.");
-			}
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-
 			if(empty($cfg['teamspeak_host_address']) || $cfg['teamspeak_host_address'] == '') {
 				enter_logfile($cfg,4,"    [1.3.0] Table cfg_params needs to be repaired.");
 				$oldconfigs = $mysqlcon->query("SELECT * FROM `$dbname`.`config`")->fetch();
@@ -328,6 +322,18 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			
 			if($mysqlcon->exec("DROP TABLE `$dbname`.`config`;") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.0] Dropped old table config.");
+			}
+		}
+		
+		if(version_compare($cfg['version_current_using'], '1.3.1', '<')) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.1] Stored timestamp of last update successfully.");
+			}
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
+			
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('reset_user_time', '0'),('reset_user_delete', '0'),('reset_group_withdraw', '0'),('reset_webspace_cache', '0'),('reset_usage_graph', '0'),('reset_stop_after', '0');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.1] Added new job_check values.");
 			}
 
 			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { }

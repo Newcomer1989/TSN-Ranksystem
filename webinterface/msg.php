@@ -111,7 +111,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgmsgdesc"><?php echo $lang['wimsgmsg']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankup_message_to_user" maxlength="65535"><?php echo $cfg['rankup_message_to_user']; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_message_to_user" maxlength="21588"><?php echo $cfg['rankup_message_to_user']; ?></textarea>
 										</div>
 									</div>
 								</div>
@@ -120,7 +120,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgsndesc"><?php echo $lang['wimsgsn']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<textarea class="form-control" rows="15" name="stats_server_news" maxlength="65535"><?php echo $cfg['stats_server_news']; ?></textarea>
+										<textarea class="form-control" rows="15" name="stats_server_news" maxlength="21588"><?php echo $cfg['stats_server_news']; ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -143,19 +143,19 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc1"><?php echo $lang['winxmsg1']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankup_next_message_1" maxlength="65535"><?php echo $cfg['rankup_next_message_1']; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_1" maxlength="21588"><?php echo $cfg['rankup_next_message_1']; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc2"><?php echo $lang['winxmsg2']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankup_next_message_2" maxlength="65535"><?php echo $cfg['rankup_next_message_2']; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_2" maxlength="21588"><?php echo $cfg['rankup_next_message_2']; ?></textarea>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#winxmsgdesc3"><?php echo $lang['winxmsg3']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" rows="5" name="rankup_next_message_3" maxlength="65535"><?php echo $cfg['rankup_next_message_3']; ?></textarea>
+											<textarea class="form-control" rows="5" name="rankup_next_message_3" maxlength="21588"><?php echo $cfg['rankup_next_message_3']; ?></textarea>
 										</div>
 									</div>
 								</div>

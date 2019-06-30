@@ -81,30 +81,22 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
     }
 	$cfg['webinterface_admin_client_unique_id_list'] = array_flip(explode(',', $cfg['webinterface_admin_client_unique_id_list']));
 	$cfg['logs_path'] = $_POST['logs_path'];
-	if(!isset($cfg['default_language']) || $cfg['default_language'] == "en") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_en.php');
-	} elseif($cfg['default_language'] == "ar") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_ar.php');
-	} elseif($cfg['default_language'] == "cz") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_cz.php');
-	} elseif($cfg['default_language'] == "de") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_de.php');
-	} elseif($cfg['default_language'] == "es") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_es.php');
-	} elseif($cfg['default_language'] == "fr") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_fr.php');
-	} elseif($cfg['default_language'] == "it") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_it.php');
-	} elseif($cfg['default_language'] == "nl") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_nl.php');
-	} elseif($cfg['default_language'] == "pl") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_pl.php');
-	} elseif($cfg['default_language'] == "ro") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_ro.php');
-	} elseif($cfg['default_language'] == "ru") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_ru.php');
-	} elseif($cfg['default_language'] == "pt") {
-		require_once(substr(dirname(__FILE__),0,-12).'languages/core_pt.php');
+	
+	if(isset($cfg['default_language']) && is_dir(substr(__DIR__,0,-12).'languages/')) {
+		foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
+			if ('.' === $file || '..' === $file || is_dir($file)) continue;
+			$sep_lang = preg_split("/[._]/", $file);
+			if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+				if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
+					require_once('../languages/core_'.$sep_lang[1].'_'.$sep_lang[2].'_'.$sep_lang[3].'.'.$sep_lang[4]);
+					$required_lang = 1;
+					break;
+				}
+			}
+		}
+	}
+	if(!isset($required_lang)) {
+		require_once('../languages/core_en_english_gb.php');
 	}
 } elseif(isset($_POST['update'])) {
 	echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
@@ -132,18 +124,15 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control" name="default_language">
 									<?PHP
-									echo '<option data-subtext="العربية" value="ar"'.($cfg['default_language'] === 'ar' ? ' selected="selected"' : '').'>AR</option>';
-									echo '<option data-subtext="Čeština" value="cz"'.($cfg['default_language'] === 'cz' ? ' selected="selected"' : '').'>CZ</option>';
-									echo '<option data-subtext="Deutsch" value="de"'.($cfg['default_language'] === 'de' ? ' selected="selected"' : '').'>DE</option>';
-									echo '<option data-subtext="English" value="en"'.($cfg['default_language'] === 'en' ? ' selected="selected"' : '').'>EN</option>';
-									echo '<option data-subtext="español" value="es"'.($cfg['default_language'] === 'es' ? ' selected="selected"' : '').'>ES</option>';
-									echo '<option data-subtext="français" value="fr"'.($cfg['default_language'] === 'fr' ? ' selected="selected"' : '').'>FR</option>';
-									echo '<option data-subtext="Italiano" value="it"'.($cfg['default_language'] === 'it' ? ' selected="selected"' : '').'>IT</option>';
-									echo '<option data-subtext="Nederlands" value="nl"'.($cfg['default_language'] === 'nl' ? ' selected="selected"' : '').'>NL</option>';
-									echo '<option data-subtext="polski" value="pl"'.($cfg['default_language'] === 'pl' ? ' selected="selected"' : '').'>PL</option>';
-									echo '<option data-subtext="Română" value="ro"'.($cfg['default_language'] === 'ro' ? ' selected="selected"' : '').'>RO</option>';
-									echo '<option data-subtext="Pусский" value="ru"'.($cfg['default_language'] === 'ru' ? ' selected="selected"' : '').'>RU</option>';
-									echo '<option data-subtext="Português" value="pt"'.($cfg['default_language'] === 'pt' ? ' selected="selected"' : '').'>PT</option>';
+									if(is_dir(substr(__DIR__,0,-12).'languages/')) {
+										foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
+											if ('.' === $file || '..' === $file || is_dir($file)) continue;
+											$sep_lang = preg_split("/[._]/", $file);
+											if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+												echo '<option data-subtext="'.$sep_lang[2].'" value="'.$sep_lang[1].'"'.($cfg['default_language'] === $sep_lang[1] ? ' selected="selected"' : '').'>'.strtoupper($sep_lang[1]).'</option>';
+											}
+										}
+									}
 									?>
 									</select>
 								</div>
@@ -218,7 +207,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8 required-field-block">
-									<textarea class="form-control required" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="webinterface_admin_client_unique_id_list" maxlength="65535"><?php if(!empty($cfg['webinterface_admin_client_unique_id_list'])) echo implode(',',array_flip($cfg['webinterface_admin_client_unique_id_list'])); ?></textarea>
+									<textarea class="form-control required" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="webinterface_admin_client_unique_id_list" maxlength="21588"><?php if(!empty($cfg['webinterface_admin_client_unique_id_list'])) echo implode(',',array_flip($cfg['webinterface_admin_client_unique_id_list'])); ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>

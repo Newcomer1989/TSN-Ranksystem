@@ -30,6 +30,8 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 	$dbdata_fetched = $mysqlcon->query("SELECT * FROM `$dbname`.`user` WHERE `uuid` LIKE '%".$_SESSION[$rspathhex.'tsuid']."%'")->fetch();
 	$count_hours = round($dbdata_fetched['count']/3600);
 	$idle_hours = round($dbdata_fetched['idle']/3600);
+	$dbdata_fetched['count'] = round($dbdata_fetched['count']);
+	$dbdata_fetched['idle'] = round($dbdata_fetched['idle']);
 
 	if ($cfg['rankup_time_assess_mode'] == 1) {
 		$activetime = $dbdata_fetched['count'] - $dbdata_fetched['idle'];

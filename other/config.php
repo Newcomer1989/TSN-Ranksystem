@@ -2,30 +2,21 @@
 require_once('dbconfig.php');
 
 function set_language($language) {
-	if(strtolower($language) == "ar") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_ar.php');
-	} elseif(strtolower($language) == "cz") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_cz.php');
-	} elseif(strtolower($language) == "de") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_de.php');
-	} elseif(strtolower($language) == "es") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_es.php');
-	} elseif(strtolower($language) == "fr") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_fr.php');
-	} elseif(strtolower($language) == "it") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_it.php');
-	} elseif(strtolower($language) == "nl") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_nl.php');
-	} elseif(strtolower($language) == "pl") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_pl.php');
-	} elseif(strtolower($language) == "ro") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_ro.php');
-	} elseif(strtolower($language) == "ru") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_ru.php');
-	} elseif(strtolower($language) == "pt") {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_pt.php');
-	} else {
-		include(substr(dirname(__FILE__),0,-5).'languages/core_en.php');
+	if(is_dir(substr(__DIR__,0,-5).'languages/')) {
+		foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+			if ('.' === $file || '..' === $file || is_dir($file)) continue;
+			$sep_lang = preg_split("/[._]/", $file);
+			if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+				if(strtolower($language) == strtolower($sep_lang[1])) {
+					include(substr(__DIR__,0,-5).'languages/core_'.$sep_lang[1].'_'.$sep_lang[2].'_'.$sep_lang[3].'.'.$sep_lang[4]);
+					$required_lang = 1;
+					break;
+				}
+			}
+		}
+	}
+	if(!isset($required_lang)) {
+		include('../languages/core_en_english_gb.php');
 	}
 	return $lang;
 }
@@ -270,42 +261,25 @@ if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cf
 			if(isset($_SESSION[$rspathhex.'language'])) {
 				$cfg['default_language'] = $_SESSION[$rspathhex.'language'];
 			}
-		} elseif($_GET["lang"] == "ar") {
-			$cfg['default_language'] = "ar";
-			$_SESSION[$rspathhex.'language'] = "ar";
-		} elseif($_GET["lang"] == "cz") {
-			$cfg['default_language'] = "cz";
-			$_SESSION[$rspathhex.'language'] = "cz";
-		} elseif($_GET["lang"] == "de") {
-			$cfg['default_language'] = "de";
-			$_SESSION[$rspathhex.'language'] = "de";
-		} elseif($_GET["lang"] == "es") {
-			$cfg['default_language'] = "es";
-			$_SESSION[$rspathhex.'language'] = "es";
-		}  elseif($_GET["lang"] == "fr") {
-			$cfg['default_language'] = "fr";
-			$_SESSION[$rspathhex.'language'] = "fr";
-		} elseif($_GET["lang"] == "it") {
-			$cfg['default_language'] = "it";
-			$_SESSION[$rspathhex.'language'] = "it";
-		} elseif($_GET["lang"] == "nl") {
-			$cfg['default_language'] = "nl";
-			$_SESSION[$rspathhex.'language'] = "nl";
-		} elseif($_GET["lang"] == "pl") {
-			$cfg['default_language'] = "pl";
-			$_SESSION[$rspathhex.'language'] = "pl";
-		} elseif($_GET["lang"] == "ro") {
-			$cfg['default_language'] = "ro";
-			$_SESSION[$rspathhex.'language'] = "ro";
-		} elseif($_GET["lang"] == "ru") {
-			$cfg['default_language'] = "ru";
-			$_SESSION[$rspathhex.'language'] = "ru";
-		} elseif($_GET["lang"] == "pt") {
-			$cfg['default_language'] = "pt";
-			$_SESSION[$rspathhex.'language'] = "pt";
 		} else {
-			$cfg['default_language'] = "en";
-			$_SESSION[$rspathhex.'language'] = "en";
+			if(is_dir(substr(__DIR__,0,-5).'languages/')) {
+				foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+					if ('.' === $file || '..' === $file || is_dir($file)) continue;
+					$sep_lang = preg_split("/[._]/", $file);
+					if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+						if(strtolower($_GET["lang"]) == strtolower($sep_lang[1])) {
+							$cfg['default_language'] = $sep_lang[1];
+							$_SESSION[$rspathhex.'language'] = $sep_lang[1];
+							$required_lang = 1;
+							break;
+						}
+					}
+				}
+			}
+			if(!isset($required_lang)) {
+				$cfg['default_language'] = "en";
+				$_SESSION[$rspathhex.'language'] = "en";
+			}
 		}
 		if(isset($cfg['default_language'])) {
 			$lang = set_language($cfg['default_language']);

@@ -156,8 +156,8 @@ function stop() {
 		if (checkProcess($pid) == TRUE) {
 			echo " [Failed]\n";
 		} else {
+			file_put_contents($GLOBALS['autostart'],"");
 			echo " [OK]\n";
-			touch($GLOBALS['autostart']);
 		}
 	} else {
 		unlink($GLOBALS['pidfile']);

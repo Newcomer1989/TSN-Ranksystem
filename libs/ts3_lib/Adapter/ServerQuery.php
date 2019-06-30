@@ -169,7 +169,7 @@ class TeamSpeak3_Adapter_ServerQuery extends TeamSpeak3_Adapter_Abstract
 	$microbegin = microtime(true);
 	$token = "\n";
 
-    if($this->getTransport()->getConfig("blocking"))
+	if($this->getTransport()->getConfig("blocking"))
     {
       throw new TeamSpeak3_Adapter_Exception("only available in non-blocking mode");
     }

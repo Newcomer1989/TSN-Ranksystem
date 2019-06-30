@@ -115,6 +115,7 @@ $db[\'dbname\']=\''.$_POST['dbname'].'\';
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control required" id="basic" name="dbtype" required>
 											<option disabled value=""> -- select database -- </option>
+											<option data-divider="true">&nbsp;</option>
 											<?PHP
 											echo '<option data-subtext="Cubrid" value="cubrid"'; if($db['type']=="cubrid") echo " selected=selected"; echo '>cubrid</option>';
 											echo '<option data-subtext="FreeTDS / Microsoft SQL Server / Sybase" value="dblib"'; if($db['type']=="dblib") echo " selected=selected"; echo '>dblib</option>';

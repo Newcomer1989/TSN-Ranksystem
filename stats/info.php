@@ -64,11 +64,11 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0010']; ?></p>
 						<p><a href="//php.net/" target="_blank" rel="noopener noreferrer">PHP</a> - Copyright &copy; 2001-2019 the <a href="//secure.php.net/credits.php" target="_blank" rel="noopener noreferrer">PHP Group</a></p><br>
 						<p><?PHP echo $lang['stri0011']; ?></p>
-						<p><a href="//jquery.com/" target="_blank" rel="noopener noreferrer">jQuery v3.4.0</a> - Copyright &copy; 2019 The jQuery Foundation</p> 
+						<p><a href="//jquery.com/" target="_blank" rel="noopener noreferrer">jQuery v3.4.1</a> - Copyright &copy; 2019 The jQuery Foundation</p> 
 						<p><a href="//fontawesome.com" target="_blank" rel="noopener noreferrer">Font Awesome 5.7.2</a> - Copyright &copy; davegandy</p>
 						<p><a href="//flag-icon-css.lip.is/" target="_blank" rel="noopener noreferrer">flag-icon-css 2.8.0</a> - Copyright &copy; 2016 lipis</p>
 						<p><a href="//planetteamspeak.com/" target="_blank" rel="noopener noreferrer">TeamSpeak 3 PHP Framework 1.1.33</a> - Copyright &copy; 2010-2018 Planet TeamSpeak</p> 
-						<p><a href="//getbootstrap.com/" target="_blank" rel="noopener noreferrer">Bootstrap 3.3.7</a> - Copyright &copy; 2011-2019 Twitter, Inc.</p>
+						<p><a href="//getbootstrap.com/" target="_blank" rel="noopener noreferrer">Bootstrap 3.4.1</a> - Copyright &copy; 2011-2019 Twitter, Inc.</p>
 						<p><a href="//morrisjs.github.io/morris.js/" target="_blank" rel="noopener noreferrer">morris.js 0.5.1</a> - Copyright &copy; 2013 Olly Smith</p>
 						<p><a href="//raphaeljs.com" target="_blank" rel="noopener noreferrer">Rapha&euml;l 2.2.1 - JavaScript Vector Library</a> - Copyright &copy; 2008-2012 Dmitry Baranovskiy</p>
 						<p><a href="//startbootstrap.com" target="_blank" rel="noopener noreferrer">SB Admin Bootstrap Admin Template</a> - Copyright &copy; 2013-2016 Blackrock Digital LLC.</p>

@@ -126,12 +126,11 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$cfg['teamspeak_verification_channel_id'] = $_POST['teamspeak_verification_channel_id'];
 	}
 	if($errcnf == 0) {
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_time_assess_mode','{$cfg['rankup_time_assess_mode']}'),('rankup_excepted_mode','{$cfg['rankup_excepted_mode']}'),('rankup_excepted_unique_client_id_list','{$cfg['rankup_excepted_unique_client_id_list']}'),('rankup_excepted_group_id_list','{$cfg['rankup_excepted_group_id_list']}'),('rankup_excepted_channel_id_list','{$cfg['rankup_excepted_channel_id_list']}'),('rankup_definition','{$cfg['rankup_definition']}'),('rankup_ignore_idle_time','{$cfg['rankup_ignore_idle_time']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}'),('teamspeak_verification_channel_id','{$cfg['teamspeak_verification_channel_id']}'),('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_time_assess_mode','{$cfg['rankup_time_assess_mode']}'),('rankup_excepted_mode','{$cfg['rankup_excepted_mode']}'),('rankup_excepted_unique_client_id_list','{$cfg['rankup_excepted_unique_client_id_list']}'),('rankup_excepted_group_id_list','{$cfg['rankup_excepted_group_id_list']}'),('rankup_excepted_channel_id_list','{$cfg['rankup_excepted_channel_id_list']}'),('rankup_definition','{$cfg['rankup_definition']}'),('rankup_ignore_idle_time','{$cfg['rankup_ignore_idle_time']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}'),('teamspeak_verification_channel_id','{$cfg['teamspeak_verification_channel_id']}'),('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
-			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 			$err_lvl = NULL;
 		}
 	} else {
@@ -205,21 +204,21 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexuiddesc"><?php echo $lang['wiexuid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="rankup_excepted_unique_client_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_unique_client_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_unique_client_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="rankup_excepted_unique_client_id_list" maxlength="21588"><?php if(!empty($cfg['rankup_excepted_unique_client_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_unique_client_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexgrpdesc"><?php echo $lang['wiexgrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_group_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_group_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_group_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_group_id_list" maxlength="21588"><?php if(!empty($cfg['rankup_excepted_group_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_group_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_channel_id_list" maxlength="65535"><?php if(!empty($cfg['rankup_excepted_channel_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_channel_id_list'])); ?></textarea>
+											<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_channel_id_list" maxlength="21588"><?php if(!empty($cfg['rankup_excepted_channel_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_channel_id_list'])); ?></textarea>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
@@ -229,7 +228,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group required-field-block">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="65535" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
+									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="21588" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
@@ -279,7 +278,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<input type="text" class="form-control" name="rankup_clean_clients_period" value="<?php echo $cfg['rankup_clean_clients_period']; ?>">
 											<script>
 											$("input[name='rankup_clean_clients_period']").TouchSpin({
-												min: 0,
+												min: 1800,
 												max: 9223372036854775807,
 												verticalbuttons: true,
 												prefix: 'Sec.:'
@@ -310,7 +309,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiboostdesc"><?php echo $lang['wiboost']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_boost_definition" maxlength="65535"><?php
+									<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_boost_definition" maxlength="21588"><?php
 									$implode_boost = '';
 									if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
 										foreach ($cfg['rankup_boost_definition'] as $r) {

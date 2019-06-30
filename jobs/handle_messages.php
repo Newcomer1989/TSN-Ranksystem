@@ -54,31 +54,43 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 					}
 				}
 			}
+			krsort($cfg['rankup_definition']);
+			return;
 		}
-		
+
 		if(strstr($event["msg"], '!version')) {
 			if(version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>') && $cfg['version_latest_available'] != '') {
 				sendmessage($host,$cfg,$event["invokeruid"],sprintf($lang['upmsg'], $cfg['version_current_using'], $cfg['version_latest_available'], 'https://ts-ranksystem.com/#changelog'));
 			} else {
 				sendmessage($host,$cfg,$event["invokeruid"],sprintf($lang['msg0001'], $cfg['version_current_using']));
 			}
+			return;
 		}
-		
+
 		if(strstr($event["msg"], '!help') || strstr($event["msg"], '!info') || strstr($event["msg"], '!commands') || strstr($event["msg"], '!cmd')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0002']);
+			return;
 		}
-		
+
 		if((strstr($event["msg"], '!shutdown') || strstr($event["msg"], '!quit') || strstr($event["msg"], '!stop')) && $admin == 1) {
 			enter_logfile($cfg,5,sprintf($lang['msg0004'], $event["invokername"], $event["invokeruid"]));
 			$path = substr(__DIR__, 0, -4);
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0005']);
-			exec($phpcommand." ".$path."worker.php stop");
+			if (substr(php_uname(), 0, 7) == "Windows") {
+				exec("start ".$phpcommand." ".$path."worker.php stop");
+				file_put_contents(substr(__DIR__,0,-4).'logs\autostart_deactivated',"");
+			} else {
+				exec($phpcommand." ".$path."worker.php stop > /dev/null &");
+				file_put_contents(substr(__DIR__,0,-4).'logs/autostart_deactivated',"");
+			}
+			shutdown($mysql,$cfg,4,"Stop command received!");
 		} elseif (strstr($event["msg"], '!shutdown') || strstr($event["msg"], '!quit') || strstr($event["msg"], '!stop')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0003']);
+			return;
 		}
-		
+
 		if((strstr($event["msg"], '!restart') || strstr($event["msg"], '!reboot')) && $admin == 1) {
-			enter_logfile($cfg,5,sprintf($lang['msg0007'], $event["invokername"], $event["invokeruid"]));
+			enter_logfile($cfg,5,sprintf($lang['msg0007'], $event["invokername"], $event["invokeruid"], "restart"));
 			$path = substr(__DIR__, 0, -4);
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0006']);
 			if (substr(php_uname(), 0, 7) == "Windows") {
@@ -86,45 +98,61 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 			} else {
 				exec($phpcommand." ".$path."worker.php restart > /dev/null 2>/dev/null &");
 			}
+			return;
 		} elseif (strstr($event["msg"], '!restart') || strstr($event["msg"], '!reboot')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0003']);
+			return;
 		}
-		
+
 		if((strstr($event["msg"], '!checkupdate') || strstr($event["msg"], '!update')) && $admin == 1) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='0' WHERE `job_name` IN ('check_update','get_version','calc_server_stats')") === false) {
 				enter_logfile($cfg,4,"handle_messages 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0008']);
+			return;
 		} elseif(strstr($event["msg"], '!checkupdate') || strstr($event["msg"], '!update')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0003']);
+			return;
 		}
-		
+
 		if((strstr($event["msg"], '!clean')) && $admin == 1) {
+			enter_logfile($cfg,5,sprintf($lang['msg0007'], $event["invokername"], $event["invokeruid"], "clean"));
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='0' WHERE `job_name` IN ('clean_db','clean_clients')") === false) {
 				enter_logfile($cfg,4,"handle_messages 13:".print_r($mysqlcon->errorInfo(), true));
 			}
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0009'] ." ". $lang['msg0010']);
+			return;
 		} elseif(strstr($event["msg"], '!clean')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0003']);
+			return;
 		}
-		
+
 		if((strstr($event["msg"], '!reloadgroups') || strstr($event["msg"], '!reloadicons')) && $admin == 1) {
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`") === false) {
 				enter_logfile($cfg,4,"handle_messages 14:".print_r($mysqlcon->errorInfo(), true));
 			}
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0011'] ." ". $lang['msg0010']);
-		} elseif(strstr($event["msg"], '!clean')) {
+			return;
+		} elseif(strstr($event["msg"], '!reloadgroups')) {
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0003']);
+			return;
 		}
-		
+
 		if(strstr($event["msg"], '!online') || strstr($event["msg"], '!uptime')) {
-			sendmessage($host, $cfg, $event["invokeruid"], sprintf("Bot is online since %s, now %s.", date('Y-m-d H:i:s',$cfg['temp_last_botstart']), (new DateTime("@0"))->diff(new DateTime("@".(time()-$cfg['temp_last_botstart'])))->format($cfg['default_date_format'])));
+			sendmessage($host, $cfg, $event["invokeruid"], sprintf("Bot is online since %s, now %s.", (DateTime::createFromFormat('U', $cfg['temp_last_botstart'])->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s")), (new DateTime("@0"))->diff(new DateTime("@".(time()-$cfg['temp_last_botstart'])))->format($cfg['default_date_format'])));
+			return;
 		}
-		
+
 		if(strstr($event["msg"], '!runtime') || strstr($event["msg"], '!runtimes')) {
-			sendmessage($host, $cfg, $event["invokeruid"], sprintf("Last 10 runtimes (in seconds):\n%s", str_replace(";","\n",$cfg['temp_last_laptime'])));
+		sendmessage($host, $cfg, $event["invokeruid"], sprintf("Last 10 runtimes (in seconds):\n%s\n\nØ %s sec. (Σ %s)", str_replace(";","\n",$cfg['temp_last_laptime']), round(($cfg['temp_whole_laptime'] / $cfg['temp_count_laptime']),5), $cfg['temp_count_laptime']));
+			return;
 		}
-		
+
+		if(strstr($event["msg"], '!memory')) {
+			sendmessage($host, $cfg, $event["invokeruid"], sprintf("Allocated memory of PHP for the Ranksystem Bot..\ncurrent using: %s KiB\npeak using: %s KiB", round((memory_get_usage()/1024),2), round((memory_get_peak_usage()/1024),2)));
+			return;
+		}
+
 		if((strstr($event["msg"], '!logs') || strstr($event["msg"], '!log')) && $admin == 1) {
 			$parameter = explode(' ', $event["msg"]);
 			if(isset($parameter[1]) && $parameter[1] > 0 && $parameter[1] < 1000) {
@@ -132,7 +160,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 			} else {
 				$number_lines = 5;
 			}
-			$filters = explode(',', 'CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG');
+			$filters = explode(',', 'CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG,NONE');
 			$filter2 = $lastfilter = '';
 			$lines=array();
 			if(file_exists($cfg['logs_path']."ranksystem.log")) {
@@ -162,6 +190,7 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 							if (count($lines)>=$number_lines) {
 								break 2;
 							}
+							break;
 						}
 					}
 				}

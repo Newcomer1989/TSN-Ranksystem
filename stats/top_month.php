@@ -133,7 +133,7 @@ require_once('nav.php');
 									</div>
 									<div class="col-xs-9 text-right">
 										<div>&nbsp;</div>
-										<div class="tophuge"><span title=<?PHP echo '"',$client_data[2]['name'],'">',$client_data[2]['name']; ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[2]['name']),'">',htmlspecialchars($client_data[2]['name']); ?></span></div>
 										<div><?PHP if($client_data[2]['count']<3600) { echo sprintf($texttime, round(($client_data[2]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[2]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -254,7 +254,7 @@ require_once('nav.php');
 										<i class="fa-2x">#10th</i>
 									</div>
 									<div class="col-xs-9 text-right">
-										<div class="tophuge"><span title=<?PHP echo '"',$client_data[9]['name'],'">',$client_data[9]['name']; ?></span></div>
+										<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[9]['name']),'">',htmlspecialchars($client_data[9]['name']); ?></span></div>
 										<div><?PHP if($client_data[9]['count']<3600) { echo sprintf($texttime, round(($client_data[9]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[9]['count']/3600)), $lang['sttw0014']); } ?></div>
 									</div>
 								</div>
@@ -275,7 +275,7 @@ require_once('nav.php');
 							<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[1]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[1]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[1]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[1]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[1]['count'])); ?>
 							</div>
 						</div>
-						<h4>#3 <?PHP echo $client_data[2]['name'] ?><?PHP echo ($client_data[2]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+						<h4>#3 <?PHP echo htmlspecialchars($client_data[2]['name']) ?><?PHP echo ($client_data[2]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 						<div class="progress">
 							<div class="progress-bar progress-bar-warning progress-bar-striped <?PHP echo ($client_data[2]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[2]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[2]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[2]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[2]['count'])); ?>
 							</div>
@@ -310,7 +310,7 @@ require_once('nav.php');
 							<div class="progress-bar progress-bar-striped <?PHP echo ($client_data[8]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[8]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[8]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[8]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[8]['count'])); ?>
 							</div>
 						</div>
-						<h4>#10 <?PHP echo $client_data[9]['name'] ?><?PHP echo ($client_data[9]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+						<h4>#10 <?PHP echo htmlspecialchars($client_data[9]['name']) ?><?PHP echo ($client_data[9]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 						<div class="progress">
 							<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[9]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[9]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[9]['count'])); ?>
 							</div>

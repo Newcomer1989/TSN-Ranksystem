@@ -8,19 +8,20 @@
 $phpcommand = 'php';
 ## 
 ## LINUX
-#$phpcommand = 'php56';
-#$phpcommand = 'php70';
-#$phpcommand = '/usr/bin/php5';
+#$phpcommand = 'php72';
+#$phpcommand = 'php73';
 #$phpcommand = '/usr/bin/php7.2';
+#$phpcommand = '/usr/bin/php7.3';
+#$phpcommand = '/opt/plesk/php/7.3/bin/php';
 ##
 ##
 ## WINDOWS
-#$phpcommand = 'C:\PHP5\php.exe';
 #$phpcommand = 'C:\PHP7\php.exe';
 #$phpcommand = 'C:\wamp\bin\php\php.exe';
 #$phpcommand = 'C:\xampp\php\php.exe';
 # On blanks inside the path you need to escape these with special marks -->  \"  <-- at the beginning and end of the path, see example below
 #$phpcommand = '\"C:\Program Files (x86)\PHP\php.exe\"';
+#$phpcommand = '\"C:\Program Files (x86)\Plesk\Additional\PHP73\php.exe"';
 ##
 ##
 ## OTHER

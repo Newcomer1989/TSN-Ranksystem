@@ -62,7 +62,7 @@ function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 					if (count($lines)>$number_lines) {
 						break 2;
 					}
-					continue;
+					break;
 				} elseif($inactivefilter != NULL) {
 					foreach($inactivefilter as $defilter) {
 						if($defilter != NULL && strstr($line, $defilter)) {
@@ -157,10 +157,10 @@ if(isset($_SESSION[$rspathhex.'inactivefilter']) && $_SESSION[$rspathhex.'inacti
 }
 
 if (!isset($_SESSION[$rspathhex.'logfilter'])) {
-	$_SESSION[$rspathhex.'logfilter'] = "CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG";
+	$_SESSION[$rspathhex.'logfilter'] = "CRITICAL,ERROR,WARNING,NOTICE,INFO,DEBUG,";
 }
 
-$filters = explode(',', $_SESSION[$rspathhex.'logfilter']);
+$filters = explode(',', ($_SESSION[$rspathhex.'logfilter'].'NONE'));
 
 if (isset($_POST['logout'])) {
 	echo "logout";

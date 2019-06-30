@@ -260,42 +260,17 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li>
-							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
-						</li>
-						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
-						</li>
-						<li>
-							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
-						</li>
-						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - english</a>
-						</li>
-						<li>
-							<a href="?lang=es"><span class="flag-icon flag-icon-es"></span>&nbsp;&nbsp;ES - español</a>
-						</li>
-						<li>
-							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
-						</li>
-						<li>
-							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - Italiano</a>
-						</li>
-						<li>
-							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
-						</li>
-						<li>
-							<a href="?lang=pl"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
-						</li>
-						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
-						</li>
-						<li>
-							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Pусский</a>
-						</li>
-						<li>
-							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
-						</li>
+					<?PHP
+					if(is_dir(substr(__DIR__,0,-5).'languages/')) {
+						foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+							if ('.' === $file || '..' === $file || is_dir($file)) continue;
+							$sep_lang = preg_split("/[._]/", $file);
+							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+							}
+						}
+					}
+					?>
 					</ul>
 				</li>
 			</ul>

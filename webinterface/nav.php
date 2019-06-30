@@ -93,42 +93,17 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li>
-							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
-						</li>
-						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
-						</li>
-						<li>
-							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
-						</li>
-						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-gb"></span>&nbsp;&nbsp;EN - English</a>
-						</li>
-						<li>
-							<a href="?lang=es"><span class="flag-icon flag-icon-es"></span>&nbsp;&nbsp;ES - español</a>
-						</li>
-						<li>
-							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
-						</li>
-						<li>
-							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - Italiano</a>
-						</li>
-						<li>
-							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
-						</li>
-						<li>
-							<a href="?lang=pl"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
-						</li>
-						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
-						</li>
-						<li>
-							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Pусский</a>
-						</li>
-						<li>
-							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
-						</li>
+					<?PHP
+					if(is_dir(substr(__DIR__,0,-12).'languages/')) {
+						foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
+							if ('.' === $file || '..' === $file || is_dir($file)) continue;
+							$sep_lang = preg_split("/[._]/", $file);
+							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+							}
+						}
+					}
+					?>
 					</ul>
 				</li>
 			</ul>
@@ -157,7 +132,7 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 						<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fas fa-puzzle-piece"></i>&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
 						<?PHP echo '<ul id="addons" class="'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? 'in collapse">' : 'collapse">'); ?>
 							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
-								<a href="addon_assign_groups.php" class="active"><?PHP echo $lang['stag0001']; ?></a>
+								<a href="addon_assign_groups.php" class="active"><i class="fas fa-user-plus"></i>&nbsp;<?PHP echo $lang['stag0001']; ?></a>
 							</li>
 						</ul>
 					</li>
@@ -166,10 +141,13 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 						<a href="javascript:;" data-toggle="collapse" data-target="#admin"><i class="fas fa-users"></i>&nbsp;<?PHP echo $lang['winav7']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
 						<?PHP echo '<ul id="admin" class="'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" || basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" ? 'in collapse">' : 'collapse">'); ?>
 							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" ? ' class="active">' : '>'); ?>
-								<a href="admin_addtime.php"><?PHP echo $lang['wihladm1']; ?></a>
+								<a href="admin_addtime.php"><i class="fas fa-plus"></i>&nbsp;<?PHP echo $lang['wihladm1']; ?></a>
 							</li>
 							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" ? ' class="active">' : '>'); ?>
-								<a href="admin_remtime.php"><?PHP echo $lang['wihladm2']; ?></a>
+								<a href="admin_remtime.php"><i class="fas fa-minus"></i>&nbsp;<?PHP echo $lang['wihladm2']; ?></a>
+							</li>
+							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "reset.php" ? ' class="active">' : '>'); ?>
+								<a href="reset.php"><i class="fas fa-trash"></i>&nbsp;<?PHP echo $lang['wihladm3']; ?></a>
 							</li>
 						</ul>
 					</li>

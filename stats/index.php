@@ -17,30 +17,21 @@ require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
-if($cfg['default_language'] == "ar") {
-	require_once('../languages/nations_en.php');
-} elseif($cfg['default_language'] == "cz") {
-	require_once('../languages/nations_cz.php');
-} elseif($cfg['default_language'] == "de") {
-	require_once('../languages/nations_de.php');
-} elseif($cfg['default_language'] == "en") {
-	require_once('../languages/nations_en.php');
-} elseif($cfg['default_language'] == "es") {
-	require_once('../languages/nations_es.php');
-} elseif($cfg['default_language'] == "fr") {
-	require_once('../languages/nations_fr.php');
-} elseif($cfg['default_language'] == "it") {
-	require_once('../languages/nations_it.php');
-} elseif($cfg['default_language'] == "nl") {
-	require_once('../languages/nations_en.php');
-} elseif($cfg['default_language'] == "pl") {
-	require_once('../languages/nations_pl.php');
-} elseif($cfg['default_language'] == "ro") {
-	require_once('../languages/nations_en.php');
-} elseif($cfg['default_language'] == "ru") {
-	require_once('../languages/nations_ru.php');
-} elseif($cfg['default_language'] == "pt") {
-	require_once('../languages/nations_pt.php');
+if(is_dir(substr(__DIR__,0,-5).'languages/')) {
+	foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+		if ('.' === $file || '..' === $file || is_dir($file)) continue;
+		$sep_lang = preg_split("/[._]/", $file);
+		if(isset($sep_lang[0]) && $sep_lang[0] == 'nations' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[2]) && strtolower($sep_lang[2]) == 'php') {
+			if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
+				require_once('../languages/nations_'.$sep_lang[1].'.php');
+				$required_nations = 1;
+				break;
+			}
+		}
+	}
+	if(!isset($required_nations)) {
+		require_once('../languages/nations_en.php');
+	}
 }
 
 if(!isset($_SESSION[$rspathhex.'tsuid'])) {

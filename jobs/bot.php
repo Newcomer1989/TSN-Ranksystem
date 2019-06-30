@@ -1,8 +1,18 @@
 #!/usr/bin/php
 <?PHP
-set_time_limit(0);
 ini_set('default_charset', 'UTF-8');
 setlocale(LC_ALL, 'UTF-8');
+if(ini_get('max_execution_time') !== NULL) {
+	$max_execution_time = ini_get('max_execution_time');
+} else {
+	$max_execution_time = "{none set}";
+}
+if(ini_get('memory_limit') !== NULL) {
+	$memory_limit = ini_get('memory_limit');
+} else {
+	$memory_limit = "{none set}";
+}
+set_time_limit(0);
 error_reporting(0);
 
 function shutdown($mysqlcon = NULL,$cfg,$loglevel,$reason,$nodestroypid = TRUE) {
@@ -12,7 +22,7 @@ function shutdown($mysqlcon = NULL,$cfg,$loglevel,$reason,$nodestroypid = TRUE) 
 		}
 	}
 	enter_logfile($cfg,$loglevel,$reason." Shutting down!");
-	enter_logfile($cfg,4,"###################################################################");
+	enter_logfile($cfg,9,"###################################################################");
 	if(isset($mysqlcon)) {
 		$mysqlcon = null;
 	}
@@ -20,20 +30,29 @@ function shutdown($mysqlcon = NULL,$cfg,$loglevel,$reason,$nodestroypid = TRUE) 
 }
 
 function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
-	if($loglevel > $cfg['logs_debug_level']) return;
+	if($loglevel!=9 && $loglevel > $cfg['logs_debug_level']) return;
 	$file = $cfg['logs_path'].'ranksystem.log';
-	if ($loglevel == 1) {
-		$loglevel = "  CRITICAL  ";
-	} elseif ($loglevel == 2) {
-		$loglevel = "  ERROR     ";
-	} elseif ($loglevel == 3) {
-		$loglevel = "  WARNING   ";
-	} elseif ($loglevel == 4) {
-		$loglevel = "  NOTICE    ";
-	} elseif ($loglevel == 5) {
-		$loglevel = "  INFO      ";
-	} elseif ($loglevel == 6) {
-		$loglevel = "  DEBUG     ";
+	switch ($loglevel) {
+		case 1:
+			$loglevel = "  CRITICAL  ";
+			break;
+		case 2:
+			$loglevel = "  ERROR     ";
+			break;
+		case 3:
+			$loglevel = "  WARNING   ";
+			break;
+		case 4:
+			$loglevel = "  NOTICE    ";
+			break;
+		case 5:
+			$loglevel = "  INFO      ";
+			break;
+		case 6:
+			$loglevel = "  DEBUG     ";
+			break;
+		default:
+			$loglevel = "  NONE      ";
 	}
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
@@ -73,9 +92,9 @@ if(!in_array('ssh2', get_loaded_extensions()) && $cfg['teamspeak_query_encrypt_s
 	shutdown($mysqlcon,$cfg,1,"PHP SSH2 is missed. Installation of PHP SSH2 is required, when using secured (SSH) connection to TeamSpeak! If you are not able to install PHP SSH2 (i.e. hosted webspace), you need to deactivate the TS3 Query encryption inside the Webinterface.");
 }
 
-enter_logfile($cfg,4,"");
-enter_logfile($cfg,4,"###################################################################");
-enter_logfile($cfg,4,"Initialize Bot...");
+enter_logfile($cfg,9,"");
+enter_logfile($cfg,9,"###################################################################");
+enter_logfile($cfg,9,"Initialize Bot...");
 require_once(substr(__DIR__,0,-4).'libs/ts3_lib/TeamSpeak3.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
 require_once(substr(__DIR__,0,-4).'jobs/get_avatars.php');
@@ -87,20 +106,21 @@ require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
 require_once(substr(__DIR__,0,-4).'jobs/handle_messages.php');
 require_once(substr(__DIR__,0,-4).'jobs/event_userenter.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
+require_once(substr(__DIR__,0,-4).'jobs/reset_rs.php');
 
-enter_logfile($cfg,5,"Running on OS: ".php_uname("s")." ".php_uname("r"));
-enter_logfile($cfg,5,"Using PHP Version: ".phpversion());
-enter_logfile($cfg,5,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
+enter_logfile($cfg,9,"Running on OS: ".php_uname("s")." ".php_uname("r"));
+enter_logfile($cfg,9,"Using PHP Version: ".phpversion());
+enter_logfile($cfg,9,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
 
 $cfg = check_db($mysqlcon,$lang,$cfg,$dbname);
 $cfg['temp_db_version'] = $mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION);
 $cfg['temp_last_botstart'] = time();
 $cfg['temp_reconnect_attempts'] = 0;
-enter_logfile($cfg,5,"Check Ranksystem files for updates...");
+enter_logfile($cfg,4,"Check Ranksystem files for updates...");
 if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available']) && $cfg['version_latest_available'] != NULL && version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>')) {
 	update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
 }
-enter_logfile($cfg,5,"Check Ranksystem files for updates [done]");
+enter_logfile($cfg,4,"Check Ranksystem files for updates [done]");
 
 function check_shutdown($cfg) {
 	if(!file_exists(substr(__DIR__,0,-4).'logs/pid')) {
@@ -108,56 +128,56 @@ function check_shutdown($cfg) {
 	}
 }
 
-enter_logfile($cfg,5,"Ranksystem Version: ".$cfg['version_current_using']);
-enter_logfile($cfg,5,"Loading addons...");
+enter_logfile($cfg,9,"Ranksystem Version: ".$cfg['version_current_using']." (on Update-Channel: ".$cfg['version_update_channel'].")");
+enter_logfile($cfg,4,"Loading addons...");
 require_once(substr(__DIR__,0,-4).'other/load_addons_config.php');
 $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 if($addons_config['assign_groups_active']['value'] == '1') {
-	enter_logfile($cfg,5,"  Addon: 'assign_groups' [ON]");
+	enter_logfile($cfg,4,"  Addon: 'assign_groups' [ON]");
 	include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
 	$cfg['temp_addon_assign_groups'] = "enabled";
 } else {
-	enter_logfile($cfg,5,"  Addon: 'assign_groups' [OFF]");
+	enter_logfile($cfg,4,"  Addon: 'assign_groups' [OFF]");
 	$cfg['temp_addon_assign_groups'] = "disabled";
 }
-enter_logfile($cfg,5,"Loading addons [done]");
+enter_logfile($cfg,4,"Loading addons [done]");
 
 function sendmessage($ts3, $cfg, $uuid, $msg, $erromsg=NULL, $errcode=NULL, $successmsg=NULL, $nolog=NULL) {
-try {
-	if(strlen($msg) > 1024) {
-		$fragarr = explode("##*##", wordwrap($msg, 1022, "##*##", TRUE), 1022);
-		foreach($fragarr as $frag) {
+	try {
+		if(strlen($msg) > 1024) {
+			$fragarr = explode("##*##", wordwrap($msg, 1022, "##*##", TRUE), 1022);
+			foreach($fragarr as $frag) {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$ts3->serverGetSelected()->clientGetByUid($uuid)->message("\n".$frag);
+				if($nolog==NULL) {
+					enter_logfile($cfg,6,"sendmessage to uuid $uuid (fragment): ".$frag);
+				}
+			}
+		} else {
 			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3->serverGetSelected()->clientGetByUid($uuid)->message("\n".$frag);
+			$ts3->serverGetSelected()->clientGetByUid($uuid)->message($msg);
 			if($nolog==NULL) {
-				enter_logfile($cfg,6,"sendmessage to uuid $uuid (fragment): ".$frag);
+				enter_logfile($cfg,6,"sendmessage to uuid $uuid: ".$msg);
 			}
 		}
-	} else {
-		usleep($cfg['teamspeak_query_command_delay']);
-		$ts3->serverGetSelected()->clientGetByUid($uuid)->message($msg);
-		if($nolog==NULL) {
-			enter_logfile($cfg,6,"sendmessage to uuid $uuid: ".$msg);
+		if($successmsg!=NULL) {
+			enter_logfile($cfg,5,$successmsg);
+		}
+	} catch (Exception $e) {
+		if($errcode!=NULL) {
+			enter_logfile($cfg,$errcode,$erromsg." TS3: ".$e->getCode().': '.$e->getMessage());
+		} else {
+			enter_logfile($cfg,3,"sendmessage: ".$e->getCode().': '.$e->getMessage());
 		}
 	}
-	if($successmsg!=NULL) {
-		enter_logfile($cfg,5,$successmsg);
-	}
-} catch (Exception $e) {
-	if($errcode!=NULL) {
-		enter_logfile($cfg,$errcode,$erromsg." TS3: ".$e->getCode().': '.$e->getMessage());
-	} else {
-		enter_logfile($cfg,2,"sendmessage: ".$e->getCode().': '.$e->getMessage());
-	}
-}
 }
 
 $sqlexec = '';
 
 function run_bot() {
-	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $sqlexec;
+	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $sqlexec, $max_execution_time, $memory_limit;
 	
-	enter_logfile($cfg,4,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\").");
+	enter_logfile($cfg,9,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\" Query-Slowmode: \"".number_format(($cfg['teamspeak_query_command_delay']/1000000),1)."\").");
 
 	try {
 		if($cfg['teamspeak_query_encrypt_switch'] == 1) {
@@ -166,7 +186,7 @@ function run_bot() {
 			$ts3host = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?blocking=0");
 		}
 
-		enter_logfile($cfg,4,"Connection to TS3 Server established.");
+		enter_logfile($cfg,9,"Connection to TS3 Server established.");
 		try{
 			$ts3version = $ts3host->version();
 			enter_logfile($cfg,5,"  TS3 Server version: ".$ts3version['version']." on ".$ts3version['platform']." [Build: ".$ts3version['build']." from ".date("Y-m-d H:i:s",$ts3version['build'])."]");
@@ -179,7 +199,7 @@ function run_bot() {
 			enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it.. also to be ready for TS5!");
 		}
 
-		enter_logfile($cfg,5,"    Select virtual server...");
+		enter_logfile($cfg,9,"    Select virtual server...");
 		try {
 			if(version_compare($ts3version['version'],'3.4.0','>=')) {
 				usleep($cfg['teamspeak_query_command_delay']);
@@ -202,7 +222,7 @@ function run_bot() {
 					}
 				}
 			}
-			enter_logfile($cfg,5,"    Select virtual server [done]");
+			enter_logfile($cfg,9,"    Select virtual server [done]");
 			$cfg['temp_reconnect_attempts'] = 0;
 		} catch (Exception $e) {
 			enter_logfile($cfg,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage());
@@ -237,8 +257,35 @@ function run_bot() {
 			enter_logfile($cfg,5,"  No channel defined where the Ranksystem Bot should be entered.");
 		}
 
-		enter_logfile($cfg,4,"Config check started...");
-		
+		enter_logfile($cfg,9,"Config check started...");
+		switch ($cfg['logs_debug_level']) {
+			case 1:
+				$loglevel = "1 - CRITICAL";
+				break;
+			case 2:
+				$loglevel = "2 - ERROR";
+				break;
+			case 3:
+				$loglevel = "3 - WARNING";
+				break;
+			case 4:
+				$loglevel = "4 - NOTICE";
+				break;
+			case 5:
+				$loglevel = "5 - INFO";
+				break;
+			case 6:
+				$loglevel = "6 - DEBUG";
+				break;
+			default:
+				$loglevel = "UNKOWN";
+		}
+		enter_logfile($cfg,9,"  Log Level: ".$loglevel);
+		enter_logfile($cfg,6,"  Serverside config 'max_execution_time' (PHP.ini): ".$max_execution_time." sec.");
+		enter_logfile($cfg,6,"  Serverside config 'memory_limit' (PHP.ini): ".$memory_limit);
+		$cfg['rankup_definition_flipped'] = array_flip($cfg['rankup_definition']);
+		krsort($cfg['rankup_definition']);
+
 		if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($cfg,1,"  Select on DB failed for group check: ".print_r($mysqlcon->errorInfo(), true));
 		}
@@ -268,19 +315,18 @@ function run_bot() {
 			}
 		}
 		if($checkgroups > 0) {
-			enter_logfile($cfg,4,"  Found servergroups in config, which are unknown. Redownload all servergroups from TS3 server.");
-			if($mysqlcon->exec("DELETE FROM groups;") === false) {
+			enter_logfile($cfg,3,"  Found servergroups in config, which are unknown. Redownload all servergroups from TS3 server.");
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`;") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
-			$nobreak = 1;
-			
+
 			$serverinfo = $ts3server->serverInfo();
 			$select_arr = array();
-			$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,$nobreak);
+			$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,1);
 			if($mysqlcon->exec($sqlexec2) === false) {
 				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
-			unset($sqlexec2, $select_arr, $groupslist);
+			unset($sqlexec2,$select_arr,$groupslist,$serverinfo,$ts3version);
 			$errcnf = 0;
 			enter_logfile($cfg,4,"  Downloading of servergroups finished. Recheck the config.");
 			
@@ -331,11 +377,11 @@ function run_bot() {
 			}
 		}
 		
-		unset($groupslist,$errcnf,$checkgroups);
-		enter_logfile($cfg,4,"Config check [done]");
+		unset($groupslist,$errcnf,$checkgroups,$lastupdate,$updcld,$loglevel,$whoami,$ts3host,$max_execution_time,$memory_limit,$memory_limit);
+		enter_logfile($cfg,9,"Config check [done]");
 
-		enter_logfile($cfg,4,"Bot starts now his work!");
-		$looptime = 0; $cfg['temp_last_laptime'] = '';
+		enter_logfile($cfg,9,"Bot starts now his work!");
+		$looptime = $cfg['temp_count_laps'] = $cfg['temp_whole_laptime'] = $cfg['temp_count_laptime'] = 0; $cfg['temp_last_laptime'] = '';
 		usleep(3000000);
 
 		while(1) {
@@ -390,7 +436,8 @@ function run_bot() {
 				}
 				$get_db_data->nextRowset();
 			}
-			unset($get_db_data, $fetched_array, $single_select);
+			unset($get_db_data,$fetched_array,$single_select);
+			enter_logfile($cfg,6,"SQL select needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 
 			check_shutdown($cfg);
 			$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
@@ -407,7 +454,7 @@ function run_bot() {
 			$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$select_arr,$phpcommand,$lang);
 			$sqlexec .= calc_userstats($ts3server,$mysqlcon,$cfg,$dbname,$select_arr);
 			$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr);
-			
+
 			if($addons_config['assign_groups_active']['value'] == '1') {
 				if($cfg['temp_addon_assign_groups'] == "disabled") {
 					enter_logfile($cfg,5,"Loading new addon...");
@@ -426,9 +473,11 @@ function run_bot() {
 				enter_logfile($cfg,5,"Disable addon [done]");
 			}
 			
+			$startsql = microtime(true);
 			if($mysqlcon->exec($sqlexec) === false) {
 				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
+			enter_logfile($cfg,6,"SQL exections needs: ".(number_format(round((microtime(true) - $startsql), 5),5)));
 			if($cfg['logs_debug_level'] > 5) {
 				$sqlfile = $cfg['logs_path'].'temp_sql_dump.sql';
 				$sqldump = fopen($sqlfile, 'wa+');
@@ -436,16 +485,26 @@ function run_bot() {
 				fclose($sqldump);
 			}
 
-			unset($sqlexec, $select_arr);
+			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
+
+			unset($sqlexec,$select_arr,$sqldump);
 			$sqlexec = '';
 			
 			$looptime = microtime(true) - $starttime;
+			$cfg['temp_whole_laptime'] = $cfg['temp_whole_laptime'] + $looptime;
+			$cfg['temp_count_laptime']++;
 			$cfg['temp_last_laptime'] = substr((number_format(round($looptime, 5),5) . ';' . $cfg['temp_last_laptime']),0,79);
 
 			enter_logfile($cfg,6,"last loop: ".round($looptime, 5)." sec.");
+
 			if($looptime < 1) {
 				$loopsleep = (1 - $looptime);
-				$ts3server->getAdapter()->waittsn($loopsleep, 50000);  // 50ms delay for CPU reason
+				if($cfg['teamspeak_query_encrypt_switch'] == 1) {
+					// no wait for data to become available on the stream on SSH due issues with non-blocking mode
+					usleep(round($loopsleep * 1000000));
+				} else {
+					$ts3server->getAdapter()->waittsn($loopsleep, 50000);  // 50ms delay for CPU reason
+				}
 			}
 		}
 	} catch (Exception $e) {
@@ -484,6 +543,7 @@ function run_bot() {
 		} else {
 			shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");
 		}
+		unset($offline_status,$wait_reconnect,$z);
 	}
 }
 

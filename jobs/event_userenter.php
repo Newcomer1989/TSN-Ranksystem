@@ -21,8 +21,9 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 					break;
 				}
 			}
+			unset($clientlist,$host);
 			if(!isset($ip)) {
-				enter_logfile($cfg,6,"New user (".$event['client_nickname']." [".$event['client_database_id']."]) joined the server, but can't found a valid IP address.");
+				enter_logfile($cfg,6,"New user ({$event['client_nickname']} [{$event['client_database_id']}]) joined the server, but can't found a valid IP address.");
 			} else {
 				if($cfg['rankup_hash_ip_addresses_mode'] == 1) {
 					$hash = password_hash($ip, PASSWORD_DEFAULT);
@@ -42,11 +43,11 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 				
 				$uuid = htmlspecialchars($event['client_unique_identifier'], ENT_QUOTES);
 				if(isset($sqlhashs[$uuid])) {
-					$sqlexec3 .= "UPDATE `$dbname`.`user_iphash` SET `iphash`='".$hash."',`ip`='".$ip."' WHERE `uuid`='".$event['client_unique_identifier']."'; ";
-					enter_logfile($cfg,6,"Userenter: UPDATE `$dbname`.`user_iphash` SET `iphash`='".$hash."',`ip`='".$ip."' WHERE `uuid`='".$event['client_unique_identifier']."'; ");
+					$sqlexec3 .= "UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip' WHERE `uuid`='{$event['client_unique_identifier']}'; ";
+					enter_logfile($cfg,6,"Userenter: UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip' WHERE `uuid`='{$event['client_unique_identifier']}'; ");
 				} else {
-					$sqlexec3 .= "INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('".$event['client_unique_identifier']."','".$hash."','".$ip."'); ";
-					enter_logfile($cfg,6,"Userenter: INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('".$event['client_unique_identifier']."','".$hash."','".$ip."'); ");
+					$sqlexec3 .= "INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip'); ";
+					enter_logfile($cfg,6,"Userenter: INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip'); ");
 				}
 				if($mysqlcon->exec($sqlexec3) === false) {
 					enter_logfile($cfg,2,"event_userenter 3:".print_r($mysqlcon->errorInfo(), true));

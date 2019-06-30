@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.0';
+$rsversion = '1.3.1';
 ?>
 <!DOCTYPE html>
 <html>
@@ -23,42 +23,17 @@ $rsversion = '1.3.0';
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-						<li>
-							<a href="?lang=ar"><span class="flag-icon flag-icon-arab"></span>&nbsp;&nbsp;AR - العربية</a>
-						</li>
-						<li>
-							<a href="?lang=cz"><span class="flag-icon flag-icon-cz"></span>&nbsp;&nbsp;CZ - Čeština</a>
-						</li>
-						<li>
-							<a href="?lang=de"><span class="flag-icon flag-icon-de"></span>&nbsp;&nbsp;DE - Deutsch</a>
-						</li>
-						<li>
-							<a href="?lang=en"><span class="flag-icon flag-icon-us"></span>&nbsp;&nbsp;EN - English</a>
-						</li>
-						<li>
-							<a href="?lang=es"><span class="flag-icon flag-icon-es"></span>&nbsp;&nbsp;ES - español</a>
-						</li>
-						<li>
-							<a href="?lang=fr"><span class="flag-icon flag-icon-fr"></span>&nbsp;&nbsp;FR - français</a>
-						</li>
-						<li>
-							<a href="?lang=it"><span class="flag-icon flag-icon-it"></span>&nbsp;&nbsp;IT - Italiano</a>
-						</li>
-						<li>
-							<a href="?lang=nl"><span class="flag-icon flag-icon-nl"></span>&nbsp;&nbsp;NL - Nederlands</a>
-						</li>
-						<li>
-							<a href="?lang=pl"><span class="flag-icon flag-icon-pl"></span>&nbsp;&nbsp;PL - polski</a>
-						</li>
-						<li>
-							<a href="?lang=ro"><span class="flag-icon flag-icon-ro"></span>&nbsp;&nbsp;RO - Română</a>
-						</li>
-						<li>
-							<a href="?lang=ru"><span class="flag-icon flag-icon-ru"></span>&nbsp;&nbsp;RU - Русский</a>
-						</li>
-						<li>
-							<a href="?lang=pt"><span class="flag-icon flag-icon-ptbr"></span>&nbsp;&nbsp;PT - Português</a>
-						</li>
+					<?PHP
+					if(is_dir(__DIR__.'/languages/')) {
+						foreach(scandir(__DIR__.'/languages/') as $file) {
+							if ('.' === $file || '..' === $file || is_dir($file)) continue;
+							$sep_lang = preg_split("/[._]/", $file);
+							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+							}
+						}
+					}
+					?>
 					</ul>
 				</li>
 			</ul>
@@ -185,7 +160,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('check_update'),('get_version'),('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_update')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('check_update'),('get_version'),('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_update'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -203,6 +178,11 @@ $db[\'dbname\']=\''.$dbname.'\';
 		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_platforms` (`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` int(10) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
+		} else {
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`stats_platforms` (`platform`,`count`) VALUES ('Windows',0),('Android',0),('OSX',0),('iOS',0),('Linux',0)") === false) {
+				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+				$count++;
+			}
 		}
 		
 		if($mysqlcon->exec("CREATE TABLE `$dbname`.`addons_config` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE,`value` varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
