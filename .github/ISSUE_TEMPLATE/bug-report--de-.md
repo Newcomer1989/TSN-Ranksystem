@@ -1,6 +1,6 @@
 ---
 name: Bug report [DE]
-about: Erstellen einen Issue, um uns bei der Verbesserung zu helfen.
+about: Melde uns dein Problem, um zur Verbesserung beizutragen.
 title: ''
 labels: ''
 assignees: ''
