@@ -41,7 +41,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 	
 	foreach ($allclients as $client) {
 		$client_groups_rankup = array();
-		$name = substr($mysqlcon->quote($client['client_nickname'], ENT_QUOTES),0,30);
+		$name = $mysqlcon->quote((mb_substr($client['client_nickname'],0,30)), ENT_QUOTES);
 		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$sgroups = array_flip(explode(",", $client['client_servergroups']));
 		if (!isset($multipleonline[$uid]) && $client['client_version'] != "ServerQuery" && $client['client_type']!="1") {
@@ -138,7 +138,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 									enter_logfile($cfg,5,sprintf($lang['sgrprm'], $select_arr['groups'][$select_arr['all_user'][$uid]['grpid']]['sgidname'], $select_arr['all_user'][$uid]['grpid'], $name, $uid, $client['client_database_id']));
 									if(isset($client_groups_rankup[$select_arr['all_user'][$uid]['grpid']])) unset($client_groups_rankup[$select_arr['all_user'][$uid]['grpid']]);
 								} catch (Exception $e) {
-									enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $select_arr['groups'][$groupid]['sgidname'], $groupid));
+									enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $select_arr['groups'][$select_arr['all_user'][$uid]['grpid']]['sgidname'], $select_arr['all_user'][$uid]['grpid']));
 								}
 							}
 							usleep($cfg['teamspeak_query_command_delay']);
@@ -174,7 +174,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 							$ts3->serverGroupClientDel($removegroup, $client['client_database_id']);
 							enter_logfile($cfg,5,sprintf("Removed WRONG servergroup %s (ID: %s) from user %s (unique Client-ID: %s; Client-database-ID %s).", $select_arr['groups'][$removegroup]['sgidname'], $removegroup, $name, $uid, $client['client_database_id']));
 						} catch (Exception $e) {
-							enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $select_arr['groups'][$groupid]['sgidname'], $groupid));
+							enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $select_arr['groups'][$removegroup]['sgidname'], $removegroup));
 						}
 					}
 				}

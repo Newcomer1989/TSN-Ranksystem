@@ -1,4 +1,4 @@
-﻿<?PHP
+<?PHP
 $nation = array();
 $nation['AD']='Andorra';
 $nation['AE']='Emirati Arabi Uniti';
@@ -206,7 +206,7 @@ $nation['SM']='San Marino';
 $nation['SN']='Senegal';
 $nation['SO']='Somalia';
 $nation['SR']='Suriname';
-$nation['ST']='Sao Tome\' e Principe';
+$nation['ST']='Sao Tome\'e Principe';
 $nation['SV']='El Salvador';
 $nation['SY']='Siria';
 $nation['SZ']='Swaziland';

@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.1';
+	$cfg['version_latest_available'] = '1.3.4';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$cfg,$dbname) {
@@ -326,16 +326,28 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 		}
 		
 		if(version_compare($cfg['version_current_using'], '1.3.1', '<')) {
-			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
-				enter_logfile($cfg,4,"    [1.3.1] Stored timestamp of last update successfully.");
-			}
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-			
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('reset_user_time', '0'),('reset_user_delete', '0'),('reset_group_withdraw', '0'),('reset_webspace_cache', '0'),('reset_usage_graph', '0'),('reset_stop_after', '0');") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.1] Added new job_check values.");
 			}
+		}
+		
+		if(version_compare($cfg['version_current_using'], '1.3.4', '<')) {
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_show_maxclientsline_switch', 0)") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.4] Added new config values.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` MODIFY COLUMN `sgidname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.4] Adjusted table groups successfully.");
+			}
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` MODIFY COLUMN `name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.4] Adjusted table user successfully.");
+			}			
+			
+			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.4] Stored timestamp of last update successfully.");
+			}
 
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }

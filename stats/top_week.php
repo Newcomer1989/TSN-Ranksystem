@@ -39,7 +39,7 @@ $top10_idle_sum = 0;
 
 foreach ($db_arr as $uuid => $client) {
 	$sgroups = array_flip(explode(",", $client['cldgroup']));
-	if (!isset($cfg['rankup_excepted_unique_client_id_list'][$uuid]) && !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list'])) {
+	if (!isset($cfg['rankup_excepted_unique_client_id_list'][$uuid]) && (!isset($cfg['rankup_excepted_group_id_list']) || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
 		if ($count10 == 10) break;
 		if ($cfg['rankup_time_assess_mode'] == 1) {
 			$hours = $client['count_week'] - $client['idle_week'];

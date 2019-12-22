@@ -118,6 +118,9 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" ? ' class="active">' : '>'); ?>
 						<a href="core.php"><i class="fas fa-cogs"></i>&nbsp;<?PHP echo $lang['winav3']; ?></a>
 					</li>
+					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "rank.php" ? ' class="active">' : '>'); ?>
+						<a href="rank.php"><i class="fas fa-list"></i>&nbsp;<?PHP echo $lang['stmy0002']; ?></a>
+					</li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "other.php" ? ' class="active">' : '>'); ?>
 						<a href="other.php"><i class="fas fa-wrench"></i>&nbsp;<?PHP echo $lang['winav4']; ?></a>
 					</li>

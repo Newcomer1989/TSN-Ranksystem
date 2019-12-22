@@ -174,7 +174,7 @@ if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3qnmdesc"><?php echo $lang['wits3qnm']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8 required-field-block">
-										<input type="text" class="form-control required" name="teamspeak_query_nickname" value="<?php echo $cfg['teamspeak_query_nickname']; ?>" maxlength="30" required>
+										<input type="text" class="form-control required" name="teamspeak_query_nickname" value="<?php echo $cfg['teamspeak_query_nickname']; ?>" minlength="3" maxlength="30" required>
 										<div class="help-block with-errors"></div>
 									</div>
 								</div>

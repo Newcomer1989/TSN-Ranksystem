@@ -158,10 +158,10 @@ require_once('nav.php');
 						<div class="panel panel-primary">
 							<div class="panel-heading">
 								<div class="row">
-									<div class="col-xs-9">
+									<div class="col-xs-6">
 										<h3 class="panel-title"><i class="fas fa-chart-area"></i>&nbsp;<?PHP echo $lang['stix0008']; ?></h3>
 									</div>
-									<div class="col-xs-3">
+									<div class="col-xs-6">
 										<div class="btn-group pull-right">
 										  <select class="form-control" id="period">
 											<option value="day"><?PHP echo $lang['stix0013']; ?></option>
@@ -492,5 +492,6 @@ if (isset($nation[$sql_res['country_nation_name_5']])) {
 <input type="hidden" id="tsn32" value="<?PHP echo $sql_res['platform_5']; ?>">
 <input type="hidden" id="tsn33" value="<?PHP echo $sql_res['platform_other']; ?>">
 <input type="hidden" id="tsn34" value="<?PHP echo ($sql_res['server_used_slots'] + $sql_res['server_free_slots']); ?>">
+<input type="hidden" id="tsn35" value="<?PHP if($cfg['stats_show_maxclientsline_switch']==1) { echo "on"; } ?>">
 </body>
 </html>

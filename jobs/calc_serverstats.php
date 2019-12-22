@@ -35,12 +35,13 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 		if(isset($select_arr['all_user'])) {
 			$allinsertsnap = '';
 			foreach ($select_arr['all_user'] as $uuid => $insertsnap) {
-				$allinsertsnap = $allinsertsnap . "('$nowtime','" . $uuid . "', '" . $insertsnap['count'] . "', '" . $insertsnap['idle'] . "'),";
+				$allinsertsnap = $allinsertsnap . "('{$nowtime}','{$uuid}',{$insertsnap['count']},{$insertsnap['idle']}),";
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`timestamp`, `uuid`, `count`, `idle`) VALUES $allinsertsnap; ";
+				$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`timestamp`,`uuid`,`count`,`idle`) VALUES $allinsertsnap; ";
 			}
+			unset($allinsertsnap);
 		}
 		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL25hdi5waHAiLCAiciIpOw=="));
 		if(!$fp) {
@@ -83,7 +84,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 		}
 	}
 	
-	$total_user = count($select_arr['all_user']); unset ($allinsertsnap);
+	$total_user = count($select_arr['all_user']);
 
 	if($serverinfo['virtualserver_status']=="online") {
 		$server_status = 1;

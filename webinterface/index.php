@@ -16,23 +16,26 @@ require_once('../other/config.php');
 require_once('../other/phpcommand.php');
 
 if(!class_exists('PDO')) {
-	unset($err_msg); $err_msg = $lang['insterr2']; $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php'); $err_lvl = 3; $dis_login = 1;
 }
 if(version_compare(phpversion(), '5.5.0', '<')) {
 	unset($err_msg); $err_msg = sprintf($lang['insterr4'],phpversion()); $err_lvl = 3; $dis_login = 1;
 }
 if(!function_exists('simplexml_load_file')) {
-	unset($err_msg); $err_msg = $lang['insterr5']; $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP SimpleXML','//php.net/manual/en/book.simplexml.php'); $err_lvl = 3; $dis_login = 1;
 }
 if(!in_array('curl', get_loaded_extensions())) {
-	unset($err_msg); $err_msg = $lang['insterr6']; $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP cURL','//php.net/manual/en/book.curl.php'); $err_lvl = 3; $dis_login = 1;
 }
 if(!in_array('zip', get_loaded_extensions())) {
-	unset($err_msg); $err_msg = $lang['insterr7']; $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP Zip','//php.net/manual/en/book.zip.php'); $err_lvl = 3; $dis_login = 1;
+}
+if(!in_array('mbstring', get_loaded_extensions())) {
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP mbstring','//php.net/manual/en/book.mbstring.php'); $err_lvl = 3; $dis_login = 1;
 }
 if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 	if(!in_array('com_dotnet', get_loaded_extensions())) {
-		unset($err_msg); $err_msg = $lang['insterr8']; $err_lvl = 3; $dis_login = 1;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP COM extension (php_com_dotnet.dll)','//php.net/manual/en/book.com.php'); $err_lvl = 3; $dis_login = 1;
 	}
 }
 
@@ -47,7 +50,7 @@ if(!is_writable($cfg['logs_path'])) {
 }
 
 if(!function_exists('exec')) {
-	unset($err_msg); $err_msg = $lang['insterr3']; $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php'); $err_lvl = 3; $dis_login = 1;
 } else {
 	exec("$phpcommand -v", $phpversioncheck);
 	$output = '';

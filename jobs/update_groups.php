@@ -64,7 +64,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 			foreach ($ts3groups as $servergroup) {
 				$tsgroupids[$servergroup['sgid']] = 0;
 				$sgid = $servergroup['sgid'];
-				$sgname = $mysqlcon->quote($servergroup['name'], ENT_QUOTES);
+				$sgname = $mysqlcon->quote((mb_substr($servergroup['name'],0,30)), ENT_QUOTES);
 				$iconid = $servergroup['iconid'];
 				$iconid = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
 				$iconfile = 0;

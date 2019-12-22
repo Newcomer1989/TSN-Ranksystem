@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.1';
+$rsversion = '1.3.4';
 ?>
 <!DOCTYPE html>
 <html>
@@ -289,7 +289,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>47,31536060=>50'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', '2,6'), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', 'xrTKhT/HDL4ea0WoFDQH2zOpmKg='), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'rank'), ('stats_column_default_order', 'asc'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>47,31536060=>50'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', '2,6'), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', 'xrTKhT/HDL4ea0WoFDQH2zOpmKg='), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'rank'), ('stats_column_default_order', 'asc'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_maxclientsline_switch', 0), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
@@ -347,22 +347,25 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	}
 
 	if(!class_exists('PDO')) {
-		unset($err_msg); $err_msg = $lang['insterr2']; $err_lvl = 3;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php'); $err_lvl = 3;
 	}
 	if(!function_exists('exec')) {
-		unset($err_msg); $err_msg = $lang['insterr3']; $err_lvl = 3;
+		unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php'); $err_lvl = 3;
 	}
 	if(version_compare(phpversion(), '5.5.0', '<')) {
 		unset($err_msg); $err_msg = sprintf($lang['insterr4'],phpversion()); $err_lvl = 3;
 	}
 	if(!function_exists('simplexml_load_file')) {
-		unset($err_msg); $err_msg = $lang['insterr5']; $err_lvl = 3;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP SimpleXML','//php.net/manual/en/book.simplexml.php'); $err_lvl = 3;
 	}
 	if(!in_array('curl', get_loaded_extensions())) {
-		unset($err_msg); $err_msg = $lang['insterr6']; $err_lvl = 3;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP cURL','//php.net/manual/en/book.curl.php'); $err_lvl = 3;
 	}
 	if(!in_array('zip', get_loaded_extensions())) {
-		unset($err_msg); $err_msg = $lang['insterr7']; $err_lvl = 3;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP Zip','//php.net/manual/en/book.zip.php'); $err_lvl = 3;
+	}
+	if(!in_array('mbstring', get_loaded_extensions())) {
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP mbstring','//php.net/manual/en/book.mbstring.php'); $err_lvl = 3;
 	}
 	if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 		if(!in_array('com_dotnet', get_loaded_extensions())) {

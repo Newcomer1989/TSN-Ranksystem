@@ -224,14 +224,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									</div>
 								</div>
 							</div>
-							<div class="row">&nbsp;</div>
-							<div class="form-group required-field-block">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wigrptimedesc"><?php echo $lang['wigrptime']; ?><i class="help-hover fas fa-question-circle"></i></label>
-								<div class="col-sm-8">
-									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="5" name="rankup_definition" maxlength="21588" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
-									<div class="help-block with-errors"></div>
-								</div>
-							</div>
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
@@ -409,22 +401,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
       </div>
       <div class="modal-body">
         <?php echo $lang['wiexciddesc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="wigrptimedesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wigrptime']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wigrptimedesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

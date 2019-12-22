@@ -71,6 +71,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	if (isset($_POST['stats_show_excepted_clients_switch'])) $cfg['stats_show_excepted_clients_switch'] = 1; else $cfg['stats_show_excepted_clients_switch'] = 0;
 	if (isset($_POST['stats_show_clients_in_highest_rank_switch'])) $cfg['stats_show_clients_in_highest_rank_switch'] = 1; else $cfg['stats_show_clients_in_highest_rank_switch'] = 0;
 	if (isset($_POST['stats_show_site_navigation_switch'])) $cfg['stats_show_site_navigation_switch'] = 1; else $cfg['stats_show_site_navigation_switch'] = 0;
+	if (isset($_POST['stats_show_maxclientsline_switch'])) $cfg['stats_show_maxclientsline_switch'] = 1; else $cfg['stats_show_maxclientsline_switch'] = 0;
 	$cfg['stats_column_default_order'] = $_POST['stats_column_default_order'];
 	$cfg['stats_column_default_sort'] = $_POST['stats_column_default_sort'];
 	$cfg['stats_time_bronze'] = $_POST['stats_time_bronze'];
@@ -82,7 +83,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$cfg['stats_connects_gold'] = $_POST['stats_connects_gold'];
 	$cfg['stats_connects_legend'] = $_POST['stats_connects_legend'];
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}'),('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_time_bronze','{$cfg['stats_time_bronze']}'),('stats_time_silver','{$cfg['stats_time_silver']}'),('stats_time_gold','{$cfg['stats_time_gold']}'),('stats_time_legend','{$cfg['stats_time_legend']}'),('stats_connects_bronze','{$cfg['stats_connects_bronze']}'),('stats_connects_silver','{$cfg['stats_connects_silver']}'),('stats_connects_gold','{$cfg['stats_connects_gold']}'),('stats_connects_legend','{$cfg['stats_connects_legend']}')	ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}'),('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}'),('stats_show_maxclientsline_switch','{$cfg['stats_show_maxclientsline_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_time_bronze','{$cfg['stats_time_bronze']}'),('stats_time_silver','{$cfg['stats_time_silver']}'),('stats_time_gold','{$cfg['stats_time_gold']}'),('stats_time_legend','{$cfg['stats_time_legend']}'),('stats_connects_bronze','{$cfg['stats_connects_bronze']}'),('stats_connects_silver','{$cfg['stats_connects_silver']}'),('stats_connects_gold','{$cfg['stats_connects_gold']}'),('stats_connects_legend','{$cfg['stats_connects_legend']}')	ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -299,6 +300,17 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
 									} else {
 										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
+									} ?>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishmaxdesc"><?php echo $lang['wishmax']; ?><i class="help-hover fas fa-question-circle"></i></label>
+								<div class="col-sm-8">
+									<?PHP if ($cfg['stats_show_maxclientsline_switch'] == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_maxclientsline_switch" value="',$cfg['stats_show_maxclientsline_switch'],'">';
+									} else {
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_maxclientsline_switch" value="',$cfg['stats_show_maxclientsline_switch'],'">';
 									} ?>
 								</div>
 							</div>
@@ -667,6 +679,22 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
       </div>
       <div class="modal-body">
         <?php echo $lang['wishnavdesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wishmaxdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wishmax']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wishmaxdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

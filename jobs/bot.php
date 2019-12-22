@@ -80,13 +80,16 @@ if(version_compare(phpversion(), '5.5.0', '<')) {
 	shutdown($mysqlcon,$cfg,1,"Your PHP version (".phpversion().") is below 5.5.0. Update of PHP is required!");
 }
 if(!function_exists('simplexml_load_file')) {
-	shutdown($mysqlcon,$cfg,1,"SimpleXML is missed. Installation of SimpleXML is required!");
+	shutdown($mysqlcon,$cfg,1,sprintf($lang['errphp'],'PHP SimpleXML'));
 }
 if(!in_array('curl', get_loaded_extensions())) {
-	shutdown($mysqlcon,$cfg,1,"PHP cURL is missed. Installation of PHP cURL is required!");
+	shutdown($mysqlcon,$cfg,1,sprintf($lang['errphp'],'PHP cURL'));
 }
 if(!in_array('zip', get_loaded_extensions())) {
-	shutdown($mysqlcon,$cfg,1,"PHP Zip is missed. Installation of PHP Zip is required!");
+	shutdown($mysqlcon,$cfg,1,sprintf($lang['errphp'],'PHP Zip'));
+}
+if(!in_array('mbstring', get_loaded_extensions())) {
+	shutdown($mysqlcon,$cfg,1,sprintf($lang['errphp'],'PHP mbstring'));
 }
 if(!in_array('ssh2', get_loaded_extensions()) && $cfg['teamspeak_query_encrypt_switch'] == 1) {
 	shutdown($mysqlcon,$cfg,1,"PHP SSH2 is missed. Installation of PHP SSH2 is required, when using secured (SSH) connection to TeamSpeak! If you are not able to install PHP SSH2 (i.e. hosted webspace), you need to deactivate the TS3 Query encryption inside the Webinterface.");
@@ -225,7 +228,7 @@ function run_bot() {
 			enter_logfile($cfg,9,"    Select virtual server [done]");
 			$cfg['temp_reconnect_attempts'] = 0;
 		} catch (Exception $e) {
-			enter_logfile($cfg,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage());
+			enter_logfile($cfg,2,"  Error due selecting virtual server - ".$e->getCode().': '.$e->getMessage()." (bad Voice-Port or Bot name?)");
 		}
 
 		try {

@@ -360,10 +360,12 @@ if($adminlogin == 1) {
 								if ($cfg['stats_column_current_server_group_switch'] == 1 || $adminlogin == 1) {
 									if ($value['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
-									} elseif ($sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
+									} elseif(isset($sqlhisgroup[$value['grpid']]) && $sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
 										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
-									} else {
+									} elseif(isset($sqlhisgroup[$value['grpid']])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
+									} else {
+										echo '<td class="text-center"><i>',$lang['unknown'],'</i></td>';
 									}
 								}
 								if ($cfg['stats_column_current_group_since_switch'] == 1 || $adminlogin == 1) {
