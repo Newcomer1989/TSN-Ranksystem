@@ -69,9 +69,11 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$cfg['default_language'] = $_SESSION[$rspathhex.'language'] = $_POST['default_language'];
 	unset($lang); $lang = set_language($cfg['default_language']);
 	$cfg['version_update_channel'] = $_POST['version_update_channel'];
-	$cfg['webinterface_admin_client_unique_id_list'] = $_POST['webinterface_admin_client_unique_id_list'];
+	if (isset($_POST['rankup_client_database_id_change_switch'])) $cfg['rankup_client_database_id_change_switch'] = 1; else $cfg['rankup_client_database_id_change_switch'] = 0;
+	if (isset($_POST['rankup_clean_clients_switch'])) $cfg['rankup_clean_clients_switch'] = 1; else $cfg['rankup_clean_clients_switch'] = 0;
+	$cfg['rankup_clean_clients_period'] = $_POST['rankup_clean_clients_period'];
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('version_update_channel','{$cfg['version_update_channel']}'),('webinterface_admin_client_unique_id_list','{$cfg['webinterface_admin_client_unique_id_list']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -79,7 +81,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
 		$err_lvl = NULL;
     }
-	$cfg['webinterface_admin_client_unique_id_list'] = array_flip(explode(',', $cfg['webinterface_admin_client_unique_id_list']));
 	$cfg['logs_path'] = $_POST['logs_path'];
 	
 	if(isset($cfg['default_language']) && is_dir(substr(__DIR__,0,-12).'languages/')) {
@@ -129,7 +130,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											if ('.' === $file || '..' === $file || is_dir($file)) continue;
 											$sep_lang = preg_split("/[._]/", $file);
 											if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-												echo '<option data-subtext="'.$sep_lang[2].'" value="'.$sep_lang[1].'"'.($cfg['default_language'] === $sep_lang[1] ? ' selected="selected"' : '').'>'.strtoupper($sep_lang[1]).'</option>';
+												echo '<option data-icon="flag-icon flag-icon-'.$sep_lang[3].'" data-subtext="'.$sep_lang[2].'" value="'.$sep_lang[1].'"'.($cfg['default_language'] === $sep_lang[1] ? ' selected="selected"' : '').'>&nbsp;'.strtoupper($sep_lang[1]).'</option>';
 											}
 										}
 									}
@@ -205,20 +206,12 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 						</div>
 						<div class="col-md-6">
 							<div class="form-group">
-								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover fas fa-question-circle"></i></label>
-								<div class="col-sm-8 required-field-block">
-									<textarea class="form-control required" data-pattern="^([A-Za-z0-9\\\/\+]{27}=,)*([A-Za-z0-9\\\/\+]{27}=)$" data-error="Check all unique IDs are correct and your list do not ends with a comma!" rows="1" name="webinterface_admin_client_unique_id_list" maxlength="21588"><?php if(!empty($cfg['webinterface_admin_client_unique_id_list'])) echo implode(',',array_flip($cfg['webinterface_admin_client_unique_id_list'])); ?></textarea>
-									<div class="help-block with-errors"></div>
-								</div>
-							</div>
-							<div class="row">&nbsp;</div>
-							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupchdesc"><?php echo $lang['wiupch']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control basic" name="version_update_channel">
 									<?PHP
-									echo '<option data-subtext="[recommended]" value="stable"'; if($cfg['version_update_channel']=="stable") echo " selected=selected"; echo '>',$lang['wiupch0'],'</option>';
-									echo '<option value="beta"'; if($cfg['version_update_channel']=="beta") echo " selected=selected"; echo '>',$lang['wiupch1'],'</option>';
+									echo '<option data-icon="fas fa-parachute-box" ata-subtext="[recommended]" value="stable"'; if($cfg['version_update_channel']=="stable") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiupch0'],'</option>';
+									echo '<option data-icon="fas fa-flask" value="beta"'; if($cfg['version_update_channel']=="beta") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiupch1'],'</option>';
 									?>
 									</select>
 								</div>
@@ -229,12 +222,53 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 								<div class="col-sm-8">
 									<select class="selectpicker show-tick form-control basic" name="rankup_hash_ip_addresses_mode">
 									<?PHP
-									echo '<option data-subtext="[recommended]" value="2"'; if($cfg['rankup_hash_ip_addresses_mode']=="2") echo " selected=selected"; echo '>',$lang['wishcolha2'],'</option>';
-									echo '<option value="1"'; if($cfg['rankup_hash_ip_addresses_mode']=="1") echo " selected=selected"; echo '>',$lang['wishcolha1'],'</option>';
+									echo '<option data-icon="fas fa-lock" data-subtext="[recommended]" value="2"'; if($cfg['rankup_hash_ip_addresses_mode']=="2") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha2'],'</option>';
+									echo '<option data-icon="fas fa-shield-alt" value="1"'; if($cfg['rankup_hash_ip_addresses_mode']=="1") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha1'],'</option>';
 									echo '<option data-divider="true">&nbsp;</option>';
-									echo '<option value="0"'; if($cfg['rankup_hash_ip_addresses_mode']=="0") echo " selected=selected"; echo '>',$lang['wishcolha0'],'</option>';
+									echo '<option data-icon="fas fa-ban" value="0"'; if($cfg['rankup_hash_ip_addresses_mode']=="0") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha0'],'</option>';
 									?>
 									</select>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?><i class="help-hover fas fa-question-circle"></i></label>
+								<div class="col-lg-8">
+									<?PHP if ($cfg['rankup_client_database_id_change_switch'] == 1) {
+											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="rankup_client_database_id_change_switch" value="',$cfg['rankup_client_database_id_change_switch'],'">';
+										} else {
+											echo '<input class="switch-animate" type="checkbox" data-size="mini" name="rankup_client_database_id_change_switch" value="',$cfg['rankup_client_database_id_change_switch'],'">';
+										} ?>
+								</div>
+							</div>
+							<div class="row">&nbsp;</div>
+							<div class="panel panel-default">
+								<div class="panel-body">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleancdesc"><?php echo $lang['cleanc']; ?><i class="help-hover fas fa-question-circle"></i></label>
+										<div class="col-sm-8">
+										<?PHP if ($cfg['rankup_clean_clients_switch'] == 1) {
+											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="rankup_clean_clients_switch" value="',$cfg['rankup_clean_clients_switch'],'">';
+										} else {
+											echo '<input class="switch-animate" type="checkbox" data-size="mini" name="rankup_clean_clients_switch" value="',$cfg['rankup_clean_clients_switch'],'">';
+										} ?>
+										</div>
+									</div>
+									<div class="row">&nbsp;</div>
+									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#cleanpdesc"><?php echo $lang['cleanp']; ?><i class="help-hover fas fa-question-circle"></i></label>
+										<div class="col-sm-8">
+											<input type="text" class="form-control" name="rankup_clean_clients_period" value="<?php echo $cfg['rankup_clean_clients_period']; ?>">
+											<script>
+											$("input[name='rankup_clean_clients_period']").TouchSpin({
+												min: 1800,
+												max: 9223372036854775807,
+												verticalbuttons: true,
+												prefix: 'Sec.:'
+											});
+											</script>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -242,7 +276,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
-							<button type="submit" name="update" class="btn btn-primary"><?php echo $lang['wisvconf']; ?></button>
+							<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
 						</div>
 					</div>
 					<div class="row">&nbsp;</div>
@@ -347,22 +381,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
     </div>
   </div>
 </div>
-<div class="modal fade" id="wiadmuuiddesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wiadmuuid']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wiadmuuiddesc']; ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
 <div class="modal fade" id="wiupchdesc" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -388,6 +406,54 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
       </div>
       <div class="modal-body">
         <?php echo $lang['wishcolhadesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="wichdbiddesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wichdbid']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['wichdbiddesc']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="cleancdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['cleanc']; ?></h4>
+      </div>
+      <div class="modal-body">
+	    <?php echo sprintf($lang['cleancdesc'], '<a href="https://ts-n.net/clientcleaner.php" target="_blank">https://ts-n.net/clientcleaner.php</a>'); ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="cleanpdesc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['cleanp']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['cleanpdesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

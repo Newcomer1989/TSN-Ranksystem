@@ -34,6 +34,16 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 		}
 	}
 }
+
+if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) {
+	if ($_POST['switchexpert'] == "check") $cfg['webinterface_advanced_mode'] = 1; else $cfg['webinterface_advanced_mode'] = 0;
+
+	if (($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_advanced_mode','{$cfg['webinterface_advanced_mode']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);")) === false) {
+		print_r($mysqlcon->errorInfo(), true);
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
+		$err_lvl = 3;
+	}
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?PHP echo $cfg['default_language']; ?>">
@@ -48,10 +58,26 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 	<script src="../libs/combined_wi.js?v=<?PHP echo $cfg['version_current_using']; ?>"></script>
 	<script>
 	$(function() {
+		var timerid;
 		$("ul.dropdown-menu").on("click", "[data-keepOpenOnClick]", function(e) {
 			e.stopPropagation();
 		});
+		$('#switchexpert').on('switchChange.bootstrapSwitch', function() {
+			$('.expertelement').each(function(i, obj) {
+				$(this).toggleClass("hidden");
+			});
+			clearTimeout(timerid);
+			timerid = setTimeout(function() { $('#autosubmit').submit(); }, 250);
+		});
 	});
+	window.onload = function() {
+		var expert = '<?PHP echo $cfg['webinterface_advanced_mode']; ?>';
+		if(expert == 0) {
+			$('.expertelement').each(function(i, obj) {
+				$(this).toggleClass("hidden");
+			});
+		}
+	};
 	</script>
 <body>
 	<div id="wrapper">
@@ -72,26 +98,49 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 			</ul>
 			<?PHP } ?>
 			<ul class="nav navbar-right top-nav">
-				<?PHP
-				if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
+				<?PHP 
+				if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) { ?>
+				<li class="dropdown">
+					<a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i>&nbsp;&nbsp;<?PHP echo $_SESSION[$rspathhex.'username']; ?>&nbsp;<b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li class="navbar-form">
+							<form method="post" id="autosubmit">
+								<?PHP
+								if($cfg['webinterface_advanced_mode'] == 1) {
+									echo '<input name="switchexpert" value="0" type="hidden">';
+									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="checked" type="checkbox" data-size="mini" data-label-text="Expert Mode" checked>';
+								} else {
+									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="check" type="checkbox" data-size="mini" data-label-text="Expert Mode">';
+								}
+								?>
+							</form>
+						</li>
+						<li class="divider"></li>
+						<?PHP if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
+							echo '<li><a href="//',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;',$lang['winav6'],'</a></li>';
+						} else {
+							echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;',$lang['winav6'],'</a></li>';
+						} ?>
+						<li>
+							<a href="changepassword.php"><i class="fas fa-key"></i>&nbsp;&nbsp;<?PHP echo $lang['pass2']; ?></a>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<form method="post" id="logout">
+								<div class="form-group">
+									<button type="submit" name="logout" class="btn btn-primary btn-sm btn-block"><span class="fas fa-sign-out-alt" aria-hidden="true"></span>&nbsp;<?PHP echo $lang['wilogout']; ?></button>
+								</div>
+							</form>
+						</li>
+					</ul>
+				</li>
+				<?PHP } elseif($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
 					echo '<li><a href="//',$_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fas fa-chart-bar"></i>&nbsp;',$lang['winav6'],'</a></li>';
 				} else {
 					echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fas fa-chart-bar"></i>&nbsp;',$lang['winav6'],'</a></li>';
-				}
-				if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) { ?>
-				<li>
-					<a href="changepassword.php"><i class="fas fa-lock"></i>&nbsp;<?PHP echo $lang['pass2']; ?></a>
-				</li>
-				<li>
-					<form class="navbar-form navbar-center" method="post">
-						<div class="form-group">
-							<button type="submit" name="logout" class="btn btn-primary"><?PHP echo $lang['wilogout']; ?>&nbsp;<span class="fas fa-sign-out-alt" aria-hidden="true"></span></button>
-						</div>
-					</form>
-				</li>
-				<?PHP } ?>
+				} ?>
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
+					<a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
 					<?PHP
 					if(is_dir(substr(__DIR__,0,-12).'languages/')) {
@@ -110,53 +159,72 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ts.php" ? ' class="active">' : '>'); ?>
-						<a href="ts.php"><i class="fas fa-headset"></i>&nbsp;<?PHP echo $lang['winav1']; ?></a>
+						<a href="ts.php"><i class="fas fa-headset"></i>&nbsp;&nbsp;<?PHP echo $lang['winav1']; ?></a>
 					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "db.php" ? ' class="active">' : '>'); ?>
-						<a href="db.php"><i class="fas fa-database"></i>&nbsp;<?PHP echo $lang['winav2']; ?></a>
-					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" ? ' class="active">' : '>'); ?>
-						<a href="core.php"><i class="fas fa-cogs"></i>&nbsp;<?PHP echo $lang['winav3']; ?></a>
-					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "rank.php" ? ' class="active">' : '>'); ?>
-						<a href="rank.php"><i class="fas fa-list"></i>&nbsp;<?PHP echo $lang['stmy0002']; ?></a>
-					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "other.php" ? ' class="active">' : '>'); ?>
-						<a href="other.php"><i class="fas fa-wrench"></i>&nbsp;<?PHP echo $lang['winav4']; ?></a>
-					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? ' class="active">' : '>'); ?>
-						<a href="msg.php"><i class="fas fa-envelope"></i>&nbsp;<?PHP echo $lang['winav5']; ?></a>
-					</li>
-					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active">' : '>'); ?>
-						<a href="stats.php"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['winav6']; ?></a>
-					</li>
-					<li class="divider"></li>
-					<li>
-						<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fas fa-puzzle-piece"></i>&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
-						<?PHP echo '<ul id="addons" class="'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? 'in collapse">' : 'collapse">'); ?>
-							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
-								<a href="addon_assign_groups.php" class="active"><i class="fas fa-user-plus"></i>&nbsp;<?PHP echo $lang['stag0001']; ?></a>
-							</li>
-						</ul>
-					</li>
-					<li class="divider"></li>
-					<li>
-						<a href="javascript:;" data-toggle="collapse" data-target="#admin"><i class="fas fa-users"></i>&nbsp;<?PHP echo $lang['winav7']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
-						<?PHP echo '<ul id="admin" class="'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" || basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" ? 'in collapse">' : 'collapse">'); ?>
-							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" ? ' class="active">' : '>'); ?>
-								<a href="admin_addtime.php"><i class="fas fa-plus"></i>&nbsp;<?PHP echo $lang['wihladm1']; ?></a>
-							</li>
-							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" ? ' class="active">' : '>'); ?>
-								<a href="admin_remtime.php"><i class="fas fa-minus"></i>&nbsp;<?PHP echo $lang['wihladm2']; ?></a>
-							</li>
-							<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "reset.php" ? ' class="active">' : '>'); ?>
-								<a href="reset.php"><i class="fas fa-trash"></i>&nbsp;<?PHP echo $lang['wihladm3']; ?></a>
-							</li>
-						</ul>
-					</li>
+					<?PHP 
+					if ((array_key_exists('webinterface_fresh_installation', $cfg) && $cfg['webinterface_fresh_installation'] != 1) || !array_key_exists('webinterface_fresh_installation', $cfg)) {
+						echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "db.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
+							<a href="db.php"><i class="fas fa-database"></i>&nbsp;&nbsp;<?PHP echo $lang['winav2']; ?></a>
+						</li>
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#rank"><i class="fas fa-hourglass-half"></i>&nbsp;&nbsp;<?PHP echo $lang['stmy0002']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+							<?PHP echo '<ul id="rank" class="'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" || basename($_SERVER['SCRIPT_NAME']) == "rank.php" || basename($_SERVER['SCRIPT_NAME']) == "boost.php" || basename($_SERVER['SCRIPT_NAME']) == "except.php" ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" ? ' class="active">' : '>'); ?>
+									<a href="core.php" class="active"><i class="fas fa-cogs"></i>&nbsp;&nbsp;<?PHP echo $lang['winav3']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "rank.php" ? ' class="active">' : '>'); ?>
+									<a href="rank.php" class="active"><i class="fas fa-list-ol"></i>&nbsp;&nbsp;<?PHP echo $lang['stmy0002']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "except.php" ? ' class="active">' : '>'); ?>
+									<a href="except.php" class="active"><i class="fas fa-ban"></i>&nbsp;&nbsp;<?PHP echo $lang['wiexcept']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "boost.php" ? ' class="active">' : '>'); ?>
+									<a href="boost.php"><i class="fas fa-rocket"></i>&nbsp;&nbsp;<?PHP echo $lang['wiboost']; ?></a>
+								</li>
+							</ul>
+						</li>
+						
+						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "other.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
+							<a href="other.php"><i class="fas fa-wrench"></i>&nbsp;&nbsp;<?PHP echo $lang['winav4']; ?></a>
+						</li>
+						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? ' class="active">' : '>'); ?>
+							<a href="msg.php"><i class="fas fa-envelope"></i>&nbsp;&nbsp;<?PHP echo $lang['winav5']; ?></a>
+						</li>
+						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
+							<a href="stats.php"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;<?PHP echo $lang['winav6']; ?></a>
+						</li>
+						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ranklist.php" ? ' class="active">' : '>'); ?>
+							<a href="ranklist.php"><i class="fas fa-list"></i>&nbsp;&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fas fa-puzzle-piece"></i>&nbsp;&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+							<?PHP echo '<ul id="addons" class="'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
+									<a href="addon_assign_groups.php" class="active"><i class="fas fa-user-plus"></i>&nbsp;&nbsp;<?PHP echo $lang['stag0001']; ?></a>
+								</li>
+							</ul>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#admin"><i class="fas fa-users"></i>&nbsp;&nbsp;<?PHP echo $lang['winav7']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+							<?PHP echo '<ul id="admin" class="'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" || basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" || basename($_SERVER['SCRIPT_NAME']) == "reset.php" ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" ? ' class="active">' : '>'); ?>
+									<a href="admin_addtime.php"><i class="fas fa-plus"></i>&nbsp;&nbsp;<?PHP echo $lang['wihladm1']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_remtime.php" ? ' class="active">' : '>'); ?>
+									<a href="admin_remtime.php"><i class="fas fa-minus"></i>&nbsp;&nbsp;<?PHP echo $lang['wihladm2']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "reset.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
+									<a href="reset.php"><i class="fas fa-sync"></i>&nbsp;&nbsp;<?PHP echo $lang['wihladm3']; ?></a>
+								</li>
+							</ul>
+						</li>
+						<?PHP
+					} ?>
 					<li class="divider"></li>
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "bot.php" ? ' class="active">' : '>'); ?>
-						<a href="bot.php"><i class="fas fa-power-off"></i>&nbsp;<?PHP echo $lang['winav8']; ?></a>
+						<a href="bot.php"><i class="fas fa-power-off"></i>&nbsp;&nbsp;<?PHP echo $lang['winav8']; ?></a>
 					</li>
 					<?PHP
 					if(isset($botstatus)) {
@@ -172,8 +240,8 @@ if(!isset($_POST['start']) && !isset($_POST['stop']) && !isset($_POST['restart']
 			</div>
 		</nav>
 <?PHP
-if($cfg['webinterface_admin_client_unique_id_list'] == NULL && isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && !isset($err_msg)) {
-	$err_msg = $lang['winav11']; $err_lvl = 3;
+if($cfg['webinterface_admin_client_unique_id_list'] == NULL && isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && !isset($err_msg) && $cfg['webinterface_fresh_installation'] != 1) {
+	$err_msg = $lang['winav11']; $err_lvl = 2;
 }
 
 if(!isset($_SERVER['HTTPS']) && !isset($err_msg) || isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "on" && !isset($err_msg)) {

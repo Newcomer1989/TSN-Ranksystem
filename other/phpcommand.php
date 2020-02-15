@@ -8,11 +8,11 @@
 $phpcommand = 'php';
 ## 
 ## LINUX
-#$phpcommand = 'php72';
-#$phpcommand = 'php73';
-#$phpcommand = '/usr/bin/php7.2';
+#$phpcommand = 'php74';
 #$phpcommand = '/usr/bin/php7.3';
+#$phpcommand = '/usr/bin/php7.4';
 #$phpcommand = '/opt/plesk/php/7.3/bin/php';
+#$phpcommand = '/opt/plesk/php/7.4/bin/php';
 ##
 ##
 ## WINDOWS

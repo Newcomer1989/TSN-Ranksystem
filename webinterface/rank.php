@@ -55,7 +55,7 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 	$err_lvl = 3;
 }
 
-if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true);
 	$err_lvl = 3;
 } else {
@@ -155,8 +155,6 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$cfg['rankup_definition'] = $rankup_definition;
 
 		if($errcnf == 0) {
-			$err_msg = $cfg['rankup_definition'];
-			$err_lvl = NULL;
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_definition','{$cfg['rankup_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
@@ -197,8 +195,8 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 						<div class="col-lg-12">
 							<h1 class="page-header">
 								<span><?php echo $lang['stmy0002'],' ',$lang['wihlset']; ?></span>
-								<div class="btn pull-right">
-									<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" name="rankup_clean_clients_switch1" value="switchexpert1" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
+								<div class="btn pull-right expertelement">
+									<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" value="switchexpert1" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
 								</div>
 							</h1>
 						</div>
@@ -207,13 +205,13 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group">
-								<label class="col-sm-12" data-toggle="modal" data-target="#wihladm0desc"><?php echo $lang['wihladm0']; ?><i class="help-hover fas fa-question-circle"></i></label>
+								<label class="col-sm-12 pointer" data-toggle="modal" data-target="#wihladm0desc"><?php echo $lang['wihladm0']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="panel-body">
 									<div class="row">&nbsp;</div>
 									<div class="row">&nbsp;</div>
 									<div class="form-group">
 										<div class="col-sm-4">
-											<b><?php echo $lang['wigrpt1'] ?></b>
+											<b><?php echo $lang['wigrpt1'],' (',$lang['wigrptk'],')'; ?></b>
 										</div>
 										<div class="col-sm-5">
 											<b><?php echo $lang['wigrpt2'] ?></b>
@@ -232,14 +230,13 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<select class="selectpicker show-tick form-control" data-live-search="true" name="rankupgroup[]">
 											<?PHP
 											foreach ($groupslist as $groupID => $groupParam) {
-												if ($groupID != 0 && $groupID == $sgroup && $groupParam['iconfile']==1) {
-													echo '<option data-content="<img src=\'../tsicons/'.$groupID.'.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,'</span>" value="'.$groupID,'" selected></option>';
-												} elseif ($groupID != 0 && $groupParam['iconfile']==1) {
-													echo '<option data-content="<img src=\'../tsicons/'.$groupID.'.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,'</span>" value="',$groupID,'"></option>';
-												} elseif ($groupID != 0 && $groupID == $sgroup) {
-													echo '<option data-content="<img src=\'../tsicons/placeholder.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,'</span>" value="',$groupID,'" selected></option>';
-												} elseif ($groupID != 0) {
-													echo '<option data-content="<img src=\'../tsicons/placeholder.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,'</span>" value="',$groupID,'"></option>';
+												if ($groupID == $sgroup) $selected=" selected"; else $selected="";
+												if ($groupParam['iconfile'] == 1) $iconfile=$groupID; else $iconfile="placeholder";
+												if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
+												if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
+												if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
+												if ($groupID != 0) {
+													echo '<option data-content="<img src=\'../tsicons/',$iconfile,'.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
 												}
 											}
 											?>
@@ -267,7 +264,7 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
-							<button type="submit" class="btn btn-primary" name="update"><?php echo $lang['wisvconf']; ?></button>
+							<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
 						</div>
 					</div>
 					<div class="row">&nbsp;</div>
@@ -279,7 +276,7 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<h1 class="page-header">
 								<span><?php echo $lang['stmy0002'],' ',$lang['wihlset']; ?></span>
 								<div class="btn pull-right">
-									<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" name="rankup_clean_clients_switch2" value="switchexpert2" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
+									<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" value="switchexpert2" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
 								</div>
 							</h1>
 						</div>
@@ -393,13 +390,13 @@ $(document).ready(function() {
 	if($number == 1) {
 		$('.delete').remove();
 	}
-});	
-$('#switchexpert1').on('switchChange.bootstrapSwitch', function(e) {
+});
+$('#switchexpert1').on('switchChange.bootstrapSwitch', function() {
 	document.getElementById("new").classList.add("hidden");
 	document.getElementById("old").classList.remove("hidden");
 	$('#switchexpert2').bootstrapSwitch('state', true, false);
 });
-$('#switchexpert2').on('switchChange.bootstrapSwitch', function(e) {
+$('#switchexpert2').on('switchChange.bootstrapSwitch', function() {
 	document.getElementById("new").classList.remove("hidden");
 	document.getElementById("old").classList.add("hidden");
 	$('#switchexpert1').bootstrapSwitch('state', false, false);

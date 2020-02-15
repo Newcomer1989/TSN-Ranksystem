@@ -7,12 +7,15 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 	if(empty($cfg['rankup_definition'])) {
 		shutdown($mysqlcon,$cfg,1,"calc_user:".$lang['wiconferr']);
 	}
-	if($select_arr['job_check']['calc_user_lastscan']['timestamp'] < ($nowtime - 1800)) {
-		enter_logfile($cfg,4,"Much time gone since last scan.. reset time difference to zero.");
-		$select_arr['job_check']['calc_user_lastscan']['timestamp'] = $nowtime;
-	} elseif($select_arr['job_check']['calc_user_lastscan']['timestamp'] > $nowtime) {
-		enter_logfile($cfg,3,"Negative time between now and last scan (Error in your server time!).. reset time difference to zero.");
-		$select_arr['job_check']['calc_user_lastscan']['timestamp'] = $nowtime;
+	
+	$addtime = $nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp'];
+
+	if($addtime > 1800) {
+		enter_logfile($cfg,4,"Much time gone since last scan.. set addtime to 1 second.");
+		$addtime = 1;
+	} elseif($addtime < 0) {
+		enter_logfile($cfg,3,"Negative time valie (now < last scan).. Error in your machine time!.. set addtime to 1 second.");
+		$addtime = 1;
 	}
 
 	$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='calc_user_lastscan'; UPDATE `$dbname`.`user` SET `online`=0 WHERE `online`=1; ";
@@ -22,19 +25,66 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 	if(isset($select_arr['admin_addtime']) && count($select_arr['admin_addtime']) != 0) {
 		foreach($select_arr['admin_addtime'] as $uuid => $value) {
 			if(isset($select_arr['all_user'][$uuid])) {
+				$sqlexec2 = '';
 				$isonline = 0;
 				foreach($allclients as $client) {
 					if($client['client_unique_identifier'] == $uuid) {
 						$isonline = 1;
-						$select_arr['all_user'][$uuid]['count'] += $value['timecount'];
+						if($value['timecount'] < 0) {
+							$select_arr['all_user'][$uuid]['count'] += $value['timecount'];
+							if($select_arr['all_user'][$uuid]['count'] < 0) {
+								$select_arr['all_user'][$uuid]['count'] = 0;
+								$select_arr['all_user'][$uuid]['idle'] = 0;
+							} elseif ($select_arr['all_user'][$uuid]['idle'] > $select_arr['all_user'][$uuid]['count']) {
+								$select_arr['all_user'][$uuid]['idle'] = $select_arr['all_user'][$uuid]['count'];
+							}
+						} else {
+							$select_arr['all_user'][$uuid]['count'] += $value['timecount'];
+						}
 					}
 				}
 				if($isonline != 1) {
-					$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=`count` + ".$value['timecount']." WHERE `uuid`='$uuid'; ";
+					if(($user = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+					} else {
+						if($value['timecount'] < 0) {
+							$user[$uuid]['count'] += $value['timecount'];
+							if($user[$uuid]['count'] < 0) {
+								$user[$uuid]['count'] = 0;
+								$user[$uuid]['idle'] = 0;
+							} elseif ($user[$uuid]['idle'] > $user[$uuid]['count']) {
+								$user[$uuid]['idle'] = $user[$uuid]['count'];
+							}
+						} else {
+							$user[$uuid]['count'] += $value['timecount'];
+						}
+						$sqlexec2 .= "UPDATE `$dbname`.`user` SET `count`='{$user[$uuid]['count']}', `idle`='{$user[$uuid]['idle']}' WHERE `uuid`='{$uuid}'; ";
+					}
 				}
-				$sqlexec .= "DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid'; ";
-				$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`=`count` + ".$value['timecount']." WHERE `uuid`='$uuid'; ";
+				$sqlexec2 .= "DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid'; ";
+				if(($usersnap = $mysqlcon->query("SELECT `timestamp`,`uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+					enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					foreach($usersnap as $timestamp => $valuesnap) {
+						if($value['timecount'] < 0) {
+							$valuesnap[$timestamp]['count'] += $value['timecount'];
+							if($valuesnap[$timestamp]['count'] < 0) {
+								$valuesnap[$timestamp]['count'] = 0;
+								$valuesnap[$timestamp]['idle'] = 0;
+							} elseif ($valuesnap[$timestamp]['idle'] > $valuesnap[$timestamp]['count']) {
+								$valuesnap[$timestamp]['idle'] = $valuesnap[$timestamp]['count'];
+							}
+						} else {
+							$valuesnap[$timestamp]['count'] += $value['timecount'];
+						}
+						$sqlexec2 .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap[$timestamp]['count']}', `idle`='{$valuesnap[$timestamp]['idle']}' WHERE `uuid`='{$uuid}' AND `timestamp`='{$timestamp}'; ";
+					}
+				}
+				if($mysqlcon->exec($sqlexec2) === false) {
+					enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+				}
 				enter_logfile($cfg,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid));
+				unset($sqlexec2, $user, $usersnap);
 			}
 		}
 	}
@@ -52,7 +102,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 			$multipleonline[$uid] = 0;
 			if(isset($cfg['rankup_excepted_unique_client_id_list'][$uid])) {
 				$except = 3;
-			} elseif(array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list'])) {
+			} elseif($cfg['rankup_excepted_group_id_list'] != NULL && array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list'])) {
 				$except = 2;
 			} else {
 				if(isset($select_arr['all_user'][$uid]['except']) && ($select_arr['all_user'][$uid]['except'] == 3 || $select_arr['all_user'][$uid]['except'] == 2) && $cfg['rankup_excepted_mode'] == 2) { 
@@ -90,17 +140,17 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 										}
 									}
 								}
-								$count = ($nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp']) * $boost['factor'] + $select_arr['all_user'][$uid]['count'];
-								if ($clientidle > ($nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp'])) {
-									$idle = ($nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp']) * $boost['factor'] + $select_arr['all_user'][$uid]['idle'];
+								$count = $addtime * $boost['factor'] + $select_arr['all_user'][$uid]['count'];
+								if ($clientidle > $addtime) {
+									$idle = $addtime * $boost['factor'] + $select_arr['all_user'][$uid]['idle'];
 								}
 							}
 						}
 					}
 					if($cfg['rankup_boost_definition'] == 0 or $hitboost == 0) {
-						$count = $nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp'] + $select_arr['all_user'][$uid]['count'];
-						if ($clientidle > ($nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp'])) {
-							$idle = $nowtime - $select_arr['job_check']['calc_user_lastscan']['timestamp'] + $select_arr['all_user'][$uid]['idle'];
+						$count = $addtime + $select_arr['all_user'][$uid]['count'];
+						if ($clientidle > $addtime) {
+							$idle = $addtime + $select_arr['all_user'][$uid]['idle'];
 						}
 					}
 				}
@@ -114,7 +164,6 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 
 				foreach($sgroups as $clientgroup => $dummy) {
 					if(isset($cfg['rankup_definition_flipped'][$clientgroup])) {
-						#enter_logfile($cfg,5,"Client ".$name." has group ".$clientgroup);
 						$client_groups_rankup[$clientgroup] = 0;
 					}
 				}
@@ -128,9 +177,8 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 						if($except != 2 && $except != 3) {
 							$except = 1;
 						}
-					} elseif ($activetime > $time && !isset($cfg['rankup_excepted_unique_client_id_list'][$uid]) && !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list'])) {
+					} elseif ($activetime > $time && !isset($cfg['rankup_excepted_unique_client_id_list'][$uid]) && ($cfg['rankup_excepted_group_id_list'] == NULL || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
 						if (!isset($sgroups[$groupid])) {
-						#if ($select_arr['all_user'][$uid]['grpid'] != $groupid) {
 							if ($select_arr['all_user'][$uid]['grpid'] != NULL && $select_arr['all_user'][$uid]['grpid'] != 0 && isset($sgroups[$select_arr['all_user'][$uid]['grpid']])) {
 								usleep($cfg['teamspeak_query_command_delay']);
 								try {

@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.4';
+	$cfg['version_latest_available'] = '1.3.7';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$cfg,$dbname) {
@@ -345,14 +345,29 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='".time()."' WHERE `job_name`='last_update';") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.4] Stored timestamp of last update successfully.");
 			}
-
+		}
+			
+		if(version_compare($cfg['version_current_using'], '1.3.7', '<')) {
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `snapshot_uuid` ON `$dbname`.`user_snapshot` (`uuid`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
+
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_fresh_installation', '0'),('webinterface_advanced_mode', '1')") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.7] Added new config values.");
+			}
+			
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.7] Empty table groups successfully.");
+			}
+			
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` ADD COLUMN `sortid` int(10) NOT NULL default '0', ADD COLUMN `type` tinyint(1) NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.7] Adjusted table groups successfully.");
+			}
 		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}

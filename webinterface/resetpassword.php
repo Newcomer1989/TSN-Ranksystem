@@ -109,24 +109,24 @@ if (($last_access['webinterface_access_last'] + 1) >= time()) {
 			usleep($cfg['teamspeak_query_command_delay']);
 			$allclients = $ts3->clientList();
 
-			$pwd = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&§!()'),0,12);
+			$pwd = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&!()'),0,12);
 			$cfg['webinterface_pass'] = password_hash($pwd, PASSWORD_DEFAULT);
 
 			foreach($allclients as $client) {
-				if(in_array(htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES), $cfg['webinterface_admin_client_unique_id_list'])) {
+				if(array_key_exists(htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES), $cfg['webinterface_admin_client_unique_id_list'])) {
 					$checkuuid = 1;
 					if($client['connection_client_ip'] == getclientip()) {
 						$checkip = 1;
 						if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_pass','{$cfg['webinterface_pass']}'),('webinterface_access_last','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) {
-							$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+							$err_msg .= $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 						} else {
 							try {
 								usleep($cfg['teamspeak_query_command_delay']);
 								$ts3->clientGetByUid($client['client_unique_identifier'])->message(sprintf($lang['wirtpw4'], $cfg['webinterface_user'], $pwd, '[URL=http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).']','[/URL]'));
-								$err_msg = sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
+								$err_msg .= sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
 								enter_logfile($cfg,3,sprintf($lang['wirtpw6'],getclientip()));
 							} catch (Exception $e) {
-								$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+								$err_msg .= $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 							}
 						}
 					}

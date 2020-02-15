@@ -79,7 +79,7 @@ if((!isset($_SESSION[$rspathhex.'multiple']) || count($_SESSION[$rspathhex.'mult
 	$err_lvl = 3;
 } elseif($_SESSION[$rspathhex.'connected'] == 0 && $cfg['teamspeak_verification_channel_id'] != NULL && $cfg['teamspeak_verification_channel_id'] != 0) {
 	$err_msg = $lang['verify0001']; $err_lvl = 1;
-$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='{$cfg['teamspeak_verification_channel_id']}' ORDER BY `name` ASC")->fetchAll();
+	$uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `online`='1' AND `cid`='{$cfg['teamspeak_verification_channel_id']}' ORDER BY `name` ASC")->fetchAll();
 	foreach($uuids as $entry) {
 		$_SESSION[$rspathhex.'multiple'][$entry['uuid']] = $entry['name'];
 	}
@@ -88,49 +88,54 @@ $uuids = $mysqlcon->query("SELECT `name`,`uuid` FROM `$dbname`.`user` WHERE `onl
 }
 
 if(isset($_POST['uuid']) && !isset($_SESSION[$rspathhex.'temp_uuid'])) {
-	require_once('../libs/ts3_lib/TeamSpeak3.php');
-	try {
-		if($cfg['teamspeak_query_encrypt_switch'] == 1) {
-			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&ssh=1");
-		} else {
-			$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&blocking=0");
-		}
-		
+	if(array_key_exists($_POST['uuid'], $_SESSION[$rspathhex.'multiple'])) {
+		require_once('../libs/ts3_lib/TeamSpeak3.php');
 		try {
-			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3->selfUpdate(array('client_nickname' => "Ranksystem - Verification"));
-		} catch (Exception $e) {
-			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
-		}
-
-		try {
-			usleep($cfg['teamspeak_query_command_delay']);
-			$allclients = $ts3->clientList();
-		} catch (Exception $e) {
-			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
-		}
-
-		foreach ($allclients as $client) {
-			if($client['client_unique_identifier'] == $_POST['uuid']) {
-				$cldbid = $client['client_database_id'];
-				$nickname = htmlspecialchars($client['client_nickname'], ENT_QUOTES);
-				$_SESSION[$rspathhex.'temp_uuid'] = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
-				$_SESSION[$rspathhex.'temp_cldbid'] = $cldbid;
-				$_SESSION[$rspathhex.'temp_name'] = $nickname;
-				$pwd = substr(str_shuffle("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"),0,6);
-				$_SESSION[$rspathhex.'token'] = $pwd;
-				$tokenlink = '[URL]http'.(!empty($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'?token='.$pwd.'[/URL]';
-				try {
-					$ts3->clientGetByUid($_SESSION[$rspathhex.'temp_uuid'])->message(sprintf($lang['stve0001'], $nickname, $tokenlink, $pwd));
-					$err_msg = $lang['stve0002']; $err_lvl = 1;
-				} catch (Exception $e) {
-					$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
-				}
-				break;
+			if($cfg['teamspeak_query_encrypt_switch'] == 1) {
+				$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&ssh=1");
+			} else {
+				$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&blocking=0");
 			}
+			
+			try {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$ts3->selfUpdate(array('client_nickname' => "Ranksystem - Verification"));
+			} catch (Exception $e) {
+				$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+			}
+
+			try {
+				usleep($cfg['teamspeak_query_command_delay']);
+				$allclients = $ts3->clientList();
+			} catch (Exception $e) {
+				$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+			}
+
+			foreach ($allclients as $client) {
+				if($client['client_unique_identifier'] == $_POST['uuid']) {
+					$cldbid = $client['client_database_id'];
+					$nickname = htmlspecialchars($client['client_nickname'], ENT_QUOTES);
+					$_SESSION[$rspathhex.'temp_uuid'] = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
+					$_SESSION[$rspathhex.'temp_cldbid'] = $cldbid;
+					$_SESSION[$rspathhex.'temp_name'] = $nickname;
+					$pwd = substr(str_shuffle("abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"),0,6);
+					$_SESSION[$rspathhex.'token'] = $pwd;
+					$tokenlink = '[URL]http'.(!empty($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'?token='.$pwd.'[/URL]';
+					try {
+						$ts3->clientGetByUid($_SESSION[$rspathhex.'temp_uuid'])->message(sprintf($lang['stve0001'], $nickname, $tokenlink, $pwd));
+						$err_msg = $lang['stve0002']; $err_lvl = 1;
+					} catch (Exception $e) {
+						$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+					}
+					break;
+				}
+			}
+		} catch (Exception $e) {
+			$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 		}
-	} catch (Exception $e) {
-		$err_msg = $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
+	} else {
+		$err_msg = "The chosen user couldn't found! You are still connected on the TS server? Please stay connected on the server during the verification process!";
+		$err_lvl = 3;
 	}
 }
 
@@ -177,7 +182,8 @@ require_once('nav.php');
 														echo '</option>';
 													}
 													foreach($_SESSION[$rspathhex.'multiple'] as $uuid => $nickname) {
-														echo '<option data-subtext="',$uuid,'" value="',$uuid,'"'; if(isset($_SESSION[$rspathhex.'temp_uuid']) && $_SESSION[$rspathhex.'temp_uuid'] == $uuid) echo ' selected'; echo '>',htmlspecialchars($nickname),'</option>';
+														echo '<option data-subtext="',$uuid,'" value="',$uuid,'"';
+														if(isset($_SESSION[$rspathhex.'temp_uuid']) && $_SESSION[$rspathhex.'temp_uuid'] == $uuid) echo ' selected'; echo '>',htmlspecialchars($nickname),'</option>';
 													}
 													?>
 												</select>

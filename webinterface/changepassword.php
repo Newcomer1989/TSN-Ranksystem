@@ -142,7 +142,7 @@ if (isset($_POST['changepw']) && isset($db_csrf[$_POST['csrf_token']])) {
 										</div>
 										<br>
 										<p>
-											<button type="submit" class="btn btn-success btn-block" name="changepw"><?PHP echo $lang['wichpw4']; ?></button>
+											<button type="submit" class="btn btn-success btn-block" name="changepw"><i class="fas fa-save"></i>&nbsp;<?PHP echo $lang['wichpw4']; ?></button>
 										</p>
 									</form>
 								</div>

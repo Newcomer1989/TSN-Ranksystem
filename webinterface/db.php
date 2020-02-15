@@ -178,7 +178,7 @@ $db[\'dbname\']=\''.$_POST['dbname'].'\';
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
-							<button type="submit" class="btn btn-primary" name="update"><?php echo $lang['wisvconf']; ?></button>
+							<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
 						</div>
 					</div>
 					<div class="row">&nbsp;</div>

@@ -82,8 +82,8 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$allinsertdata = '';
 		$succmsg = '';
 		$nowtime = time();
+		$setontime = $setontime * -1;
 		foreach($_POST['user'] as $uuid) {
-			$setontime = $setontime * -1;
 			$allinsertdata .= "('".$uuid."', ".$nowtime.", ".$setontime."),";
 			$succmsg .= sprintf($lang['sccupcount'],$setontime,$uuid)."<br>";
 		}
@@ -114,6 +114,13 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 				<div class="form-horizontal">
 					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group">
+								<label class="col-sm-12 pointer" data-toggle="modal" data-target="#setontimedesc2"><?php echo $lang['wihladm0']; ?><i class="help-hover fas fa-question-circle"></i></label>
+								<div class="panel-body">
+								</div>
+							</div>
+						</div>
 						<div class="col-md-3">
 						</div>
 						<div class="col-md-6">
@@ -124,8 +131,8 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										<div class="col-sm-8 pull-right">
 											<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 											<?PHP
-											echo '<option value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '>hide</option>';
-											echo '<option value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '>show</option>';
+											echo '<option data-icon="fas fa-eye-slash" value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '>&nbsp;hide</option>';
+											echo '<option data-icon="fas fa-eye" value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '>&nbsp;show</option>';
 											?>
 											</select>
 										</div>
@@ -133,7 +140,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiselclddesc"><?php echo $lang['wiselcld']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<select class="selectpicker show-tick form-control" data-live-search="true" multiple name="user[]">
+											<select class="selectpicker show-tick form-control" data-actions-box="true" data-live-search="true" multiple name="user[]">
 											<?PHP
 											foreach ($user_arr as $user) {
 												echo '<option value="',$user['uuid'],'" data-subtext="UUID: ',$user['uuid'],'; DBID: ',$user['cldbid'],'">',htmlspecialchars($user['name']),'</option>';
@@ -149,7 +156,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<script>
 											$("input[name='setontime_day']").TouchSpin({
 												min: 0,
-												max: 24855,
+												max: 11574,
 												verticalbuttons: true,
 												prefix: '<?PHP echo $lang['time_day']; ?>'
 											});
@@ -163,7 +170,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<script>
 											$("input[name='setontime_hour']").TouchSpin({
 												min: 0,
-												max: 23,
+												max: 277777,
 												verticalbuttons: true,
 												prefix: '<?PHP echo $lang['time_hour']; ?>'
 											});
@@ -177,7 +184,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<script>
 											$("input[name='setontime_min']").TouchSpin({
 												min: 0,
-												max: 59,
+												max: 16666666,
 												verticalbuttons: true,
 												prefix: '<?PHP echo $lang['time_min']; ?>'
 											});
@@ -191,7 +198,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<script>
 											$("input[name='setontime_sec']").TouchSpin({
 												min: 0,
-												max: 59,
+												max: 999999999,
 												verticalbuttons: true,
 												prefix: '<?PHP echo $lang['time_sec']; ?>'
 											});
@@ -205,7 +212,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
-							<button type="submit" class="btn btn-primary" name="update"><?php echo $lang['wisvconf']; ?></button>
+							<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
 						</div>
 					</div>
 					<div class="row">&nbsp;</div>

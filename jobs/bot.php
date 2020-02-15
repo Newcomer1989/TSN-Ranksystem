@@ -175,11 +175,9 @@ function sendmessage($ts3, $cfg, $uuid, $msg, $erromsg=NULL, $errcode=NULL, $suc
 	}
 }
 
-$sqlexec = '';
-
 function run_bot() {
-	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $sqlexec, $max_execution_time, $memory_limit;
-	
+	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $max_execution_time, $memory_limit;
+
 	enter_logfile($cfg,9,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\" Query-Slowmode: \"".number_format(($cfg['teamspeak_query_command_delay']/1000000),1)."\").");
 
 	try {
@@ -380,6 +378,12 @@ function run_bot() {
 			}
 		}
 		
+		if($cfg['webinterface_fresh_installation'] == 1) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`cfg_params` SET `value`=0 WHERE `param`='webinterface_fresh_installation'") === false) {
+				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+			}
+		}
+		
 		unset($groupslist,$errcnf,$checkgroups,$lastupdate,$updcld,$loglevel,$whoami,$ts3host,$max_execution_time,$memory_limit,$memory_limit);
 		enter_logfile($cfg,9,"Config check [done]");
 
@@ -388,6 +392,7 @@ function run_bot() {
 		usleep(3000000);
 
 		while(1) {
+			$sqlexec = '';
 			$starttime = microtime(true);
 			$weekago = time() - 604800;
 			$monthago = time() - 2592000;
@@ -491,7 +496,6 @@ function run_bot() {
 			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
 
 			unset($sqlexec,$select_arr,$sqldump);
-			$sqlexec = '';
 			
 			$looptime = microtime(true) - $starttime;
 			$cfg['temp_whole_laptime'] = $cfg['temp_whole_laptime'] + $looptime;
@@ -512,8 +516,7 @@ function run_bot() {
 		}
 	} catch (Exception $e) {
 		enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage());
-		$offline_status = array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793);
-		if(in_array($e->getCode(), $offline_status)) {
+		if(in_array($e->getCode(), array(110,257,258,1024,1026,1031,1032,1033,1034,1280,1793))) {
 			if($mysqlcon->exec("UPDATE $dbname.stats_server SET server_status='0'") === false) {
 				enter_logfile($cfg,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
 			}
@@ -546,7 +549,6 @@ function run_bot() {
 		} else {
 			shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");
 		}
-		unset($offline_status,$wait_reconnect,$z);
 	}
 }
 

@@ -257,13 +257,13 @@ if (isset($_POST['confirm']) && isset($db_csrf[$_POST['csrf_token']])) {
 				<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 				<div class="form-horizontal">
 					<div class="row">
-						<div class="col-md-6">
-							<div class="form-group">
-								<label class="col-sm-10 control-label" data-toggle="modal" data-target="#wihladm0desc"><?php echo $lang['wihladm0']; ?><i class="help-hover fas fa-question-circle"></i></label>
+					<div class="col-md-12">
+						<div class="form-group">
+								<label class="col-sm-12 pointer" data-toggle="modal" data-target="#wihladm0desc"><?php echo $lang['wihladm0']; ?><i class="help-hover fas fa-question-circle"></i></label>
+								<div class="panel-body">
+								</div>
 							</div>
 						</div>
-					</div>
-					<div class="row">
 						<div class="col-md-3">
 						</div>
 						<div class="col-md-6">
@@ -273,10 +273,10 @@ if (isset($_POST['confirm']) && isset($db_csrf[$_POST['csrf_token']])) {
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm31desc"><?php echo $lang['wihladm31']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="reset_user_time">
-													<option selected="selected" value="0"><?PHP echo $lang['winxmode1']; ?></option>
+													<option data-icon="fas fa-ban" selected="selected" value="0">&nbsp;<?PHP echo $lang['winxmode1']; ?></option>
 													<option data-divider="true">&nbsp;</option>
-													<option value="1"><?PHP echo $lang['wihladm311']; ?></option>
-													<option value="2"><?PHP echo $lang['wihladm312']; ?></option>
+													<option data-icon="fas fa-history" value="1">&nbsp;<?PHP echo $lang['wihladm311']; ?></option>
+													<option data-icon="fas fa-user-slash" value="2">&nbsp;<?PHP echo $lang['wihladm312']; ?></option>
 												</select>
 										</div>
 									</div>

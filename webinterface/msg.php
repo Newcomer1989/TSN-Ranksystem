@@ -133,9 +133,9 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control" id="basic" name="rankup_next_message_mode">
 											<?PHP
-											echo '<option value="0"'; if($cfg['rankup_next_message_mode']=="0") echo " selected=selected"; echo '>',$lang['winxmode1'],'</option>';
-											echo '<option value="1"'; if($cfg['rankup_next_message_mode']=="1") echo " selected=selected"; echo '>',$lang['winxmode2'],'</option>';
-											echo '<option value="2"'; if($cfg['rankup_next_message_mode']=="2") echo " selected=selected"; echo '>',$lang['winxmode3'],'</option>';
+											echo '<option data-icon="fas fa-ban" value="0"'; if($cfg['rankup_next_message_mode']=="0") echo " selected=selected"; echo '>&nbsp;',$lang['winxmode1'],'</option>';
+											echo '<option data-icon="fas fa-clipboard-check" value="1"'; if($cfg['rankup_next_message_mode']=="1") echo " selected=selected"; echo '>&nbsp;',$lang['winxmode2'],'</option>';
+											echo '<option data-icon="fas fa-clipboard-list" value="2"'; if($cfg['rankup_next_message_mode']=="2") echo " selected=selected"; echo '>&nbsp;',$lang['winxmode3'],'</option>';
 											?>
 											</select>
 										</div>
@@ -165,7 +165,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 					<div class="row">&nbsp;</div>
 					<div class="row">
 						<div class="text-center">
-							<button type="submit" name="update" class="btn btn-primary"><?php echo $lang['wisvconf']; ?></button>
+							<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
 						</div>
 					</div>
 					<div class="row">&nbsp;</div>
