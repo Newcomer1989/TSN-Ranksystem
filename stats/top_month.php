@@ -30,7 +30,7 @@ if ($cfg['rankup_time_assess_mode'] == 1) {
 	$texttime = $lang['sttw0003'];
 }
 
-$count_timestamps = $mysqlcon->query("SELECT COUNT(DISTINCT(`timestamp`)) AS `count` from `$dbname`.`user_snapshot`")->fetch();
+$count_ids = $mysqlcon->query("SELECT COUNT(DISTINCT(`id`)) AS `count` from `$dbname`.`user_snapshot`")->fetch();
 
 $sumentries = count($db_arr) - 10;
 $count10 = 0;
@@ -85,7 +85,7 @@ require_once('nav.php');
 						</h1>
 					</div>
 				</div>
-				<?PHP if($count_timestamps['count'] < 120) {  echo $lang['stix0048'],' (',$count_timestamps['count'],'/120)'; } else { ?>
+				<?PHP if($count_ids['count'] < 121) {  echo $lang['stix0048'],' (',$count_ids['count'],'/121)'; } else { ?>
 				<div class="row">
 					<div class="col-lg-4 col-lg-offset-4">
 						<div class="panel panel-primary">

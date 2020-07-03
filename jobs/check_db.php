@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.7';
+	$cfg['version_latest_available'] = '1.3.8';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 	
 	function set_new_version($mysqlcon,$cfg,$dbname) {
@@ -149,12 +149,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` MODIFY COLUMN `tsvoice` smallint(5) UNSIGNED NOT NULL default '0'") === false) { } else {
 				enter_logfile($cfg,4,"    [1.2.3] Adjusted table config successfully.");
 			}
-			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.3] Recreated index on table user_snapshot successfully.");
-			}
-			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.3] Recreated index on table server_usage successfully.");
-			}
 		}
 		if(version_compare($cfg['version_current_using'], '1.2.4', '<')) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`config` MODIFY COLUMN `adminuuid` varchar(500) CHARACTER SET utf8 COLLATE utf8_unicode_ci") === false) { } else {
@@ -165,15 +159,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			}
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` ADD (`cid` int(10) NOT NULL default '0')") === false) { } else {
 				enter_logfile($cfg,4,"    [1.2.4] Adjusted table user successfully.");
-			}
-			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.4] Create index 'user_version' on table user successfully.");
-			}
-			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.4] Create index 'user_cldbid' on table user successfully.");
-			}
-			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { } else {
-				enter_logfile($cfg,4,"    [1.2.4] Create index 'user_online' on table user successfully.");
 			}
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_update')") === false) { } else {
 				enter_logfile($cfg,4,"    [1.2.4] Set new values to table job_check successfully.");
@@ -299,7 +284,7 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 					enter_logfile($cfg,4,"    [1.3.0] Repaired new config table cfg_params (part 2).");
 				}
 			}
-			
+
 			if($mysqlcon->exec("DROP TABLE `$dbname`.`bak_config`;") === false) { }
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_debug_level', '5'),('logs_rotation_size', '5'),('stats_column_default_sort', 'rank'),('stats_column_default_order', 'asc'),('stats_time_bronze','50'),('stats_time_silver','100'),('stats_time_gold','250'),('stats_time_legend','500'),('stats_connects_bronze','50'),('stats_connects_silver','100'),('stats_connects_gold','250'),('stats_connects_legend','500');") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.0] Added new cfg_params value.");
@@ -324,13 +309,13 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 				enter_logfile($cfg,4,"    [1.3.0] Dropped old table config.");
 			}
 		}
-		
+
 		if(version_compare($cfg['version_current_using'], '1.3.1', '<')) {
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('reset_user_time', '0'),('reset_user_delete', '0'),('reset_group_withdraw', '0'),('reset_webspace_cache', '0'),('reset_usage_graph', '0'),('reset_stop_after', '0');") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.1] Added new job_check values.");
 			}
 		}
-		
+
 		if(version_compare($cfg['version_current_using'], '1.3.4', '<')) {
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_show_maxclientsline_switch', 0)") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.4] Added new config values.");
@@ -346,17 +331,8 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 				enter_logfile($cfg,4,"    [1.3.4] Stored timestamp of last update successfully.");
 			}
 		}
-			
-		if(version_compare($cfg['version_current_using'], '1.3.7', '<')) {
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `snapshot_uuid` ON `$dbname`.`user_snapshot` (`uuid`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 
+		if(version_compare($cfg['version_current_using'], '1.3.7', '<')) {
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_fresh_installation', '0'),('webinterface_advanced_mode', '1')") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.7] Added new config values.");
 			}
@@ -368,6 +344,167 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` ADD COLUMN `sortid` int(10) NOT NULL default '0', ADD COLUMN `type` tinyint(1) NOT NULL default '0';") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.7] Adjusted table groups successfully.");
 			}
+		}
+
+		if(version_compare($cfg['version_current_using'], '1.3.8', '<')) {
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user` MODIFY COLUMN `uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `lastseen` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `boosttime` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `firstcon` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `grpsince` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `rank` smallint(5) UNSIGNED NOT NULL default '65535', MODIFY COLUMN `nation` char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table user successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user_snapshot` MODIFY COLUMN `timestamp` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table user_snapshot successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_user` MODIFY COLUMN `uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `base64hash` char(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `count_week` mediumint(8) UNSIGNED NOT NULL default '0', MODIFY COLUMN `count_month` mediumint(8) UNSIGNED NOT NULL default '0', MODIFY COLUMN `idle_week` mediumint(8) UNSIGNED NOT NULL default '0', MODIFY COLUMN `idle_month` mediumint(8) UNSIGNED NOT NULL default '0', MODIFY COLUMN `active_week` mediumint(8) UNSIGNED NOT NULL default '0', MODIFY COLUMN `active_month` mediumint(8) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table stats_user (part 1) successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_user` DROP COLUMN `rank`, DROP COLUMN `battles_total`, DROP COLUMN `battles_won`, DROP COLUMN `battles_lost`, DROP COLUMN `achiev_time`, DROP COLUMN `achiev_connects`, DROP COLUMN `achiev_battles`, DROP COLUMN `achiev_time_perc`, DROP COLUMN `achiev_connects_perc`, DROP COLUMN `achiev_battles_perc`;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table stats_user (part 2) successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`server_usage` MODIFY COLUMN `timestamp` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `clients` smallint(5) UNSIGNED NOT NULL default '0', MODIFY COLUMN `channel` smallint(5) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table server_usage successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`job_check` MODIFY COLUMN `timestamp` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table job_check successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`admin_addtime` MODIFY COLUMN `timestamp` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table admin_addtime successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user_iphash` MODIFY COLUMN `uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table user_iphash successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_versions` MODIFY COLUMN `count` smallint(5) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table stats_versions successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_platforms` MODIFY COLUMN `count` smallint(5) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table stats_platforms successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_nations` MODIFY COLUMN `nation` char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci, MODIFY COLUMN `count` smallint(5) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table stats_nations successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` ADD COLUMN `ext` char(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table groups (part 1) successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`groups` MODIFY COLUMN `sgid` int(10) UNSIGNED NOT NULL default '0', MODIFY COLUMN `icondate` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table groups (part 2) successfully.");
+			}
+
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`csrf_token` MODIFY COLUMN `timestamp` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Adjusted table csrf_token successfully.");
+			}
+
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`;") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.8] Empty table groups successfully.");
+			}
+			
+			if($mysqlcon->exec("UPDATE `$dbname`.`user` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user` SET `count`=`idle` WHERE `count`<0;") === false) { } else {
+				enter_logfile($cfg,6,"    [1.3.8] Fix for negative values in table user.");
+			}
+				
+			if($mysqlcon->exec("UPDATE `$dbname`.`user_snapshot` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user_snapshot` SET `count`=`idle` WHERE `count`<0;") === false) { } else {
+				enter_logfile($cfg,6,"    [1.3.8] Fix for negative values in table user_snapshot.");
+			}
+			
+			$check_snapshot_convert = $mysqlcon->query("DESC `$dbname`.`user_snapshot`")->fetchAll(PDO::FETCH_ASSOC);
+			if($check_snapshot_convert[0]['Field'] == 'timestamp' && $check_snapshot_convert[0]['Field'] != 'id') {
+				
+				if($mysqlcon->exec("DELETE `a` FROM `$dbname`.`user_snapshot` AS `a` CROSS JOIN(SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 1000 OFFSET 121) AS `b` WHERE `a`.`timestamp`=`b`.`timestamp`;") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.8] Deleted old values out of the table user_snapshot.");
+				}
+				
+				if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_snapshot2` (`id` tinyint(3) UNSIGNED NOT NULL default '0',`cldbid` int(10) UNSIGNED NOT NULL default '0',`count` int(10) UNSIGNED NOT NULL default '0',`idle` int(10) UNSIGNED NOT NULL default '0',PRIMARY KEY (`id`,`cldbid`));") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.8] Created new table user_snapshot2 successfully.");
+					enter_logfile($cfg,4,"    [1.3.8]   Beginn with converting values.. This could take a while! Please do NOT stop the Bot!");
+				}
+
+				$maxvalues = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`user_snapshot`;")->fetch();
+				$timestamps = $mysqlcon->query("SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` ASC;")->fetchAll(PDO::FETCH_ASSOC);
+				$user = $mysqlcon->query("SELECT `uuid`,`cldbid` FROM `$dbname`.`user`;")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+
+				$ts2id = array();
+				$count = 0;
+				foreach($timestamps as $tstamp) {
+					$count++;
+					$ts2id[$tstamp['timestamp']] = $count;
+				}
+
+				$loops = $maxvalues[0] / 50000;
+				for ($i = 0; $i <= $loops; $i++) {
+					$offset = $i * 50000;
+					$snapshot = $mysqlcon->query("SELECT * FROM `$dbname`.`user_snapshot` LIMIT 50000 OFFSET {$offset};")->fetchAll(PDO::FETCH_ASSOC);
+					
+					$sqlinsertvalues = '';
+					$count = 0;
+					foreach($snapshot as $entry) {
+						if(isset($user[$entry['uuid']]) && $user[$entry['uuid']]['cldbid'] != NULL) {
+							$snapshot[$count]['id'] = $ts2id[$entry['timestamp']];
+							$snapshot[$count]['cldbid'] = $user[$entry['uuid']]['cldbid'];
+							$sqlinsertvalues .= "(".$ts2id[$entry['timestamp']].",".$user[$entry['uuid']]['cldbid'].",".round($entry['count']).",".round($entry['idle'])."),";
+							$count++;
+						}
+					}
+
+					$sqlinsertvalues = substr($sqlinsertvalues, 0, -1);
+					if ($mysqlcon->exec("INSERT INTO `$dbname`.`user_snapshot2` (`id`,`cldbid`,`count`,`idle`) VALUES {$sqlinsertvalues};") === false) {
+						enter_logfile($cfg,1,"  Insert failed: ".print_r($mysqlcon->errorInfo(), true));
+					}
+					unset($snapshot, $sqlinsertvalues);
+					if (($offset + 50000) > $maxvalues[0]) {
+						$convertedvalus = $maxvalues[0];
+					} else {
+						$convertedvalus = $offset + 50000;
+					}
+					enter_logfile($cfg,4,"    [1.3.8]     Converted ".$convertedvalus." out of ".$maxvalues[0]." values.");
+				}
+				
+				enter_logfile($cfg,4,"    [1.3.8]   Finished converting values");
+				
+				$lastsnapshot = $mysqlcon->query("SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`user_snapshot`")->fetchAll(PDO::FETCH_ASSOC);
+				
+				if($mysqlcon->exec("DROP TABLE `$dbname`.`user_snapshot`;") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.8] Dropped old table user_snapshot successfully.");
+				}
+				
+				if($mysqlcon->exec("RENAME TABLE `$dbname`.`user_snapshot2` TO `$dbname`.`user_snapshot`;") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.8] Renamed table user_snapshot2 to user_snapshot successfully.");
+				}
+
+				$currentid = count($timestamps);
+
+				if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('last_snapshot_id', '{$currentid}'),('last_snapshot_time', '{$lastsnapshot[0]['timestamp']}');") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.8] Added new job_check values.");
+				}
+				
+			} else {
+				enter_logfile($cfg,4,"    [1.3.8] Converting user_snapshot already done. Did not started it again.");
+			}
+			
+			foreach(scandir(substr(dirname(__FILE__),0,-4).'tsicons/') as $file) {
+				if (in_array($file, array('.','..','check.png','placeholder.png','rs.png','servericon.png','100.png','200.png','300.png','500.png','600.png'))) continue;
+				if(!unlink(substr(dirname(__FILE__),0,-4).'tsicons/'.$file)) {
+					enter_logfile($cfg,4,"Unnecessary file, please delete it from your webserver: tsicons/".$file);
+				}
+			}
+
+			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}

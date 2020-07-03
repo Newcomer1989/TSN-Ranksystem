@@ -58,14 +58,6 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true);
 	$err_lvl = 3;
-} else {
-	foreach($groupslist as $sgid => $servergroup) {
-		if(file_exists('../tsicons/'.$sgid.'.png')) {
-			$groupslist[$sgid]['iconfile'] = 1;
-		} else {
-			$groupslist[$sgid]['iconfile'] = 0;
-		}
-	}
 }
 
 if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
@@ -158,12 +150,12 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											<?PHP
 											foreach ($groupslist as $groupID => $groupParam) {
 												if ($cfg['rankup_excepted_group_id_list'] != NULL &&  array_key_exists($groupID, $cfg['rankup_excepted_group_id_list'])) $selected=" selected"; else $selected="";
-												if ($groupParam['iconfile'] == 1) $iconfile=$groupID; else $iconfile="placeholder";
+												if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']; else $iconid="placeholder";
 												if ($groupParam['type'] == 0) $disabled=" disabled"; else $disabled="";
 												if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
 												if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
 												if ($groupID != 0) {
-													echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconfile,'.png\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+													echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconid,'.',$groupParam['ext'],'\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
 												}
 											}
 											?>

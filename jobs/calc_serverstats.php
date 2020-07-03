@@ -31,56 +31,22 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 
 	// Event Handling each 6 hours
 	// Duplicate users Table in snapshot Table
-	if(key($select_arr['max_timestamp_user_snapshot']) == NULL || ($nowtime - key($select_arr['max_timestamp_user_snapshot'])) > 21600) {
+	if(($nowtime - $select_arr['job_check']['last_snapshot_time']['timestamp']) > 21600) {
 		if(isset($select_arr['all_user'])) {
+			$nextid = $select_arr['job_check']['last_snapshot_id']['timestamp'] + 1;
+			if ($nextid > 121) $nextid = $nextid - 121;
+			
 			$allinsertsnap = '';
 			foreach ($select_arr['all_user'] as $uuid => $insertsnap) {
-				$allinsertsnap = $allinsertsnap . "('{$nowtime}','{$uuid}',{$insertsnap['count']},{$insertsnap['idle']}),";
+				if(isset($insertsnap['cldbid']) && $insertsnap['cldbid'] != NULL) {
+					$allinsertsnap = $allinsertsnap . "({$nextid},{$insertsnap['cldbid']},".round($insertsnap['count']).",".round($insertsnap['idle'])."),";
+				}
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`timestamp`,`uuid`,`count`,`idle`) VALUES $allinsertsnap; ";
+				$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `id`={$nextid}; INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsertsnap; UPDATE `$dbname`.`job_check` SET `timestamp`={$nextid} WHERE `job_name`='last_snapshot_id'; UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='last_snapshot_time'; ";
 			}
 			unset($allinsertsnap);
-		}
-		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL25hdi5waHAiLCAiciIpOw=="));
-		if(!$fp) {
-			$error_fp_open = 1;
-		} else {
-			$buffer=array();
-			while($line = fgets($fp, 4096)) {
-				array_push($buffer, $line);
-			}
-			fclose($fp);
-			$checkarr = array_flip(array('PD9QSFAgZWNobyAnPGxpJy4oYmFzZW5hbWUoJF9TRVJWRVJbJ1NDUklQVF9OQU1FJ10pID09ICJpbmZvLnBocCIgPyAnIGNsYXNzPSJhY3RpdmUiPicgOiAnPicpOyA/PgoJCQkJCQk8YSBocmVmPSJpbmZvLnBocCI+PGkgY2xhc3M9ImZhcyBmYS1pbmZvLWNpcmNsZSI+PC9pPiZuYnNwOzw/UEhQIGVjaG8gJGxhbmdbJ3N0bnYwMDMwJ107ID8+PC9hPg=='));
-			$countcheck = 0;
-			foreach($buffer as $line) {
-				if(isset($checkarr[substr(base64_encode($line), 0, 132)])) {
-					$countcheck++;
-				}
-			}
-			unset($fp, $checkarr, $buffer);
-		}
-		$fp = eval(base64_decode("Zm9wZW4oc3Vic3RyKF9fRElSX18sMCwtNCkuInN0YXRzL2luZm8ucGhwIiwgInIiKTs="));
-		if(!$fp) {
-			$error_fp_open = 1;
-		} else {
-			$buffer=array();
-			while($line = fgets($fp, 4096)) {
-				array_push($buffer, $line);
-			}
-			fclose($fp);
-			foreach($buffer as $line) {
-				if(strstr(base64_encode($line), "PHA+VGhlIDxhIGhyZWY9Ii8vdHMtcmFua3N5c3RlbS5jb20iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIG5vcmVmZXJyZXIiPlJhbmtzeXN0ZW08L2E+IHdhcyBjb2RlZCBieSA8c3Ryb25nPk5ld2NvbWVyMTk4OTwvc3Ryb25nPiBDb3B5cmlnaHQgJmNvcHk7IDIwMDktMjAxOSBwb3dlcmVkIGJ5IDxhIGhyZWY9Ii8vdHMtbi5uZXQvIiB0YXJnZXQ9Il9ibGFuayIgcmVsPSJub29wZW5lciBub3JlZmVycmVyIj5UUy1OLk5FVDwvYT48L3A+")) {
-					$countcheck++;
-				}
-			}
-			unset($fp, $buffer);
-		}
-
-		if((isset($countcheck) && $countcheck != 3 && !isset($error_fp_open)) || !file_exists(substr(__DIR__,0,-4).base64_decode("c3RhdHMvaW5mby5waHA="))) {
-			//eval(base64_decode("c2h1dGRvd24oJG15c3FsY29uLCAkbG9ncGF0aCwgJHRpbWV6b25lLCAxLCAnUEhQIFNBTSBpcyBtaXNzZWQuIEluc3RhbGxhdGlvbiBvZiBQSFAgU0FNIGlzIHJlcXVpcmVkIScpOwoJCQkJCQk="));
-			eval(base64_decode("JGNoID0gY3VybF9pbml0KCk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9VUkwsICdodHRwczovL3RzLW4ubmV0L3JhbmtzeXN0ZW0vJy4kdXBjaGFubmVsKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX1JFRkVSRVIsICdUU04gUmFua3N5c3RlbScpOyBjdXJsX3NldG9wdCgkY2gsIENVUkxPUFRfVVNFUkFHRU5ULCAnVmlvbGF0ZWQgQ29weXJpZ2h0Jyk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9SRVRVUk5UUkFOU0ZFUiwgMSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZSE9TVCxmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9TU0xfVkVSSUZZUEVFUixmYWxzZSk7IGN1cmxfc2V0b3B0KCRjaCwgQ1VSTE9QVF9NQVhSRURJUlMsIDEwKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0ZPTExPV0xPQ0FUSU9OLCAxKTsgY3VybF9zZXRvcHQoJGNoLCBDVVJMT1BUX0NPTk5FQ1RUSU1FT1VULCA1KTsgY3VybF9leGVjKCRjaCk7Y3VybF9jbG9zZSgkY2gpOw=="));
 		}
 	}
 	
@@ -426,12 +392,17 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 
 	// Calc Values for server stats
 	if($select_arr['job_check']['calc_server_stats']['timestamp'] < ($nowtime - 900)) {
-		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(`timestamp`)) AS `timestamp` FROM `$dbname`.`user_snapshot`")->fetch(PDO::FETCH_ASSOC)) === false) {
+		$weekago = $select_arr['job_check']['last_snapshot_id']['timestamp'] - 28;
+		$monthago = $select_arr['job_check']['last_snapshot_id']['timestamp'] - 120;
+		if ($weekago < 1) $weekago = $weekago + 121;
+		if ($monthago < 1) $monthago = $monthago + 121;
+		
+		if(($entry_snapshot_count = $mysqlcon->query("SELECT count(DISTINCT(`id`)) AS `id` FROM `$dbname`.`user_snapshot`")->fetch(PDO::FETCH_ASSOC)) === false) {
 			enter_logfile($cfg,2,"calc_serverstats 19:".print_r($mysqlcon->errorInfo(), true));
 		}
-		if ($entry_snapshot_count['timestamp'] > 27) {
+		if ($entry_snapshot_count['id'] > 28) {
 			// Calc total_online_week
-			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`timestamp`) FROM `$dbname`.`user_snapshot`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 28) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
+			if(($snapshot_count_week = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `user_snapshot` WHERE `id`={$select_arr['job_check']['last_snapshot_id']['timestamp']}) - (SELECT SUM(`count`) FROM `user_snapshot` WHERE `id`={$weekago}) AS `count`;")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($cfg,2,"calc_serverstats 20:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_week['count'] == NULL) {
@@ -442,9 +413,9 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 		} else {
 			$total_online_week = 0;
 		}
-		if ($entry_snapshot_count['timestamp'] > 119) {
+		if ($entry_snapshot_count['id'] > 120) {
 			// Calc total_online_month
-			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MAX(`timestamp`) FROM `$dbname`.`user_snapshot`)) - (SELECT SUM(`count`) FROM `$dbname`.`user_snapshot` WHERE `timestamp`=(SELECT MIN(`s2`.`timestamp`) AS `value2` FROM (SELECT DISTINCT(`timestamp`) FROM `$dbname`.`user_snapshot` ORDER BY `timestamp` DESC LIMIT 120) AS `s2`, `$dbname`.`user_snapshot` AS `s1` WHERE `s1`.`timestamp`=`s2`.`timestamp`) AND `uuid` IN (SELECT `uuid` FROM `$dbname`.`user`)) AS `count`")->fetch(PDO::FETCH_ASSOC)) === false) {
+			if(($snapshot_count_month = $mysqlcon->query("SELECT (SELECT SUM(`count`) FROM `user_snapshot` WHERE `id`={$select_arr['job_check']['last_snapshot_id']['timestamp']}) - (SELECT SUM(`count`) FROM `user_snapshot` WHERE `id`={$monthago}) AS `count`;")->fetch(PDO::FETCH_ASSOC)) === false) {
 				enter_logfile($cfg,2,"calc_serverstats 21:".print_r($mysqlcon->errorInfo(), true));
 			}
 			if($snapshot_count_month['count'] == NULL) {
@@ -455,7 +426,7 @@ function calc_serverstats($ts3,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$selec
 		} else {
 			$total_online_month = 0;
 		}
-		$sqlexec .= "UPDATE `$dbname`.`stats_server` SET `total_online_month`=$total_online_month,`total_online_week`=$total_online_week; UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='calc_server_stats'; ";
+		$sqlexec .= "UPDATE `$dbname`.`stats_server` SET `total_online_month`={$total_online_month},`total_online_week`={$total_online_week}; UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='calc_server_stats'; ";
 		
 		if ($select_arr['job_check']['get_version']['timestamp'] < ($nowtime - 43200)) {
 			$ch = curl_init();

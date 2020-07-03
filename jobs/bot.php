@@ -175,6 +175,31 @@ function sendmessage($ts3, $cfg, $uuid, $msg, $erromsg=NULL, $errcode=NULL, $suc
 	}
 }
 
+function mime2extension($mimetype) {
+	$mimearr = [
+		'image/bmp' => 'bmp',
+		'image/x-bmp' => 'bmp',
+		'image/x-bitmap' => 'bmp',
+		'image/x-xbitmap' => 'bmp',
+		'image/x-win-bitmap' => 'bmp',
+		'image/x-windows-bmp' => 'bmp',
+		'image/ms-bmp' => 'bmp',
+		'image/x-ms-bmp' => 'bmp',
+		'image/gif' => 'gif',
+		'image/jpeg' => 'jpg',
+		'image/pjpeg' => 'jpg',
+		'image/x-portable-bitmap' => 'pbm',
+		'image/x-portable-graymap' => 'pgm',
+		'image/png' => 'png',
+		'image/x-png' => 'png',
+		'image/x-portable-pixmap' => 'ppm',
+		'image/svg+xml' => 'svg',
+		'image/x-xbitmap' => 'xbm',
+		'image/x-xpixmap' => 'xpm'
+	];
+    return isset($mimearr[$mimetype]) ? $mimearr[$mimetype] : FALSE;
+}
+
 function run_bot() {
 	global $cfg, $mysqlcon, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $max_execution_time, $memory_limit;
 
@@ -394,10 +419,8 @@ function run_bot() {
 		while(1) {
 			$sqlexec = '';
 			$starttime = microtime(true);
-			$weekago = time() - 604800;
-			$monthago = time() - 2592000;
 			
-			if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`user_snapshot`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$weekago ORDER BY `timestamp` ASC LIMIT 1; SELECT `timestamp` FROM `$dbname`.`user_snapshot` WHERE `timestamp`>$monthago ORDER BY `timestamp` ASC LIMIT 1; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
+			if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
 				shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
 
@@ -412,33 +435,24 @@ function run_bot() {
 						$select_arr['all_user'] = $fetched_array;
 						break;
 					case 2:
-						$select_arr['max_timestamp_user_snapshot'] = $fetched_array;
-						break;
-					case 3:
 						$select_arr['count_version_user'] = $fetched_array;
 						break;
-					case 4:
+					case 3:
 						$select_arr['max_timestamp_server_usage'] = $fetched_array;
 						break;
-					case 5:
-						$select_arr['job_check'] = $fetched_array;
+					case 4:
+						$select_arr['job_check'] = $fetched_array; 
 						break;
-					case 6:
+					case 5:
 						$select_arr['uuid_stats_user'] = $fetched_array;
 						break;
-					case 7:
-						$select_arr['usersnap_min_week'] = $fetched_array;
-						break;
-					case 8:
-						$select_arr['usersnap_min_month'] = $fetched_array;
-						break;
-					case 9:
+					case 6:
 						$select_arr['groups'] = $fetched_array;
 						break;
-					case 10:
+					case 7:
 						$select_arr['addon_assign_groups'] = $fetched_array;
 						break;
-					case 11:
+					case 8:
 						$select_arr['admin_addtime'] = $fetched_array;
 						break 2;
 				}

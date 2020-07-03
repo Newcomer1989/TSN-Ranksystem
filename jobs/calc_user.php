@@ -30,6 +30,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 				foreach($allclients as $client) {
 					if($client['client_unique_identifier'] == $uuid) {
 						$isonline = 1;
+						$temp_cldbid = $client['client_database_id'];
 						if($value['timecount'] < 0) {
 							$select_arr['all_user'][$uuid]['count'] += $value['timecount'];
 							if($select_arr['all_user'][$uuid]['count'] < 0) {
@@ -44,9 +45,10 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 					}
 				}
 				if($isonline != 1) {
-					if(($user = $mysqlcon->query("SELECT `uuid`,`count`,`idle` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+					if(($user = $mysqlcon->query("SELECT `uuid`,`count`,`idle`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 					} else {
+						$temp_cldbid = $user[$uuid]['cldbid'];
 						if($value['timecount'] < 0) {
 							$user[$uuid]['count'] += $value['timecount'];
 							if($user[$uuid]['count'] < 0) {
@@ -62,22 +64,22 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$se
 					}
 				}
 				$sqlexec2 .= "DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid'; ";
-				if(($usersnap = $mysqlcon->query("SELECT `timestamp`,`uuid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+				if(($usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$temp_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 					enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 				} else {
-					foreach($usersnap as $timestamp => $valuesnap) {
+					foreach($usersnap as $id => $valuesnap) {
 						if($value['timecount'] < 0) {
-							$valuesnap[$timestamp]['count'] += $value['timecount'];
-							if($valuesnap[$timestamp]['count'] < 0) {
-								$valuesnap[$timestamp]['count'] = 0;
-								$valuesnap[$timestamp]['idle'] = 0;
-							} elseif ($valuesnap[$timestamp]['idle'] > $valuesnap[$timestamp]['count']) {
-								$valuesnap[$timestamp]['idle'] = $valuesnap[$timestamp]['count'];
+							$valuesnap[$id]['count'] += $value['timecount'];
+							if($valuesnap[$id]['count'] < 0) {
+								$valuesnap[$id]['count'] = 0;
+								$valuesnap[$id]['idle'] = 0;
+							} elseif ($valuesnap[$id]['idle'] > $valuesnap[$id]['count']) {
+								$valuesnap[$id]['idle'] = $valuesnap[$id]['count'];
 							}
 						} else {
-							$valuesnap[$timestamp]['count'] += $value['timecount'];
+							$valuesnap[$id]['count'] += $value['timecount'];
 						}
-						$sqlexec2 .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap[$timestamp]['count']}', `idle`='{$valuesnap[$timestamp]['idle']}' WHERE `uuid`='{$uuid}' AND `timestamp`='{$timestamp}'; ";
+						$sqlexec2 .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap[$id]['count']}', `idle`='{$valuesnap[$id]['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}'; ";
 					}
 				}
 				if($mysqlcon->exec($sqlexec2) === false) {

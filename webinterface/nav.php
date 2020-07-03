@@ -80,7 +80,12 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 	};
 	</script>
 <body>
-	<div id="wrapper">
+	<?PHP
+	if (basename($_SERVER['SCRIPT_NAME']) != "index.php") {
+		echo '<div id="wrapper">';
+	} else { 
+		echo '<div>';
+	} ?>
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
 				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $cfg['version_current_using'];?></a>
@@ -156,6 +161,8 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 					</ul>
 				</li>
 			</ul>
+			<?PHP
+			if (basename($_SERVER['SCRIPT_NAME']) != "index.php") { ?>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ts.php" ? ' class="active">' : '>'); ?>
@@ -238,6 +245,7 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 					?>
 				</ul>
 			</div>
+			<?PHP } ?>
 		</nav>
 <?PHP
 if($cfg['webinterface_admin_client_unique_id_list'] == NULL && isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && !isset($err_msg) && $cfg['webinterface_fresh_installation'] != 1) {

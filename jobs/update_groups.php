@@ -37,21 +37,23 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 		}
 		enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid:".$select_arr['groups']['0']['iconid']."; TSicondate:".$iconarr["i".$sIconId]."; DBicondate:".$select_arr['groups']['0']['icondate'].";");
 		$sIconFile = 0;
+		$extension = 'png';
 		if (!isset($select_arr['groups']['0']) || $select_arr['groups']['0']['iconid'] != $sIconId || (isset($iconarr["i".$sIconId]) && $iconarr["i".$sIconId] > $select_arr['groups']['0']['icondate'])) {
 			if($sIconId > 600) {
 				try {
 					usleep($cfg['teamspeak_query_command_delay']);
 					enter_logfile($cfg,5,$lang['upgrp0002']);
 					$sIconFile = $ts3->iconDownload();
-					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png", $sIconFile) === false) {
+					$extension = mime2extension(TeamSpeak3_Helper_Convert::imageMimeType($sIconFile));
+					if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/servericon." . $extension, $sIconFile) === false) {
 						enter_logfile($cfg,2,$lang['upgrp0003'].' '.sprintf($lang['errperm'], 'tsicons'));
 					}
 				} catch (Exception $e) {
 					enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().'; '.$lang['upgrp0004'].$e->getMessage());
 				}
 			} elseif($sIconId == 0) {
-				if(file_exists(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png")) {
-					if(unlink(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.png") === false) {
+				foreach (glob(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.*") as $file) {
+					if(unlink($file) === false) {
 						enter_logfile($cfg,2,$lang['upgrp0005'].' '.sprintf($lang['errperm'], 'tsicons'));
 					} else {
 						enter_logfile($cfg,5,$lang['upgrp0006']);
@@ -71,6 +73,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 				"icondate" => $sicondate,
 				"sortid" => "0",
 				"type" => "0",
+				"ext" => $mysqlcon->quote($extension, ENT_QUOTES)
 			);	
 		}
 		unset($sIconFile,$sIconId);
@@ -80,6 +83,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 		foreach ($ts3groups as $servergroup) {
 			$tsgroupids[$servergroup['sgid']] = 0;
 			$sgid = $servergroup['sgid'];
+			$extension = 'png';
 			$sgname = $mysqlcon->quote((mb_substr($servergroup['name'],0,30)), ENT_QUOTES);
 			$iconid = $servergroup['iconid'];
 			$iconid = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
@@ -90,7 +94,8 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 						check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
 						enter_logfile($cfg,5,sprintf($lang['upgrp0011'], $sgname, $sgid));
 						$iconfile = $servergroup->iconDownload();
-						if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png", $iconfile) === false) {
+						$extension = mime2extension(TeamSpeak3_Helper_Convert::imageMimeType($iconfile));
+						if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/" . $iconid . "." . $extension, $iconfile) === false) {
 							enter_logfile($cfg,2,sprintf($lang['upgrp0007'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 						}
 						$iconcount++;
@@ -99,8 +104,8 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 					}
 				}
 			} elseif($iconid == 0) {
-				if(file_exists(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png")) {
-					if(unlink(substr(dirname(__FILE__),0,-4) . "tsicons/" . $sgid . ".png") === false) {
+				foreach (glob(substr(dirname(__FILE__),0,-4) . "tsicons/" . $iconid . ".*") as $file) {
+					if(unlink($file) === false) {
 						enter_logfile($cfg,2,sprintf($lang['upgrp0009'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 					} else {
 						enter_logfile($cfg,5,sprintf($lang['upgrp0010'], $sgname, $sgid));
@@ -127,7 +132,8 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 					"iconid" => $iconid,
 					"icondate" => $iconarr["i".$iconid],
 					"sortid" => $servergroup['sortid'],
-					"type" => $servergroup['type']
+					"type" => $servergroup['type'],
+					"ext" => $mysqlcon->quote($extension, ENT_QUOTES)
 				);
 			}
 			if($iconcount > 9 && $nobreak != 1) {
@@ -139,10 +145,10 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr
 		if (isset($updategroups)) {
 			$sqlinsertvalues = '';
 			foreach ($updategroups as $updatedata) {
-				$sqlinsertvalues .= "({$updatedata['sgid']},{$updatedata['sgidname']},{$updatedata['iconid']},{$updatedata['icondate']},{$updatedata['sortid']},{$updatedata['type']}),";
+				$sqlinsertvalues .= "({$updatedata['sgid']},{$updatedata['sgidname']},{$updatedata['iconid']},{$updatedata['icondate']},{$updatedata['sortid']},{$updatedata['type']},{$updatedata['ext']}),";
 			}
 			$sqlinsertvalues = substr($sqlinsertvalues, 0, -1);
-			$sqlexec .= "INSERT INTO `$dbname`.`groups` (`sgid`,`sgidname`,`iconid`,`icondate`,`sortid`,`type`) VALUES $sqlinsertvalues ON DUPLICATE KEY UPDATE `sgidname`=VALUES(`sgidname`),`iconid`=VALUES(`iconid`),`icondate`=VALUES(`icondate`),`sortid`=VALUES(`sortid`),`type`=VALUES(`type`); ";
+			$sqlexec .= "INSERT INTO `$dbname`.`groups` (`sgid`,`sgidname`,`iconid`,`icondate`,`sortid`,`type`,`ext`) VALUES $sqlinsertvalues ON DUPLICATE KEY UPDATE `sgidname`=VALUES(`sgidname`),`iconid`=VALUES(`iconid`),`icondate`=VALUES(`icondate`),`sortid`=VALUES(`sortid`),`type`=VALUES(`type`),`ext`=VALUES(`ext`); ";
 			unset($updategroups, $sqlinsertvalues);
 		}
 		

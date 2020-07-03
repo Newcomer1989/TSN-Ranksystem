@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.7';
+$rsversion = '1.3.8';
 ?>
 <!DOCTYPE html>
 <html>
@@ -82,7 +82,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`cldbid` int(10) NOT NULL default '0',`count` DECIMAL(14,3),`name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`lastseen` bigint(11) NOT NULL default '0',`grpid` int(10) NOT NULL default '0',`nextup` int(10) NOT NULL default '0',`idle` DECIMAL(14,3),`cldgroup` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`online` tinyint(1) NOT NULL default '0',`boosttime` int(10) NOT NULL default '0',`rank` int(10) NOT NULL default '9999999',`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`nation` varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`firstcon` bigint(11) NOT NULL default '0',`except` tinyint(1) NOT NULL default '0',`grpsince` bigint(11) NOT NULL default '0',`cid` int(10) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`cldbid` int(10) NOT NULL default '0',`count` DECIMAL(14,3),`name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`lastseen` int(10) UNSIGNED NOT NULL default '0',`grpid` int(10) NOT NULL default '0',`nextup` int(10) NOT NULL default '0',`idle` DECIMAL(14,3),`cldgroup` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`online` tinyint(1) NOT NULL default '0',`boosttime` int(10) UNSIGNED NOT NULL default '0',`rank` smallint(5) UNSIGNED NOT NULL default '65535',`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`nation` char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`firstcon` int(10) UNSIGNED NOT NULL default '0',`except` tinyint(1) NOT NULL default '0',`grpsince` int(10) UNSIGNED NOT NULL default '0',`cid` int(10) NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		} else {
@@ -100,7 +100,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			}
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`groups` (`sgid` int(10) NOT NULL default '0' PRIMARY KEY,`sgidname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`iconid` bigint(10) NOT NULL default '0',`icondate` bigint(11) NOT NULL default '0',`sortid` int(10) NOT NULL default '0',`type` tinyint(1) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`groups` (`sgid` int(10) UNSIGNED NOT NULL default '0' PRIMARY KEY,`sgidname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`iconid` bigint(10) NOT NULL default '0',`icondate` int(10) UNSIGNED NOT NULL default '0',`sortid` int(10) NOT NULL default '0',`type` tinyint(1) NOT NULL default '0',`ext` char(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -110,7 +110,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`server_usage` (`timestamp` bigint(11) NOT NULL default '0',`clients` smallint(5) NOT NULL default '0',`channel` smallint(5) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`server_usage` (`timestamp` int(10) UNSIGNED NOT NULL default '0',`clients` smallint(5) UNSIGNED NOT NULL default '0',`channel` smallint(5) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		} else {
@@ -120,11 +120,15 @@ $db[\'dbname\']=\''.$dbname.'\';
 			}
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_snapshot` (`timestamp` bigint(11) NOT NULL default '0',`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`count` int(10) NOT NULL default '0',`idle` int(10) NOT NULL default '0',PRIMARY KEY (`timestamp`,`uuid`))") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_snapshot` (`id` tinyint(3) UNSIGNED NOT NULL default '0',`cldbid` int(10) UNSIGNED NOT NULL default '0',`count` int(10) UNSIGNED NOT NULL default '0',`idle` int(10) UNSIGNED NOT NULL default '0',PRIMARY KEY (`id`,`cldbid`));") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		} else {
-			if($mysqlcon->exec("CREATE INDEX `snapshot_timestamp` ON `$dbname`.`user_snapshot` (`timestamp`)") === false) {
+			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) {
+				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+				$count++;
+			}
+			if($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) {
 				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 				$count++;
 			}
@@ -135,7 +139,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`removed` tinyint(1) NOT NULL default '0',`rank` int(10) NOT NULL default '0',`total_connections` smallint(5) NOT NULL default '0',`count_week` int(10) NOT NULL default '0',`count_month` int(10) NOT NULL default '0',`idle_week` int(10) NOT NULL default '0',`idle_month` int(10) NOT NULL default '0',`achiev_count` tinyint(1) NOT NULL default '0',`achiev_time` int(10) NOT NULL default '0',`achiev_connects` smallint(5) NOT NULL default '0',`achiev_battles` tinyint(3) NOT NULL default '0',`achiev_time_perc` tinyint(3) NOT NULL default '0',`achiev_connects_perc` tinyint(3) NOT NULL default '0',`achiev_battles_perc` tinyint(3) NOT NULL default '0',`battles_total` tinyint(3) NOT NULL default '0',`battles_won` tinyint(3) NOT NULL default '0',`battles_lost` tinyint(3) NOT NULL default '0',`client_description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`base64hash` char(58) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`client_total_up` bigint(15) NOT NULL default '0',`client_total_down` bigint(15) NOT NULL default '0',`active_week` int(10) NOT NULL default '0',`active_month` int(10) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`removed` tinyint(1) NOT NULL default '0',`total_connections` smallint(5) NOT NULL default '0',`count_week` mediumint(8) UNSIGNED NOT NULL default '0',`count_month` mediumint(8) UNSIGNED NOT NULL default '0',`idle_week` mediumint(8) UNSIGNED NOT NULL default '0',`idle_month` mediumint(8) UNSIGNED NOT NULL default '0',`client_description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`base64hash` char(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`client_total_up` bigint(15) NOT NULL default '0',`client_total_down` bigint(15) NOT NULL default '0',`active_week` mediumint(8) UNSIGNED NOT NULL default '0',`active_month` mediumint(8) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -145,7 +149,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`admin_addtime` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`timestamp` bigint(11) NOT NULL default '0',`timecount` int(10) NOT NULL default '0', PRIMARY KEY (`uuid`,`timestamp`))") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`admin_addtime` (`uuid` char(29) CHARACTER SET utf8 COLLATE utf8_unicode_ci,`timestamp` int(10) UNSIGNED NOT NULL default '0',`timecount` int(10) NOT NULL default '0', PRIMARY KEY (`uuid`,`timestamp`))") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -155,27 +159,27 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`job_check` (`job_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`timestamp` bigint(11) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`job_check` (`job_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`timestamp` int(10) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
 		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('check_update'),('get_version'),('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_update'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('check_update'),('get_version'),('clean_db'),('clean_clients'),('calc_server_stats'),('runtime_check'),('last_snapshot_id'),('last_snapshot_time'),('last_update'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after')") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_nations` (`nation` char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` smallint(5) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_nations` (`nation` varchar(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` int(10) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_versions` (`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` smallint(5) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_versions` (`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` int(10) NOT NULL default '0')") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_platforms` (`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` int(10) NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_platforms` (`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`count` smallint(5) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		} else {
@@ -200,7 +204,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (`token` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `timestamp` bigint(11) NOT NULL default '0', `sessionid` varchar(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (`token` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `timestamp` int(10) UNSIGNED NOT NULL default '0', `sessionid` varchar(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -289,7 +293,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>47,31536060=>50'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', '2,6'), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', 'xrTKhT/HDL4ea0WoFDQH2zOpmKg='), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'rank'), ('stats_column_default_order', 'asc'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_maxclientsline_switch', 0), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_fresh_installation', '1'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>8'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', ''), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', ''), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'rank'), ('stats_column_default_order', 'asc'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_maxclientsline_switch', 0), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_fresh_installation', '1'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';
@@ -346,11 +350,29 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 		$err_msg .= $file_err_msg;
 	}
 
-	if(!class_exists('PDO')) {
-		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php'); $err_lvl = 3;
-	}
 	if(!function_exists('exec')) {
 		unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php'); $err_lvl = 3;
+	} else {
+		require_once('other/phpcommand.php');
+		exec("$phpcommand -v", $phpversioncheck);
+		$output = '';
+		foreach($phpversioncheck as $line) $output .= print_r($line, true).'<br>';
+		if(empty($phpversioncheck) || strtoupper(substr($phpversioncheck[0], 0, 3)) != "PHP") {
+			$err_msg = sprintf($lang['chkphpcmd'], "\"other/phpcommand.php\"", "<u>\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>');
+			$err_lvl = 3;
+		} else {
+			$exploded = explode(' ',$phpversioncheck[0]);
+			if($exploded[1] != phpversion()) {
+				$err_msg = sprintf($lang['chkphpmulti'], phpversion(), "<u>\"other/phpcommand.php\"</u>", $exploded[1], "\"other/phpcommand.php\"</u>", "\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
+				if(getenv('PATH')!='') {
+					$err_msg .= "<br><br>".sprintf($lang['chkphpmulti2'], '<br>'.getenv('PATH'));
+				}			
+				$err_lvl = 2;
+			}
+		}
+	}
+	if(!class_exists('PDO')) {
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php'); $err_lvl = 3;
 	}
 	if(version_compare(phpversion(), '5.5.0', '<')) {
 		unset($err_msg); $err_msg = sprintf($lang['insterr4'],phpversion()); $err_lvl = 3;
@@ -369,7 +391,7 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	}
 	if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 		if(!in_array('com_dotnet', get_loaded_extensions())) {
-			unset($err_msg); $err_msg = $lang['insterr8']; $err_lvl = 3;
+			unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP COM and .NET (Windows only)','//php.net/manual/en/book.com.php'); $err_lvl = 3;
 		}
 	}
 	if(!isset($err_lvl)) {

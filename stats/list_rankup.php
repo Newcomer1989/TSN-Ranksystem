@@ -200,6 +200,10 @@ if($user_pro_seite > 0) {
 	$seiten_anzahl_gerundet = 0;
 }
 
+if(($sqlhisgroup = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+}
+
 function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$seite,$getstring) {
 	?>
 	<nav>
@@ -232,14 +236,6 @@ function pagination($keysort,$keyorder,$user_pro_seite,$seiten_anzahl_gerundet,$
 }
 $sqlhis = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 
-$sqlhisgroup = $mysqlcon->query("SELECT `sgid`,`sgidname` FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
-foreach($sqlhisgroup as $sgid => $servergroup) {
-	if(file_exists('../tsicons/'.$sgid.'.png')) {
-		$sqlhisgroup[$sgid]['iconfile'] = 1;
-	} else {
-		$sqlhisgroup[$sgid]['iconfile'] = 0;
-	}
-}
 if($adminlogin == 1) {
 	switch ($keyorder) {
 		case "asc":
@@ -360,8 +356,8 @@ if($adminlogin == 1) {
 								if ($cfg['stats_column_current_server_group_switch'] == 1 || $adminlogin == 1) {
 									if ($value['grpid'] == 0) {
 										echo '<td class="text-center"></td>';
-									} elseif(isset($sqlhisgroup[$value['grpid']]) && $sqlhisgroup[$value['grpid']]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$value['grpid'].'.png" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
+									} elseif(isset($sqlhisgroup[$value['grpid']]) && $sqlhisgroup[$value['grpid']]['iconid'] != 0) {
+										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$value['grpid']]['iconid'],'.',$sqlhisgroup[$value['grpid']]['ext'],'" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									} elseif(isset($sqlhisgroup[$value['grpid']])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$value['grpid']]['sgidname'] , '</td>';
 									} else {
@@ -394,8 +390,8 @@ if($adminlogin == 1) {
 										echo '<td class="text-center"><em>',$lang['highest'],'</em></td>';
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
-									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconfile'] == 1) {
-										echo '<td class="text-center"><img src="../tsicons/'.$groupid.'.png" width="16" height="16" alt="groupicon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
+									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconid'] != 0) {
+										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$groupid]['iconid'],'.',$sqlhisgroup[$value['grpid']]['ext'],'" width="16" height="16" alt="missed_icon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} else {

@@ -48,6 +48,10 @@ if(($sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_server`")->fetch
 	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
 
+if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` WHERE `sgid`=0")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+}
+
 require_once('nav.php');
 ?>
 		<div id="page-wrapper">
@@ -381,9 +385,9 @@ require_once('nav.php');
 								<tbody>
 									<tr>
 										<td><?PHP echo $lang['stix0036']; ?></td>
-										<td><?PHP if(file_exists("../tsicons/servericon.png")) { 
-										$img_content = file_get_contents("../tsicons/servericon.png");
-										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',mime_content_type("../tsicons/servericon.png"),';base64,'.base64_encode($img_content).'" width="16" height="16" alt="servericon"></div>';
+										<td><?PHP if(file_exists("../tsicons/servericon.".$groupslist[0]['ext'])) { 
+										$img_content = file_get_contents("../tsicons/servericon.".$groupslist[0]['ext']);
+										echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',mime_content_type("../tsicons/servericon.".$groupslist[0]['ext']),';base64,'.base64_encode($img_content).'" width="16" height="16" alt="servericon"></div>';
 										} else { echo $sql_res['server_name']; } ?></td>
 									</tr>
 									<tr>

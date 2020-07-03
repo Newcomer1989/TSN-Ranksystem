@@ -58,17 +58,8 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 	$err_msg = sprintf($lang['stag0015'], '<a href="verify.php">', '</a>'); $err_lvl = 3;
 	$disabled = 1;
 } else {
-	if(($servergroups = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+	if(($sqlhisgroup = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 		$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
-	} else {
-		foreach($servergroups as $servergroup) {
-			$sqlhisgroup[$servergroup['sgid']] = $servergroup['sgidname'];
-			if(file_exists('../tsicons/'.$servergroup['sgid'].'.png')) {
-				$sqlhisgroup_file[$servergroup['sgid']] = true;
-			} else {
-				$sqlhisgroup_file[$servergroup['sgid']] = false;
-			}
-		}
 	}
 
 	$allowed_groups_arr = explode(',', $addons_config['assign_groups_groupids']['value']);
@@ -148,12 +139,12 @@ require_once('nav.php');
 								<div class="panel-body">
 									<?PHP foreach($allowed_groups_arr as $allowed_group) { ?>
 									<div class="form-group">
-										<?PHP if (isset($sqlhisgroup_file[$allowed_group]) && $sqlhisgroup_file[$allowed_group]===true) { ?>
-										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]; ?></label>
-										<label class="col-sm-1 control-label"><img src="../tsicons/<?PHP echo $allowed_group; ?>.png" alt="groupicon"></label>
+										<?PHP if (isset($sqlhisgroup[$allowed_group]['iconid']) && $sqlhisgroup[$allowed_group]['iconid'] != 0) { ?>
+										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]['sgidname']; ?></label>
+										<label class="col-sm-1 control-label"><img src="../tsicons/<?PHP echo $sqlhisgroup[$allowed_group]['iconid'],'.',$sqlhisgroup[$allowed_group]['ext']; ?>" width="16" height="16" alt="missed_icon"></label>
 										<label class="col-sm-2 control-label"></label>
 										<?PHP } else { ?>
-										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]; ?></label>
+										<label class="col-sm-5 control-label"><?php echo $sqlhisgroup[$allowed_group]['sgidname']; ?></label>
 										<label class="col-sm-3 control-label"></label>
 										<?PHP } ?>
 										<div class="col-sm-2">

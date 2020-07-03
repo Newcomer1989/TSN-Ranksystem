@@ -62,8 +62,8 @@ if (isset($_GET['groups'])) {
 		foreach ($json as $sgid => $sqlpart) {
 			if ($sqlpart['icondate'] != 0 && $sqlpart['sgidname'] == 'ServerIcon') {
 				$json[$sgid]['iconpath'] = './tsicons/servericon.png';
-			} elseif ($sqlpart['icondate'] != 0) {
-				$json[$sgid]['iconpath'] = './tsicons/'.$sgid.'.png';
+			} elseif ($sqlpart['iconid'] != 0) {
+				$json[$sgid]['iconpath'] = './tsicons/'.$sqlpart['iconid'].'.png';
 			}
 		}
 	}
@@ -98,6 +98,7 @@ if (isset($_GET['groups'])) {
 	$json = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 } elseif (isset($_GET['user'])) {
 	$uuid = $name = '----------_none_selected_----------';
+	$filter = '';
 	$part = $cldbid = 0;
 	if(isset($_GET['uuid'])) {
 		$uuid = htmlspecialchars_decode($_GET['uuid']);
@@ -109,10 +110,17 @@ if (isset($_GET['groups'])) {
 		$name = htmlspecialchars_decode($_GET['name']);
 	}
 	if(isset($_GET['part'])) {
-		$part = (htmlspecialchars_decode($_GET['part']) - 1) * 10;
+		$part = (htmlspecialchars_decode($_GET['part']) - 1) * 100;
+	}
+	if(isset($_GET['online']) && $uuid == '----------_none_selected_----------' && $name == '----------_none_selected_----------' && $cldbid == 0) {
+		$filter = '`online`=1';
+	} elseif(isset($_GET['online'])) {
+		$filter = '(`uuid` LIKE :uuid OR `cldbid` LIKE :cldbid OR `name` LIKE :name) AND `online`=1';
+	} else {
+		$filter = '(`uuid` LIKE :uuid OR `cldbid` LIKE :cldbid OR `name` LIKE :name)';
 	}
 	
-	if($uuid == '----------_none_selected_----------' && $name == '----------_none_selected_----------' && $cldbid == 0) {
+	if($uuid == '----------_none_selected_----------' && $name == '----------_none_selected_----------' && $filter == '' && $cldbid == 0) {
 		$json = array(
 			"usage" => array(
 				"uuid" => array(
@@ -130,20 +138,27 @@ if (isset($_GET['groups'])) {
 					"usage" => "Use \$_GET parameter 'name' and add as value a name or a part of it",
 					"example" => "/api/?user&name=Newcomer1989"
 				),
+				"online" => array(
+					"desc" => "Get the online TeamSpeak user",
+					"usage" => "Use \$_GET parameter 'online' without any value",
+					"example" => "/api/?user&online"
+				),
 				"part" => array(
-					"desc" => "Define, which part of the result you want to get. This is needed, when more then 10 clients are inside the result. At default you will get the first 10 clients. To get the next 10 clients, you will need to answer for part 2.",
+					"desc" => "Define, which part of the result you want to get. This is needed, when more then 10 clients are inside the result. At default you will get the first 100 clients. To get the next 100 clients, you will need to answer for part 2.",
 					"usage" => "Use \$_GET parameter 'part' and add as value a number above 1",
 					"example" => "/api/?user&name=TeamSpeakUser&part=2"
 				)
 			)
 		);
 	} else {
-		$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :uuid OR `cldbid` LIKE :cldbid OR `name` LIKE :name) LIMIT :start, :limit");
-		$dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
-		$dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
-		$dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
+		$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE {$filter} LIMIT :start, :limit");
+		if($filter != '`online`=1') {
+			$dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
+			$dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
+			$dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
+		}
 		$dbdata->bindValue(':start', (int) $part, PDO::PARAM_INT);
-		$dbdata->bindValue(':limit', (int) 10, PDO::PARAM_INT);
+		$dbdata->bindValue(':limit', (int) 100, PDO::PARAM_INT);
 		$dbdata->execute();
 		$json = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 	}	
