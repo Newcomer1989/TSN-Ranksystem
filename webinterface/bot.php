@@ -1,36 +1,5 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-
-require_once('../other/config.php');
-require_once('../other/phpcommand.php');
-
-function getclientip() {
-	if (!empty($_SERVER['HTTP_CLIENT_IP']))
-		return $_SERVER['HTTP_CLIENT_IP'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED']))
-		return $_SERVER['HTTP_X_FORWARDED'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED_FOR']))
-		return $_SERVER['HTTP_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED']))
-		return $_SERVER['HTTP_FORWARDED'];
-	elseif(!empty($_SERVER['REMOTE_ADDR']))
-		return $_SERVER['REMOTE_ADDR'];
-	else
-		return false;
-}
+require_once('_preload.php');
 
 function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 	$lines=array();
@@ -162,21 +131,7 @@ if (!isset($_SESSION[$rspathhex.'logfilter'])) {
 
 $filters = explode(',', ($_SESSION[$rspathhex.'logfilter'].'NONE'));
 
-if (isset($_POST['logout'])) {
-	echo "logout";
-	rem_session_ts3($rspathhex);
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	exit;
-}
-
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
-	rem_session_ts3($rspathhex);
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	exit;
-}
-
-require_once('nav.php');
-$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
+require_once('_nav.php');
 
 if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true);

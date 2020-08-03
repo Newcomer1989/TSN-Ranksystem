@@ -1,75 +1,10 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-
-require_once('../other/config.php');
-require_once('../other/phpcommand.php');
-
-function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
-	if($loglevel > $cfg['logs_debug_level']) return;
-	$file = $cfg['logs_path'].'ranksystem.log';
-	if ($loglevel == 1) {
-		$loglevel = "  CRITICAL  ";
-	} elseif ($loglevel == 2) {
-		$loglevel = "  ERROR     ";
-	} elseif ($loglevel == 3) {
-		$loglevel = "  WARNING   ";
-	} elseif ($loglevel == 4) {
-		$loglevel = "  NOTICE    ";
-	} elseif ($loglevel == 5) {
-		$loglevel = "  INFO      ";
-	} elseif ($loglevel == 6) {
-		$loglevel = "  DEBUG     ";
-	}
-	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
-	fclose($loghandle);
-	if($norotate == false && filesize($file) > ($cfg['logs_rotation_size'] * 1048576)) {
-		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
-		fclose($loghandle);
-		$file2 = "$file.old";
-		if(file_exists($file2)) unlink($file2);
-		rename($file, $file2);
-		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
-		fclose($loghandle);
-	}
-}
-
-function getclientip() {
-	if (!empty($_SERVER['HTTP_CLIENT_IP']))
-		return $_SERVER['HTTP_CLIENT_IP'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED']))
-		return $_SERVER['HTTP_X_FORWARDED'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED_FOR']))
-		return $_SERVER['HTTP_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED']))
-		return $_SERVER['HTTP_FORWARDED'];
-	elseif(!empty($_SERVER['REMOTE_ADDR']))
-		return $_SERVER['REMOTE_ADDR'];
-	else
-		return false;
-}
+require_once('_preload.php');
+require_once('_nav.php');
 
 if ($last_access = $mysqlcon->query("SELECT * FROM `$dbname`.`cfg_params` WHERE `param` IN ('webinterface_access_last','webinterface_access_count')")->fetchAll(PDO::FETCH_KEY_PAIR) === false) {
 	$err_msg .= print_r($mysqlcon->errorInfo(), true);
 }
-
-require_once('nav.php');
-$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
 
 if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true);
@@ -86,7 +21,7 @@ if (($last_access['webinterface_access_last'] + 1) >= time()) {
 	$err_msg = sprintf($lang['errlogin2'],$again);
 	$err_lvl = 3;
 } elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']]) && ($cfg['webinterface_admin_client_unique_id_list']==NULL || count($cfg['webinterface_admin_client_unique_id_list']) == 0)) {
-	$err_msg = $lang['wirtpw1']; $err_lvl=3;
+	$err_msg = sprintf($lang['wirtpw1'], '<a href="https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#reset-password-webinterface" target="_blank">https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#reset-password-webinterface</a>'); $err_lvl=3;
 } elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$nowtime = time();
 	$newcount = $last_access['webinterface_access_count'] + 1;

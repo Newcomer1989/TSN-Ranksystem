@@ -92,7 +92,9 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 				$set_groups = substr($set_groups, 0, -1);
 				if($set_groups != '' && $count_limit <= $addons_config['assign_groups_limit']['value']) {
 					if ($mysqlcon->exec("INSERT INTO `$dbname`.`addon_assign_groups` SET `uuid`='$uuid',`grpids`='$set_groups'") === false) {
-						$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+						$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+					} elseif($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`=1 WHERE `job_name`='reload_trigger'; ") === false) {
+						$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 					} else {
 						$err_msg = $lang['stag0008']; $err_lvl = NULL;
 					}

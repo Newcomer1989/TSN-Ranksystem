@@ -391,7 +391,7 @@ if($adminlogin == 1) {
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
 									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconid'] != 0) {
-										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$groupid]['iconid'],'.',$sqlhisgroup[$value['grpid']]['ext'],'" width="16" height="16" alt="missed_icon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
+										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$groupid]['iconid'],'.',$sqlhisgroup[$groupid]['ext'],'" width="16" height="16" alt="missed_icon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} elseif (isset($sqlhisgroup[$groupid])) {
 										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
 									} else {

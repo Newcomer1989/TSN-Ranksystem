@@ -1,56 +1,45 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-
-require_once('../other/config.php');
-require_once('../other/phpcommand.php');
+require_once('_preload.php');
 
 if(!class_exists('PDO')) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 }
 if(version_compare(phpversion(), '5.5.0', '<')) {
 	unset($err_msg); $err_msg = sprintf($lang['insterr4'],phpversion()); $err_lvl = 3; $dis_login = 1;
 }
 if(!function_exists('simplexml_load_file')) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP SimpleXML','//php.net/manual/en/book.simplexml.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP SimpleXML','//php.net/manual/en/book.simplexml.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 }
 if(!in_array('curl', get_loaded_extensions())) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP cURL','//php.net/manual/en/book.curl.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP cURL','//php.net/manual/en/book.curl.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 }
 if(!in_array('zip', get_loaded_extensions())) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP Zip','//php.net/manual/en/book.zip.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP Zip','//php.net/manual/en/book.zip.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 }
 if(!in_array('mbstring', get_loaded_extensions())) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP mbstring','//php.net/manual/en/book.mbstring.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP mbstring','//php.net/manual/en/book.mbstring.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
+}
+if(!in_array('openssl', get_loaded_extensions())) {
+	unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP OpenSSL','//php.net/manual/en/book.openssl.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 }
 if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
 	if(!in_array('com_dotnet', get_loaded_extensions())) {
-		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP COM extension (php_com_dotnet.dll)','//php.net/manual/en/book.com.php'); $err_lvl = 3; $dis_login = 1;
+		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP COM extension (php_com_dotnet.dll)','//php.net/manual/en/book.com.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 	}
 }
 
 if(file_exists($cfg['logs_path'].'ranksystem.log') && !is_writable($cfg['logs_path'].'ranksystem.log')) {
-	$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$cfg['logs_path'].'</pre><br>', '<pre>chmod 640 '.$cfg['logs_path'].'ranksystem.log</pre><br><br>', '<pre>'.$cfg['logs_path'].'ranksystem.log</pre>');
-	$err_lvl = 3; $dis_login = 1;
+	$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$cfg['logs_path'].'</pre><br>', '<pre>chmod 740 '.$cfg['logs_path'].'ranksystem.log</pre><br><br>', '<pre>'.$cfg['logs_path'].'ranksystem.log</pre>');
+	$err_lvl = 3; $dis_login = 0;
 }
 
 if(!is_writable($cfg['logs_path'])) {
 	$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$cfg['logs_path'].'</pre><br>', '<pre>chmod 740 '.$cfg['logs_path'].'</pre><br><br>', '<pre>'.$cfg['logs_path'].'</pre>');
-	$err_lvl = 3; $dis_login = 1;
+	$err_lvl = 3; $dis_login = 0;
 }
 
 if(!function_exists('exec')) {
-	unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php'); $err_lvl = 3; $dis_login = 1;
+	unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
 } else {
 	exec("$phpcommand -v", $phpversioncheck);
 	$output = '';
@@ -70,55 +59,6 @@ if(!function_exists('exec')) {
 	}
 }
 
-function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
-	if($loglevel > $cfg['logs_debug_level']) return;
-	$file = $cfg['logs_path'].'ranksystem.log';
-	if ($loglevel == 1) {
-		$loglevel = "  CRITICAL  ";
-	} elseif ($loglevel == 2) {
-		$loglevel = "  ERROR     ";
-	} elseif ($loglevel == 3) {
-		$loglevel = "  WARNING   ";
-	} elseif ($loglevel == 4) {
-		$loglevel = "  NOTICE    ";
-	} elseif ($loglevel == 5) {
-		$loglevel = "  INFO      ";
-	} elseif ($loglevel == 6) {
-		$loglevel = "  DEBUG     ";
-	}
-	$loghandle = fopen($file, 'a');
-	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
-	fclose($loghandle);
-	if($norotate == false && filesize($file) > ($cfg['logs_rotation_size'] * 1048576)) {
-		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Logfile filesie of 5 MiB reached.. Rotate logfile.\n");
-		fclose($loghandle);
-		$file2 = "$file.old";
-		if(file_exists($file2)) unlink($file2);
-		rename($file, $file2);
-		$loghandle = fopen($file, 'a');
-		fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")."  NOTICE    Rotated logfile...\n");
-		fclose($loghandle);
-	}
-}
-
-function getclientip() {
-	if (!empty($_SERVER['HTTP_CLIENT_IP']))
-		return $_SERVER['HTTP_CLIENT_IP'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED']))
-		return $_SERVER['HTTP_X_FORWARDED'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED_FOR']))
-		return $_SERVER['HTTP_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED']))
-		return $_SERVER['HTTP_FORWARDED'];
-	elseif(!empty($_SERVER['REMOTE_ADDR']))
-		return $_SERVER['REMOTE_ADDR'];
-	else
-		return false;
-}
-
 if(($cfg['webinterface_access_last'] + 1) >= time()) {
 	$waittime = $cfg['webinterface_access_last'] + 2 - time();
 	$err_msg = sprintf($lang['errlogin2'],$waittime);
@@ -136,7 +76,7 @@ if(($cfg['webinterface_access_last'] + 1) >= time()) {
 	$_SESSION[$rspathhex.'newversion'] = $cfg['version_latest_available'];
 	enter_logfile($cfg,6,sprintf($lang['brute2'], getclientip()));
 	if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_count','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
+	header("Location: $prot://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 } elseif(isset($_POST['username'])) {
 	$nowtime = time();
@@ -148,11 +88,11 @@ if(($cfg['webinterface_access_last'] + 1) >= time()) {
 }
 
 if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) {
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
+	header("Location: $prot://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 	exit;
 }
 
-require_once('nav.php');
+require_once('_nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>

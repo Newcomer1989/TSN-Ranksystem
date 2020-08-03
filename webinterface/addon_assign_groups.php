@@ -1,53 +1,9 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
+require_once('_preload.php');
+require_once('_nav.php');
 
-require_once('../other/config.php');
 require_once('../other/load_addons_config.php');
-
 $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
-
-function getclientip() {
-	if (!empty($_SERVER['HTTP_CLIENT_IP']))
-		return $_SERVER['HTTP_CLIENT_IP'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
-		return $_SERVER['HTTP_X_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_X_FORWARDED']))
-		return $_SERVER['HTTP_X_FORWARDED'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED_FOR']))
-		return $_SERVER['HTTP_FORWARDED_FOR'];
-	elseif(!empty($_SERVER['HTTP_FORWARDED']))
-		return $_SERVER['HTTP_FORWARDED'];
-	elseif(!empty($_SERVER['REMOTE_ADDR']))
-		return $_SERVER['REMOTE_ADDR'];
-	else
-		return false;
-}
-
-if (isset($_POST['logout'])) {
-	echo "logout";
-    rem_session_ts3($rspathhex);
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	exit;
-}
-
-if (!isset($_SESSION[$rspathhex.'username']) || $_SESSION[$rspathhex.'username'] != $cfg['webinterface_user'] || $_SESSION[$rspathhex.'password'] != $cfg['webinterface_pass'] || $_SESSION[$rspathhex.'clientip'] != getclientip()) {
-	header("Location: //".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\'));
-	exit;
-}
-
-require_once('nav.php');
-$csrf_token = bin2hex(openssl_random_pseudo_bytes(32));
 
 if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true);
@@ -140,12 +96,12 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_
 											$assign_groups_groupids = explode(',', $addons_config['assign_groups_groupids']['value']);
 											foreach ($groupslist as $groupID => $groupParam) {
 												if (in_array($groupID, $assign_groups_groupids)) $selected=" selected"; else $selected="";
-												if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']; else $iconid="placeholder";
+												if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
 												if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
 												if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
 												if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
 												if ($groupID != 0) {
-													echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconid,'.',$groupParam['ext'],'\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+													echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
 												}
 											}
 											?>

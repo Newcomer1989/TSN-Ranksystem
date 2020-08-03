@@ -13,7 +13,6 @@ if(ini_get('memory_limit') !== NULL) {
 	$memory_limit = "{none set}";
 }
 set_time_limit(0);
-error_reporting(0);
 
 function shutdown($mysqlcon = NULL,$cfg,$loglevel,$reason,$nodestroypid = TRUE) {
 	if($nodestroypid === TRUE) {
@@ -33,26 +32,13 @@ function enter_logfile($cfg,$loglevel,$logtext,$norotate = false) {
 	if($loglevel!=9 && $loglevel > $cfg['logs_debug_level']) return;
 	$file = $cfg['logs_path'].'ranksystem.log';
 	switch ($loglevel) {
-		case 1:
-			$loglevel = "  CRITICAL  ";
-			break;
-		case 2:
-			$loglevel = "  ERROR     ";
-			break;
-		case 3:
-			$loglevel = "  WARNING   ";
-			break;
-		case 4:
-			$loglevel = "  NOTICE    ";
-			break;
-		case 5:
-			$loglevel = "  INFO      ";
-			break;
-		case 6:
-			$loglevel = "  DEBUG     ";
-			break;
-		default:
-			$loglevel = "  NONE      ";
+		case 1: $loglevel = "  CRITICAL  "; break;
+		case 2: $loglevel = "  ERROR     "; break;
+		case 3: $loglevel = "  WARNING   "; break;
+		case 4: $loglevel = "  NOTICE    "; break;
+		case 5: $loglevel = "  INFO      "; break;
+		case 6: $loglevel = "  DEBUG     "; break;
+		default:$loglevel = "  NONE      ";
 	}
 	$loghandle = fopen($file, 'a');
 	fwrite($loghandle, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").$loglevel.$logtext."\n");
@@ -103,6 +89,8 @@ require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
 require_once(substr(__DIR__,0,-4).'jobs/get_avatars.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_groups.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_serverstats.php');
+require_once(substr(__DIR__,0,-4).'jobs/server_usage.php');
+require_once(substr(__DIR__,0,-4).'jobs/calc_user_snapshot.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_userstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/clean.php');
 require_once(substr(__DIR__,0,-4).'jobs/check_db.php');
@@ -221,8 +209,8 @@ function run_bot() {
 			enter_logfile($cfg,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
 		}
 		
-		if(version_compare($ts3version['version'],'3.6.9','=<')) {
-			enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it.. also to be ready for TS5!");
+		if(version_compare($ts3version['version'],'3.11.9','<=')) {
+			enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it!");
 		}
 
 		enter_logfile($cfg,9,"    Select virtual server...");
@@ -304,7 +292,7 @@ function run_bot() {
 				$loglevel = "6 - DEBUG";
 				break;
 			default:
-				$loglevel = "UNKOWN";
+				$loglevel = "UNKNOWN";
 		}
 		enter_logfile($cfg,9,"  Log Level: ".$loglevel);
 		enter_logfile($cfg,6,"  Serverside config 'max_execution_time' (PHP.ini): ".$max_execution_time." sec.");
@@ -348,11 +336,12 @@ function run_bot() {
 
 			$serverinfo = $ts3server->serverInfo();
 			$select_arr = array();
-			$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr,1);
+			$db_cache = array();
+			$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache,1);
 			if($mysqlcon->exec($sqlexec2) === false) {
 				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
-			unset($sqlexec2,$select_arr,$groupslist,$serverinfo,$ts3version);
+			unset($sqlexec2,$select_arr,$db_cache,$groupslist,$serverinfo,$ts3version);
 			$errcnf = 0;
 			enter_logfile($cfg,4,"  Downloading of servergroups finished. Recheck the config.");
 			
@@ -402,13 +391,13 @@ function run_bot() {
 				}
 			}
 		}
-		
+
 		if($cfg['webinterface_fresh_installation'] == 1) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`cfg_params` SET `value`=0 WHERE `param`='webinterface_fresh_installation'") === false) {
 				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
 		}
-		
+
 		unset($groupslist,$errcnf,$checkgroups,$lastupdate,$updcld,$loglevel,$whoami,$ts3host,$max_execution_time,$memory_limit,$memory_limit);
 		enter_logfile($cfg,9,"Config check [done]");
 
@@ -416,101 +405,130 @@ function run_bot() {
 		$looptime = $cfg['temp_count_laps'] = $cfg['temp_whole_laptime'] = $cfg['temp_count_laptime'] = 0; $cfg['temp_last_laptime'] = '';
 		usleep(3000000);
 
+		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
+			shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
+		}
+
+		$count_select = 0;
+		$db_cache = array();
+		while($single_select = $get_db_data) {
+			$fetched_array = $single_select->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+			$count_select++;
+
+			switch ($count_select) {
+				case 1:
+					$db_cache['all_user'] = $fetched_array;
+					break;
+				case 2:
+					$db_cache['max_timestamp_server_usage'] = $fetched_array;
+					break;
+				case 3:
+					$db_cache['job_check'] = $fetched_array; 
+					break;
+				case 4:
+					$db_cache['groups'] = $fetched_array;
+					break;
+				case 5:
+					$db_cache['addon_assign_groups'] = $fetched_array;
+					break;
+				case 6:
+					$db_cache['admin_addtime'] = $fetched_array;
+					break 2;
+			}
+			$get_db_data->nextRowset();
+		}
+		unset($get_db_data,$fetched_array,$single_select);
+
+		$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+
 		while(1) {
 			$sqlexec = '';
 			$starttime = microtime(true);
+
+			unset($db_cache['job_check']);
+			if(($db_cache['job_check'] = $mysqlcon->query("SELECT * FROM `$dbname`.`job_check`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+				enter_logfile($cfg,3,"  Select on DB failed for job check: ".print_r($mysqlcon->errorInfo(), true));
+			}
 			
-			if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT `version`, COUNT(`version`) AS `count` FROM `$dbname`.`user` GROUP BY `version` ORDER BY `count` DESC; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT `uuid` FROM `$dbname`.`stats_user`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
-				shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
-			}
-
-			$count_select = 0;
-			$select_arr = array();
-			while($single_select = $get_db_data) {
-				$fetched_array = $single_select->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
-				$count_select++;
-
-				switch ($count_select) {
-					case 1:
-						$select_arr['all_user'] = $fetched_array;
-						break;
-					case 2:
-						$select_arr['count_version_user'] = $fetched_array;
-						break;
-					case 3:
-						$select_arr['max_timestamp_server_usage'] = $fetched_array;
-						break;
-					case 4:
-						$select_arr['job_check'] = $fetched_array; 
-						break;
-					case 5:
-						$select_arr['uuid_stats_user'] = $fetched_array;
-						break;
-					case 6:
-						$select_arr['groups'] = $fetched_array;
-						break;
-					case 7:
-						$select_arr['addon_assign_groups'] = $fetched_array;
-						break;
-					case 8:
-						$select_arr['admin_addtime'] = $fetched_array;
-						break 2;
+			if($db_cache['job_check']['reload_trigger']['timestamp'] == 1) {
+				unset($db_cache['addon_assign_groups'],$db_cache['admin_addtime']);
+				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`;")) === false) {
+					shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 				}
-				$get_db_data->nextRowset();
+
+				$count_select = 0;
+				while($single_select = $get_db_data) {
+					$fetched_array = $single_select->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+					$count_select++;
+
+					switch ($count_select) {
+						case 1:
+							$db_cache['addon_assign_groups'] = $fetched_array;
+							break;
+						case 2:
+							$db_cache['admin_addtime'] = $fetched_array;
+							break 2;
+					}
+					$get_db_data->nextRowset();
+				}
+				unset($get_db_data,$fetched_array,$single_select,$count_select);
+				$db_cache['job_check']['reload_trigger']['timestamp'] = 0;
+				$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=0 WHERE `job_name`='reload_trigger';\n";
 			}
-			unset($get_db_data,$fetched_array,$single_select);
-			enter_logfile($cfg,6,"SQL select needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+
+			enter_logfile($cfg,6,"SQL Select needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 
 			check_shutdown($cfg);
-			$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+
 			$ts3server->clientListReset();
-			usleep($cfg['teamspeak_query_command_delay']);
-			$allclients = $ts3server->clientList();
+			$allclients = $ts3server->clientListtsn("-uid -groups -times -info -country");
 			usleep($cfg['teamspeak_query_command_delay']);
 			$ts3server->serverInfoReset();
-			usleep($cfg['teamspeak_query_command_delay']);
 			$serverinfo = $ts3server->serverInfo();
-			$sqlexec .= calc_user($ts3server,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$select_arr);
-			get_avatars($ts3server,$cfg);
-			$sqlexec .= clean($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
-			$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$select_arr,$phpcommand,$lang);
-			$sqlexec .= calc_userstats($ts3server,$mysqlcon,$cfg,$dbname,$select_arr);
-			$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$select_arr);
+			usleep($cfg['teamspeak_query_command_delay']);
+
+			$sqlexec .= calc_user($ts3server,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,$db_cache);
+			$sqlexec .= calc_userstats($ts3server,$mysqlcon,$cfg,$dbname,$db_cache);
+			$sqlexec .= get_avatars($ts3server,$cfg,$dbname,$db_cache);
+			$sqlexec .= clean($ts3server,$mysqlcon,$lang,$cfg,$dbname,$db_cache);
+			$sqlexec .= calc_serverstats($ts3server,$mysqlcon,$cfg,$dbname,$dbtype,$serverinfo,$db_cache,$phpcommand,$lang);
+			$sqlexec .= server_usage($mysqlcon,$cfg,$dbname,$serverinfo,$db_cache);
+			$sqlexec .= calc_user_snapshot($cfg,$dbname,$db_cache);
+			$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache);
 
 			if($addons_config['assign_groups_active']['value'] == '1') {
-				if($cfg['temp_addon_assign_groups'] == "disabled") {
-					enter_logfile($cfg,5,"Loading new addon...");
-					enter_logfile($cfg,5,"  Addon: 'assign_groups' [ON]");
-					if(!function_exists('addon_assign_groups')) {
-						include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
-					}
-					$cfg['temp_addon_assign_groups'] = "enabled";
-					enter_logfile($cfg,5,"Loading new addon [done]");
-				}
-				$sqlexec .= addon_assign_groups($addons_config,$ts3server,$cfg,$dbname,$allclients,$select_arr);
-			} elseif ($cfg['temp_addon_assign_groups'] == "enabled") {
-				enter_logfile($cfg,5,"Disable addon...");
-				enter_logfile($cfg,5,"  Addon: 'assign_groups' [OFF]");
-				$cfg['temp_addon_assign_groups'] = "disabled";
-				enter_logfile($cfg,5,"Disable addon [done]");
+				$sqlexec .= addon_assign_groups($addons_config,$ts3server,$cfg,$dbname,$allclients,$db_cache);
 			}
-			
+
 			$startsql = microtime(true);
-			if($mysqlcon->exec($sqlexec) === false) {
-				enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
-			}
-			enter_logfile($cfg,6,"SQL exections needs: ".(number_format(round((microtime(true) - $startsql), 5),5)));
 			if($cfg['logs_debug_level'] > 5) {
+				$sqlexec = substr($sqlexec, 0, -1);
+				$sqlarr = explode(";\n", $sqlexec);
+				foreach($sqlarr as $singlesql) {
+					if(strpos($singlesql, 'UPDATE') !== false || strpos($singlesql, 'INSERT') !== false || strpos($singlesql, 'DELETE') !== false || strpos($singlesql, 'SET') !== false) {
+						if($mysqlcon->exec($singlesql) === false) {
+							enter_logfile($cfg,4,"Executing SQL: ".$singlesql);
+							enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+						}
+					} elseif(strpos($singlesql, ' ') === false) {
+						enter_logfile($cfg,2,"Command not recognized as SQL: ".$singlesql);
+					}
+				}
 				$sqlfile = $cfg['logs_path'].'temp_sql_dump.sql';
 				$sqldump = fopen($sqlfile, 'wa+');
-				fwrite($sqldump, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").' SQL: '.$sqlexec."\n");
+				fwrite($sqldump, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ")." SQL:\n".$sqlexec);
 				fclose($sqldump);
+			} else {
+				if($mysqlcon->exec($sqlexec) === false) {
+					enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				}
 			}
+			enter_logfile($cfg,6,"SQL executions needs: ".(number_format(round((microtime(true) - $startsql), 5),5)));
 
-			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$select_arr);
+			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$db_cache);
 
 			unset($sqlexec,$select_arr,$sqldump);
-			
+
 			$looptime = microtime(true) - $starttime;
 			$cfg['temp_whole_laptime'] = $cfg['temp_whole_laptime'] + $looptime;
 			$cfg['temp_count_laptime']++;

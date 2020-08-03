@@ -54,7 +54,7 @@ require_once('nav.php');
 						<p><?PHP echo $lang['stri0006']; ?></p>
 						<p><?PHP echo $lang['stri0007']; ?></p>
 						<p><?PHP echo $lang['stri0023']; ?></p>
-						<p><?PHP echo sprintf($lang['stri0008'], 'https://ts-ranksystem.com/#download'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0008'], '//ts-ranksystem.com/#download'); ?></p>
 						<br>
 					</div>
 				</div>
@@ -83,21 +83,21 @@ require_once('nav.php');
 				<div class="row">
 					<div class="col-lg-12">
 						<h4><strong><span class="text-info"><?PHP echo $lang['stri0012']; ?></span></strong></h4>
-						<p><?PHP echo $lang['stri0021']; ?></p>
-						<p><?PHP echo $lang['stri0022']; ?></p>
-						<p><?PHP echo $lang['stri0013']; ?></p>
-						<p><?PHP echo $lang['stri0014']; ?></p>
-						<p><?PHP echo $lang['stri0015']; ?></p>
-						<p><?PHP echo $lang['stri0016']; ?></p>
-						<p><?PHP echo $lang['stri0017']; ?></p>
-						<p><?PHP echo $lang['stri0018']; ?></p>
-						<p><?PHP echo $lang['stri0019']; ?></p>
-						<p><?PHP echo $lang['stri0020']; ?></p>
-						<p><?PHP echo $lang['stri0024']; ?></p>
-						<p><?PHP echo $lang['stri0025']; ?></p>
-						<p><?PHP echo $lang['stri0026']; ?></p>
-						<p><?PHP echo $lang['stri0027']; ?></p>
-						<p><?PHP echo $lang['stri0028']; ?></p>
+						<p><?PHP echo sprintf($lang['stri0021'], '<a href="//hdf-multigaming.de" target="_blank">Shad86</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0022'], '<a href="//magicbroccoli.de" target="_blank">mightyBroccoli</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0013'], 'sergey, <a href="//vk.com/akhachirov" target="_blank">Arselopster</a>, <a href="//vk.com/zheez" target="_blank">DeviantUser</a> & <a href="//goodgame.by/" target="_blank">kidi</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0014'], 'Bejamin Frost -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0015'], '<a href="//hydrake.eu/" target="_blank">ZanK</a> & jacopomozzy -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0016'], '<a href="//iraqgaming.net/" target="_blank">DeStRoYzR</a> & Jehad -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0017'], '<a href="//whitecs.ro/" target="_blank">SakaLuX</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0018'], '<a href="//r4p3.net/members/0x0539.5476/" target="_blank">0x0539</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0019'], 'Quentinti -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0020'], '<a href="mailto://celso@esbsb.com.br" target="_blank">Pasha</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0024'], '<a href="//zasivarna.cloud" target="_blank">KeviN</a> & <a href="//github.com/Stetinac" target="_blank">Stetinac</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0025'], '<a href="//github.com/DoktorekOne" target="_blank">DoktorekOne</a> & <a href="//toster.dev/" target="_blank">toster234</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0026'], '<a href="//foro.gameflix.es" target="_blank">JavierlechuXD</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0027'], '<a href="//warriortigers.hu" target="_blank">ExXeL</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0028'], '<a href="//grezhost.com" target="_blank">G. FARZALIYEV</a> -'); ?></p>
 						<br>
 					</div>
 				</div>

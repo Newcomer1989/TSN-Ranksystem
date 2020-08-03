@@ -1,17 +1,18 @@
 <?PHP
-function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
+function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 	$starttime = microtime(true);
 	
-	if (in_array($select_arr['job_check']['reset_user_time']['timestamp'], ["1","2"], true) || in_array($select_arr['job_check']['reset_user_delete']['timestamp'], ["1","2"], true) || in_array($select_arr['job_check']['reset_group_withdraw']['timestamp'], ["1","2"], true) || in_array($select_arr['job_check']['reset_webspace_cache']['timestamp'], ["1","2"], true) || in_array($select_arr['job_check']['reset_usage_graph']['timestamp'], ["1","2"], true)) {
+	if (in_array($db_cache['job_check']['reset_user_time']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_user_delete']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_group_withdraw']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_webspace_cache']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_usage_graph']['timestamp'], ["1","2"], true)) {
 
 		enter_logfile($cfg,4,"Reset job(s) started");
 		$err_cnt = 0;
 		
-		if (in_array($select_arr['job_check']['reset_group_withdraw']['timestamp'], ["1","2"], true)) {
+		if (in_array($db_cache['job_check']['reset_group_withdraw']['timestamp'], ["1","2"], true)) {
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='2' WHERE `job_name`='reset_group_withdraw';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				$err_cnt++;
 			} else {
+				$db_cache['job_check']['reset_group_withdraw']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm32']."'");
 			}
 		
@@ -22,7 +23,7 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 			}
 		
 			foreach ($cfg['rankup_definition'] as $time => $groupid) {
-				enter_logfile($cfg,5,"    Getting TS3 servergrouplist for ".$select_arr['groups'][$groupid]['sgidname']." (ID: ".$groupid.")");
+				enter_logfile($cfg,5,"    Getting TS3 servergrouplist for ".$db_cache['groups'][$groupid]['sgidname']." (ID: ".$groupid.")");
 				try {
 					usleep($cfg['teamspeak_query_command_delay']);
 					$tsclientlist = $ts3->servergroupclientlist($groupid);
@@ -32,9 +33,9 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 							try {
 								usleep($cfg['teamspeak_query_command_delay']);
 								$ts3->serverGroupClientDel($groupid, $tsclient['cldbid']);
-								enter_logfile($cfg,5,"      ".sprintf($lang['sgrprm'], $select_arr['groups'][$groupid]['sgidname'], $groupid, $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid']));
+								enter_logfile($cfg,5,"      ".sprintf($lang['sgrprm'], $db_cache['groups'][$groupid]['sgidname'], $groupid, $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid']));
 							} catch (Exception $e) {
-								enter_logfile($cfg,2,"      TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid'], $select_arr['groups'][$groupid]['sgidname'], $groupid));
+								enter_logfile($cfg,2,"      TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid'], $db_cache['groups'][$groupid]['sgidname'], $groupid));
 								$err_cnt++;
 							}
 						}
@@ -48,23 +49,27 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 				if ($mysqlcon->exec("UPDATE `$dbname`.`user` SET `grpid`=0; UPDATE `$dbname`.`job_check` SET `timestamp`='4' WHERE `job_name`='reset_group_withdraw';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				} else {
+					$db_cache['job_check']['reset_group_withdraw']['timestamp'] = 4;
 					enter_logfile($cfg,4,"  Finished job '".$lang['wihladm32']."'");
 				}
 			} else {
 				if ($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='3' WHERE `job_name`='reset_group_withdraw';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					$db_cache['job_check']['reset_group_withdraw']['timestamp'] = 3;
 				}
 			}
 		}
 
 
-		if ($err_cnt == 0 && in_array($select_arr['job_check']['reset_user_time']['timestamp'], ["1","2"], true)) {
+		if ($err_cnt == 0 && in_array($db_cache['job_check']['reset_user_time']['timestamp'], ["1","2"], true)) {
 			$err = 0;
 			
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='2' WHERE `job_name`='reset_user_time';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				$err++;
 			} else {
+				$db_cache['job_check']['reset_user_time']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm31']."' (".$lang['wisupidle'].": ".$lang['wihladm311'].")");
 			}
 			
@@ -99,23 +104,27 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='4' WHERE `job_name`='reset_user_time';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				} else {
+					$db_cache['job_check']['reset_user_time']['timestamp'] = 4;
 					enter_logfile($cfg,4,"  Finished job '".$lang['wihladm31']."' (".$lang['wisupidle'].": ".$lang['wihladm311'].")");
 				}
 			} else {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='3' WHERE `job_name`='reset_user_time';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					$db_cache['job_check']['reset_user_time']['timestamp'] = 3;
 				}
 			}
 		}
 		
 		
-		if ($err_cnt == 0 && in_array($select_arr['job_check']['reset_user_delete']['timestamp'], ["1","2"], true)) {
+		if ($err_cnt == 0 && in_array($db_cache['job_check']['reset_user_delete']['timestamp'], ["1","2"], true)) {
 			$err = 0;
 			
 			if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='2' WHERE `job_name`='reset_user_delete';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				$err++;
 			} else {
+				$db_cache['job_check']['reset_user_delete']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm31']."' (".$lang['wisupidle'].": ".$lang['wihladm312'].")");
 			}
 			
@@ -174,19 +183,23 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='4' WHERE `job_name`='reset_user_delete';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				} else {
+					$db_cache['job_check']['reset_user_delete']['timestamp'] = 4;
 					enter_logfile($cfg,4,"  Finished job '".$lang['wihladm31']."' (".$lang['wisupidle'].": ".$lang['wihladm312'].")");
 				}
 			} else {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='3' WHERE `job_name`='reset_user_delete';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					$db_cache['job_check']['reset_user_delete']['timestamp'] = 3;
 				}
 			}
 		}
 
-		if (in_array($select_arr['job_check']['reset_webspace_cache']['timestamp'], ["1","2"], true)) {
+		if (in_array($db_cache['job_check']['reset_webspace_cache']['timestamp'], ["1","2"], true)) {
 			if ($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='2' WHERE `job_name`='reset_webspace_cache';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			} else {
+				$db_cache['job_check']['reset_webspace_cache']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm33']."'");
 			}
 			
@@ -220,32 +233,39 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='4' WHERE `job_name`='reset_webspace_cache';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				} else {
+					$db_cache['job_check']['reset_webspace_cache']['timestamp'] = 4;
 					enter_logfile($cfg,4,"  Finished job '".$lang['wihladm33']."'");
 				}
 			} else {
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='3' WHERE `job_name`='reset_webspace_cache';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					$db_cache['job_check']['reset_webspace_cache']['timestamp'] = 3;
 				}
 			}
 		}
 
 
-		if (in_array($select_arr['job_check']['reset_usage_graph']['timestamp'], ["1","2"], true)) {
+		if (in_array($db_cache['job_check']['reset_usage_graph']['timestamp'], ["1","2"], true)) {
 			if ($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='2' WHERE `job_name`='reset_usage_graph';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 			} else {
+				$db_cache['job_check']['reset_usage_graph']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm34']."'");
 			}
 			if ($mysqlcon->exec("DELETE FROM `$dbname`.`server_usage`;") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='3' WHERE `job_name`='reset_usage_graph';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					$db_cache['job_check']['reset_usage_graph']['timestamp'] = 3;
 				}
 			} else {
 				enter_logfile($cfg,4,"    Cleaned server usage graph (table: server_usage)");
 				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`='4' WHERE `job_name`='reset_usage_graph';") === false) {
 					enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				} else {
+					$db_cache['job_check']['reset_usage_graph']['timestamp'] = 4;
 					enter_logfile($cfg,4,"  Finished job '".$lang['wihladm34']."'");
 				}
 			}
@@ -253,7 +273,7 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$select_arr) {
 
 		enter_logfile($cfg,4,"Reset job(s) finished");
 		
-		if($select_arr['job_check']['reset_stop_after']['timestamp'] == "1") {
+		if($db_cache['job_check']['reset_stop_after']['timestamp'] == "1") {
 			$path = substr(__DIR__, 0, -4);
 			if (substr(php_uname(), 0, 7) == "Windows") {
 				exec("start ".$phpcommand." ".$path."worker.php stop");

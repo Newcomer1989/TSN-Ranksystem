@@ -1,9 +1,9 @@
 <?PHP
-function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,$select_arr) {
+function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,&$db_cache) {
 	$sqlexec = '';
 	
-	if(isset($select_arr['addon_assign_groups']) && count($select_arr['addon_assign_groups']) != 0) {
-		foreach($select_arr['addon_assign_groups'] as $uuid => $value) {
+	if(isset($db_cache['addon_assign_groups']) && count($db_cache['addon_assign_groups']) != 0) {
+		foreach($db_cache['addon_assign_groups'] as $uuid => $value) {
 			$cld_groups = explode(',', $value['grpids']);
 			foreach($cld_groups as $group) {
 				foreach ($allclients as $client) {
@@ -30,15 +30,15 @@ function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,$selec
 							usleep($cfg['teamspeak_query_command_delay']);
 							$ts3->serverGroupClientAdd($group, $cldbid);
 							enter_logfile($cfg,6,"Added servergroup $group from user $nickname (UID: $uid), requested by Add-on 'Assign Servergroups'");
-						}
-						catch (Exception $e) {
+						} catch (Exception $e) {
 							enter_logfile($cfg,2,"addon_assign_groups:".$e->getCode().': '."Error while adding group: ".$e->getMessage());
 						}
 					}
 				}
 			}
 		}
-		$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups`; ";
+		$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups`;\n";
+		unset($db_cache['addon_assign_groups']);
 	}
 	return $sqlexec;
 }

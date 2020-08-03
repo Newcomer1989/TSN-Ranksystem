@@ -887,7 +887,7 @@ class TeamSpeak3_Helper_String implements ArrayAccess, Iterator, Countable
    */
   public function current()
   {
-    return new TeamSpeak3_Helper_Char($this->string{$this->position});
+    return new TeamSpeak3_Helper_Char($this->string[$this->position]);
   }
 
   /**
@@ -911,7 +911,7 @@ class TeamSpeak3_Helper_String implements ArrayAccess, Iterator, Countable
    */
   public function offsetGet($offset)
   {
-    return ($this->offsetExists($offset)) ? new TeamSpeak3_Helper_Char($this->string{$offset}) : null;
+    return ($this->offsetExists($offset)) ? new TeamSpeak3_Helper_Char($this->string[$offset]) : null;
   }
 
   /**
@@ -921,7 +921,7 @@ class TeamSpeak3_Helper_String implements ArrayAccess, Iterator, Countable
   {
     if(!$this->offsetExists($offset)) return;
 
-    $this->string{$offset} = strval($value);
+    $this->string[$offset] = strval($value);
   }
 
   /**

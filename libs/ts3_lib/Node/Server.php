@@ -37,6 +37,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * @ignore
    */
   protected $clientList = null;
+  protected $clientListtsn = null;
 
   /**
    * @ignore
@@ -683,6 +684,12 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     }
 
     return $this->filterList($this->clientList, $filter);
+  }
+  
+  public function clientListtsn($params = null)
+  {
+	# params: -uid -away -badges -voice -info -times -groups -icon -country -ip
+	return $this->request("clientlist $params")->toAssocArray("clid");
   }
 
   /**

@@ -10,7 +10,7 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 		try {
 			$host->serverGetSelected()->clientListReset();
 			usleep($cfg['teamspeak_query_command_delay']);
-			$clientlist = $host->serverGetSelected()->clientList();
+			$clientlist = $host->serverGetSelected()->clientListtsn("-ip");
 			foreach ($clientlist as $client) {
 				if($client['client_database_id'] == $event['client_database_id']) {
 					if(strstr($client['connection_client_ip'], '[')) {
