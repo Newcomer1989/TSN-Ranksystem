@@ -130,6 +130,10 @@ function handle_messages(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 		if((strstr($event["msg"], '!reloadgroups') || strstr($event["msg"], '!reloadicons')) && $admin == 1) {
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`groups`") === false) {
 				enter_logfile($cfg,4,"handle_messages 14:".print_r($mysqlcon->errorInfo(), true));
+			} else {
+				if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`=1 WHERE `job_name`='reload_trigger';") === false) {
+					enter_logfile($cfg,4,"handle_messages 15:".print_r($mysqlcon->errorInfo(), true));
+				}
 			}
 			sendmessage($host, $cfg, $event["invokeruid"], $lang['msg0011'] ." ". $lang['msg0010']);
 			return;

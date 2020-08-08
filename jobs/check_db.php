@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.9';
+	$cfg['version_latest_available'] = '1.3.10';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -330,11 +330,21 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 		}
 		
 		if(version_compare($cfg['version_current_using'], '1.3.9', '<')) {
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('get_avatars', '0'),('calc_donut_chars', '0'),('reload_trigger', '0');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.9] Added new job_check values.");
+			}
+		}
+		
+		if(version_compare($cfg['version_current_using'], '1.3.10', '<')) {
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 
-			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('get_avatars', '0'),('calc_donut_chars', '0'),('reload_trigger', '0');") === false) { } else {
-				enter_logfile($cfg,4,"    [1.3.9] Added new job_check values.");
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_user` ADD COLUMN `last_calculated` int(10) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.10] Added new stats_user values.");
+			}
+			
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`stats_user` MODIFY COLUMN `total_connections` MEDIUMINT(8) UNSIGNED NOT NULL default '0';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.10] Adjusted table stats_user successfully.");
 			}
 
 			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { }

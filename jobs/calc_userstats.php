@@ -1,6 +1,7 @@
 <?PHP
 function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 	$starttime = microtime(true);
+	$nowtime = time();
 	$sqlexec = '';
 
 	$job_begin = $db_cache['job_check']['calc_user_limit']['timestamp'];
@@ -64,10 +65,12 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 					$idle_month = 0;
 					$active_month = 0;
 				}
+
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);
-				$allupdateuuid .= "('$uuid',$count_week,$count_month,$idle_week,$idle_month,$active_week,$active_month,{$clientinfo['client_totalconnections']},'{$clientinfo['client_base64HashClientUID']}',{$clientinfo['client_total_bytes_uploaded']},{$clientinfo['client_total_bytes_downloaded']},$clientdesc),";
+				if($clientinfo['client_totalconnections'] > 16777215) $clientinfo['client_totalconnections'] = 16777215;
+				$allupdateuuid .= "('$uuid',$count_week,$count_month,$idle_week,$idle_month,$active_week,$active_month,{$clientinfo['client_totalconnections']},'{$clientinfo['client_base64HashClientUID']}',{$clientinfo['client_total_bytes_uploaded']},{$clientinfo['client_total_bytes_downloaded']},$clientdesc,$nowtime),";
 			} catch (Exception $e) {
-				if($e->getCode() == 512) {
+				if($e->getCode() == 512 || $e->getCode() == 1281) {
 					enter_logfile($cfg,6,"Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by Ranksystem is missing in TS database, perhaps its already deleted or cldbid changed. Try to search for client by uuid.");
 					try {
 						$getcldbid = $ts3->clientFindDb($uuid, TRUE);
@@ -101,7 +104,7 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 		$db_cache['job_check']['calc_user_limit']['timestamp'] = $job_end;
 		if ($allupdateuuid != '') {
 			$allupdateuuid = substr($allupdateuuid, 0, -1);
-			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit';\nINSERT INTO `$dbname`.`stats_user` (`uuid`,`count_week`,`count_month`,`idle_week`,`idle_month`,`active_week`,`active_month`,`total_connections`,`base64hash`,`client_total_up`,`client_total_down`,`client_description`) VALUES $allupdateuuid ON DUPLICATE KEY UPDATE `count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`),`idle_month`=VALUES(`idle_month`),`active_week`=VALUES(`active_week`),`active_month`=VALUES(`active_month`),`total_connections`=VALUES(`total_connections`),`base64hash`=VALUES(`base64hash`),`client_total_up`=VALUES(`client_total_up`),`client_total_down`=VALUES(`client_total_down`),`client_description`=VALUES(`client_description`);\n";
+			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit';\nINSERT INTO `$dbname`.`stats_user` (`uuid`,`count_week`,`count_month`,`idle_week`,`idle_month`,`active_week`,`active_month`,`total_connections`,`base64hash`,`client_total_up`,`client_total_down`,`client_description`,`last_calculated`) VALUES $allupdateuuid ON DUPLICATE KEY UPDATE `count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`),`idle_month`=VALUES(`idle_month`),`active_week`=VALUES(`active_week`),`active_month`=VALUES(`active_month`),`total_connections`=VALUES(`total_connections`),`base64hash`=VALUES(`base64hash`),`client_total_up`=VALUES(`client_total_up`),`client_total_down`=VALUES(`client_total_down`),`client_description`=VALUES(`client_description`),`last_calculated`=VALUES(`last_calculated`);\n";
 			unset($allupdateuuid);
 		} else {
 			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit';\n";

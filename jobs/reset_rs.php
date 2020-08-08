@@ -18,7 +18,7 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 		
 			krsort($cfg['rankup_definition']);
 
-			if (($all_clients = $mysqlcon->query("SELECT cldbid,uuid,name FROM `$dbname`.`user`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+			if (($all_clients = $mysqlcon->query("SELECT `cldbid`,`uuid`,`name` FROM `$dbname`.`user`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 				shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
 		
@@ -201,23 +201,27 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 			} else {
 				$db_cache['job_check']['reset_webspace_cache']['timestamp'] = 2;
 				enter_logfile($cfg,4,"  Started job '".$lang['wihladm33']."'");
+				if ($mysqlcon->exec("DELETE FROM `$dbname`.`groups`;") === false) {
+					enter_logfile($cfg,4,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					if($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`=1 WHERE `job_name`='reload_trigger';") === false) {
+						enter_logfile($cfg,4,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+					}
+				}
 			}
-			
+
 			$del_folder = array('avatars/','tsicons/');
 			$err_cnt = 0;
-			
+
 			if (!function_exists('rm_file_reset')) {
 				function rm_file_reset($folder,$cfg) {
 					foreach(scandir($folder) as $file) {
-						if ('.' === $file || '..' === $file || 'rs.png' === $file || is_dir($folder.$file)) {
-							continue;
+						if (in_array($file, array('.','..','check.png','placeholder.png','rs.png','servericon.png','100.png','200.png','300.png','500.png','600.png')) || is_dir($folder.$file)) continue;
+						if(unlink($folder.$file)) {
+							enter_logfile($cfg,4,"    File ".$folder.$file." successfully deleted.");
 						} else {
-							if(unlink($folder.$file)) {
-								enter_logfile($cfg,4,"    File ".$folder.$file." successfully deleted.");
-							} else {
-								enter_logfile($cfg,2,"    File ".$folder.$file." couldn't be deleted. Please check the file permissions.");
-								$err_cnt++;
-							}
+							enter_logfile($cfg,2,"    File ".$folder.$file." couldn't be deleted. Please check the file permissions.");
+							$err_cnt++;
 						}
 					}
 				}

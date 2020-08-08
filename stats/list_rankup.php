@@ -18,6 +18,23 @@ require_once('../other/load_addons_config.php');
 
 $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
 
+if(is_dir(substr(__DIR__,0,-5).'languages/')) {
+	foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+		if ('.' === $file || '..' === $file || is_dir($file)) continue;
+		$sep_lang = preg_split("/[._]/", $file);
+		if(isset($sep_lang[0]) && $sep_lang[0] == 'nations' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[2]) && strtolower($sep_lang[2]) == 'php') {
+			if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
+				require_once('../languages/nations_'.$sep_lang[1].'.php');
+				$required_nations = 1;
+				break;
+			}
+		}
+	}
+	if(!isset($required_nations)) {
+		require_once('../languages/nations_en.php');
+	}
+}
+
 function getclientip() {
 	if (!empty($_SERVER['HTTP_CLIENT_IP']))
 		return $_SERVER['HTTP_CLIENT_IP'];
@@ -170,24 +187,24 @@ if(!isset($_GET["user"])) {
 $start = ($seite * $user_pro_seite) - $user_pro_seite;
 
 if ($keysort == 'active' && $keyorder == 'asc') {
-	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`count` - `idle`) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`count` - `idle`) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($keysort == 'active' && $keyorder == 'desc') {
-	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`idle` - `count`) LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`idle` - `count`) LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } elseif ($searchstring == '') {
-	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE 1=1$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE 1=1$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
 	$dbdata->execute();
 } else {
-	$dbdata = $mysqlcon->prepare("SELECT `uuid`,`cldbid`,`rank`,`count`,`name`,`idle`,`cldgroup`,`online`,`nextup`,`lastseen`,`grpid`,`except`,`grpsince` FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
+	$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
 	$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
 	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
@@ -278,6 +295,12 @@ if($adminlogin == 1) {
 					echo '<th class="text-center"><a href="?sort=cldbid&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listcldbid'] , '</span></a></th>';
 				if ($cfg['stats_column_last_seen_switch'] == 1 || $adminlogin == 1)
 					echo '<th class="text-center"><a href="?sort=lastseen&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listseen'] , '</span></a></th>';
+				if ($cfg['stats_column_nation_switch'] == 1 || $adminlogin == 1)
+					echo '<th class="text-center"><a href="?sort=nation&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listnat'] , '</span></a></th>';
+				if ($cfg['stats_column_version_switch'] == 1 || $adminlogin == 1)
+					echo '<th class="text-center"><a href="?sort=version&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listver'] , '</span></a></th>';
+				if ($cfg['stats_column_platform_switch'] == 1 || $adminlogin == 1)
+					echo '<th class="text-center"><a href="?sort=platform&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listpla'] , '</span></a></th>';
 				if ($cfg['stats_column_online_time_switch'] == 1 || $adminlogin == 1)
 					echo '<th class="text-center"><a href="?sort=count&amp;order=' , $keyorder2 , '&amp;seite=' , $seite , '&amp;user=' , $user_pro_seite , '&amp;search=' , $getstring , '"><span class="hdcolor">' , $lang['listsumo'] , '</span></a></th>';
 				if ($cfg['stats_column_idle_time_switch'] == 1 || $adminlogin == 1)
@@ -334,6 +357,19 @@ if($adminlogin == 1) {
 									} else {
 										echo '<td class="text-center">' , date('Y-m-d H:i:s',$value['lastseen']), '</td>';
 									}
+								}
+								if ($cfg['stats_column_nation_switch'] == 1 || $adminlogin == 1) {
+									if(strtoupper($value['nation']) == 'XX') {
+										echo '<td class="text-center"><i class="fas fa-question-circle" title="' , $lang['unknown'] , '"></i></td>';
+									} else {
+										echo '<td class="text-center"><span class="flag-icon flag-icon-' , strtolower(htmlspecialchars($value['nation'])) , '" title="' , $nation[$value['nation']] , '"></span></td>';
+									}
+								}
+								if ($cfg['stats_column_version_switch'] == 1 || $adminlogin == 1) {
+									echo '<td class="text-center">' , htmlspecialchars($value['version']) , '</td>';
+								}
+								if ($cfg['stats_column_platform_switch'] == 1 || $adminlogin == 1) {
+									echo '<td class="text-center">' , htmlspecialchars($value['platform']) , '</td>';
 								}
 								if ($cfg['stats_column_online_time_switch'] == 1 || $adminlogin == 1) {
 									echo '<td class="text-center">';

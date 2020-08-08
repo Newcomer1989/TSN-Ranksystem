@@ -98,6 +98,9 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 		$name = $mysqlcon->quote((mb_substr($client['client_nickname'],0,30)), ENT_QUOTES);
 		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$sgroups = array_flip(explode(",", $client['client_servergroups']));
+		if(strlen($client['client_country']) > 2 || $client['client_country'] == '') $client['client_country'] = 'XX';
+		$client['client_platform'] = mb_substr($client['client_platform'],0,32);
+		$client['client_version'] = mb_substr($client['client_version'],0,64);
 
 		if (!isset($multipleonline[$uid]) && $client['client_version'] != "ServerQuery" && $client['client_type']!="1") {
 			$clientidle = floor($client['client_idle_time'] / 1000);

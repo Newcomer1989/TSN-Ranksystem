@@ -35,11 +35,8 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 			$ts3groups = $ts3->serverGroupList();
 
 			// ServerIcon
-			if ($serverinfo['virtualserver_icon_id'] < 0) {
-				$sIconId = (pow(2, 32)) - ($serverinfo['virtualserver_icon_id'] * -1);
-			} else {
-				$sIconId = $serverinfo['virtualserver_icon_id'];
-			}
+			$sIconId = $serverinfo['virtualserver_icon_id'];
+			$sIconId = ($sIconId < 0) ? (pow(2, 32)) - ($sIconId * -1) : $sIconId;
 			$sIconFile = 0;
 			$extension = '';
 			if (!isset($db_cache['groups']['0']) || $db_cache['groups']['0']['iconid'] != $sIconId || (isset($iconarr["i".$sIconId]) && $iconarr["i".$sIconId] > $db_cache['groups']['0']['icondate'])) {
@@ -82,7 +79,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 					"icondate" => $sicondate,
 					"sortid" => "0",
 					"type" => "0",
-					"ext" => $mysqlcon->quote($extension, ENT_QUOTES)
+					"ext" => $extension
 				);
 			}
 			unset($sIconFile,$sIconId);
@@ -111,6 +108,8 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 						} catch (Exception $e) {
 							enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.sprintf($lang['upgrp0008'], $sgname, $sgid).$e->getMessage());
 						}
+					} else {
+						$extension = $db_cache['groups'][$sgid]['ext'];
 					}
 				} elseif($iconid == 0) {
 					foreach (glob(substr(dirname(__FILE__),0,-4) . "tsicons/" . $iconid . ".*") as $file) {
@@ -141,7 +140,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 						"icondate" => $iconarr["i".$iconid],
 						"sortid" => $servergroup['sortid'],
 						"type" => $servergroup['type'],
-						"ext" => $mysqlcon->quote($extension, ENT_QUOTES)
+						"ext" => $extension
 					);
 				}
 				if($iconcount > 9 && $nobreak != 1) {
@@ -153,7 +152,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 			if (isset($updategroups)) {
 				$sqlinsertvalues = '';
 				foreach ($updategroups as $updatedata) {
-					$sqlinsertvalues .= "({$updatedata['sgid']},{$updatedata['sgidname']},{$updatedata['iconid']},{$updatedata['icondate']},{$updatedata['sortid']},{$updatedata['type']},{$updatedata['ext']}),";
+					$sqlinsertvalues .= "({$updatedata['sgid']},{$updatedata['sgidname']},{$updatedata['iconid']},{$updatedata['icondate']},{$updatedata['sortid']},{$updatedata['type']},{$mysqlcon->quote($updatedata['ext'], ENT_QUOTES)}),";
 					$db_cache['groups'][$updatedata['sgid']]['sgidname'] = $updatedata['sgidname'];
 					$db_cache['groups'][$updatedata['sgid']]['iconid'] = $updatedata['iconid'];
 					$db_cache['groups'][$updatedata['sgid']]['icondate'] = $updatedata['icondate'];

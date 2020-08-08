@@ -23,7 +23,9 @@ function get_avatars($ts3,$cfg,$dbname,&$db_cache) {
 		unset($fsfilelist);
 
 		if (isset($tsfilelist)) {
+			$downloadedavatars = 0;
 			foreach($tsfilelist as $tsfile) {
+				if($downloadedavatars > 9) break;
 				$fullfilename = '/'.$tsfile['name'];
 				$uuidasbase16 = substr($tsfile['name'],7);
 				if (!isset($fsfilelistarray[$uuidasbase16.'.png']) || ($tsfile['datetime'] - $cfg['teamspeak_avatar_download_delay']) > $fsfilelistarray[$uuidasbase16.'.png']) {
@@ -34,6 +36,7 @@ function get_avatars($ts3,$cfg,$dbname,&$db_cache) {
 							$transfer = TeamSpeak3::factory("filetransfer://" . $avatar["host"] . ":" . $avatar["port"]);
 							$tsfile = $transfer->download($avatar["ftkey"], $avatar["size"]);
 							$avatarfilepath	= substr(__DIR__,0,-4).'avatars/'.$uuidasbase16.'.png';
+							$downloadedavatars++;
 							enter_logfile($cfg,5,"Download avatar: ".$fullfilename);
 							if(file_put_contents($avatarfilepath, $tsfile) === false) {
 								enter_logfile($cfg,2,"Error while writing out the avatar. Please check the permission for the folder 'avatars'");

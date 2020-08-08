@@ -242,6 +242,7 @@ $nation['VN']='Vietnam';
 $nation['VU']='Vanuatu';
 $nation['WF']='Wallis a Futuna';
 $nation['WS']='Samoa';
+$nation['XX']='Unknown';
 $nation['YE']='Jemen';
 $nation['YT']='Mayotte';
 $nation['ZA']='Jihoafrická republika';

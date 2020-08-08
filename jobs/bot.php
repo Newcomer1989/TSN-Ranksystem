@@ -452,7 +452,7 @@ function run_bot() {
 			
 			if($db_cache['job_check']['reload_trigger']['timestamp'] == 1) {
 				unset($db_cache['addon_assign_groups'],$db_cache['admin_addtime']);
-				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`;")) === false) {
+				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`groups`;")) === false) {
 					shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 				}
 
@@ -467,6 +467,9 @@ function run_bot() {
 							break;
 						case 2:
 							$db_cache['admin_addtime'] = $fetched_array;
+							break;
+						case 3:
+							$db_cache['groups'] = $fetched_array;
 							break 2;
 					}
 					$get_db_data->nextRowset();

@@ -62,7 +62,7 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 && !isset($_SESSION[$rspathhex.'u
 		$percentage_rankup = round($takedtime/$neededtime*100, 2);
 	}
 
-	$stats_user = $mysqlcon->query("SELECT `count_week`,`active_week`,`count_month`,`active_month` FROM `$dbname`.`stats_user` WHERE `uuid`='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
+	$stats_user = $mysqlcon->query("SELECT `count_week`,`active_week`,`count_month`,`active_month`,`last_calculated` FROM `$dbname`.`stats_user` WHERE `uuid`='".$_SESSION[$rspathhex.'tsuid']."'")->fetch();
 
 	if (isset($stats_user['count_week'])) $count_week = $stats_user['count_week']; else $count_week = 0;
 	$dtF = new DateTime("@0"); $dtT = new DateTime("@$count_week"); $count_week = $dtF->diff($dtT)->format($cfg['default_date_format']);
@@ -147,10 +147,6 @@ require_once('nav.php');
 									<p><strong><?PHP echo $lang['stmy0006']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0007']; ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0031']; ?></strong></p>
-									<p><strong><?PHP echo sprintf($lang['stmy0008'], '7'); ?></strong></p>
-									<p><strong><?PHP echo sprintf($lang['stmy0009'], '7'); ?></strong></p>
-									<p><strong><?PHP echo sprintf($lang['stmy0008'], '30'); ?></strong></p>
-									<p><strong><?PHP echo sprintf($lang['stmy0009'], '30'); ?></strong></p>
 									<p><strong><?PHP echo $lang['stmy0010']; ?></strong></p>
 								</div>
 								<div class="pull-right">
@@ -160,11 +156,24 @@ require_once('nav.php');
 									<p class="text-right"><?PHP echo $_SESSION[$rspathhex.'tscreated']; ?></p>
 									<p class="text-right"><?PHP echo $count_total; ?></p>
 									<p class="text-right"><?PHP echo $active_count; ?></p>
+									<p class="text-right"><?PHP echo $achievements_done .' / 8'; ?></p>
+								</div>
+								<div class="clearfix"></div>
+							</div>
+							<div class="panel-footer">
+								<div class="pull-left">
+									<p><strong><?PHP echo $lang['stmy0032']; ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0008'], '7'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0009'], '7'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0008'], '30'); ?></strong></p>
+									<p><strong><?PHP echo sprintf($lang['stmy0009'], '30'); ?></strong></p>
+								</div>
+								<div class="pull-right">
+									<p class="text-right"><?PHP echo date('Y-m-d H:i:s',$stats_user['last_calculated']); ?></p>
 									<p class="text-right"><?PHP echo $count_week; ?></p>
 									<p class="text-right"><?PHP echo $active_week; ?></p>
 									<p class="text-right"><?PHP echo $count_month; ?></p>
 									<p class="text-right"><?PHP echo $active_month; ?></p>
-									<p class="text-right"><?PHP echo $achievements_done .' / 8'; ?></p>
 								</div>
 								<div class="clearfix"></div>
 							</div>

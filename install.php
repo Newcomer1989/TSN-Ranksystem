@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.9';
+$rsversion = '1.3.10';
 ?>
 <!DOCTYPE html>
 <html>
@@ -139,7 +139,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`removed` tinyint(1) NOT NULL default '0',`total_connections` smallint(5) NOT NULL default '0',`count_week` mediumint(8) UNSIGNED NOT NULL default '0',`count_month` mediumint(8) UNSIGNED NOT NULL default '0',`idle_week` mediumint(8) UNSIGNED NOT NULL default '0',`idle_month` mediumint(8) UNSIGNED NOT NULL default '0',`client_description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`base64hash` char(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,`client_total_up` bigint(15) NOT NULL default '0',`client_total_down` bigint(15) NOT NULL default '0',`active_week` mediumint(8) UNSIGNED NOT NULL default '0',`active_month` mediumint(8) UNSIGNED NOT NULL default '0')") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,`removed` tinyint(1) NOT NULL default '0',`total_connections` MEDIUMINT(8) UNSIGNED NOT NULL default '0',`count_week` mediumint(8) UNSIGNED NOT NULL default '0',`count_month` mediumint(8) UNSIGNED NOT NULL default '0',`idle_week` mediumint(8) UNSIGNED NOT NULL default '0',`idle_month` mediumint(8) UNSIGNED NOT NULL default '0',`client_description` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,`base64hash` char(40) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,`client_total_up` bigint(15) NOT NULL default '0',`client_total_down` bigint(15) NOT NULL default '0',`active_week` mediumint(8) UNSIGNED NOT NULL default '0',`active_month` mediumint(8) UNSIGNED NOT NULL default '0',`last_calculated` int(10) UNSIGNED NOT NULL default '0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
