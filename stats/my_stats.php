@@ -376,5 +376,6 @@ require_once('nav.php');
 			</div>
 		</div>
 	</div>
+	<?PHP require_once('footer.php'); ?>
 </body>
 </html>

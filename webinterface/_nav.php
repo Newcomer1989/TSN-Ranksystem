@@ -190,6 +190,9 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? ' class="active">' : '>'); ?>
 							<a href="msg.php"><i class="fas fa-envelope"></i>&nbsp;&nbsp;<?PHP echo $lang['winav5']; ?></a>
 						</li>
+						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "imprint.php" ? ' class="active">' : '>'); ?>
+							<a href="imprint.php"><i class="fas fa-address-card"></i>&nbsp;&nbsp;<?PHP echo $lang['imprint']; ?></a>
+						</li>
 						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
 							<a href="stats.php"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;<?PHP echo $lang['winav6']; ?></a>
 						</li>

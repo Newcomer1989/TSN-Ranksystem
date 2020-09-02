@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.10';
+$rsversion = '1.3.11';
 ?>
 <!DOCTYPE html>
 <html>
