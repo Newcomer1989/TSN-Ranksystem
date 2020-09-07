@@ -98,11 +98,13 @@ require_once('nav.php');
 						<p><?PHP echo sprintf($lang['stri0026'], '<a href="//foro.gameflix.es" target="_blank">JavierlechuXD</a> -'); ?></p>
 						<p><?PHP echo sprintf($lang['stri0027'], '<a href="//warriortigers.hu" target="_blank">ExXeL</a> -'); ?></p>
 						<p><?PHP echo sprintf($lang['stri0028'], '<a href="//grezhost.com" target="_blank">G. FARZALIYEV</a> -'); ?></p>
+						<p><?PHP echo sprintf($lang['stri0029'], '<a href="//www.nick-slowinski.de" target="_blank">Nick Slowinski</a> -'); ?></p>
 						<br>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+	<?PHP require_once('footer.php'); ?>
 </body>
 </html>

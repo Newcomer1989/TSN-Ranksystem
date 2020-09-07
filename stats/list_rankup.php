@@ -450,5 +450,6 @@ if($adminlogin == 1) {
 			</div>
 		</div>
 	</div>
+	<?PHP require_once('footer.php'); ?>
 </body>
 </html>

@@ -71,5 +71,6 @@ foreach ($sql_res as $version => $value) {
 			</div>  
 		</div>
 	</div>
+	<?PHP require_once('footer.php'); ?>
 </body>
 </html>

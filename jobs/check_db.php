@@ -359,6 +359,12 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
 			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 		}
+
+		if(version_compare($cfg['version_current_using'], '1.3.11', '<')) {
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('imprint_enabled', '0'),('imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'),('imprint_email', 'info@example.com'),('imprint_phone', '+49 171 1234567'),('imprint_notes', NULL),('imprint_privacy-policy', 'Add your own privacy policy here. (editable in the webinterface)');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.11] Added new imprint values.");
+			}
+		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}
 	enter_logfile($cfg,5,"Check Ranksystem database for updates [done]");

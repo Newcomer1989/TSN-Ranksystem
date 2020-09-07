@@ -374,6 +374,7 @@ require_once('nav.php');
 			</div>
 		</div>
 	</div>
+	<?PHP require_once('footer.php'); ?>
 	<script>
 		Morris.Donut({
 		  element: 'top10vs_donut1',
