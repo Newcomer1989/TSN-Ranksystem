@@ -14,11 +14,6 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 	}
 
 	$sqlhis = array_slice($db_cache['all_user'],$job_begin ,10);
-	
-	$sqlfile = $cfg['logs_path'].'temp_sqlhis.sql';
-	$sqldump = fopen($sqlfile, 'wa+');
-	fwrite($sqldump, DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s.u ").' SQL: '.print_r($sqlhis, true)."\n");
-	fclose($sqldump);
 
 	$cldbids = '';
 	foreach ($sqlhis as $uuid => $userstats) {
@@ -38,37 +33,37 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 		}
 
 		$allupdateuuid = '';
-		
+
 		foreach ($sqlhis as $uuid => $userstats) {
 			check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
+
+			$keybase = array_search($db_cache['job_check']['last_snapshot_id']['timestamp'], array_column($userdata[$userstats['cldbid']], 'id'));
+			$keyweek = array_search($weekago, array_column($userdata[$userstats['cldbid']], 'id'));
+			$keymonth = array_search($monthago, array_column($userdata[$userstats['cldbid']], 'id'));
+
+			if(isset($userdata[$userstats['cldbid']]) && isset($userdata[$userstats['cldbid']][$keyweek]) && $userdata[$userstats['cldbid']][$keyweek]['id'] == $weekago) {
+				$count_week = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keyweek]['count'];
+				$idle_week = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keyweek]['idle'];
+				$active_week = $count_week - $idle_week;
+			} else {
+				$count_week = 0;
+				$idle_week = 0;
+				$active_week = 0;
+			}
+			if(isset($userdata[$userstats['cldbid']]) && isset($userdata[$userstats['cldbid']][$keymonth]) && $userdata[$userstats['cldbid']][$keymonth]['id'] == $monthago) {
+				$count_month = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keymonth]['count'];
+				$idle_month = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keymonth]['idle'];
+				$active_month = $count_month - $idle_month;
+			} else {
+				$count_month = 0;
+				$idle_month = 0;
+				$active_month = 0;
+			}
+
 			try {
 				$clientinfo = $ts3->clientInfoDb($userstats['cldbid']);
-				$keybase = array_search($db_cache['job_check']['last_snapshot_id']['timestamp'], array_column($userdata[$userstats['cldbid']], 'id'));
-				$keyweek = array_search($weekago, array_column($userdata[$userstats['cldbid']], 'id'));
-				$keymonth = array_search($monthago, array_column($userdata[$userstats['cldbid']], 'id'));
-
-				if(isset($userdata[$userstats['cldbid']]) && isset($userdata[$userstats['cldbid']][$keyweek]) && $userdata[$userstats['cldbid']][$keyweek]['id'] == $weekago) {
-					$count_week = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keyweek]['count'];
-					$idle_week = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keyweek]['idle'];
-					$active_week = $count_week - $idle_week;
-				} else {
-					$count_week = 0;
-					$idle_week = 0;
-					$active_week = 0;
-				}
-				if(isset($userdata[$userstats['cldbid']]) && isset($userdata[$userstats['cldbid']][$keymonth]) && $userdata[$userstats['cldbid']][$keymonth]['id'] == $monthago) {
-					$count_month = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keymonth]['count'];
-					$idle_month = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keymonth]['idle'];
-					$active_month = $count_month - $idle_month;
-				} else {
-					$count_month = 0;
-					$idle_month = 0;
-					$active_month = 0;
-				}
-
 				$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);
 				if($clientinfo['client_totalconnections'] > 16777215) $clientinfo['client_totalconnections'] = 16777215;
-				$allupdateuuid .= "('$uuid',$count_week,$count_month,$idle_week,$idle_month,$active_week,$active_month,{$clientinfo['client_totalconnections']},'{$clientinfo['client_base64HashClientUID']}',{$clientinfo['client_total_bytes_uploaded']},{$clientinfo['client_total_bytes_downloaded']},$clientdesc,$nowtime),";
 			} catch (Exception $e) {
 				if($e->getCode() == 512 || $e->getCode() == 1281) {
 					enter_logfile($cfg,6,"Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by Ranksystem is missing in TS database, perhaps its already deleted or cldbid changed. Try to search for client by uuid.");
@@ -78,10 +73,19 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 							enter_logfile($cfg,4,"  Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by the Ranksystem changed its cldbid. New cldbid is ".$getcldbid[0]."."); 
 							if($cfg['rankup_client_database_id_change_switch'] == 1) {
 								$db_cache['all_user'][$uuid]['cldbid'] = $getcldbid[0];
-								$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=0,`idle`=0 WHERE `uuid`='$uuid';\nUPDATE `$dbname`.`stats_user` SET `count_week`=0,`count_month`=0,`idle_week`=0,`idle_month`=0,`achiev_time`=0,`achiev_time_perc`=0,`active_week`=0,`active_month`=0 WHERE `uuid`='$uuid';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
+								$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=0,`idle`=0 WHERE `uuid`='$uuid';\nUPDATE `$dbname`.`stats_user` SET `count_week`=0,`count_month`=0,`idle_week`=0,`idle_month`=0,`active_week`=0,`active_month`=0 WHERE `uuid`='$uuid';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
 								enter_logfile($cfg,4,"    ".sprintf($lang['changedbid'], $userstats['name'], $uuid, $userstats['cldbid'], $getcldbid[0]));
 							} else {
 								$sqlexec .= "UPDATE `$dbname`.`user` SET `cldbid`={$getcldbid[0]} WHERE `uuid`='$uuid';\n";
+								// select current user_snapshot entries and insert this with the new database-ID
+								foreach($userdata[$userstats['cldbid']] as $id => $data) {
+									$allinsert .= "('{$getcldbid[0]}',$id,{$data['count']},{$data['idle']}),";
+								}
+								if ($allinsert != '') {
+									$allinsert = substr($allinsert, 0, -1);
+									$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`cldbid`,`id`,`count`,`idle`) VALUES $allinsert ON DUPLICATE KEY UPDATE `count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`);\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
+								}
+								unset($allinsert);
 								enter_logfile($cfg,4,"    Store new cldbid ".$getcldbid[0]." for client (uuid: ".$uuid." old cldbid: ".$userstats['cldbid'].")"); 
 							}
 						} else {
@@ -91,13 +95,19 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 						if($e->getCode() == 2568) {
 							enter_logfile($cfg,4,$e->getCode() . ': ' . $e->getMessage()."; Error due command clientdbfind (permission: b_virtualserver_client_dbsearch needed).");
 						} else {
-							enter_logfile($cfg,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") is missing in TS database, it seems to be deleted. Run !clean to correct this.");
+							enter_logfile($cfg,6,$e->getCode() . ': ' . $e->getMessage()."; Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") is missing in TS database, it seems to be deleted. Run the !clean command to correct this.");
+							$sqlexec .= "UPDATE `$dbname`.`stats_user` SET `count_week`=0,`count_month`=0,`idle_week`=0,`idle_month`=0,`active_week`=0,`active_month`=0,`removed`=1 WHERE `uuid`='$uuid';\n";
 						}
 					}
 				} else {
 					enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage()."; Error due command clientdbinfo for client-database-ID {$userstats['cldbid']} (permission: b_virtualserver_client_dbinfo needed).");
 				}
+
+				$clientdesc = $clientinfo['client_base64HashClientUID'] = $mysqlcon->quote('', ENT_QUOTES);
+				$clientinfo['client_totalconnections'] = $clientinfo['client_total_bytes_uploaded'] = $clientinfo['client_total_bytes_downloaded'] = 0;
 			}
+
+			$allupdateuuid .= "('$uuid',$count_week,$count_month,$idle_week,$idle_month,$active_week,$active_month,{$clientinfo['client_totalconnections']},'{$clientinfo['client_base64HashClientUID']}',{$clientinfo['client_total_bytes_uploaded']},{$clientinfo['client_total_bytes_downloaded']},$clientdesc,$nowtime),";
 		}
 		unset($sqlhis,$userdataweekbegin,$userdataend,$userdatamonthbegin,$clientinfo,$count_week,$idle_week,$active_week,$count_month,$idle_month,$active_month,$clientdesc);
 

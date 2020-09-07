@@ -80,7 +80,7 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 			} else {
 				enter_logfile($cfg,4,"    Reset Server statistics summary (table: stats_server)");
 			}
-			if($mysqlcon->exec("UPDATE `$dbname`.`stats_user` SET `rank`='0', `count_week`='0', `count_month`='0', `idle_week`='0', `idle_month`='0', `achiev_count`='0', `achiev_time`='0', `achiev_connects`='0', `achiev_time_perc`='0', `achiev_connects_perc`='0', `total_connections`='0', `active_week`='0', `active_month`='0';") === false) {
+			if($mysqlcon->exec("UPDATE `$dbname`.`stats_user` SET `count_week`='0', `count_month`='0', `idle_week`='0', `idle_month`='0', `total_connections`='0', `active_week`='0', `active_month`='0';") === false) {
 				enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				$err++;
 			} else {

@@ -21,7 +21,7 @@ if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `s
 }
 
 $assign_groups_active = 0;
-if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_POST['assign_groups_active']) && !isset($_POST['assign_groups_groupids'])) {
+if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_POST['assign_groups_active']) && !isset($_POST['assign_groups_groupids']) && !isset($_POST['assign_groups_excepted_groupids'])) {
 	$err_msg = $lang['stag0010'];
 	$err_lvl = 3;
 } elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
@@ -33,8 +33,14 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_
 		}
 	}
 	$assign_groups_groupids = substr($assign_groups_groupids, 0, -1);
+	if (isset($_POST['assign_groups_excepted_groupids']) && $_POST['assign_groups_excepted_groupids'] != NULL) {
+		foreach ($_POST['assign_groups_excepted_groupids'] as $group) {
+			$assign_groups_excepted_groupids .= $group.',';
+		}
+	}
+	$assign_groups_excepted_groupids = substr($assign_groups_excepted_groupids, 0, -1);
 	if (isset($_POST['assign_groups_active'])) $assign_groups_active = 1;
-	if ($mysqlcon->exec("UPDATE `$dbname`.`addons_config` SET `value` = CASE `param` WHEN 'assign_groups_active' THEN '{$assign_groups_active}' WHEN 'assign_groups_limit' THEN '{$assign_groups_limit}' WHEN 'assign_groups_groupids' THEN '{$assign_groups_groupids}' END WHERE `param` IN ('assign_groups_active','assign_groups_groupids','assign_groups_limit')") === false) {
+	if ($mysqlcon->exec("UPDATE `$dbname`.`addons_config` SET `value` = CASE `param` WHEN 'assign_groups_active' THEN '{$assign_groups_active}' WHEN 'assign_groups_limit' THEN '{$assign_groups_limit}' WHEN 'assign_groups_groupids' THEN '{$assign_groups_groupids}' WHEN 'assign_groups_excepted_groupids' THEN '{$assign_groups_excepted_groupids}' END WHERE `param` IN ('assign_groups_active','assign_groups_groupids','assign_groups_limit','assign_groups_excepted_groupids')") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -42,6 +48,7 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_
 		$err_lvl = NULL;
     }
 	$addons_config['assign_groups_groupids']['value'] = $assign_groups_groupids;
+	$addons_config['assign_groups_excepted_groupids']['value'] = $assign_groups_excepted_groupids;
 	$addons_config['assign_groups_limit']['value'] = $_POST['assign_groups_limit'];
 	$addons_config['assign_groups_active']['value'] = $assign_groups_active;
 } elseif(isset($_POST['update'])) {
@@ -122,6 +129,26 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_
 											</script>
 										</div>
 									</div>
+									<div class="form-group">
+										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0018"><?php echo $lang['wiexgrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
+										<div class="col-sm-8">
+											<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" multiple name="assign_groups_excepted_groupids[]">
+											<?PHP
+											$assign_groups_excepted_groupids = explode(',', $addons_config['assign_groups_excepted_groupids']['value']);
+											foreach ($groupslist as $groupID => $groupParam) {
+												if (in_array($groupID, $assign_groups_excepted_groupids)) $selected=" selected"; else $selected="";
+												if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
+												if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
+												if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
+												if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
+												if ($groupID != 0) {
+													echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+												}
+											}
+											?>
+											</select>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -163,6 +190,22 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_
       </div>
       <div class="modal-body">
         <?php echo $lang['stag0003']; ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="stag0018" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><?php echo $lang['wiexgrp']; ?></h4>
+      </div>
+      <div class="modal-body">
+        <?php echo $lang['stag0018']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

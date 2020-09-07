@@ -22,37 +22,56 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
+$notinuuid = '';
+if($cfg['rankup_excepted_unique_client_id_list'] != NULL) {
+	foreach($cfg['rankup_excepted_unique_client_id_list'] as $uuid => $value) {
+		$notinuuid .= "'".$uuid."',";
+	}
+	$notinuuid = substr($notinuuid, 0, -1);
+} else {
+	$notinuuid = "'0'";
+}
+
+$notingroup = '';
+$andnotgroup = '';
+if($cfg['rankup_excepted_group_id_list'] != NULL) {
+	foreach($cfg['rankup_excepted_group_id_list'] as $group => $value) {
+		$notingroup .= "'".$group."',";
+		$andnotgroup .= " AND `u`.`cldgroup` NOT LIKE ('".$group.",%') AND `u`.`cldgroup` NOT LIKE ('%,".$group.",%')";
+	}
+	$notingroup = substr($notingroup, 0, -1);
+} else {
+	$notingroup = '0';
+}
+
 if ($cfg['rankup_time_assess_mode'] == 1) {
-	$db_arr = $mysqlcon->query("SELECT `uuid`,`name`,`count`,`idle`,`cldgroup`,`online` FROM `$dbname`.`user` ORDER BY (`count` - `idle`) DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$order = "(`count` - `idle`)";
 	$texttime = $lang['sttw0013'];
 } else {
-	$db_arr = $mysqlcon->query("SELECT `uuid`,`name`,`count`,`idle`,`cldgroup`,`online` FROM `$dbname`.`user` ORDER BY `count` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$order = "`count`";
 	$texttime = $lang['sttw0003'];
 }
-$sumentries = count($db_arr) - 10;
+
+$db_arr = $mysqlcon->query("SELECT `u`.`uuid`,`u`.`name`,`u`.`count`,`u`.`idle`,`u`.`cldgroup`,`u`.`online` FROM (SELECT `uuid`,`removed` FROM `$dbname`.`stats_user` WHERE `removed`!=1) `s` INNER JOIN `$dbname`.`user` `u` ON `u`.`uuid`=`s`.`uuid` WHERE `u`.`uuid` NOT IN ($notinuuid) AND `u`.`cldgroup` NOT IN ($notingroup) $andnotgroup ORDER BY $order DESC LIMIT 10")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+
 $count10 = 0;
 $top10_sum = 0;
 $top10_idle_sum = 0;
 
-
 foreach ($db_arr as $uuid => $client) {
-	$sgroups = array_flip(explode(",", $client['cldgroup']));
-	if (!isset($cfg['rankup_excepted_unique_client_id_list'][$uuid]) && (!isset($cfg['rankup_excepted_group_id_list']) || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
-		if ($count10 == 10) break;
-		if ($cfg['rankup_time_assess_mode'] == 1) {
-			$hours = $client['count'] - $client['idle'];
-		} else {
-			$hours = $client['count'];
-		}
-		$top10_sum = round(($client['count']/3600)) + $top10_sum;
-		$top10_idle_sum = round(($client['idle']/3600)) + $top10_idle_sum;
-		$client_data[$count10] = array(
-		'name'		=>	$client['name'],
-		'count'		=>	$hours,
-		'online'	=>	$client['online']
-		);
-		$count10++;
+	if ($cfg['rankup_time_assess_mode'] == 1) {
+		$hours = $client['count'] - $client['idle'];
+	} else {
+		$hours = $client['count'];
 	}
+	$top10_sum = round(($client['count']/3600)) + $top10_sum;
+	$top10_idle_sum = round(($client['idle']/3600)) + $top10_idle_sum;
+	$client_data[$count10] = array(
+	'name'		=>	$client['name'],
+	'count'		=>	$hours,
+	'online'	=>	$client['online']
+	);
+	$count10++;
 }
 
 for($count10 = $count10; $count10 <= 10; $count10++) {
@@ -63,9 +82,10 @@ for($count10 = $count10; $count10 <= 10; $count10++) {
 	);
 }
 
-$sum = $mysqlcon->query("SELECT SUM(`count`) AS `count`, SUM(`idle`) AS `idle` FROM `$dbname`.`user`")->fetch();
+$sum = $mysqlcon->query("SELECT SUM(`count`) AS `count`, SUM(`idle`) AS `idle`, COUNT(*) AS `user` FROM `$dbname`.`user`")->fetch();
 $others_sum = round(($sum['count']/3600)) - $top10_sum;
 $others_idle_sum = round(($sum['idle']/3600)) - $top10_idle_sum;
+$sumentries = $sum['user'] - 10;
 
 function get_percentage($max_value, $value) {
 	return (round(($value/$max_value)*100));

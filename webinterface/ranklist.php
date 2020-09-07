@@ -230,6 +230,9 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 											echo '<option data-icon="fas fa-id-card" value="uuid"'.($cfg['stats_column_default_sort'] === 'uuid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listuid'].'</option>';
 											echo '<option data-icon="fas fa-database" value="cldbid"'.($cfg['stats_column_default_sort'] === 'cldbid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listcldbid'].'</option>';
 											echo '<option data-icon="fas fa-user-clock" value="lastseen"'.($cfg['stats_column_default_sort'] === 'lastseen' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listseen'].'</option>';
+											echo '<option data-icon="fas fa-globe-europe" value="nation"'.($cfg['stats_column_default_sort'] === 'nation' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnat'].'</option>';
+											echo '<option data-icon="fas fa-tag" value="version"'.($cfg['stats_column_default_sort'] === 'version' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listver'].'</option>';
+											echo '<option data-icon="fas fa-server" value="platform"'.($cfg['stats_column_default_sort'] === 'platform' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listpla'].'</option>';
 											echo '<option data-icon="fas fa-hourglass-start" value="count"'.($cfg['stats_column_default_sort'] === 'count' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumo'].'</option>';
 											echo '<option data-icon="fas fa-hourglass-end" value="idle"'.($cfg['stats_column_default_sort'] === 'idle' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumi'].'</option>';
 											echo '<option data-icon="fas fa-hourglass-half" value="active"'.($cfg['stats_column_default_sort'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsuma'].'</option>';

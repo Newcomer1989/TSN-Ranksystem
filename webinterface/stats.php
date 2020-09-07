@@ -14,8 +14,8 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 
 if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	if (isset($_POST['stats_show_site_navigation_switch'])) $cfg['stats_show_site_navigation_switch'] = 1; else $cfg['stats_show_site_navigation_switch'] = 0;
-	if (isset($_POST['stats_show_maxclientsline_switch'])) $cfg['stats_show_maxclientsline_switch'] = 1; else $cfg['stats_show_maxclientsline_switch'] = 0;
 	if (isset($_POST['teamspeak_verification_channel_id'])) $cfg['teamspeak_verification_channel_id'] = $_POST['teamspeak_verification_channel_id']; else $cfg['teamspeak_verification_channel_id'] = 0;
+	$cfg['stats_show_maxclientsline_switch'] = $_POST['stats_show_maxclientsline_switch'];
 	$cfg['stats_time_bronze'] = $_POST['stats_time_bronze'];
 	$cfg['stats_time_silver'] = $_POST['stats_time_silver'];
 	$cfg['stats_time_gold'] = $_POST['stats_time_gold'];
@@ -200,11 +200,14 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group">
 								<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishmaxdesc"><?php echo $lang['wishmax']; ?><i class="help-hover fas fa-question-circle"></i></label>
 								<div class="col-sm-8">
-									<?PHP if ($cfg['stats_show_maxclientsline_switch'] == 1) {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_maxclientsline_switch" value="',$cfg['stats_show_maxclientsline_switch'],'">';
-									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_maxclientsline_switch" value="',$cfg['stats_show_maxclientsline_switch'],'">';
-									} ?>
+									<select class="selectpicker show-tick form-control basic" name="stats_show_maxclientsline_switch">
+									<?PHP
+									echo '<option data-subtext="[default]" value="0"'; if($cfg['stats_show_maxclientsline_switch']=="0") echo " selected=selected"; echo '>',$lang['wishmax0'],'</option>';
+									echo '<option value="1"'; if($cfg['stats_show_maxclientsline_switch']=="1") echo " selected=selected"; echo '>',$lang['wishmax1'],'</option>';
+									echo '<option value="2"'; if($cfg['stats_show_maxclientsline_switch']=="2") echo " selected=selected"; echo '>',$lang['wishmax2'],'</option>';
+									echo '<option value="3"'; if($cfg['stats_show_maxclientsline_switch']=="3") echo " selected=selected"; echo '>',$lang['wishmax3'],'</option>';
+									?>
+									</select>
 								</div>
 							</div>
 						</div>
