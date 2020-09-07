@@ -1,6 +1,6 @@
 ﻿<?PHP
 require_once('other/config.php');
-$rsversion = '1.3.10';
+$rsversion = '1.3.11';
 ?>
 <!DOCTYPE html>
 <html>
@@ -194,7 +194,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_active','0'),('assign_groups_groupids',''),('assign_groups_limit','')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_active','0'),('assign_groups_excepted_groupids',''),('assign_groups_groupids',''),('assign_groups_limit','')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}

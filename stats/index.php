@@ -496,6 +496,6 @@ if (isset($nation[$sql_res['country_nation_name_5']])) {
 <input type="hidden" id="tsn32" value="<?PHP echo $sql_res['platform_5']; ?>">
 <input type="hidden" id="tsn33" value="<?PHP echo $sql_res['platform_other']; ?>">
 <input type="hidden" id="tsn34" value="<?PHP echo ($sql_res['server_used_slots'] + $sql_res['server_free_slots']); ?>">
-<input type="hidden" id="tsn35" value="<?PHP if($cfg['stats_show_maxclientsline_switch']==1) { echo "on"; } ?>">
+<input type="hidden" id="tsn35" value="<?PHP echo $cfg['stats_show_maxclientsline_switch']; ?>">
 </body>
 </html>

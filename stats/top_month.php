@@ -22,39 +22,58 @@ if(!isset($_SESSION[$rspathhex.'tsuid'])) {
 	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
 }
 
+$notinuuid = '';
+if($cfg['rankup_excepted_unique_client_id_list'] != NULL) {
+	foreach($cfg['rankup_excepted_unique_client_id_list'] as $uuid => $value) {
+		$notinuuid .= "'".$uuid."',";
+	}
+	$notinuuid = substr($notinuuid, 0, -1);
+} else {
+	$notinuuid = "'0'";
+}
+
+$notingroup = '';
+$andnotgroup = '';
+if($cfg['rankup_excepted_group_id_list'] != NULL) {
+	foreach($cfg['rankup_excepted_group_id_list'] as $group => $value) {
+		$notingroup .= "'".$group."',";
+		$andnotgroup .= " AND `u`.`cldgroup` NOT LIKE ('".$group.",%') AND `u`.`cldgroup` NOT LIKE ('%,".$group.",%')";
+	}
+	$notingroup = substr($notingroup, 0, -1);
+} else {
+	$notingroup = '0';
+}
+
 if ($cfg['rankup_time_assess_mode'] == 1) {
-	$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM `$dbname`.`stats_user` AS `s` INNER JOIN `$dbname`.`user` AS `u` ON `s`.`uuid`=`u`.`uuid` WHERE `s`.`removed`='0' ORDER BY (`s`.`count_month` - `s`.`idle_month`) DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$order = "(`s`.`count_month` - `s`.`idle_month`)";
 	$texttime = $lang['sttw0013'];
 } else {
-	$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM `$dbname`.`stats_user` AS `s` INNER JOIN `$dbname`.`user` AS `u` ON `s`.`uuid`=`u`.`uuid` WHERE `s`.`removed`='0' ORDER BY `s`.`count_month` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$order = "`s`.`count_month`";
 	$texttime = $lang['sttw0003'];
 }
 
+$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM (SELECT `uuid`,`removed`,`count_month`,`idle_month` FROM `$dbname`.`stats_user` WHERE `removed`!=1) `s` INNER JOIN `$dbname`.`user` `u` ON `u`.`uuid`=`s`.`uuid` WHERE `u`.`uuid` NOT IN ($notinuuid) AND `u`.`cldgroup` NOT IN ($notingroup) $andnotgroup ORDER BY $order DESC LIMIT 10")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+
 $count_ids = $mysqlcon->query("SELECT COUNT(DISTINCT(`id`)) AS `count` from `$dbname`.`user_snapshot`")->fetch();
 
-$sumentries = count($db_arr) - 10;
 $count10 = 0;
 $top10_sum = 0;
 $top10_idle_sum = 0;
 
 foreach ($db_arr as $uuid => $client) {
-	$sgroups = array_flip(explode(",", $client['cldgroup']));
-	if (!isset($cfg['rankup_excepted_unique_client_id_list'][$uuid]) && (!isset($cfg['rankup_excepted_group_id_list']) || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
-		if ($count10 == 10) break;
-		if ($cfg['rankup_time_assess_mode'] == 1) {
-			$hours = $client['count_month'] - $client['idle_month'];
-		} else {
-			$hours = $client['count_month'];
-		}
-		$top10_sum = round(($client['count_month']/3600)) + $top10_sum;
-		$top10_idle_sum = round(($client['idle_month']/3600)) + $top10_idle_sum;
-		$client_data[$count10] = array(
-		'name'		=>	$client['name'],
-		'count'		=>	$hours,
-		'online'	=>	$client['online']
-		);
-		$count10++;
+	if ($cfg['rankup_time_assess_mode'] == 1) {
+		$hours = $client['count_month'] - $client['idle_month'];
+	} else {
+		$hours = $client['count_month'];
 	}
+	$top10_sum = round(($client['count_month']/3600)) + $top10_sum;
+	$top10_idle_sum = round(($client['idle_month']/3600)) + $top10_idle_sum;
+	$client_data[$count10] = array(
+	'name'		=>	$client['name'],
+	'count'		=>	$hours,
+	'online'	=>	$client['online']
+	);
+	$count10++;
 }
 
 for($count10 = $count10; $count10 <= 10; $count10++) {
@@ -65,9 +84,10 @@ for($count10 = $count10; $count10 <= 10; $count10++) {
 	);
 }
 
-$sum = $mysqlcon->query("SELECT SUM(`count_month`) AS `count`, SUM(`idle_month`) AS `idle` FROM `$dbname`.`stats_user`")->fetch();
+$sum = $mysqlcon->query("SELECT SUM(`count`) AS `count`, SUM(`idle`) AS `idle`, COUNT(*) AS `user` FROM `$dbname`.`user`")->fetch();
 $others_sum = round(($sum['count']/3600)) - $top10_sum;
 $others_idle_sum = round(($sum['idle']/3600)) - $top10_idle_sum;
+$sumentries = $sum['user'] - 10;
 
 function get_percentage($max_value, $value) {
 	return (round(($value/$max_value)*100));

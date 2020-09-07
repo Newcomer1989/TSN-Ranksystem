@@ -63,6 +63,7 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 	}
 
 	$allowed_groups_arr = explode(',', $addons_config['assign_groups_groupids']['value']);
+	$excepted_groups_arr = explode(',', $addons_config['assign_groups_excepted_groupids']['value']);
 
 	if(isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		if(($sumentries = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`addon_assign_groups` WHERE `uuid`='$uuid'")->fetch(PDO::FETCH_NUM)) === false) {
@@ -72,7 +73,16 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 				$err_msg = $lang['stag0007']; $err_lvl = 3;
 			} else {
 				$set_groups = '';
-				$count_limit = 0;
+				$count_limit = $excepted = 0;
+				if(isset($excepted_groups_arr) && $excepted_groups_arr != '') {
+					foreach($excepted_groups_arr as $excepted_group) {
+						if(in_array($excepted_group, $cld_groups)) {
+							$excepted++;
+							$err_msg = sprintf($lang['stag0019'], $sqlhisgroup[$excepted_group]['sgidname'], $excepted_group);
+							break;
+						}
+					}
+				}
 				foreach($allowed_groups_arr as $allowed_group) {
 					if(in_array($allowed_group, $cld_groups)) {
 						$count_limit++;
@@ -90,7 +100,7 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 					}
 				}
 				$set_groups = substr($set_groups, 0, -1);
-				if($set_groups != '' && $count_limit <= $addons_config['assign_groups_limit']['value']) {
+				if($set_groups != '' && $count_limit <= $addons_config['assign_groups_limit']['value'] && $excepted == 0) {
 					if ($mysqlcon->exec("INSERT INTO `$dbname`.`addon_assign_groups` SET `uuid`='$uuid',`grpids`='$set_groups'") === false) {
 						$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 					} elseif($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`=1 WHERE `job_name`='reload_trigger'; ") === false) {
@@ -100,6 +110,8 @@ if(count($_SESSION[$rspathhex.'multiple']) > 1 and !isset($_SESSION[$rspathhex.'
 					}
 				} elseif($count_limit > $addons_config['assign_groups_limit']['value']) {
 					$err_msg = sprintf($lang['stag0009'], $addons_config['assign_groups_limit']['value']); $err_lvl = 3;
+				} elseif($excepted > 0) {
+					$err_lvl = 3;
 				} else {
 					$err_msg = $lang['stag0010']; $err_lvl = 3;
 				}

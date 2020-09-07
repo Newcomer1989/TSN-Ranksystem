@@ -235,7 +235,12 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 						if($botstatus == 1) {
 							echo '<li><div class="btn-group-justified alertbot alert-success" style="width:100%;"><i class="fas fa-check"></i>&nbsp;&nbsp;'.$lang['boton'].'</div></li>';
 						} else {
-							echo '<li><div class="btn-group-justified alertbot alert-info" style="width:100%;"><i class="fas fa-times"></i>&nbsp;&nbsp;'.$lang['botoff'].'</div></li>';
+							echo '<li><div class="btn-group-justified alertbot alert-info" style="width:100%;"><i class="fas fa-times"></i>&nbsp;&nbsp;'.$lang['botoff'];
+							if (file_exists($cfg['logs_path']."autostart_deactivated")) {
+								echo '<br><br><i class="fas fa-info-circle"></i>&nbsp;&nbsp;',$lang['autooff'],'</div></li>';
+							} else {
+								echo '</div></li>';
+							}
 						}
 					}
 					?>
