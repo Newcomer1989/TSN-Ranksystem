@@ -16,7 +16,7 @@ $andnotgroup = '';
 if($cfg['rankup_excepted_group_id_list'] != NULL) {
 	foreach($cfg['rankup_excepted_group_id_list'] as $group => $value) {
 		$notingroup .= "'".$group."',";
-		$andnotgroup .= " AND `u`.`cldgroup` NOT LIKE ('".$group.",%') AND `u`.`cldgroup` NOT LIKE ('%,".$group.",%')";
+		$andnotgroup .= " AND `u`.`cldgroup` NOT LIKE ('%,".$group."') AND `u`.`cldgroup` NOT LIKE ('%,".$group.",%') AND `u`.`cldgroup` NOT LIKE ('".$group.",%')";
 	}
 	$notingroup = substr($notingroup, 0, -1);
 } else {
