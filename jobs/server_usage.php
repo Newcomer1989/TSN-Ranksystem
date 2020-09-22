@@ -29,7 +29,7 @@ function server_usage($mysqlcon,$cfg,$dbname,$serverinfo,&$db_cache) {
 					$dtT        = new DateTime("@".round($count));
 				}
 				$grpcount=0;
-				foreach ($cfg['rankup_definition'] as $time => $groupid) {
+				foreach ($cfg['rankup_definition'] as $time => $dummy) {
 					$grpcount++;
 					if ($activetime > $time) {
 						if($grpcount == 1) {

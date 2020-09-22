@@ -1,21 +1,5 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-require_once('../other/config.php');
-require_once('../other/session.php');
-require_once('../other/load_addons_config.php');
-
-$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+require_once('_preload.php');
 
 if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 	foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
@@ -34,13 +18,7 @@ if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 	}
 }
 
-if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
-}
-
 $sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_nations` ORDER BY `count` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
-
-require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -90,6 +68,6 @@ foreach ($sql_res as $country => $value) {
 			</div>  
 		</div>
 	</div>
-	<?PHP require_once('footer.php'); ?>
+	<?PHP require_once('_footer.php'); ?>
 </body>
 </html>

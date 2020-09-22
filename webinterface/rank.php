@@ -27,29 +27,31 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$grouparr_old = null;
 	} else {
 		foreach (explode(',', $_POST['rankup_definition']) as $entry) {
-			list($time, $groupid) = explode('=>', $entry);
-			$grouparr_old[$groupid] = $time;
+			list($time, $groupid, $keepflag) = explode('=>', $entry);
+			if($keepflag == NULL) $keepflag = 0;
+			$grouparr_old[$time] = array("time"=>$time,"group"=>$groupid,"keep"=>$keepflag);
+			$cfg['rankup_definition'] = $grouparr_old;
 		}
 	}
-	
+
 	if(isset($groupslist) && $groupslist != NULL) {
-		foreach($grouparr_old as $groupid => $time) {
-			if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-				$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']).'<br>';
-				$err_lvl = 3;
-				$errcnf++;
+		if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
+			foreach($cfg['rankup_definition'] as $time => $value) {
+				if(!isset($groupslist[$value['group']]) && $value['group'] != NULL) {
+					$err_msg .= sprintf($lang['upgrp0001'], $value['group'], $lang['wigrptime']).'<br>';
+					$err_lvl = 3;
+					$errcnf++;
+				}
 			}
 		}
 	}
-	
+
 	if($_POST['rankup_definition'] == "") {
 		$err_msg = "Saving of empty defintion prevented.<br><br>Your changes were <b>not</b> be saved!<br><br>You need at least one entry to be able to save the configuration!";
 		$err_lvl = 3;
 	} else {
-		$cfg['rankup_definition'] = $_POST['rankup_definition'];
-
 		if($errcnf == 0) {
-			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_definition','{$cfg['rankup_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_definition','{$_POST['rankup_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
 			} else {
@@ -59,13 +61,6 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 		} else {
 			$err_msg .= "<br>".$lang['errgrpid'];
 		}
-	
-		$grouptimearr = explode(',', $_POST['rankup_definition']);
-		foreach ($grouptimearr as $entry) {
-			list($key, $value) = explode('=>', $entry);
-			$addnewvalue1[$key] = $value;
-			$cfg['rankup_definition'] = $addnewvalue1;
-		}
 	}
 	
 } elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
@@ -74,21 +69,23 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$rankupgroups = [];
 		foreach($_POST['rankuptime'] as $key => $entry) {
 			$servergroupId = isset($_POST["rankupgroup"][$key]) ? $_POST["rankupgroup"][$key] : 0;
-			if(empty($servergroupId)) {
-				$servergroupId = 0;
+			if(in_array($key,$_POST["rankupkeep"])) {
+				$keepflag = 1;
+			} else {
+				$keepflag = 0;
 			}
 			if(empty($entry)) {
 				$entry = 0; 
 			}
-			$rankupgroups[] = "$entry=>$servergroupId";
+			$rankupgroups[] = "$entry=>$servergroupId=>$keepflag";
 		}
 		$rankup_definition = implode(",", $rankupgroups);
 		$grouparr = [];
 		foreach(explode(',', $rankup_definition) as $entry) {
-			list($time, $groupid) = explode('=>', $entry);
+			list($time, $groupid, $keepflag) = explode('=>', $entry);
 			$grouparr[$groupid] = $time;
 		}
-		
+
 		$err_msg = '';
 		$errcnf = 0;
 		if(isset($groupslist) && $groupslist != NULL) {
@@ -120,8 +117,8 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 		} else {
 			$grouptimearr = explode(',', $rankup_definition);
 			foreach ($grouptimearr as $entry) {
-				list($key, $value) = explode('=>', $entry);
-				$addnewvalue1[$key] = $value;
+				list($time, $groupid, $keepflag) = explode('=>', $entry);
+				$addnewvalue1[$time] = array("time"=>$time,"group"=>$groupid,"keep"=>$keepflag);
 				$cfg['rankup_definition'] = $addnewvalue1;
 			}
 		}
@@ -165,21 +162,24 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 										<div class="col-sm-5">
 											<b><?php echo $lang['wigrpt2'] ?></b>
 										</div>
-										<div class="col-sm-2"></div>
+										<div class="col-sm-2">
+											<b><?php echo $lang['wigrpt3'] ?></b>
+										</div>
 										<div class="col-sm-1"></div>
 									</div>
 								<?PHP
-								foreach($cfg['rankup_definition'] as $time => $sgroup) {
+								$rowid = 0;
+								foreach($cfg['rankup_definition'] as $rank) {
 								?>
 									<div class="form-group" name="rankupgroup">
 										<div class="col-sm-4">
-											<input type="text" class="form-control rankuptime" name="rankuptime[]" value="<?PHP echo $time; ?>">
+											<input type="text" class="form-control rankuptime" name="rankuptime[]" value="<?PHP echo $rank['time']; ?>">
 										</div>
 										<div class="col-sm-5">
 											<select class="selectpicker show-tick form-control" data-live-search="true" name="rankupgroup[]">
 											<?PHP
 											foreach ($groupslist as $groupID => $groupParam) {
-												if ($groupID == $sgroup) $selected=" selected"; else $selected="";
+												if ($groupID == $rank['group']) $selected=" selected"; else $selected="";
 												if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
 												if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
 												if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
@@ -191,10 +191,17 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 											?>
 											</select>
 										</div>
+										<div class="col-sm-2">
+											<?PHP if ($rank['keep'] == 1) {
+												echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="rankupkeep[]" value="',$rowid,'">';
+											} else {
+												echo '<input class="switch-animate" type="checkbox" data-size="mini" name="rankupkeep[]" value="',$rowid,'">';
+											} ?>
+										</div>
 										<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
-										<div class="col-sm-2"></div>
 									</div>
 								<?PHP
+									$rowid++;
 								} 
 									?>
 									<div class="form-group" id="addrankupgroup">
@@ -243,7 +250,7 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
 							<div class="form-group required-field-block">
 								<label class="col-sm-2 control-label"><?php echo $lang['wigrptime']; ?></label>
 								<div class="col-sm-10">
-									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9},)*[0-9]{1,9}=>[0-9]{1,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="15" name="rankup_definition" maxlength="21588" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $time => $sgroup) { $implode_definition .= $time."=>".$sgroup.","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
+									<textarea class="form-control required" data-pattern="^([0-9]{1,9}=>[0-9]{1,9}=>[0-1]{1},)*[0-9]{1,9}=>[0-9]{1,9}=>[0-1]{1}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="15" name="rankup_definition" maxlength="21588" required><?php $implode_definition = ''; foreach ($cfg['rankup_definition'] as $rank) { $implode_definition .= $rank['time']."=>".$rank['group']."=>".$rank['keep'].","; } $implode_definition = substr($implode_definition, 0, -1); echo $implode_definition; ?></textarea>
 									<div class="help-block with-errors"></div>
 								</div>
 							</div>
@@ -269,7 +276,7 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
         <h4 class="modal-title"><?php echo $lang['wigrptime']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wigrptime2desc']; ?>
+        <?php echo $lang['wigrptime2desc'],$lang['wigrptime3desc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
@@ -285,7 +292,7 @@ if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
         <h4 class="modal-title"><?php echo $lang['wigrptime']; ?></h4>
       </div>
       <div class="modal-body">
-        <?php echo $lang['wigrptimedesc']; ?>
+        <?php echo $lang['wigrptimedesc'],$lang['wigrptime3desc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

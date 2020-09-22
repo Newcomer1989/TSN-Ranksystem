@@ -1,21 +1,5 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-require_once('../other/config.php');
-require_once('../other/session.php');
-require_once('../other/load_addons_config.php');
-
-$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+require_once('_preload.php');
 
 if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 	foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
@@ -34,10 +18,6 @@ if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 	}
 }
 
-if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
-}
-
 function human_readable_size($bytes,$lang) {
 	$size = array($lang['size_byte'],$lang['size_kib'],$lang['size_mib'],$lang['size_gib'],$lang['size_tib'],$lang['size_pib'],$lang['size_eib'],$lang['size_zib'],$lang['size_yib']);
 	$factor = floor((strlen($bytes) - 1) / 3);
@@ -51,8 +31,6 @@ if(($sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_server`")->fetch
 if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` WHERE `sgid`=0")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
 	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 }
-
-require_once('nav.php');
 ?>
 		<div id="page-wrapper">
 <?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
@@ -497,6 +475,6 @@ if (isset($nation[$sql_res['country_nation_name_5']])) {
 <input type="hidden" id="tsn33" value="<?PHP echo $sql_res['platform_other']; ?>">
 <input type="hidden" id="tsn34" value="<?PHP echo ($sql_res['server_used_slots'] + $sql_res['server_free_slots']); ?>">
 <input type="hidden" id="tsn35" value="<?PHP echo $cfg['stats_show_maxclientsline_switch']; ?>">
-<?PHP require_once('footer.php'); ?>
+<?PHP require_once('_footer.php'); ?>
 </body>
 </html>

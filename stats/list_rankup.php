@@ -1,22 +1,5 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-
-require_once('../other/config.php');
-require_once('../other/session.php');
-require_once('../other/load_addons_config.php');
-
-$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+require_once('_preload.php');
 
 if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 	foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
@@ -167,7 +150,6 @@ if(isset($_GET['admin'])) {
 		$adminlogin = 1;
 	}
 }
-require_once('nav.php');
 
 $countentries = 0;
 
@@ -328,9 +310,9 @@ if($adminlogin == 1) {
 							$activetime = $value['count'];
 						}
 						$grpcount=0;
-						foreach ($cfg['rankup_definition'] as $time => $groupid) {
+						foreach ($cfg['rankup_definition'] as $rank) {
 							$grpcount++;
-							if ($activetime < $time || $grpcount == count($cfg['rankup_definition']) && $value['nextup'] <= 0 && $cfg['stats_show_clients_in_highest_rank_switch'] == 1 || $grpcount == count($cfg['rankup_definition']) && $value['nextup'] == 0 && $adminlogin == 1) {
+							if ($activetime < $rank['time'] || $grpcount == count($cfg['rankup_definition']) && $value['nextup'] <= 0 && $cfg['stats_show_clients_in_highest_rank_switch'] == 1 || $grpcount == count($cfg['rankup_definition']) && $value['nextup'] == 0 && $adminlogin == 1) {
 								echo '<tr>';
 								if ($cfg['stats_column_rank_switch'] == 1 || $adminlogin == 1) {
 									if($value['except'] == 2 || $value['except'] == 3) {
@@ -372,19 +354,19 @@ if($adminlogin == 1) {
 									echo '<td class="text-center">' , htmlspecialchars($value['platform']) , '</td>';
 								}
 								if ($cfg['stats_column_online_time_switch'] == 1 || $adminlogin == 1) {
-									echo '<td class="text-center">';
+									echo '<td title="',round($value['count']),' sec." class="text-center">';
 									$dtF	   = new DateTime("@0");
 									$dtT	   = new DateTime("@".round($value['count']));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
 								}
 								if ($cfg['stats_column_idle_time_switch'] == 1 || $adminlogin == 1) {
-									echo '<td class="text-center">';
+									echo '<td title="',round($value['idle']),' sec." class="text-center">';
 									$dtF	   = new DateTime("@0");
 									$dtT	   = new DateTime("@".round($value['idle']));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
 								}
 								if ($cfg['stats_column_active_time_switch'] == 1 || $adminlogin == 1) {
-									echo '<td class="text-center">';
+									echo '<td title="',(round($value['count'])-round($value['idle'])),' sec." class="text-center">';
 									$dtF	   = new DateTime("@0");
 									$dtT	   = new DateTime("@".(round($value['count'])-round($value['idle'])));
 									echo $dtF->diff($dtT)->format($cfg['default_date_format']);
@@ -408,15 +390,15 @@ if($adminlogin == 1) {
 									}
 								}
 								if ($cfg['stats_column_next_rankup_switch'] == 1 || $adminlogin == 1) {
-									echo '<td class="text-center">';
+									echo '<td title="';
 									if (($value['except'] == 0 || $value['except'] == 1) && $value['nextup'] > 0) {
 										$dtF	   = new DateTime("@0");
 										$dtT	   = new DateTime("@".$value['nextup']);
-										echo $dtF->diff($dtT)->format($cfg['default_date_format']) , '</td>';
+										echo round($value['nextup']),' sec." class="text-center">',$dtF->diff($dtT)->format($cfg['default_date_format']) , '</td>';
 									} elseif ($value['except'] == 0 || $value['except'] == 1) {
-										echo '0</td>';
+										echo '0 sec." class="text-center">0</td>';
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
-										echo '0</td>';
+										echo '0 sec." class="text-center">0</td>';
 									} else {
 										echo $lang['errukwn'], '</td>';
 									}
@@ -426,10 +408,10 @@ if($adminlogin == 1) {
 										echo '<td class="text-center"><em>',$lang['highest'],'</em></td>';
 									} elseif ($value['except'] == 2 || $value['except'] == 3) {
 										echo '<td class="text-center"><em>',$lang['listexcept'],'</em></td>';
-									} elseif (isset($sqlhisgroup[$groupid]) && $sqlhisgroup[$groupid]['iconid'] != 0) {
-										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$groupid]['iconid'],'.',$sqlhisgroup[$groupid]['ext'],'" width="16" height="16" alt="missed_icon">&nbsp;&nbsp;' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
-									} elseif (isset($sqlhisgroup[$groupid])) {
-										echo '<td class="text-center">' , $sqlhisgroup[$groupid]['sgidname'] , '</td>';
+									} elseif (isset($sqlhisgroup[$rank['group']]) && $sqlhisgroup[$rank['group']]['iconid'] != 0) {
+										echo '<td class="text-center"><img src="../tsicons/',$sqlhisgroup[$rank['group']]['iconid'],'.',$sqlhisgroup[$rank['group']]['ext'],'" width="16" height="16" alt="missed_icon">&nbsp;&nbsp;' , $sqlhisgroup[$rank['group']]['sgidname'] , '</td>';
+									} elseif (isset($sqlhisgroup[$rank['group']])) {
+										echo '<td class="text-center">' , $sqlhisgroup[$rank['group']]['sgidname'] , '</td>';
 									} else {
 										echo '<td class="text-center"></td>';
 									}
@@ -450,6 +432,6 @@ if($adminlogin == 1) {
 			</div>
 		</div>
 	</div>
-	<?PHP require_once('footer.php'); ?>
+	<?PHP require_once('_footer.php'); ?>
 </body>
 </html>

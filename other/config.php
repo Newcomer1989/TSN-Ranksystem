@@ -106,8 +106,9 @@ if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cf
 			$cfg['rankup_definition'] = NULL;
 		} else {
 			foreach (explode(',', $cfg['rankup_definition']) as $entry) {
-				list($key, $value) = explode('=>', $entry);
-				$addnewvalue1[$key] = $value;
+				list($time, $group, $keepflag) = explode('=>', $entry);
+				if($keepflag == NULL) $keepflag = 0;
+				$addnewvalue1[$time] = array("time"=>$time,"group"=>$group,"keep"=>$keepflag);
 				$cfg['rankup_definition'] = $addnewvalue1;
 			}
 		}

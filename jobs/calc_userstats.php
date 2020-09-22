@@ -79,11 +79,11 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 								$sqlexec .= "UPDATE `$dbname`.`user` SET `cldbid`={$getcldbid[0]} WHERE `uuid`='$uuid';\n";
 								// select current user_snapshot entries and insert this with the new database-ID
 								foreach($userdata[$userstats['cldbid']] as $id => $data) {
-									$allinsert .= "('{$getcldbid[0]}',$id,{$data['count']},{$data['idle']}),";
+									$allinsert .= "($id,'{$getcldbid[0]}',{$data['count']},{$data['idle']}),";
 								}
 								if ($allinsert != '') {
 									$allinsert = substr($allinsert, 0, -1);
-									$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`cldbid`,`id`,`count`,`idle`) VALUES $allinsert ON DUPLICATE KEY UPDATE `count_week`=VALUES(`count_week`),`count_month`=VALUES(`count_month`),`idle_week`=VALUES(`idle_week`);\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
+									$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsert ON DUPLICATE KEY UPDATE `count`=VALUES(`count`),`idle`=VALUES(`idle`);\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
 								}
 								unset($allinsert);
 								enter_logfile($cfg,4,"    Store new cldbid ".$getcldbid[0]." for client (uuid: ".$uuid." old cldbid: ".$userstats['cldbid'].")"); 

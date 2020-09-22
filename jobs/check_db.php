@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.11';
+	$cfg['version_latest_available'] = '1.3.12';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -40,7 +40,7 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 
 	function old_files($cfg) {
 		$del_folder = array('icons/','libs/ts3_lib/Adapter/Blacklist/','libs/ts3_lib/Adapter/TSDNS/','libs/ts3_lib/Adapter/Update/','libs/fonts/');
-		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php','languages/core_ar.php','languages/core_cz.php','languages/core_de.php','languages/core_en.php','languages/core_es.php','languages/core_fr.php','languages/core_it.php','languages/core_nl.php','languages/core_pl.php','languages/core_pt.php','languages/core_ro.php','languages/core_ru.php','webinterface/nav.php');
+		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php','languages/core_ar.php','languages/core_cz.php','languages/core_de.php','languages/core_en.php','languages/core_es.php','languages/core_fr.php','languages/core_it.php','languages/core_nl.php','languages/core_pl.php','languages/core_pt.php','languages/core_ro.php','languages/core_ru.php','webinterface/nav.php','stats/nav.php');
 		function rmdir_recursive($folder,$cfg) {
 			foreach(scandir($folder) as $file) {
 				if ('.' === $file || '..' === $file) continue;
@@ -345,9 +345,6 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 		}
 		
 		if(version_compare($cfg['version_current_using'], '1.3.11', '<')) {
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-			
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_excepted_groupids','');") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.11] Adjusted table addons_config successfully.");
 			}
@@ -360,10 +357,20 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 		}
 
-		if(version_compare($cfg['version_current_using'], '1.3.11', '<')) {
-			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('imprint_enabled', '0'),('imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'),('imprint_email', 'info@example.com'),('imprint_phone', '+49 171 1234567'),('imprint_notes', NULL),('imprint_privacy-policy', 'Add your own privacy policy here. (editable in the webinterface)');") === false) { } else {
-				enter_logfile($cfg,4,"    [1.3.11] Added new imprint values.");
+		if(version_compare($cfg['version_current_using'], '1.3.12', '<')) {
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
+
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_imprint_switch', '0'),('stats_imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'),('stats_imprint_address_url', 'https://site.url/imprint/'), ('stats_imprint_email', 'info@example.com'),('stats_imprint_phone', '+49 171 1234567'),('stats_imprint_notes', NULL),('stats_imprint_privacypolicy', 'Add your own privacy policy here. (editable in the webinterface)'),('stats_imprint_privacypolicy_url', 'https://site.url/privacy/');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.12] Added new imprint values.");
 			}
+
+			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
+			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
 		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}

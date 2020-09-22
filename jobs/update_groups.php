@@ -170,15 +170,19 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 					if(!isset($tsgroupids[$sgid]) && $sgid != 0 && $sgid != NULL) {
 						$delsgroupids .= $sgid . ",";
 						unset($db_cache['groups'][$sgid]);
-						if(in_array($sgid, $cfg['rankup_definition'])) {
-							enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
-							if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
-								foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
-									usleep($cfg['teamspeak_query_command_delay']);
-									try {
-										$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
-									} catch (Exception $e) {
-										enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+						foreach($cfg['rankup_definition'] as $rank) {
+							if(in_array($sgid, $rank)) {
+								if(in_array($sgid, $cfg['rankup_definition'])) {
+									enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+									if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+										foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
+											usleep($cfg['teamspeak_query_command_delay']);
+											try {
+												$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+											} catch (Exception $e) {
+												enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+											}
+										}
 									}
 								}
 							}

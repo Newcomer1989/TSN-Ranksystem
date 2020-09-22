@@ -88,7 +88,7 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 					echo '<a class="navbar-brand" href="//ts-ranksystem.com/?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
 				} ?>
 			</div>
-			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "stats.php") { ?>
+			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "ranklist.php") { ?>
 			<ul class="nav navbar-left top-nav">
 				<li class="navbar-form navbar-right">
 					<button onclick="window.open('../stats/list_rankup.php?admin=true','_blank'); return false;" class="btn btn-primary" name="adminlist">
@@ -168,12 +168,12 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 						</li>
 						<li>
 							<a href="javascript:;" data-toggle="collapse" data-target="#rank"><i class="fas fa-hourglass-half"></i>&nbsp;&nbsp;<?PHP echo $lang['stmy0002']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
-							<?PHP echo '<ul id="rank" class="'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" || basename($_SERVER['SCRIPT_NAME']) == "rank.php" || basename($_SERVER['SCRIPT_NAME']) == "boost.php" || basename($_SERVER['SCRIPT_NAME']) == "except.php" ? 'in collapse">' : 'collapse">'); ?>
+							<?PHP echo '<ul id="rank" class="'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" || basename($_SERVER['SCRIPT_NAME']) == "rank.php" || basename($_SERVER['SCRIPT_NAME']) == "boost.php" || basename($_SERVER['SCRIPT_NAME']) == "except.php" || basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? 'in collapse">' : 'collapse">'); ?>
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "core.php" ? ' class="active">' : '>'); ?>
 									<a href="core.php" class="active"><i class="fas fa-cogs"></i>&nbsp;&nbsp;<?PHP echo $lang['winav3']; ?></a>
 								</li>
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "rank.php" ? ' class="active">' : '>'); ?>
-									<a href="rank.php" class="active"><i class="fas fa-list-ol"></i>&nbsp;&nbsp;<?PHP echo $lang['stmy0002']; ?></a>
+									<a href="rank.php" class="active"><i class="fas fa-list-ol"></i>&nbsp;&nbsp;<?PHP echo $lang['wigrptime']; ?></a>
 								</li>
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "except.php" ? ' class="active">' : '>'); ?>
 									<a href="except.php" class="active"><i class="fas fa-ban"></i>&nbsp;&nbsp;<?PHP echo $lang['wiexcept']; ?></a>
@@ -181,33 +181,25 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "boost.php" ? ' class="active">' : '>'); ?>
 									<a href="boost.php"><i class="fas fa-rocket"></i>&nbsp;&nbsp;<?PHP echo $lang['wiboost']; ?></a>
 								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? ' class="active">' : '>'); ?>
+									<a href="msg.php"><i class="fas fa-envelope"></i>&nbsp;&nbsp;<?PHP echo $lang['winav5']; ?></a>
+								</li>
 							</ul>
 						</li>
-						
 						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "other.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
 							<a href="other.php"><i class="fas fa-wrench"></i>&nbsp;&nbsp;<?PHP echo $lang['winav4']; ?></a>
 						</li>
-						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "msg.php" ? ' class="active">' : '>'); ?>
-							<a href="msg.php"><i class="fas fa-envelope"></i>&nbsp;&nbsp;<?PHP echo $lang['winav5']; ?></a>
-						</li>
-						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "imprint.php" ? ' class="active">' : '>'); ?>
-							<a href="imprint.php"><i class="fas fa-address-card"></i>&nbsp;&nbsp;<?PHP echo $lang['imprint']; ?></a>
-						</li>
-						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
-							<a href="stats.php"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;<?PHP echo $lang['winav6']; ?></a>
-						</li>
-						<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ranklist.php" ? ' class="active">' : '>'); ?>
-							<a href="ranklist.php"><i class="fas fa-list"></i>&nbsp;&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
-						</li>
-						<li class="divider"></li>
 						<li>
-							<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fas fa-puzzle-piece"></i>&nbsp;&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
-							<?PHP echo '<ul id="addons" class="'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" || basename($_SERVER['SCRIPT_NAME']) == "api.php" ? 'in collapse">' : 'collapse">'); ?>
-								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "api.php" ? ' class="active">' : '>'); ?>
-									<a href="api.php"><i class="fas fa-microchip"></i>&nbsp;&nbsp;<?PHP echo $lang['api']; ?></a>
+							<a href="javascript:;" data-toggle="collapse" data-target="#stats"><i class="fas fa-chart-area"></i>&nbsp;&nbsp;<?PHP echo $lang['winav6']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+							<?PHP echo '<ul id="stats" class="'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" || basename($_SERVER['SCRIPT_NAME']) == "ranklist.php" || basename($_SERVER['SCRIPT_NAME']) == "imprint.php" ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "stats.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
+									<a href="stats.php"><i class="fas fa-chart-bar"></i>&nbsp;&nbsp;<?PHP echo $lang['winav13']; ?></a>
 								</li>
-								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
-									<a href="addon_assign_groups.php" class="active"><i class="fas fa-user-plus"></i>&nbsp;&nbsp;<?PHP echo $lang['stag0001']; ?></a>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ranklist.php" ? ' class="active">' : '>'); ?>
+									<a href="ranklist.php"><i class="fas fa-list"></i>&nbsp;&nbsp;<?PHP echo $lang['stnv0029']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "imprint.php" ? ' class="active">' : '>'); ?>
+									<a href="imprint.php"><i class="fas fa-address-card"></i>&nbsp;&nbsp;<?PHP echo $lang['imprint']; ?></a>
 								</li>
 							</ul>
 						</li>
@@ -223,6 +215,18 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 								</li>
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "reset.php" ? ' class="active expertelement">' : ' class="expertelement">'); ?>
 									<a href="reset.php"><i class="fas fa-sync"></i>&nbsp;&nbsp;<?PHP echo $lang['wihladm3']; ?></a>
+								</li>
+							</ul>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="javascript:;" data-toggle="collapse" data-target="#addons"><i class="fas fa-puzzle-piece"></i>&nbsp;&nbsp;<?PHP echo $lang['winav12']; ?>&nbsp;<i class="fas fa-caret-down"></i></a>
+							<?PHP echo '<ul id="addons" class="'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" || basename($_SERVER['SCRIPT_NAME']) == "api.php" ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "api.php" ? ' class="active">' : '>'); ?>
+									<a href="api.php"><i class="fas fa-microchip"></i>&nbsp;&nbsp;<?PHP echo $lang['api']; ?></a>
+								</li>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "addon_assign_groups.php" ? ' class="active">' : '>'); ?>
+									<a href="addon_assign_groups.php" class="active"><i class="fas fa-user-plus"></i>&nbsp;&nbsp;<?PHP echo $lang['stag0001']; ?></a>
 								</li>
 							</ul>
 						</li>

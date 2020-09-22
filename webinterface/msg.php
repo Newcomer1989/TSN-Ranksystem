@@ -14,13 +14,12 @@ if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `se
 
 if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 	$cfg['rankup_message_to_user']	= addslashes($_POST['rankup_message_to_user']);
-	$cfg['stats_server_news'] = addslashes($_POST['stats_server_news']);
 	$cfg['rankup_next_message_1'] = addslashes($_POST['rankup_next_message_1']);
 	$cfg['rankup_next_message_2'] = addslashes($_POST['rankup_next_message_2']);
 	$cfg['rankup_next_message_3'] = addslashes($_POST['rankup_next_message_3']);
 	$cfg['rankup_next_message_mode'] = $_POST['rankup_next_message_mode'];
 	if (isset($_POST['rankup_message_to_user_switch'])) $cfg['rankup_message_to_user_switch'] = 1; else $cfg['rankup_message_to_user_switch'] = 0;
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_message_to_user_switch','{$cfg['rankup_message_to_user_switch']}'),('rankup_message_to_user','{$cfg['rankup_message_to_user']}'),('stats_server_news','{$cfg['stats_server_news']}'),('rankup_next_message_mode','{$cfg['rankup_next_message_mode']}'),('rankup_next_message_1','{$cfg['rankup_next_message_1']}'),('rankup_next_message_2','{$cfg['rankup_next_message_2']}'),('rankup_next_message_3','{$cfg['rankup_next_message_3']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+	if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_message_to_user_switch','{$cfg['rankup_message_to_user_switch']}'),('rankup_message_to_user','{$cfg['rankup_message_to_user']}'),('rankup_next_message_mode','{$cfg['rankup_next_message_mode']}'),('rankup_next_message_1','{$cfg['rankup_next_message_1']}'),('rankup_next_message_2','{$cfg['rankup_next_message_2']}'),('rankup_next_message_3','{$cfg['rankup_next_message_3']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
         $err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
     } else {
@@ -29,7 +28,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$err_lvl = NULL;
     }
 	$cfg['rankup_message_to_user'] = $_POST['rankup_message_to_user'];
-	$cfg['stats_server_news'] = $_POST['stats_server_news'];
 	$cfg['rankup_next_message_1'] = $_POST['rankup_next_message_1'];
 	$cfg['rankup_next_message_2'] = $_POST['rankup_next_message_2'];
 	$cfg['rankup_next_message_3'] = $_POST['rankup_next_message_3'];
@@ -70,14 +68,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 										<div class="col-sm-8">
 											<textarea class="form-control" rows="5" name="rankup_message_to_user" maxlength="21588"><?php echo $cfg['rankup_message_to_user']; ?></textarea>
 										</div>
-									</div>
-								</div>
-							</div>
-							<div class="panel-body">
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wimsgsndesc"><?php echo $lang['wimsgsn']; ?><i class="help-hover fas fa-question-circle"></i></label>
-									<div class="col-sm-8">
-										<textarea class="form-control" rows="15" name="stats_server_news" maxlength="21588"><?php echo $cfg['stats_server_news']; ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -156,22 +146,6 @@ if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
       </div>
       <div class="modal-body">
 	    <?php echo sprintf($lang['wimsgmsgdesc'], '<a href="https://ts-n.net/lexicon.php?showid=97#lexindex" target="_blank">https://ts-n.net/lexicon.php?showid=97#lexindex</a>'); ?>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="wimsgsndesc" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title"><?php echo $lang['wimsgsn']; ?></h4>
-      </div>
-      <div class="modal-body">
-        <?php echo $lang['wimsgsndesc']; ?>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

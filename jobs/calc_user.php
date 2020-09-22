@@ -172,13 +172,15 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 				$dtT = new DateTime("@".round($activetime));
 
 				foreach($sgroups as $clientgroup => $dummy) {
-					if(isset($cfg['rankup_definition_flipped'][$clientgroup])) {
-						$client_groups_rankup[$clientgroup] = 0;
+					foreach($cfg['rankup_definition'] as $rank) {
+						if($rank['group'] == $clientgroup && $rank['keep'] == 0) {
+							$client_groups_rankup[$clientgroup] = 0;
+						}
 					}
 				}
 
 				$grpcount=0;
-				foreach ($cfg['rankup_definition'] as $time => $groupid) {
+				foreach ($cfg['rankup_definition'] as $rank) {
 					$grpcount++;
 					if(isset($cfg['rankup_excepted_channel_id_list'][$client['cid']]) || (($db_cache['all_user'][$uid]['except'] == 3 || $db_cache['all_user'][$uid]['except'] == 2) && $cfg['rankup_excepted_mode'] == 1)) {
 						$count = $db_cache['all_user'][$uid]['count'];
@@ -186,41 +188,49 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 						if($except != 2 && $except != 3) {
 							$except = 1;
 						}
-					} elseif ($activetime > $time && !isset($cfg['rankup_excepted_unique_client_id_list'][$uid]) && ($cfg['rankup_excepted_group_id_list'] == NULL || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
-						if (!isset($sgroups[$groupid])) {
+					} elseif ($activetime > $rank['time'] && !isset($cfg['rankup_excepted_unique_client_id_list'][$uid]) && ($cfg['rankup_excepted_group_id_list'] == NULL || !array_intersect_key($sgroups, $cfg['rankup_excepted_group_id_list']))) {
+						if (!isset($sgroups[$rank['group']])) {
 							if ($db_cache['all_user'][$uid]['grpid'] != NULL && $db_cache['all_user'][$uid]['grpid'] != 0 && isset($sgroups[$db_cache['all_user'][$uid]['grpid']])) {
-								usleep($cfg['teamspeak_query_command_delay']);
-								try {
-									$ts3->serverGroupClientDel($db_cache['all_user'][$uid]['grpid'], $client['client_database_id']);
-									enter_logfile($cfg,5,sprintf($lang['sgrprm'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid'], $name, $uid, $client['client_database_id']));
-									if(isset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']])) unset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']]);
-								} catch (Exception $e) {
-									enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
+								$donotremove = 0;
+								foreach($cfg['rankup_definition'] as $rank2) {
+									if($rank2['group'] == $db_cache['all_user'][$uid]['grpid'] && $rank2['keep'] == 1 && $activetime > $rank2['time']) {
+										$donotremove = 1; break;
+									}
+								}
+								if($donotremove == 0) {
+									usleep($cfg['teamspeak_query_command_delay']);
+									try {
+										$ts3->serverGroupClientDel($db_cache['all_user'][$uid]['grpid'], $client['client_database_id']);
+										enter_logfile($cfg,5,sprintf($lang['sgrprm'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid'], $name, $uid, $client['client_database_id']));
+										if(isset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']])) unset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']]);
+									} catch (Exception $e) {
+										enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
+									}
 								}
 							}
 							usleep($cfg['teamspeak_query_command_delay']);
 							try {
-								$ts3->serverGroupClientAdd($groupid, $client['client_database_id']);
+								$ts3->serverGroupClientAdd($rank['group'], $client['client_database_id']);
 								$db_cache['all_user'][$uid]['grpsince'] = $nowtime;
-								enter_logfile($cfg,5,sprintf($lang['sgrpadd'], $db_cache['groups'][$groupid]['sgidname'], $groupid, $name, $uid, $client['client_database_id']));
+								enter_logfile($cfg,5,sprintf($lang['sgrpadd'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group'], $name, $uid, $client['client_database_id']));
 								if ($cfg['rankup_message_to_user_switch'] == 1) {
 									$days  = $dtF->diff($dtT)->format('%a');
 									$hours = $dtF->diff($dtT)->format('%h');
 									$mins  = $dtF->diff($dtT)->format('%i');
 									$secs  = $dtF->diff($dtT)->format('%s');
-									sendmessage($ts3, $cfg, $uid, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$db_cache['groups'][$groupid]['sgidname'],$client['client_nickname']), sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$groupid]['sgidname'],$groupid), 2);
+									sendmessage($ts3, $cfg, $uid, 1, NULL, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$db_cache['groups'][$rank['group']]['sgidname'],$client['client_nickname']), sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'],$rank['group']), 2);
 								}
 							} catch (Exception $e) {
-								enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$groupid]['sgidname'], $groupid));
+								enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group']));
 							}
-							$db_cache['all_user'][$uid]['grpid'] = $groupid;
 						}
 						if($grpcount == 1) {
 							$db_cache['all_user'][$uid]['nextup'] = 0;
 						}
+						$db_cache['all_user'][$uid]['grpid'] = $rank['group'];
 						break;
 					} else {
-						$db_cache['all_user'][$uid]['nextup'] = $time - $activetime;
+						$db_cache['all_user'][$uid]['nextup'] = $rank['time'] - $activetime;
 					}
 				}
 
@@ -260,20 +270,20 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 				$db_cache['all_user'][$uid]['except'] = $except;
 			} else {
 				$db_cache['all_user'][$uid]['grpid'] = 0;
-				foreach ($cfg['rankup_definition'] as $time => $groupid) {
-					if (isset($sgroups[$groupid])) {
-						$db_cache['all_user'][$uid]['grpid'] = $groupid;
+				foreach ($cfg['rankup_definition'] as $rank) {
+					if (isset($sgroups[$rank['group']])) {
+						$db_cache['all_user'][$uid]['grpid'] = $rank['group'];
 						break;
 					}
 				}
 				$insertdata[] = array(
 					"uuid" => $mysqlcon->quote($client['client_unique_identifier'], ENT_QUOTES),
 					"cldbid" => $client['client_database_id'],
-					"count" => 0,
+					"count" => $addtime,
 					"name" => $name,
 					"lastseen" => $nowtime,
 					"grpid" => $db_cache['all_user'][$uid]['grpid'],
-					"nextup" => (key($cfg['rankup_definition']) - 1),
+					"nextup" => (key($cfg['rankup_definition']) - $addtime),
 					"idle" => 0,
 					"cldgroup" => $client['client_servergroups'],
 					"boosttime" => 0,
@@ -286,9 +296,9 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 					"cid" => $client['cid']
 				);
 				$db_cache['all_user'][$uid]['cldbid'] = $client['client_database_id'];
-				$db_cache['all_user'][$uid]['count'] = 0;
+				$db_cache['all_user'][$uid]['count'] = $addtime;
 				$db_cache['all_user'][$uid]['idle'] = 0;
-				$db_cache['all_user'][$uid]['nextup'] = (key($cfg['rankup_definition']) - 1);
+				$db_cache['all_user'][$uid]['nextup'] = (key($cfg['rankup_definition']) - $addtime);
 				$db_cache['all_user'][$uid]['firstcon'] = $nowtime;
 				$db_cache['all_user'][$uid]['boosttime'] = 0;
 				$db_cache['all_user'][$uid]['grpsince'] = 0;

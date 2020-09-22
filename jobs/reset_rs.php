@@ -22,20 +22,20 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 				shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 			}
 		
-			foreach ($cfg['rankup_definition'] as $time => $groupid) {
-				enter_logfile($cfg,5,"    Getting TS3 servergrouplist for ".$db_cache['groups'][$groupid]['sgidname']." (ID: ".$groupid.")");
+			foreach ($cfg['rankup_definition'] as $rank) {
+				enter_logfile($cfg,5,"    Getting TS3 servergrouplist for ".$db_cache['groups'][$rank['group']]['sgidname']." (ID: ".$rank['group'].")");
 				try {
 					usleep($cfg['teamspeak_query_command_delay']);
-					$tsclientlist = $ts3->servergroupclientlist($groupid);
+					$tsclientlist = $ts3->servergroupclientlist($rank['group']);
 					
 					foreach ($tsclientlist as $tsclient) {
 						if (isset($all_clients[$tsclient['cldbid']])) {
 							try {
 								usleep($cfg['teamspeak_query_command_delay']);
-								$ts3->serverGroupClientDel($groupid, $tsclient['cldbid']);
-								enter_logfile($cfg,5,"      ".sprintf($lang['sgrprm'], $db_cache['groups'][$groupid]['sgidname'], $groupid, $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid']));
+								$ts3->serverGroupClientDel($rank['group'], $tsclient['cldbid']);
+								enter_logfile($cfg,5,"      ".sprintf($lang['sgrprm'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group'], $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid']));
 							} catch (Exception $e) {
-								enter_logfile($cfg,2,"      TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid'], $db_cache['groups'][$groupid]['sgidname'], $groupid));
+								enter_logfile($cfg,2,"      TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $all_clients[$tsclient['cldbid']]['name'], $all_clients[$tsclient['cldbid']]['uuid'], $tsclient['cldbid'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group']));
 								$err_cnt++;
 							}
 						}

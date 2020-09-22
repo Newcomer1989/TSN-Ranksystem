@@ -133,32 +133,51 @@ if($addons_config['assign_groups_active']['value'] == '1') {
 }
 enter_logfile($cfg,4,"Loading addons [done]");
 
-function sendmessage($ts3, $cfg, $uuid, $msg, $erromsg=NULL, $errcode=NULL, $successmsg=NULL, $nolog=NULL) {
+function sendmessage($ts3, $cfg, $uuid, $targetmode, $targetid=NULL, $msg, $erromsg=NULL, $loglevel=NULL, $successmsg=NULL, $nolog=NULL) {
 	try {
 		if(strlen($msg) > 1024) {
 			$fragarr = explode("##*##", wordwrap($msg, 1022, "##*##", TRUE), 1022);
 			foreach($fragarr as $frag) {
 				usleep($cfg['teamspeak_query_command_delay']);
-				$ts3->serverGetSelected()->clientGetByUid($uuid)->message("\n".$frag);
-				if($nolog==NULL) {
-					enter_logfile($cfg,6,"sendmessage to uuid $uuid (fragment): ".$frag);
+				if ($targetmode==2 && $targetid!=NULL) {
+					$ts3->serverGetSelected()->channelGetById($targetid)->message("\n".$frag);
+					if($nolog==NULL) enter_logfile($cfg,6,"sendmessage fragment to channel (ID: $targetid): ".$frag);
+				} elseif ($targetmode==3) {
+					$ts3->serverGetSelected()->message("\n".$frag);
+					if($nolog==NULL) enter_logfile($cfg,6,"sendmessage fragment to server: ".$frag);
+				} elseif ($targetmode==1 && $targetid!=NULL) {
+					$ts3->serverGetSelected()->clientGetById($targetid)->message("\n".$frag);
+					if($nolog==NULL) enter_logfile($cfg,6,"sendmessage fragment to connectionID $targetid (uuid $uuid): ".$frag);
+				} else {
+					$ts3->serverGetSelected()->clientGetByUid($uuid)->message("\n".$frag);
+					if($nolog==NULL) enter_logfile($cfg,6,"sendmessage fragment to uuid $uuid (connectionID $targetid): ".$frag);
 				}
 			}
 		} else {
 			usleep($cfg['teamspeak_query_command_delay']);
-			$ts3->serverGetSelected()->clientGetByUid($uuid)->message($msg);
-			if($nolog==NULL) {
-				enter_logfile($cfg,6,"sendmessage to uuid $uuid: ".$msg);
+			if ($targetmode==2 && $targetid!=NULL) {
+				$ts3->serverGetSelected()->channelGetById($targetid)->message($msg);
+				if($nolog==NULL) enter_logfile($cfg,6,"sendmessage to channel (ID: $targetid): ".$msg);
+			} elseif ($targetmode==3) {
+				$ts3->serverGetSelected()->message($msg);
+				if($nolog==NULL) enter_logfile($cfg,6,"sendmessage to server: ".$msg);
+			} elseif ($targetmode==1 && $targetid!=NULL) {
+				$ts3->serverGetSelected()->clientGetById($targetid)->message($msg);
+				if($nolog==NULL) enter_logfile($cfg,6,"sendmessage to connectionID $targetid (uuid $uuid): ".$msg);
+			} else {
+				$ts3->serverGetSelected()->clientGetByUid($uuid)->message($msg);
+				if($nolog==NULL) enter_logfile($cfg,6,"sendmessage to uuid $uuid (connectionID $targetid): ".$msg);
 			}
+			
 		}
 		if($successmsg!=NULL) {
 			enter_logfile($cfg,5,$successmsg);
 		}
 	} catch (Exception $e) {
-		if($errcode!=NULL) {
-			enter_logfile($cfg,$errcode,$erromsg." TS3: ".$e->getCode().': '.$e->getMessage());
+		if($loglevel!=NULL) {
+			enter_logfile($cfg,$loglevel,$erromsg." TS3: ".$e->getCode().': '.$e->getMessage());
 		} else {
-			enter_logfile($cfg,3,"sendmessage: ".$e->getCode().': '.$e->getMessage());
+			enter_logfile($cfg,3,"sendmessage: ".$e->getCode().': '.$e->getMessage().", targetmode: $targetmode, targetid: $targetid");
 		}
 	}
 }
@@ -297,7 +316,6 @@ function run_bot() {
 		enter_logfile($cfg,9,"  Log Level: ".$loglevel);
 		enter_logfile($cfg,6,"  Serverside config 'max_execution_time' (PHP.ini): ".$max_execution_time." sec.");
 		enter_logfile($cfg,6,"  Serverside config 'memory_limit' (PHP.ini): ".$memory_limit);
-		$cfg['rankup_definition_flipped'] = array_flip($cfg['rankup_definition']);
 		krsort($cfg['rankup_definition']);
 
 		if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
@@ -307,8 +325,8 @@ function run_bot() {
 		$checkgroups = 0;
 		if(isset($groupslist) && $groupslist != NULL) {
 			if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
-				foreach($cfg['rankup_definition'] as $time => $groupid) {
-					if(!isset($groupslist[$groupid]) && $groupid != NULL) {
+				foreach($cfg['rankup_definition'] as $rank) {
+					if(!isset($groupslist[$rank['group']]) && $rank['group'] != NULL) {
 						$checkgroups++;
 					}
 				}
@@ -351,9 +369,9 @@ function run_bot() {
 			
 			if(isset($groupslist) && $groupslist != NULL) {
 				if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
-					foreach($cfg['rankup_definition'] as $time => $groupid) {
-						if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-							enter_logfile($cfg,1,'    '.sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']));
+					foreach($cfg['rankup_definition'] as $rank) {
+						if(!isset($groupslist[$rank['group']]) && $rank['group'] != NULL) {
+							enter_logfile($cfg,1,'    '.sprintf($lang['upgrp0001'], $rank['group'], $lang['wigrptime']));
 							$errcnf++;
 						}
 					}
@@ -385,8 +403,8 @@ function run_bot() {
 		} else {
 			if($lastupdate['timestamp'] != 0 && ($lastupdate['timestamp'] + 10) > time()) {
 				if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
-					foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientid) {
-						sendmessage($ts3server, $cfg, $clientid, sprintf($lang['upmsg2'], $cfg['version_current_using'], 'https://ts-ranksystem.com/#changelog'), sprintf($lang['upusrerr'], $clientid), 6, sprintf($lang['upusrinf'], $clientid));
+					foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $clientuuid) {
+						sendmessage($ts3server, $cfg, $clientuuid, NULL, sprintf($lang['upmsg2'], $cfg['version_current_using'], 'https://ts-ranksystem.com/#changelog'), sprintf($lang['upusrerr'], $clientuuid), 6, sprintf($lang['upusrinf'], $clientuuid));
 					}
 				}
 			}
@@ -541,8 +559,8 @@ function run_bot() {
 
 			if($looptime < 1) {
 				$loopsleep = (1 - $looptime);
-				if($cfg['teamspeak_query_encrypt_switch'] == 1) {
-					// no wait for data to become available on the stream on SSH due issues with non-blocking mode
+				if($cfg['teamspeak_query_encrypt_switch'] == 1 || version_compare($ts3version['version'],'1.4.0','>=') && version_compare($ts3version['version'],'2.9.9','<=')) {
+					// no wait for data to become available on the stream on SSH due issues with non-blocking mode or TeaSpeak
 					usleep(round($loopsleep * 1000000));
 				} else {
 					$ts3server->getAdapter()->waittsn($loopsleep, 50000);  // 50ms delay for CPU reason

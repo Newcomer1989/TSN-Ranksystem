@@ -377,6 +377,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 		
 		if ($db_cache['job_check']['get_version']['timestamp'] < ($nowtime - 43199)) {
 			$db_cache['job_check']['get_version']['timestamp'] = $nowtime;
+			enter_logfile($cfg,6,"Get the latest Ranksystem Version.");
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$cfg['version_update_channel']);
 			curl_setopt($ch, CURLOPT_REFERER, 'TSN Ranksystem');
