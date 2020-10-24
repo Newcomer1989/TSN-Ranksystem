@@ -6,7 +6,8 @@ labels: ''
 assignees: ''
 
 ---
----
+
+
 Description | Fill out below
 -- | --
 Ranksystem Version | 1.3._XX_
@@ -15,17 +16,15 @@ Link to your Ranksystem Stats page | _optional_
 Pastebin Link to your Ranksystem Log *¹ | 
 
 ---
-<br>
 
 ### 1) What did you do?
-<br>
+
 
 ### 2) What result did you get?
-<br>
+
 
 ### 3) What result did you expect?
-<br>
-<br>
+
 
 ---
 
