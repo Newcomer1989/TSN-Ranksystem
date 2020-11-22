@@ -1,6 +1,6 @@
 <?PHP
-function check_db($mysqlcon,$lang,$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.12';
+function check_db($mysqlcon,$lang,&$cfg,$dbname) {
+	$cfg['version_latest_available'] = '1.3.13';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -40,7 +40,7 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 
 	function old_files($cfg) {
 		$del_folder = array('icons/','libs/ts3_lib/Adapter/Blacklist/','libs/ts3_lib/Adapter/TSDNS/','libs/ts3_lib/Adapter/Update/','libs/fonts/');
-		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php','languages/core_ar.php','languages/core_cz.php','languages/core_de.php','languages/core_en.php','languages/core_es.php','languages/core_fr.php','languages/core_it.php','languages/core_nl.php','languages/core_pl.php','languages/core_pt.php','languages/core_ro.php','languages/core_ru.php','webinterface/nav.php','stats/nav.php');
+		$del_files = array('install.php','libs/combined_stats.css','libs/combined_stats.js','webinterface/admin.php','libs/ts3_lib/Adapter/Blacklist/Exception.php','libs/ts3_lib/Adapter/TSDNS/Exception.php','libs/ts3_lib/Adapter/Update/Exception.php','libs/ts3_lib/Adapter/Blacklist.php','libs/ts3_lib/Adapter/TSDNS.php','libs/ts3_lib/Adapter/Update.php','languages/core_ar.php','languages/core_cz.php','languages/core_de.php','languages/core_en.php','languages/core_es.php','languages/core_fr.php','languages/core_it.php','languages/core_nl.php','languages/core_pl.php','languages/core_pt.php','languages/core_ro.php','languages/core_ru.php','webinterface/nav.php','stats/nav.php','other/session.php');
 		function rmdir_recursive($folder,$cfg) {
 			foreach(scandir($folder) as $file) {
 				if ('.' === $file || '..' === $file) continue;
@@ -358,19 +358,47 @@ function check_db($mysqlcon,$lang,$cfg,$dbname) {
 		}
 
 		if(version_compare($cfg['version_current_using'], '1.3.12', '<')) {
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-
 			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_imprint_switch', '0'),('stats_imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'),('stats_imprint_address_url', 'https://site.url/imprint/'), ('stats_imprint_email', 'info@example.com'),('stats_imprint_phone', '+49 171 1234567'),('stats_imprint_notes', NULL),('stats_imprint_privacypolicy', 'Add your own privacy policy here. (editable in the webinterface)'),('stats_imprint_privacypolicy_url', 'https://site.url/privacy/');") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.12] Added new imprint values.");
 			}
+		}
+		
+		if(version_compare($cfg['version_current_using'], '1.3.13', '<')) {
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
+			
+			if($mysqlcon->exec("UPDATE `$dbname`.`user` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user` SET `count`=`idle` WHERE `count`<0; UPDATE `$dbname`.`user` SET `count`=`idle` WHERE `count`<`idle`;") === false) { }
+			if($mysqlcon->exec("UPDATE `$dbname`.`user_snapshot` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user_snapshot` SET `count`=`idle` WHERE `count`<0; UPDATE `$dbname`.`user_snapshot` SET `count`=`idle` WHERE `count`<`idle`;") === false) { }
 
-			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
-			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('database_export', '0'),('update_groups', '0') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`);") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.13] Added new job_check values.");
+			}
+
+			try {
+				if($mysqlcon->exec("INSERT IGNORE INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_fresh_installation', '0'),('stats_column_nation_switch', '0'),('stats_column_version_switch', '0'),('stats_column_platform_switch', '0');") === false) { }
+			} catch (Exception $e) { }
+			
+			if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_session_sametime', 'Strict'),('default_header_origin', ''),('default_header_xss', '1; mode=block'),('default_header_contenttyp', '1'),('default_header_frame', '') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.13] Added new cfg_params values.");
+			}
+
+			if($mysqlcon->exec("UPDATE `$dbname`.`user` SET `nation`='XX' WHERE `nation`='';") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.13] Updated table user.");
+			}
+
+			try {
+				if($mysqlcon->exec("DROP INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.13] Dropped unneeded Index snapshot_id on table user_snapshot.");
+				}
+				if($mysqlcon->exec("DROP INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { } else {
+					enter_logfile($cfg,4,"    [1.3.13] Dropped unneeded Index snapshot_cldbid on table user_snapshot.");
+				}
+
+				if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
+				if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
+				if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }
+				if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) { }
+			} catch (Exception $e) { }
 		}
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}

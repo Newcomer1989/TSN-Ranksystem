@@ -1,20 +1,15 @@
 <?PHP
-header("Content-Type: application/json; charset=UTF-8");
-
+require_once('../other/_functions.php');
 require_once('../other/config.php');
 
-$dbname = $db['dbname'];
-$dbtype = $db['type'];
-if($db['type'] != "type") {
-	$dbserver  = $db['type'].':host='.$db['host'].';dbname='.$dbname.';charset=utf8mb4';
-	$dboptions = array();
-	try {
-		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass'], $dboptions);
-	} catch (PDOException $e) {
-		echo 'Database Connection failed: <b>'.$e->getMessage().'</b>';
-		exit;
-	}
-}
+start_session($cfg);
+
+error_reporting(E_ALL);
+ini_set("log_errors", 1);
+set_error_handler("php_error_handling");
+ini_set("error_log", $cfg['logs_path'].'ranksystem.log');
+
+header("Content-Type: application/json; charset=UTF-8");
 
 if (isset($_GET['apikey'])) {
 	$matchkey = 0;
@@ -167,24 +162,38 @@ if (isset($_GET['groups'])) {
 	$dbdata->execute();
 	$json = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 } elseif (isset($_GET['user'])) {
-	$uuid = $name = '----------_none_selected_----------';
-	$filter = '';
-	$part = $cldbid = $all = 0;
-	if(!isset($_GET['sort'])) $sort = '`rank`';
-	if(isset($_GET['all'])) $all = 1;
-	if(isset($_GET['uuid'])) $uuid = htmlspecialchars_decode($_GET['uuid']);
-	if(isset($_GET['cldbid'])) $cldbid = htmlspecialchars_decode($_GET['cldbid']);
-	if(isset($_GET['name'])) $name = htmlspecialchars_decode($_GET['name']);
-	if(isset($_GET['part'])) $part = (htmlspecialchars_decode($_GET['part']) - 1) * 100;
-	if(isset($_GET['online']) && $uuid == '----------_none_selected_----------' && $name == '----------_none_selected_----------' && $cldbid == 0) {
-		$filter = '`online`=1';
-	} elseif(isset($_GET['online'])) {
-		$filter = '(`uuid` LIKE :uuid OR `cldbid` LIKE :cldbid OR `name` LIKE :name) AND `online`=1';
-	} elseif($uuid != '----------_none_selected_----------' || $name != '----------_none_selected_----------' || $cldbid != 0) {
-		$filter = '(`uuid` LIKE :uuid OR `cldbid` LIKE :cldbid OR `name` LIKE :name)';
+	$filter = ' WHERE';
+	if(isset($_GET['cldbid'])) {
+		$cldbid = htmlspecialchars_decode($_GET['cldbid']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `cldbid` LIKE :cldbid';
 	}
-	
-	if($uuid == '----------_none_selected_----------' && $name == '----------_none_selected_----------' && $filter == '' && $cldbid == 0 && $all == 0) {
+	if(isset($_GET['groupid'])) {
+		$groupid = htmlspecialchars_decode($_GET['groupid']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " (`cldgroup` = :groupid OR `cldgroup` LIKE (:groupid0) OR `cldgroup` LIKE (:groupid1) OR `cldgroup` LIKE (:groupid2))";
+	}
+	if(isset($_GET['name'])) {
+		$name = htmlspecialchars_decode($_GET['name']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `name` LIKE :name';
+	}
+	if(!isset($_GET['sort'])) $sort = '`rank`';
+	if(isset($_GET['status']) && $_GET['status'] == strtolower('online')) {
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " `online`=1";
+	} elseif(isset($_GET['status']) && $_GET['status'] == strtolower('offline')) {
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " `online`=0";
+	}
+	if(isset($_GET['uuid'])) {
+		$uuid = htmlspecialchars_decode($_GET['uuid']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `uuid` LIKE :uuid';
+	}
+	if($filter == ' WHERE') $filter = '';
+
+	if($filter == '' && !isset($_GET['all']) && !isset($_GET['cldbid']) && !isset($_GET['name']) && !isset($_GET['uuid'])) {
 		$json = array(
 			"usage" => array(
 				"all" => array(
@@ -196,6 +205,11 @@ if (isset($_GET['groups'])) {
 					"desc" => "Get details about TeamSpeak user by client TS-database ID",
 					"usage" => "Use \$_GET parameter 'cldbid' and add as value a single client TS-database ID",
 					"example" => "/api/?user&cldbid=7775"
+				),
+				"groupid" => array(
+					"desc" => "Get only user, which are in the given servergroup database ID",
+					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup",
+					"example" => "/api/?user&groupid=6"
 				),
 				"limit" => array(
 					"desc" => "Define a number that limits the number of results. Maximum value is 1000. Default is 100.",
@@ -215,11 +229,6 @@ if (isset($_GET['groups'])) {
 							"url" => "/api/?user&name=%user%"
 						)
 					)
-				),
-				"online" => array(
-					"desc" => "Get the online TeamSpeak user",
-					"usage" => "Use \$_GET parameter 'online' without any value",
-					"example" => "/api/?user&online"
 				),
 				"order" => array(
 					"desc" => "Define a sorting order.",
@@ -249,6 +258,11 @@ if (isset($_GET['groups'])) {
 						)
 					)
 				),
+				"status" => array(
+					"desc" => "List only clients, which status is online or offline.",
+					"usage" => "Use \$_GET parameter 'status' and add as value 'online' or 'offline'",
+					"example" => "/api/?userstats&status=online"
+				),
 				"uuid" => array(
 					"desc" => "Get details about TeamSpeak user by unique client ID",
 					"usage" => "Use \$_GET parameter 'uuid' and add as value one unique client ID or a part of it",
@@ -257,33 +271,53 @@ if (isset($_GET['groups'])) {
 			)
 		);
 	} else {
-		if ($all == 1) {
-			$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` ORDER BY {$sort} {$order} LIMIT :start, :limit");
-		} else {
-			$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
-		}
-		if($filter != '`online`=1' && $all == 0) {
-			$dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
-			$dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
-			$dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
-		}
+		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
+		if(isset($_GET['cldbid'])) $dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid', $groupid, PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid0', $groupid.'%', PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid1', '%'.$groupid.'%', PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid2', '%'.$groupid, PDO::PARAM_STR);
+		if(isset($_GET['name'])) $dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
+		if(isset($_GET['uuid'])) $dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
+
 		$dbdata->bindValue(':start', (int) $part, PDO::PARAM_INT);
 		$dbdata->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
 		$dbdata->execute();
 		$json = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
 	}
 } elseif (isset($_GET['userstats'])) {
-	$uuid = '----------_none_selected_----------';
-	$filter = '';
-	$part = $all = 0;
-	if(isset($_GET['all'])) $all = 1;
+	$filter = ' WHERE';
+	if(isset($_GET['cldbid'])) {
+		$cldbid = htmlspecialchars_decode($_GET['cldbid']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `cldbid` LIKE :cldbid';
+	}
+	if(isset($_GET['groupid'])) {
+		$groupid = htmlspecialchars_decode($_GET['groupid']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " (`user`.`cldgroup` = :groupid OR `user`.`cldgroup` LIKE (:groupid0) OR `user`.`cldgroup` LIKE (:groupid1) OR `user`.`cldgroup` LIKE (:groupid2))";
+	}
+	if(isset($_GET['name'])) {
+		$name = htmlspecialchars_decode($_GET['name']);
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `user`.`name` LIKE :name';
+	}
 	if(!isset($_GET['sort'])) $sort = '`count_week`';
+	if(isset($_GET['status']) && $_GET['status'] == strtolower('online')) {
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " `user`.`online`=1";
+	} elseif(isset($_GET['status']) && $_GET['status'] == strtolower('offline')) {
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= " `user`.`online`=0";
+	}
 	if(isset($_GET['uuid'])) {
 		$uuid = htmlspecialchars_decode($_GET['uuid']);
-		$filter = '`stats_user`.`uuid` LIKE :uuid';
+		if($filter != ' WHERE') $filter .= " AND";
+		$filter .= ' `user`.`uuid` LIKE :uuid';
 	}
+	if($filter == ' WHERE') $filter = '';
 
-	if($uuid == '----------_none_selected_----------' && $all == 0 && $filter == '') {
+	if($filter == '' && !isset($_GET['all']) && !isset($_GET['cldbid']) && !isset($_GET['name']) && !isset($_GET['uuid'])) {
 		$json = array(
 			"usage" => array(
 				"all" => array(
@@ -291,10 +325,34 @@ if (isset($_GET['groups'])) {
 					"usage" => "Use \$_GET parameter 'all' without any value",
 					"example" => "/api/?userstats&all"
 				),
+				"cldbid" => array(
+					"desc" => "Get details about TeamSpeak user by client TS-database ID",
+					"usage" => "Use \$_GET parameter 'cldbid' and add as value a single client TS-database ID",
+					"example" => "/api/?userstats&cldbid=7775"
+				),
+				"groupid" => array(
+					"desc" => "Get only user, which are in the given servergroup database ID",
+					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup",
+					"example" => "/api/?userstats&groupid=6"
+				),
 				"limit" => array(
 					"desc" => "Define a number that limits the number of results. Maximum value is 1000. Default is 100.",
 					"usage" => "Use \$_GET parameter 'limit' and add as value a number above 1",
 					"example" => "/api/?userstats&limit=10"
+				),
+				"name" => array(
+					"desc" => "Get details about TeamSpeak user by client nickname",
+					"usage" => "Use \$_GET parameter 'name' and add as value a name or a part of it",
+					"example" => array(
+						"1" => array(
+							"desc" => "Filter by client nickname",
+							"url" => "/api/?userstats&name=Newcomer1989"
+						),
+						"2" => array(
+							"desc" => "Filter by client nickname with a percent sign as placeholder",
+							"url" => "/api/?userstats&name=%user%"
+						)
+					)
 				),
 				"order" => array(
 					"desc" => "Define a sorting order.",
@@ -324,6 +382,11 @@ if (isset($_GET['groups'])) {
 						)
 					)
 				),
+				"status" => array(
+					"desc" => "List only clients, which status is online or offline.",
+					"usage" => "Use \$_GET parameter 'status' and add as value 'online' or 'offline'",
+					"example" => "/api/?userstats&status=online"
+				),
 				"uuid" => array(
 					"desc" => "Get additional statistics about TeamSpeak user by unique client ID",
 					"usage" => "Use \$_GET parameter 'uuid' and add as value one unique client ID or a part of it",
@@ -332,12 +395,15 @@ if (isset($_GET['groups'])) {
 			)
 		);
 	} else {
-		if ($all == 1) {
-			$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`stats_user` INNER JOIN `user` ON `user`.`uuid` = `stats_user`.`uuid` ORDER BY {$sort} {$order} LIMIT :start, :limit");
-		} else {
-			$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`stats_user` INNER JOIN `user` ON `user`.`uuid` = `stats_user`.`uuid` WHERE {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
-			$dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
-		}
+		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`stats_user` INNER JOIN `$dbname`.`user` ON `user`.`uuid` = `stats_user`.`uuid` {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
+		if(isset($_GET['cldbid'])) $dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid', $groupid, PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid0', $groupid.'%', PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid1', '%'.$groupid.'%', PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid2', '%'.$groupid, PDO::PARAM_STR);
+		if(isset($_GET['name'])) $dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
+		if(isset($_GET['uuid'])) $dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
+
 		$dbdata->bindValue(':start', (int) $part, PDO::PARAM_INT);
 		$dbdata->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
 		$dbdata->execute();

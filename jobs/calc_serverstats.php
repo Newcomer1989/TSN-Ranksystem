@@ -4,7 +4,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 	$nowtime = time();
 	$sqlexec = '';
 
-	if($db_cache['job_check']['calc_donut_chars']['timestamp'] < ($nowtime - 8)) {
+	if($db_cache['job_check']['calc_donut_chars']['timestamp'] < ($nowtime - 8) || $db_cache['job_check']['get_version']['timestamp'] < ($nowtime - 43199)) {
 		$db_cache['job_check']['calc_donut_chars']['timestamp'] = $nowtime;
 		$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='calc_donut_chars';\n";
 
@@ -12,6 +12,10 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 		$country_array = $platform_array = $count_version_user = array();
 
 		foreach($db_cache['all_user'] as $uuid) {
+			$nation = (string)$uuid['nation']; 
+			$platform = (string)$uuid['platform']; 
+			$version = (string)$uuid['version']; 
+
 			if ($uuid['lastseen']>($nowtime-86400)) {
 				$user_quarter++; $user_month++; $user_week++; $user_today++;
 			} elseif ($uuid['lastseen']>($nowtime-604800)) {
@@ -22,22 +26,22 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 				$user_quarter++;
 			}
 
-			if(isset($country_array[$uuid['nation']])) {
-				$country_array[$uuid['nation']]++;
+			if(isset($country_array[$nation])) {
+				$country_array[$nation]++;
 			} else {
-				$country_array[$uuid['nation']] = 1;
+				$country_array[$nation] = 1;
 			}
 
-			if(isset($platform_array[$uuid['platform']])) {
-				$platform_array[$uuid['platform']]++;
+			if(isset($platform_array[$platform])) {
+				$platform_array[$platform]++;
 			} else {
-				$platform_array[$uuid['platform']] = 1;
+				$platform_array[$platform] = 1;
 			}
 
-			if(isset($count_version_user[$uuid['version']])) {
-				$count_version_user[$uuid['version']]++;
+			if(isset($count_version_user[$version])) {
+				$count_version_user[$version]++;
 			} else {
-				$count_version_user[$uuid['version']] = 1;
+				$count_version_user[$version] = 1;
 			}
 
 			$total_online_time = $total_online_time + $uuid['count'];
@@ -424,7 +428,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 						}
 					}
 				}
-				update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
+				$sqlexec .= update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand);
 			}
 			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='get_version';\nUPDATE `$dbname`.`cfg_params` SET `value`='{$cfg['version_latest_available']}' WHERE `param`='version_latest_available';\n";
 		}

@@ -26,68 +26,45 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 	if(isset($db_cache['admin_addtime']) && count($db_cache['admin_addtime']) != 0) {
 		foreach($db_cache['admin_addtime'] as $uuid => $value) {
 			if(isset($db_cache['all_user'][$uuid])) {
-				$sqlexec2 = '';
 				$isonline = 0;
 				foreach($allclients as $client) {
 					if($client['client_unique_identifier'] == $uuid) {
 						$isonline = 1;
 						$temp_cldbid = $client['client_database_id'];
-						if($value['timecount'] < 0) {
-							$db_cache['all_user'][$uuid]['count'] += $value['timecount'];
-							if($db_cache['all_user'][$uuid]['count'] < 0) {
-								$db_cache['all_user'][$uuid]['count'] = 0;
-								$db_cache['all_user'][$uuid]['idle'] = 0;
-							} elseif ($db_cache['all_user'][$uuid]['idle'] > $db_cache['all_user'][$uuid]['count']) {
-								$db_cache['all_user'][$uuid]['idle'] = $db_cache['all_user'][$uuid]['count'];
-							}
-						} else {
-							$db_cache['all_user'][$uuid]['count'] += $value['timecount'];
-						}
 					}
 				}
+				$db_cache['all_user'][$uuid]['count'] += $value['timecount'];
+				if($db_cache['all_user'][$uuid]['count'] < 0) {
+					$db_cache['all_user'][$uuid]['count'] = $db_cache['all_user'][$uuid]['idle'] = 0;
+				} elseif ($db_cache['all_user'][$uuid]['idle'] > $db_cache['all_user'][$uuid]['count']) {
+					$db_cache['all_user'][$uuid]['idle'] = $db_cache['all_user'][$uuid]['count'];
+				}
 				if($isonline != 1) {
-					if(($user = $mysqlcon->query("SELECT `uuid`,`count`,`idle`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 					} else {
 						$temp_cldbid = $user[$uuid]['cldbid'];
-						if($value['timecount'] < 0) {
-							$user[$uuid]['count'] += $value['timecount'];
-							if($user[$uuid]['count'] < 0) {
-								$user[$uuid]['count'] = 0;
-								$user[$uuid]['idle'] = 0;
-							} elseif ($user[$uuid]['idle'] > $user[$uuid]['count']) {
-								$user[$uuid]['idle'] = $user[$uuid]['count'];
-							}
-						} else {
-							$user[$uuid]['count'] += $value['timecount'];
-						}
-						$sqlexec2 .= "UPDATE `$dbname`.`user` SET `count`='{$user[$uuid]['count']}', `idle`='{$user[$uuid]['idle']}' WHERE `uuid`='{$uuid}'; ";
+						$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='{$db_cache['all_user'][$uuid]['count']}', `idle`='{$db_cache['all_user'][$uuid]['idle']}' WHERE `uuid`='{$uuid}';\n";
 					}
 				}
-				$sqlexec2 .= "DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid'; ";
+				if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid';") === false) {
+					enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+				}
 				if(($usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$temp_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
 					enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 				} else {
 					foreach($usersnap as $id => $valuesnap) {
-						if($value['timecount'] < 0) {
-							$valuesnap[$id]['count'] += $value['timecount'];
-							if($valuesnap[$id]['count'] < 0) {
-								$valuesnap[$id]['count'] = 0;
-								$valuesnap[$id]['idle'] = 0;
-							} elseif ($valuesnap[$id]['idle'] > $valuesnap[$id]['count']) {
-								$valuesnap[$id]['idle'] = $valuesnap[$id]['count'];
-							}
-						} else {
-							$valuesnap[$id]['count'] += $value['timecount'];
+						$valuesnap['count'] += $value['timecount'];
+						if($valuesnap['count'] < 0) {
+							$valuesnap['count'] = $valuesnap['idle'] = 0;
+						} elseif ($valuesnap['idle'] > $valuesnap['count']) {
+							$valuesnap['idle'] = $valuesnap['count'];
 						}
-						$sqlexec2 .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap[$id]['count']}', `idle`='{$valuesnap[$id]['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}'; ";
+						$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap['count']}', `idle`='{$valuesnap['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}';\n";
 					}
 				}
-				if($mysqlcon->exec($sqlexec2) === false) {
-					enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
-				}
 				enter_logfile($cfg,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid));
-				unset($sqlexec2, $user, $usersnap);
+				unset($user, $usersnap);
 			}
 		}
 		unset($db_cache['admin_addtime']);
@@ -95,7 +72,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 	
 	foreach ($allclients as $client) {
 		$client_groups_rankup = array();
-		$name = $mysqlcon->quote((mb_substr($client['client_nickname'],0,30)), ENT_QUOTES);
+		$name = $mysqlcon->quote((mb_substr(mb_convert_encoding($client['client_nickname'],'UTF-8','auto'),0,30)), ENT_QUOTES);
 		$uid = htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES);
 		$sgroups = array_flip(explode(",", $client['client_servergroups']));
 		if(strlen($client['client_country']) > 2 || $client['client_country'] == '') $client['client_country'] = 'XX';
@@ -218,7 +195,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 									$hours = $dtF->diff($dtT)->format('%h');
 									$mins  = $dtF->diff($dtT)->format('%i');
 									$secs  = $dtF->diff($dtT)->format('%s');
-									sendmessage($ts3, $cfg, $uid, 1, NULL, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$db_cache['groups'][$rank['group']]['sgidname'],$client['client_nickname']), sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'],$rank['group']), 2);
+									sendmessage($ts3, $cfg, $uid, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$db_cache['groups'][$rank['group']]['sgidname'],$client['client_nickname']), 1, NULL, sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'],$rank['group']), 2);
 								}
 							} catch (Exception $e) {
 								enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group']));

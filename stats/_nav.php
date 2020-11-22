@@ -6,6 +6,137 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 		$_SESSION[$rspathhex.'upinfomsg'] = 1;
 	}
 }
+
+if(isset($_POST['username'])) {
+	$_GET["search"] = $_POST['usersuche'];
+	$_GET["seite"] = 1;
+}
+$filter = $searchstring = NULL;
+if(isset($_GET["search"]) && $_GET["search"] != '') {
+	$getstring = htmlspecialchars($_GET['search']);
+}
+if(isset($getstring) && strstr($getstring, 'filter:excepted:')) {
+	if(str_replace('filter:excepted:','',$getstring)!='') {
+		$searchstring = str_replace('filter:excepted:','',$getstring);
+	}
+	$filter .= " AND `except` IN ('2','3')";
+} elseif(isset($getstring) && strstr($getstring, 'filter:nonexcepted:')) {
+	if(str_replace('filter:nonexcepted:','',$getstring)!='') {
+		$searchstring = str_replace('filter:nonexcepted:','',$getstring);
+	}
+	$filter .= " AND `except` IN ('0','1')";
+} else {
+	if(isset($getstring)) {
+		$searchstring = $getstring;
+	} else {
+		$searchstring = '';
+	}
+	if($cfg['stats_show_excepted_clients_switch'] == 0) {
+		$filter .= " AND `except` IN ('0','1')";
+	}
+}
+if(isset($getstring) && strstr($getstring, 'filter:online:')) {
+	$searchstring = preg_replace('/filter\:online\:/','',$searchstring);
+	$filter .= " AND `online`='1'";
+} elseif(isset($getstring) && strstr($getstring, 'filter:nononline:')) {
+	$searchstring = preg_replace('/filter\:nononline\:/','',$searchstring);
+	$filter .= " AND `online`='0'";
+}
+if(isset($getstring) && strstr($getstring, 'filter:actualgroup:')) {
+	preg_match('/filter\:actualgroup\:(.*)\:/',$searchstring,$grpvalue);
+	$searchstring = preg_replace('/filter\:actualgroup\:(.*)\:/','',$searchstring);
+	$filter .= " AND `grpid`='".$grpvalue[1]."'";
+}
+if(isset($getstring) && strstr($getstring, 'filter:country:')) {
+	preg_match('/filter\:country\:(.*)\:/',$searchstring,$grpvalue);
+	$searchstring = preg_replace('/filter\:country\:(.*)\:/','',$searchstring);
+	$filter .= " AND `nation`='".$grpvalue[1]."'";
+}
+if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
+	preg_match('/filter\:lastseen\:(.*)\:(.*)\:/',$searchstring,$seenvalue);
+	$searchstring = preg_replace('/filter\:lastseen\:(.*)\:(.*)\:/','',$searchstring);
+	if(isset($seenvalue[2]) && is_numeric($seenvalue[2])) {
+		$lastseen = $seenvalue[2];
+	} elseif(isset($seenvalue[2])) {
+		$r = date_parse_from_format("Y-m-d H-i",$seenvalue[2]);
+		$lastseen = mktime($r['hour'], $r['minute'], $r['second'], $r['month'], $r['day'], $r['year']);
+	} else {
+		$lastseen = 0;
+	}
+	if(isset($seenvalue[1]) && ($seenvalue[1] == '&lt;' || $seenvalue[1] == '<')) {
+		$operator = '<';
+	} elseif(isset($seenvalue[1]) && ($seenvalue[1] == '&gt;' || $seenvalue[1] == '>')) {
+		$operator = '>';
+	} elseif(isset($seenvalue[1]) && $seenvalue[1] == '!=') {
+		$operator = '!=';
+	} else {
+		$operator = '=';
+	}
+	$filter .= " AND `lastseen`".$operator."'".$lastseen."'";
+}
+$searchstring = htmlspecialchars_decode($searchstring);
+
+if(isset($getstring)) {
+	$dbdata_full = $mysqlcon->prepare("SELECT COUNT(*) FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter");
+	$dbdata_full->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
+	$dbdata_full->execute();
+	$sumentries = $dbdata_full->fetch(PDO::FETCH_NUM);
+	$getstring = rawurlencode($getstring);
+} else {
+	$getstring = '';
+	$sumentries = $mysqlcon->query("SELECT COUNT(*) FROM `$dbname`.`user`")->fetch(PDO::FETCH_NUM);
+}
+
+if(!isset($_GET["seite"])) {
+	$seite = 1;
+} else {
+	$_GET["seite"] = preg_replace('/\D/', '', $_GET["seite"]);
+	if($_GET["seite"] > 0) {
+		$seite = $_GET["seite"];
+	} else {
+		$seite = 1;
+	}
+}
+$adminlogin = 0;
+$sortarr = array_flip(array("active","cldbid","count","grpid","grpsince","idle","lastseen","name","nation","nextup","platform","rank","uuid","version"));
+
+if(isset($_GET['sort']) && isset($sortarr[$_GET['sort']])) {
+	$keysort = $_GET['sort'];
+} else {
+	$keysort = $cfg['stats_column_default_sort'];
+}
+if(isset($_GET['order']) && $_GET['order'] == 'desc') {
+	$keyorder = 'desc';
+} elseif(isset($_GET['order']) && $_GET['order'] == 'asc') {
+	$keyorder = 'asc';
+} else {
+	$keyorder = $cfg['stats_column_default_order'];
+}
+
+if(isset($_GET['admin'])) {
+	if($_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass'] && $_SESSION[$rspathhex.'clientip'] == getclientip()) {
+		$adminlogin = 1;
+	}
+}
+
+if(!isset($_GET["user"])) {
+	$user_pro_seite = 25;
+} elseif($_GET['user'] == "all") {
+	if($sumentries[0] > 1000) {
+		$user_pro_seite = 1000;
+	} else {
+		$user_pro_seite = $sumentries[0];
+	}
+} else {
+	$_GET["user"] = preg_replace('/\D/', '', $_GET["user"]);
+	if($_GET["user"] > 1000) {
+		$user_pro_seite = 1000;
+	} elseif($_GET["user"] > 0) {
+		$user_pro_seite = $_GET["user"];
+	} else {
+		$user_pro_seite = 25;
+	}
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?PHP echo $cfg['default_language']; ?>">
@@ -189,12 +320,16 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 						<span class="caret"></span>
 					</button>
 					<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=50&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">50</a></li>
-			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=100&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">100</a></li>
-			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=250&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">250</a></li>
-			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=500&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">500</a></li>
-						<li role="separator" class="divider"></li>
-			<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=all&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>"><?PHP echo $lang['stnv0026']; ?></a></li>
+						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=50&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">50</a></li>
+						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=100&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">100</a></li>
+						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=250&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">250</a></li>
+						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=500&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">500</a></li>
+						<?PHP if($sumentries[0] > 1000) { ?>
+							<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=1000&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">1000</a></li>
+						<?PHP } else { ?>
+							<li role="separator" class="divider"></li>
+							<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=all&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>"><?PHP echo $lang['stnv0026']; ?></a></li>
+						<?PHP } ?>
 					</ul>
 				</li>
 				<li class="navbar-form navbar-right">
@@ -215,10 +350,15 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 				</li>
 				<?PHP } ?>
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP echo '&nbsp;&nbsp;' . $_SESSION[$rspathhex.'tsname'] ?>&nbsp;
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i><?PHP
+					echo '&nbsp;&nbsp;';
+					if(isset($_SESSION[$rspathhex.'tsname'])) {
+						echo $_SESSION[$rspathhex.'tsname'];
+					}
+					?>&nbsp;
 					<b class="caret"></b></a><ul class="dropdown-menu">
 						<?PHP
-						if($_SESSION[$rspathhex.'tsname'] == $lang['stag0016'] || $_SESSION[$rspathhex.'tsname'] == "verification needed (multiple)!" || $_SESSION[$rspathhex.'connected'] == 0) {
+						if(isset($_SESSION[$rspathhex.'tsname']) && $_SESSION[$rspathhex.'tsname'] == $lang['stag0016'] || isset($_SESSION[$rspathhex.'tsname']) && $_SESSION[$rspathhex.'tsname'] == "verification needed (multiple)!" || isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) {
 							echo '<li><a href="verify.php"><i class="fas fa-key"></i>&nbsp;'.$lang['stag0017'].'</a></li>';
 						}
 						if(isset($_SESSION[$rspathhex.'admin']) && $_SESSION[$rspathhex.'admin'] == TRUE) {
@@ -227,7 +367,7 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 							} else {
 								echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-5),'webinterface/bot.php"><i class="fas fa-wrench"></i>&nbsp;',$lang['wi'],'</a></li>';
 							}
-						} elseif ($_SESSION[$rspathhex.'connected'] == 0) {
+						} elseif (isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) {
 							echo '<li><a href="ts3server://';
 								if (($cfg['teamspeak_host_address']=='localhost' || $cfg['teamspeak_host_address']=='127.0.0.1') && strpos($_SERVER['HTTP_HOST'], 'www.') == 0) {
 									echo preg_replace('/www\./','',$_SERVER['HTTP_HOST']);
@@ -314,15 +454,4 @@ if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSIO
 	} else {
 		echo '<div id="container">';
 	}
-
-
-function error_handling($msg,$type = NULL) {
-	switch ($type) {
-		case NULL: echo '<div class="alert alert-success alert-dismissible">'; break;
-		case 1: echo '<div class="alert alert-info alert-dismissible">'; break;
-		case 2: echo '<div class="alert alert-warning alert-dismissible">'; break;
-		case 3: echo '<div class="alert alert-danger alert-dismissible">'; break;
-	}
-	echo '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>',$msg,'</div>';
-}
 ?>

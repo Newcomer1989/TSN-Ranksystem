@@ -40,7 +40,11 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 			$sIconFile = 0;
 			$extension = '';
 			if (!isset($db_cache['groups']['0']) || $db_cache['groups']['0']['iconid'] != $sIconId || (isset($iconarr["i".$sIconId]) && $iconarr["i".$sIconId] > $db_cache['groups']['0']['icondate'])) {
-				enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid:".$db_cache['groups']['0']['iconid']."; TSicondate:".$iconarr["i".$sIconId]."; DBicondate:".$db_cache['groups']['0']['icondate'].";");
+				if(isset($db_cache['groups']['0']) && isset($iconarr["i".$sIconId])) {
+					enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid:".$db_cache['groups']['0']['iconid']."; TSicondate:".$iconarr["i".$sIconId]."; DBicondate:".$db_cache['groups']['0']['icondate'].";");
+				} else {
+					enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid: empty; TSicondate: empty; DBicondate: empty;");
+				}
 				if($sIconId > 600) {
 					try {
 						usleep($cfg['teamspeak_query_command_delay']);
@@ -62,7 +66,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 						}
 					}
 					$iconarr["i".$sIconId] = $sIconId = 0;
-				} elseif($iconid < 601) {
+				} elseif($sIconId < 601) {
 					$extension = 'png';
 				} else {
 					$sIconId = 0;
@@ -90,7 +94,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				$tsgroupids[$servergroup['sgid']] = 0;
 				$sgid = $servergroup['sgid'];
 				$extension = '';
-				$sgname = $mysqlcon->quote((mb_substr($servergroup['name'],0,30)), ENT_QUOTES);
+				$sgname = $mysqlcon->quote((mb_substr(mb_convert_encoding($servergroup['name'],'UTF-8','auto'),0,30)), ENT_QUOTES);
 				$iconid = $servergroup['iconid'];
 				$iconid = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
 				$iconfile = 0;
@@ -128,7 +132,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 					$iconarr["i".$iconid] = 0;
 				}
 
-				if(isset($db_cache['groups'][$servergroup['sgid']]) && $db_cache['groups'][$servergroup['sgid']]['sgidname'] == $servergroup['name'] && $db_cache['groups'][$servergroup['sgid']]['iconid'] == $iconid && $db_cache['groups'][$servergroup['sgid']]['icondate'] == $iconarr["i".$iconid] && $db_cache['groups'][$servergroup['sgid']]['sortid'] == $servergroup['sortid']) {
+				if(isset($db_cache['groups'][$servergroup['sgid']]) && $db_cache['groups'][$servergroup['sgid']]['sgidname'] == $sgname && $db_cache['groups'][$servergroup['sgid']]['iconid'] == $iconid && $db_cache['groups'][$servergroup['sgid']]['icondate'] == $iconarr["i".$iconid] && $db_cache['groups'][$servergroup['sgid']]['sortid'] == $servergroup['sortid']) {
 					enter_logfile($cfg,7,"Continue server group ".$sgname." (CID: ".$servergroup['sgid'].")");
 					continue;
 				} else {

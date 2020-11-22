@@ -14,6 +14,7 @@ session_start();
 
 header("Content-Type: application/json; charset=UTF-8");
 
+require_once('../other/_functions.php');
 require_once('../other/config.php');
 
 $mysqlcon->query("SET @a:=0");

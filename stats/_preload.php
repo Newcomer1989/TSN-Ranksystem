@@ -1,26 +1,28 @@
 <?PHP
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_strict_mode', 1);
-if(in_array('sha512', hash_algos())) {
-	ini_set('session.hash_function', 'sha512');
-}
-if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") {
-	ini_set('session.cookie_secure', 1);
-	if(!headers_sent()) {
-		header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload;");
-	}
-}
-session_start();
-
+require_once('../other/_functions.php');
 require_once('../other/config.php');
-require_once('../other/session.php');
-require_once('../other/phpcommand.php');
-require_once('../other/load_addons_config.php');
 
-$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+start_session($cfg);
+$lang = set_language(get_language($cfg));
 
-if(!isset($_SESSION[$rspathhex.'tsuid'])) {
-	set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
+error_reporting(E_ALL);
+ini_set("log_errors", 1);
+set_error_handler("php_error_handling");
+ini_set("error_log", $cfg['logs_path'].'ranksystem.log');
+
+if(isset($_POST['refresh'])) {
+	rem_session_ts3();
 }
-require_once('_nav.php');
+
+try {
+	require_once('../other/phpcommand.php');
+	require_once('../other/load_addons_config.php');
+
+	$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+
+	if(!isset($_SESSION[$rspathhex.'tsuid'])) {
+		set_session_ts3($mysqlcon,$cfg,$lang,$dbname);
+	}
+	require_once('_nav.php');
+} catch(Throwable $ex) { }
 ?>

@@ -1,19 +1,13 @@
 <?php
-error_reporting(0);
-
+require_once(__DIR__.'/other/_functions.php');
 require_once(__DIR__.'/other/config.php');
 require_once(__DIR__.'/other/phpcommand.php');
+
 $GLOBALS['exec'] = FALSE;
 if($cfg['logs_path'] == NULL) { $cfg['logs_path'] = "./logs/"; }
 $GLOBALS['logfile'] = $cfg['logs_path'].'ranksystem.log';
-
-if (substr(php_uname(), 0, 7) == "Windows") {
-	$GLOBALS['pidfile'] = __DIR__.'\logs\pid';
-	$GLOBALS['autostart'] = __DIR__.'\logs\autostart_deactivated';
-} else {
-	$GLOBALS['pidfile'] = __DIR__.'/logs/pid';
-	$GLOBALS['autostart'] = __DIR__.'/logs/autostart_deactivated';
-}
+$GLOBALS['pidfile'] = $cfg['logs_path'].'pid';
+$GLOBALS['autostart'] = $cfg['logs_path'].'autostart_deactivated';
 
 function checkProcess($pid = null) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
@@ -61,7 +55,8 @@ function checkProcess($pid = null) {
 	}
 }
 
-function start() {
+function start($delay = 0) {
+	usleep($delay);
 	global $phpcommand;
 	if(isset($_SERVER['USER']) && $_SERVER['USER'] == "root" || isset($_SERVER['USERNAME']) && $_SERVER['USERNAME'] == "administrator") {
 		echo "\n !!!! Do not start the Ranksystem with root privileges !!!!\n\n";
@@ -134,6 +129,7 @@ function start() {
 }
 
 function stop() {
+	global $cfg;
 	if (checkProcess() == TRUE) {
 		echo "Stopping the Ranksystem Bot.\n";
 		$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
@@ -150,6 +146,7 @@ function stop() {
 				} else {
 					exec("kill -9 ".$pid);
 				}
+				enter_logfile($cfg,4,"Stop command received! Bot does not react, process killed!");
 				break;
 			}
 		}
@@ -160,7 +157,9 @@ function stop() {
 			echo " [OK]\n";
 		}
 	} else {
-		unlink($GLOBALS['pidfile']);
+		if(is_file($GLOBALS['pidfile'])) {
+			unlink($GLOBALS['pidfile']);
+		}
 		echo "The Ranksystem seems not running.\n";
 	}
 	$GLOBALS['exec'] = TRUE;
@@ -209,7 +208,11 @@ if (isset($_SERVER['argv'][1]) == 0) {
 	help();
 } else {
 	$cmd = $_SERVER['argv'][1];
-	if ($cmd == 'start')	start();
+	if(isset($_SERVER['argv'][2]) && is_numeric($_SERVER['argv'][2]) && $cmd == 'start') {
+		start($_SERVER['argv'][2]);
+	} elseif ($cmd == 'start') {
+		start();
+	}
 	if ($cmd == 'stop')		stop();
 	if ($cmd ==	'restart')	restart();
 	if ($cmd ==	'check')	check();

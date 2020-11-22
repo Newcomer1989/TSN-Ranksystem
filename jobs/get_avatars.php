@@ -2,6 +2,7 @@
 function get_avatars($ts3,$cfg,$dbname,&$db_cache) {
 	$starttime = microtime(true);
 	$nowtime = time();
+	$sqlexec = '';
 
 	if($db_cache['job_check']['get_avatars']['timestamp'] < ($nowtime - 32)) {
 		$db_cache['job_check']['get_avatars']['timestamp'] = $nowtime;

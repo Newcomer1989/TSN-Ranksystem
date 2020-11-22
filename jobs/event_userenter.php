@@ -30,7 +30,11 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 					$ip = '';
 				} elseif($cfg['rankup_hash_ip_addresses_mode'] == 2) {
 					$salt = md5(dechex(crc32(substr(__DIR__,0,-4))));
-					$hash = password_hash($ip, PASSWORD_DEFAULT, array("cost" => 10, "salt" => $salt));
+					if(version_compare(PHP_VERSION, '7.9.9', '>')) {
+						$hash = crypt($ip, '$2y$10$'.$salt.'$');
+					} else {
+						$hash = password_hash($ip, PASSWORD_DEFAULT, array("cost" => 10, "salt" => $salt));
+					}
 					$ip = '';
 				} else {
 					$hash = '';
