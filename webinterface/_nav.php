@@ -1,9 +1,12 @@
 <?PHP
-$job_check = $mysqlcon->query("SELECT * FROM `$dbname`.`job_check`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
-if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
-	if(!isset($err_msg)) {
-		$err_msg = '<i class="fas fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<i class="fas fa-book"></i>&nbsp;<a href="//ts-ranksystem.com/?changelog" target="_blank">', '</a>'); $err_lvl = 1;
-		$_SESSION[$rspathhex.'upinfomsg'] = 1;
+if(($job_check = $mysqlcon->query("SELECT * FROM `$dbname`.`job_check`")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+	$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+} else {
+	if((time() - $job_check['last_update']['timestamp']) < 259200 && !isset($_SESSION[$rspathhex.'upinfomsg'])) {
+		if(!isset($err_msg)) {
+			$err_msg = '<i class="fas fa-info-circle"></i>&nbsp;'.sprintf($lang['upinf2'], date("Y-m-d H:i",$job_check['last_update']['timestamp']), '<i class="fas fa-book"></i>&nbsp;<a href="//ts-ranksystem.com/?changelog" target="_blank">', '</a>'); $err_lvl = 1;
+			$_SESSION[$rspathhex.'upinfomsg'] = 1;
+		}
 	}
 }
 
@@ -108,12 +111,13 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 								<?PHP
 								if($cfg['webinterface_advanced_mode'] == 1) {
 									echo '<input name="switchexpert" value="0" type="hidden">';
-									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="checked" type="checkbox" data-size="mini" data-label-text="Expert Mode" checked>';
+									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="checked" type="checkbox" data-size="mini" data-label-width="100" data-label-text="Expert Mode" checked>';
 								} else {
-									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="check" type="checkbox" data-size="mini" data-label-text="Expert Mode">';
+									echo '<input class="switch-animate" id="switchexpert" name="switchexpert" value="check" type="checkbox" data-size="mini" data-label-width="100" data-label-text="Expert Mode">';
 								}
 								?>
 							</form>
+							<script>$("[id='switchexpert']").bootstrapSwitch();</script>
 						</li>
 						<li class="divider"></li>
 						<?PHP if($_SERVER['SERVER_PORT'] == 443 || $_SERVER['SERVER_PORT'] == 80) {
@@ -140,18 +144,21 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && $
 					echo '<li><a href="//',$_SERVER['SERVER_NAME'],':',$_SERVER['SERVER_PORT'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'stats/"><i class="fas fa-chart-bar"></i>&nbsp;',$lang['winav6'],'</a></li>';
 				} ?>
 				<li class="dropdown">
-					<a href="" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
-					<ul class="dropdown-menu">
 					<?PHP
+					$dropdownlist = '';
 					if(is_dir(substr(__DIR__,0,-12).'languages/')) {
 						foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
 							if ('.' === $file || '..' === $file || is_dir($file)) continue;
 							$sep_lang = preg_split("/[._]/", $file);
 							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+								if($_SESSION[$rspathhex.'language'] == $sep_lang[1]) {
+									$dropdownfront = '<a href="" class="dropdown-toggle" data-toggle="dropdown"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;<b class="caret"></b></a><ul class="dropdown-menu">';
+								}
+								$dropdownlist .= '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
 							}
 						}
 					}
+					echo $dropdownfront,$dropdownlist;
 					?>
 					</ul>
 				</li>

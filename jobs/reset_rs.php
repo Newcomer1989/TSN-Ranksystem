@@ -1,5 +1,5 @@
 <?PHP
-function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
+function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,$phpcommand,&$db_cache) {
 	$starttime = microtime(true);
 	
 	if (in_array($db_cache['job_check']['reset_user_time']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_user_delete']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_group_withdraw']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_webspace_cache']['timestamp'], ["1","2"], true) || in_array($db_cache['job_check']['reset_usage_graph']['timestamp'], ["1","2"], true)) {
@@ -280,11 +280,11 @@ function reset_rs($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 		if($db_cache['job_check']['reset_stop_after']['timestamp'] == "1") {
 			$path = substr(__DIR__, 0, -4);
 			if (substr(php_uname(), 0, 7) == "Windows") {
-				exec("start ".$phpcommand." ".$path."worker.php stop");
-				file_put_contents(substr(__DIR__,0,-4).'logs\autostart_deactivated',"");
+				pclose(popen("start /B cmd /C ".$phpcommand." ".$path."worker.php stop >NUL 2>NUL", "r"));
+				file_put_contents($path.'logs\autostart_deactivated',"");
 			} else {
 				exec($phpcommand." ".$path."worker.php stop > /dev/null &");
-				file_put_contents(substr(__DIR__,0,-4).'logs/autostart_deactivated',"");
+				file_put_contents($path.'logs/autostart_deactivated',"");
 			}
 			shutdown($mysqlcon,$cfg,4,"Stop requested after Reset job. Wait for manually start.");
 		}

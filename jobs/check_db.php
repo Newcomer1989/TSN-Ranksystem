@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,&$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.13';
+	$cfg['version_latest_available'] = '1.3.14';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -364,9 +364,6 @@ function check_db($mysqlcon,$lang,&$cfg,$dbname) {
 		}
 		
 		if(version_compare($cfg['version_current_using'], '1.3.13', '<')) {
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
-			
 			if($mysqlcon->exec("UPDATE `$dbname`.`user` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user` SET `count`=`idle` WHERE `count`<0; UPDATE `$dbname`.`user` SET `count`=`idle` WHERE `count`<`idle`;") === false) { }
 			if($mysqlcon->exec("UPDATE `$dbname`.`user_snapshot` SET `idle`=0 WHERE `idle`<0; UPDATE `$dbname`.`user_snapshot` SET `count`=`idle` WHERE `count`<0; UPDATE `$dbname`.`user_snapshot` SET `count`=`idle` WHERE `count`<`idle`;") === false) { }
 
@@ -393,7 +390,22 @@ function check_db($mysqlcon,$lang,&$cfg,$dbname) {
 				if($mysqlcon->exec("DROP INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { } else {
 					enter_logfile($cfg,4,"    [1.3.13] Dropped unneeded Index snapshot_cldbid on table user_snapshot.");
 				}
+			} catch (Exception $e) { }
+		}
+		
+		if(version_compare($cfg['version_current_using'], '1.3.14', '<')) {
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 
+			if($mysqlcon->exec("INSERT IGNORE INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_default_sort_2', 'rank'),('stats_column_default_order_2', 'asc') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.14] Added new cfg_params values.");
+			}
+
+			if($mysqlcon->exec("INSERT IGNORE INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name','');") === false) { } else {
+				enter_logfile($cfg,4,"    [1.3.14] Added new addons_config values.");
+			}
+
+			try {
 				if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) { }
 				if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) { }
 				if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) { }

@@ -604,6 +604,9 @@ try {
 			$('#default_header_origin_value').attr('name', '');
 		}
 	});
+	$("[name='default_header_contenttyp']").bootstrapSwitch();
+	$("[name='rankup_client_database_id_change_switch']").bootstrapSwitch();
+	$("[name='rankup_clean_clients_switch']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

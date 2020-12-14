@@ -376,6 +376,12 @@ try {
 		</div>
 	  </div>
 	</div>
+	<script>
+	$("[name='reset_group_withdraw']").bootstrapSwitch();
+	$("[name='reset_webspace_cache']").bootstrapSwitch();
+	$("[name='reset_usage_graph']").bootstrapSwitch();
+	$("[name='reset_stop_after']").bootstrapSwitch();
+	</script>
 	</body>
 	</html>
 <?PHP

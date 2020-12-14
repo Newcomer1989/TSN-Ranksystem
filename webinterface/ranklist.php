@@ -34,8 +34,10 @@ try {
 		if (isset($_POST['stats_show_clients_in_highest_rank_switch'])) $cfg['stats_show_clients_in_highest_rank_switch'] = 1; else $cfg['stats_show_clients_in_highest_rank_switch'] = 0;
 		$cfg['stats_column_default_order'] = $_POST['stats_column_default_order'];
 		$cfg['stats_column_default_sort'] = $_POST['stats_column_default_sort'];
+		$cfg['stats_column_default_order_2'] = $_POST['stats_column_default_order_2'];
+		$cfg['stats_column_default_sort_2'] = $_POST['stats_column_default_sort_2'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_nation_switch','{$cfg['stats_column_nation_switch']}'),('stats_column_version_switch','{$cfg['stats_column_version_switch']}'),('stats_column_platform_switch','{$cfg['stats_column_platform_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_nation_switch','{$cfg['stats_column_nation_switch']}'),('stats_column_version_switch','{$cfg['stats_column_version_switch']}'),('stats_column_platform_switch','{$cfg['stats_column_platform_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_column_default_order_2','{$cfg['stats_column_default_order_2']}'),('stats_column_default_sort_2','{$cfg['stats_column_default_sort_2']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
@@ -257,6 +259,42 @@ try {
 												</select>
 											</div>
 										</div>
+										<div class="row">&nbsp;</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishdef2desc"><?php echo $lang['wishdef2']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<select class="selectpicker show-tick form-control basic" name="stats_column_default_sort_2">
+												<?PHP
+												echo '<option data-icon="fas fa-hashtag" data-subtext="[default]" value="rank"'.($cfg['stats_column_default_sort_2'] === '1' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listrank'].'</option>';
+												echo '<option data-icon="fas fa-user" value="name"'.($cfg['stats_column_default_sort_2'] === 'name' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnick'].'</option>';
+												echo '<option data-icon="fas fa-id-card" value="uuid"'.($cfg['stats_column_default_sort_2'] === 'uuid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listuid'].'</option>';
+												echo '<option data-icon="fas fa-database" value="cldbid"'.($cfg['stats_column_default_sort_2'] === 'cldbid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listcldbid'].'</option>';
+												echo '<option data-icon="fas fa-user-clock" value="lastseen"'.($cfg['stats_column_default_sort_2'] === 'lastseen' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listseen'].'</option>';
+												echo '<option data-icon="fas fa-globe-europe" value="nation"'.($cfg['stats_column_default_sort_2'] === 'nation' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnat'].'</option>';
+												echo '<option data-icon="fas fa-tag" value="version"'.($cfg['stats_column_default_sort_2'] === 'version' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listver'].'</option>';
+												echo '<option data-icon="fas fa-server" value="platform"'.($cfg['stats_column_default_sort_2'] === 'platform' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listpla'].'</option>';
+												echo '<option data-icon="fas fa-hourglass-start" value="count"'.($cfg['stats_column_default_sort_2'] === 'count' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumo'].'</option>';
+												echo '<option data-icon="fas fa-hourglass-end" value="idle"'.($cfg['stats_column_default_sort_2'] === 'idle' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumi'].'</option>';
+												echo '<option data-icon="fas fa-hourglass-half" value="active"'.($cfg['stats_column_default_sort_2'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsuma'].'</option>';
+												echo '<option data-icon="fas fa-clipboard-check" value="grpid"'.($cfg['stats_column_default_sort_2'] === 'grpid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listacsg'].'</option>';
+												echo '<option data-icon="fas fa-history" value="grpidsince"'.($cfg['stats_column_default_sort_2'] === 'grpidsince' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listgrps'].'</option>';
+												echo '<option data-icon="fas fa-clock" value="nextup"'.($cfg['stats_column_default_sort_2'] === 'nextup' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxup'].'</option>';
+												echo '<option data-icon="fas fa-clipboard-list" value="active"'.($cfg['stats_column_default_sort_2'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxsg'].'</option>';
+												?>
+												</select>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishsort2desc"><?php echo $lang['wishsort2']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<select class="selectpicker show-tick form-control basic" name="stats_column_default_order_2">
+												<?PHP
+												echo '<option data-subtext="[ASC]" data-icon="fas fa-sort-asc" value="asc"'.($cfg['stats_column_default_order_2'] === 'asc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['asc'].'</option>';
+												echo '<option data-subtext="[DESC]" data-icon="fas fa-sort-desc" value="desc"'.($cfg['stats_column_default_order_2'] === 'desc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['desc'].'</option>';
+												?>
+												</select>
+											</div>
+										</div>
 									</div>
 								</div>
 								<div class="panel-body expertelement">
@@ -343,6 +381,38 @@ try {
 		</div>
 	  </div>
 	</div>
+	<div class="modal fade" id="wishdef2desc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wishdef2']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo $lang['wishdef2desc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal fade" id="wishsort2desc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wishsort2']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo $lang['wishsort2desc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	<div class="modal fade" id="wishexclddesc" tabindex="-1">
 	  <div class="modal-dialog">
 		<div class="modal-content">
@@ -375,6 +445,25 @@ try {
 		</div>
 	  </div>
 	</div>
+	<script>
+	$("[name='stats_column_rank_switch']").bootstrapSwitch();
+	$("[name='stats_column_client_name_switch']").bootstrapSwitch();
+	$("[name='stats_column_unique_id_switch']").bootstrapSwitch();
+	$("[name='stats_column_client_db_id_switch']").bootstrapSwitch();
+	$("[name='stats_column_last_seen_switch']").bootstrapSwitch();
+	$("[name='stats_column_nation_switch']").bootstrapSwitch();
+	$("[name='stats_column_version_switch']").bootstrapSwitch();
+	$("[name='stats_column_platform_switch']").bootstrapSwitch();
+	$("[name='stats_column_online_time_switch']").bootstrapSwitch();
+	$("[name='stats_column_idle_time_switch']").bootstrapSwitch();
+	$("[name='stats_column_active_time_switch']").bootstrapSwitch();
+	$("[name='stats_column_current_server_group_switch']").bootstrapSwitch();
+	$("[name='stats_column_next_rankup_switch']").bootstrapSwitch();
+	$("[name='stats_column_next_server_group_switch']").bootstrapSwitch();
+	$("[name='stats_column_current_group_since_switch']").bootstrapSwitch();
+	$("[name='stats_show_excepted_clients_switch']").bootstrapSwitch();
+	$("[name='stats_show_clients_in_highest_rank_switch']").bootstrapSwitch();
+	</script>
 	</body>
 	</html>
 <?PHP

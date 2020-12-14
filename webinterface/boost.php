@@ -152,7 +152,7 @@ try {
 								<h1 class="page-header">
 									<span><?php echo $lang['wiboost'],' ',$lang['wihlset']; ?></span>
 									<div class="btn pull-right expertelement">
-										<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" value="switchexpert1" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
+										<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" value="switchexpert1" data-label-width="100" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
 									</div>
 								</h1>
 							</div>
@@ -271,7 +271,7 @@ try {
 								<h1 class="page-header">
 									<span><?php echo $lang['wiboost'],' ',$lang['wihlset']; ?></span>
 									<div class="btn pull-right">
-										<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" alue="switchexpert2" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
+										<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" alue="switchexpert2" data-label-width="100" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
 									</div>
 								</h1>
 							</div>
@@ -389,7 +389,7 @@ try {
 		if (document.contains(document.getElementById("noentry"))) {
 			document.getElementById("noentry").remove();
 		}
-		$clone.find('.bootstrap-touchspin').replaceWith(function() { return $('input', this); });;
+		$clone.find('.bootstrap-touchspin').replaceWith(function() { return $('input', this); });
 		$clone.find('.boostfactor').TouchSpin({min: 0,max: 999999999,decimals: 9,step: 0.000000001,verticalbuttons: true,prefix: '<i class="fas fa-times"></i>:'});
 		$clone.find('.boostduration').TouchSpin({min: 1,max: 999999999,verticalbuttons: true,prefix: 'Sec.:'});
 	};
@@ -406,6 +406,7 @@ try {
 		document.getElementById("old").classList.add("hidden");
 		$('#switchexpert1').bootstrapSwitch('state', false, false);
 	});
+	$("[id='switchexpert1']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

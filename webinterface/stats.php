@@ -338,6 +338,9 @@ try {
 		</div>
 	  </div>
 	</div>
+	<script>
+	$("[name='stats_show_site_navigation_switch']").bootstrapSwitch();
+	</script>
 	</body>
 	</html>
 <?PHP

@@ -324,7 +324,7 @@ if(!isset($_GET["user"])) {
 						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=100&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">100</a></li>
 						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=250&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">250</a></li>
 						<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=500&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">500</a></li>
-						<?PHP if($sumentries[0] > 1000) { ?>
+						<?PHP if(isset($sumentries[0]) && $sumentries[0] > 1000) { ?>
 							<li role="presentation"><a role="menuitem" href="<?PHP echo "?sort=$keysort&amp;order=$keyorder&amp;user=1000&amp;lang={$cfg['default_language']}&amp;search=$getstring"; ?>">1000</a></li>
 						<?PHP } else { ?>
 							<li role="separator" class="divider"></li>
@@ -381,6 +381,9 @@ if(!isset($_GET["user"])) {
 						}
 						?>
 						<li>
+							<a href="#myModal2" data-toggle="modal"><i class="fas fa-sync"></i>&nbsp;Refresh Session</a>
+						</li>
+						<li>
 							<a href="my_stats.php"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stmy0001']; ?></a>
 						</li>
 						<li>
@@ -388,28 +391,22 @@ if(!isset($_GET["user"])) {
 						</li>
 					</ul>
 				</li>
-				<li>
-					<div class="navbar-form navbar-center">
-						<div class="btn-group">
-							<a href="#myModal2" data-toggle="modal" class="btn btn-primary">
-								<span class="fas fa-sync" aria-hidden="true"></span>
-							</a>
-						</div>
-					</div>
-				</li>
 				<li class="dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
-					<ul class="dropdown-menu">
 					<?PHP
+					$dropdownlist = '';
 					if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 						foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
 							if ('.' === $file || '..' === $file || is_dir($file)) continue;
 							$sep_lang = preg_split("/[._]/", $file);
 							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+								if($_SESSION[$rspathhex.'language'] == $sep_lang[1]) {
+									$dropdownfront = '<a href="" class="dropdown-toggle" data-toggle="dropdown"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;<b class="caret"></b></a><ul class="dropdown-menu">';
+								}
+								$dropdownlist .= '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
 							}
 						}
 					}
+					echo $dropdownfront,$dropdownlist;
 					?>
 					</ul>
 				</li>

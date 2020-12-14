@@ -259,6 +259,9 @@ try {
 			</div>
 		</div>
 	</div>
+	<script>
+	$("[name='stats_imprint_switch']").bootstrapSwitch();
+	</script>
 	</body>
 	</html>
 	<?PHP

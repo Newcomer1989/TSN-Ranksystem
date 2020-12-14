@@ -337,9 +337,11 @@ function set_session_ts3($mysqlcon,$cfg,$lang,$dbname) {
 				$_SESSION[$rspathhex.'multiple'][$client['uuid']] = htmlspecialchars($client['name']);
 			}
 			$_SESSION[$rspathhex.'tsuid'] = $client['uuid'];
-			foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $auuid) {
-				if ($_SESSION[$rspathhex.'tsuid'] == $auuid) {
-					$_SESSION[$rspathhex.'admin'] = TRUE;
+			if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
+				foreach(array_flip($cfg['webinterface_admin_client_unique_id_list']) as $auuid) {
+					if ($_SESSION[$rspathhex.'tsuid'] == $auuid) {
+						$_SESSION[$rspathhex.'admin'] = TRUE;
+					}
 				}
 			}
 			$_SESSION[$rspathhex.'tscldbid'] = $client['cldbid'];

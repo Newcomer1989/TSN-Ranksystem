@@ -4,10 +4,6 @@ require_once('_preload.php');
 try {
 	require_once('_nav.php');
 
-	if ($last_access = $mysqlcon->query("SELECT * FROM `$dbname`.`cfg_params` WHERE `param` IN ('webinterface_access_last','webinterface_access_count')")->fetchAll(PDO::FETCH_KEY_PAIR) === false) {
-		$err_msg .= print_r($mysqlcon->errorInfo(), true);
-	}
-
 	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
 		$err_msg = print_r($mysqlcon->errorInfo(), true);
 		$err_lvl = 3;
@@ -18,15 +14,15 @@ try {
 		$err_lvl = 3;
 	}
 
-	if (($last_access['webinterface_access_last'] + 1) >= time()) {
-		$again = $last_access['webinterface_access_last'] + 2 - time();
+	if (($cfg['webinterface_access_last'] + 1) >= time()) {
+		$again = $cfg['webinterface_access_last'] + 2 - time();
 		$err_msg = sprintf($lang['errlogin2'],$again);
 		$err_lvl = 3;
 	} elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']]) && ($cfg['webinterface_admin_client_unique_id_list']==NULL || count($cfg['webinterface_admin_client_unique_id_list']) == 0)) {
-		$err_msg = sprintf($lang['wirtpw1'], '<a href="https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#reset-password-webinterface" target="_blank">https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#reset-password-webinterface</a>'); $err_lvl=3;
+		$err_msg = sprintf($lang['wirtpw1'], '<a href="https://github.com/Newcomer1989/TSN-Ranksystem/wiki#reset-password-webinterface" target="_blank">https://github.com/Newcomer1989/TSN-Ranksystem/wiki#reset-password-webinterface</a>'); $err_lvl=3;
 	} elseif (isset($_POST['resetpw']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$nowtime = time();
-		$newcount = $last_access['webinterface_access_count'] + 1;
+		$newcount = $cfg['webinterface_access_count'] + 1;
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$nowtime}'),('webinterface_access_count','{$newcount}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 		
 		require_once(substr(__DIR__,0,-12).'libs/ts3_lib/TeamSpeak3.php');
@@ -48,6 +44,7 @@ try {
 
 				$pwd = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#*+;:-_~?=%&!()'),0,12);
 				$cfg['webinterface_pass'] = password_hash($pwd, PASSWORD_DEFAULT);
+				$err_msg = '';
 
 				foreach($allclients as $client) {
 					if(array_key_exists(htmlspecialchars($client['client_unique_identifier'], ENT_QUOTES), $cfg['webinterface_admin_client_unique_id_list'])) {

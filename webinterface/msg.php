@@ -219,6 +219,9 @@ try {
 		</div>
 	  </div>
 	</div>
+	<script>
+	$("[name='rankup_message_to_user_switch']").bootstrapSwitch();
+	</script>
 	</body>
 	</html>
 	<?PHP

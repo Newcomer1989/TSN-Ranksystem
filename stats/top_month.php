@@ -49,9 +49,10 @@ try {
 		$top10_sum = round(($client['count_month']/3600)) + $top10_sum;
 		$top10_idle_sum = round(($client['idle_month']/3600)) + $top10_idle_sum;
 		$client_data[$count10] = array(
-		'name'		=>	$client['name'],
-		'count'		=>	$hours,
-		'online'	=>	$client['online']
+			'name'		=>	htmlspecialchars($client['name']),
+			'title'		=>	htmlspecialchars($client['name']),
+			'count'		=>	$hours,
+			'online'	=>	$client['online']
 		);
 		$count10++;
 	}
@@ -59,6 +60,7 @@ try {
 	for($count10 = $count10; $count10 <= 10; $count10++) {
 		$client_data[$count10] = array(
 			'name'		=>	"<i>unkown</i>",
+			'title'		=>	"unkown",
 			'count'		=>	"0",
 			'online'	=>	"0"
 		);
@@ -92,7 +94,7 @@ try {
 										</div>
 										<div class="col-xs-9 text-right">
 											<div>&nbsp;</div>
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[0]['name']),'">',htmlspecialchars($client_data[0]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[0]['title'],'">',$client_data[0]['name']; ?></span></div>
 											<div><?PHP if($client_data[0]['count']<3600) { echo sprintf($texttime, round(($client_data[0]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[0]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -111,7 +113,7 @@ try {
 										</div>
 										<div class="col-xs-9 text-right">
 											<div>&nbsp;</div>
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[1]['name']),'">',htmlspecialchars($client_data[1]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[1]['title'],'">',$client_data[1]['name']; ?></span></div>
 											<div><?PHP if($client_data[1]['count']<3600) { echo sprintf($texttime, round(($client_data[1]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[1]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -128,7 +130,7 @@ try {
 										</div>
 										<div class="col-xs-9 text-right">
 											<div>&nbsp;</div>
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[2]['name']),'">',htmlspecialchars($client_data[2]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[2]['title'],'">',$client_data[2]['name']; ?></span></div>
 											<div><?PHP if($client_data[2]['count']<3600) { echo sprintf($texttime, round(($client_data[2]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[2]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -145,7 +147,7 @@ try {
 											<i class="fa-2x">#4th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[3]['name']),'">',htmlspecialchars($client_data[3]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[3]['title'],'">',$client_data[3]['name']; ?></span></div>
 											<div><?PHP if($client_data[3]['count']<3600) { echo sprintf($texttime, round(($client_data[3]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[3]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -160,7 +162,7 @@ try {
 											<i class="fa-2x">#5th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[4]['name']),'">',htmlspecialchars($client_data[4]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[4]['title'],'">',$client_data[4]['name']; ?></span></div>
 											<div><?PHP if($client_data[4]['count']<3600) { echo sprintf($texttime, round(($client_data[4]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[4]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -175,7 +177,7 @@ try {
 											<i class="fa-2x">#6th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[5]['name']),'">',htmlspecialchars($client_data[5]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[5]['title'],'">',$client_data[5]['name']; ?></span></div>
 											<div><?PHP if($client_data[5]['count']<3600) { echo sprintf($texttime, round(($client_data[5]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[5]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -195,7 +197,7 @@ try {
 											<i class="fa-2x">#7th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[6]['name']),'">',htmlspecialchars($client_data[6]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[6]['title'],'">',$client_data[6]['name']; ?></span></div>
 											<div><?PHP if($client_data[6]['count']<3600) { echo sprintf($texttime, round(($client_data[6]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[6]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -213,7 +215,7 @@ try {
 											<i class="fa-2x">#8th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[7]['name']),'">',htmlspecialchars($client_data[7]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[7]['title'],'">',$client_data[7]['name']; ?></span></div>
 											<div><?PHP if($client_data[7]['count']<3600) { echo sprintf($texttime, round(($client_data[7]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[7]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -231,7 +233,7 @@ try {
 											<i class="fa-2x">#9th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[8]['name']),'">',htmlspecialchars($client_data[8]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[8]['title'],'">',$client_data[8]['name']; ?></span></div>
 											<div><?PHP if($client_data[8]['count']<3600) { echo sprintf($texttime, round(($client_data[8]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[8]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -249,7 +251,7 @@ try {
 											<i class="fa-2x">#10th</i>
 										</div>
 										<div class="col-xs-9 text-right">
-											<div class="tophuge"><span title=<?PHP echo '"',htmlspecialchars($client_data[9]['name']),'">',htmlspecialchars($client_data[9]['name']); ?></span></div>
+											<div class="tophuge"><span title=<?PHP echo '"',$client_data[9]['title'],'">',$client_data[9]['name']; ?></span></div>
 											<div><?PHP if($client_data[9]['count']<3600) { echo sprintf($texttime, round(($client_data[9]['count']/60)), $lang['sttw0015']); } else { echo sprintf($texttime, round(($client_data[9]['count']/3600)), $lang['sttw0014']); } ?></div>
 										</div>
 									</div>
@@ -260,52 +262,52 @@ try {
 					<div class="row">
 						<div class="col-lg-12">
 							<h2><?PHP echo $lang['sttw0004']; ?></h2>
-							<h4>#1 <?PHP echo htmlspecialchars($client_data[0]['name']) ?><?PHP echo ($client_data[0]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#1 <?PHP echo $client_data[0]['name'] ?><?PHP echo ($client_data[0]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-striped <?PHP echo ($client_data[0]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: 100%;"><?PHP echo round(($client_data[0]['count']/3600)) .'&nbsp;'.$lang['sttw0005']?>
 								</div>
 							</div>
-							<h4>#2 <?PHP echo htmlspecialchars($client_data[1]['name']) ?><?PHP echo ($client_data[1]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#2 <?PHP echo $client_data[1]['name'] ?><?PHP echo ($client_data[1]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[1]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[1]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[1]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[1]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[1]['count'])); ?>
 								</div>
 							</div>
-							<h4>#3 <?PHP echo htmlspecialchars($client_data[2]['name']) ?><?PHP echo ($client_data[2]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#3 <?PHP echo $client_data[2]['name'] ?><?PHP echo ($client_data[2]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-warning progress-bar-striped <?PHP echo ($client_data[2]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[2]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[2]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[2]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[2]['count'])); ?>
 								</div>
 							</div>
-							<h4>#4 <?PHP echo htmlspecialchars($client_data[3]['name']) ?><?PHP echo ($client_data[3]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#4 <?PHP echo $client_data[3]['name'] ?><?PHP echo ($client_data[3]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-danger progress-bar-striped <?PHP echo ($client_data[3]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[3]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[3]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[3]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[3]['count'])); ?>
 								</div>
 							</div>
-							<h4>#5 <?PHP echo htmlspecialchars($client_data[4]['name']) ?><?PHP echo ($client_data[4]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#5 <?PHP echo $client_data[4]['name'] ?><?PHP echo ($client_data[4]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-striped <?PHP echo ($client_data[4]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[4]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[4]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[4]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[4]['count'])); ?>
 								</div>
 							</div>
-							<h4>#6 <?PHP echo htmlspecialchars($client_data[5]['name']) ?><?PHP echo ($client_data[5]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#6 <?PHP echo $client_data[5]['name'] ?><?PHP echo ($client_data[5]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[5]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[5]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[5]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[5]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[5]['count'])); ?>
 								</div>
 							</div>
-							<h4>#7 <?PHP echo htmlspecialchars($client_data[6]['name']) ?><?PHP echo ($client_data[6]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#7 <?PHP echo $client_data[6]['name'] ?><?PHP echo ($client_data[6]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-warning progress-bar-striped <?PHP echo ($client_data[6]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[6]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[6]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[6]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[6]['count'])); ?>
 								</div>
 							</div>
-							<h4>#8 <?PHP echo htmlspecialchars($client_data[7]['name']) ?><?PHP echo ($client_data[7]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#8 <?PHP echo $client_data[7]['name'] ?><?PHP echo ($client_data[7]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-danger progress-bar-striped <?PHP echo ($client_data[7]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[7]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[7]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[7]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[7]['count'])); ?>
 								</div>
 							</div>
-							<h4>#9 <?PHP echo htmlspecialchars($client_data[8]['name']) ?><?PHP echo ($client_data[8]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#9 <?PHP echo $client_data[8]['name'] ?><?PHP echo ($client_data[8]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-striped <?PHP echo ($client_data[8]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[8]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[8]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[8]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[8]['count'])); ?>
 								</div>
 							</div>
-							<h4>#10 <?PHP echo htmlspecialchars($client_data[9]['name']) ?><?PHP echo ($client_data[9]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
+							<h4>#10 <?PHP echo $client_data[9]['name'] ?><?PHP echo ($client_data[9]['online'] == '1') ? ' (Status: <span class="text-success">'.$lang['stix0024'].'</span>)' : ' (Status: <span class="text-danger">'.$lang['stix0025'].'</span>)' ?></h4>
 							<div class="progress">
 								<div class="progress-bar progress-bar-success progress-bar-striped <?PHP echo ($client_data[9]['online'] == '1') ? 'active' : '' ?>" role="progressbar" aria-valuenow="<?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>" aria-valuemin="0" aria-valuemax="100" style="min-width: 20em;width: <?PHP echo get_percentage($client_data[0]['count'], $client_data[9]['count']) ?>%"><?PHP echo sprintf($lang['sttw0006'], round(($client_data[9]['count']/3600)), get_percentage($client_data[0]['count'], $client_data[9]['count'])); ?>
 								</div>

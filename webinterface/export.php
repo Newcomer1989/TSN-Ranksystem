@@ -141,7 +141,7 @@ try {
 												<?PHP echo $cfg['logs_path'].$file; ?>
 											</div>
 											<div class="col-sm-1">
-												<?PHP echo number_format(round((filesize($cfg['logs_path'].$file) / 1048576), 1), 1, '.', ' ') , " MiB"; ?>
+												<?PHP echo human_readable_size(filesize($cfg['logs_path'].$file),$lang); ?>
 											</div>
 											<div class="col-sm-3">
 												<?PHP echo md5_file($cfg['logs_path'].$file); ?>

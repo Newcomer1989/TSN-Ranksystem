@@ -99,15 +99,6 @@ function run_bot(&$cfg) {
 	global $mysqlcon, $db, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $max_execution_time, $memory_limit, $ts3server;
 
 	enter_logfile($cfg,9,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\" Query-Slowmode: \"".number_format(($cfg['teamspeak_query_command_delay']/1000000),1)."\").");
-	
-	try {
-		if($mysqlcon->exec("DROP INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) { } else {
-			enter_logfile($cfg,4,"    [1.3.13] Dropped unneeded Index snapshot_id on table user_snapshot.");
-		}
-		if($mysqlcon->exec("DROP INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) { } else {
-			enter_logfile($cfg,4,"    [1.3.13] Dropped unneeded Index snapshot_cldbid on table user_snapshot.");
-		}
-	} catch (Exception $e) { }
 
 	try {
 		if($cfg['temp_ts_no_reconnection'] != 1) {
@@ -253,7 +244,7 @@ function run_bot(&$cfg) {
 				$serverinfo = $ts3server->serverInfo();
 				$select_arr = array();
 				$db_cache = array();
-				$sqlexec2 .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache,1);
+				$sqlexec2 = update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache,1);
 				if($mysqlcon->exec($sqlexec2) === false) {
 					enter_logfile($cfg,2,"Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
 				}
@@ -316,6 +307,8 @@ function run_bot(&$cfg) {
 
 			unset($groupslist,$errcnf,$checkgroups,$lastupdate,$updcld,$loglevel,$whoami,$ts3host,$max_execution_time,$memory_limit,$memory_limit);
 			enter_logfile($cfg,9,"Config check [done]");
+		} else {
+			enter_logfile($cfg,9,"  Try to use the restored TS3 connection");
 		}
 
 		enter_logfile($cfg,9,"Bot starts now his work!");
@@ -445,7 +438,7 @@ function run_bot(&$cfg) {
 			}
 			enter_logfile($cfg,6,"SQL executions needs: ".(number_format(round((microtime(true) - $startsql), 5),5)));
 
-			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$db_cache);
+			reset_rs($ts3server,$mysqlcon,$lang,$cfg,$dbname,$phpcommand,$db_cache);
 			db_ex_imp($ts3server,$mysqlcon,$lang,$cfg,$dbname,$db_cache);
 
 			unset($sqlexec,$select_arr,$sqldump);
@@ -497,7 +490,8 @@ function run_bot(&$cfg) {
 				check_shutdown($cfg);
 			}
 
-			if(in_array($e->getCode(), array('HY000','10054','70100','8'))) {
+			$check_db_arr = array_flip(array('HY000',10054,70100));
+			if(isset($check_db_arr[$e->getCode()])) {
 				$cfg['temp_ts_no_reconnection'] = 1;
 				try {
 					$mysqlcon = db_connect($db['type'], $db['host'], $db['dbname'], $db['user'], $db['pass'], "no_exit");
@@ -505,9 +499,11 @@ function run_bot(&$cfg) {
 				} catch (Exception $e) {
 					enter_logfile($cfg,2,$lang['error'].print_r($mysqlcon->errorInfo(), true));
 				}
+			} else {
+				$cfg['temp_ts_no_reconnection'] = 0;
 			}
 
-			$cfg['temp_reconnect_attempts'] = $cfg['temp_reconnect_attempts'] + 1;
+			$cfg['temp_reconnect_attempts']++;
 			return $ts3server;
 		} else {
 			shutdown($mysqlcon,$cfg,1,"Critical TS3 error on core function!");

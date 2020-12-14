@@ -205,7 +205,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 							$db_cache['all_user'][$uid]['nextup'] = 0;
 						}
 						$db_cache['all_user'][$uid]['grpid'] = $rank['group'];
-						break;
+						if($rank['keep'] != 1) break;
 					} else {
 						$db_cache['all_user'][$uid]['nextup'] = $rank['time'] - $activetime;
 					}

@@ -418,6 +418,7 @@ try {
 			pattern: "There should be an error in your value, please check all could be right!"
 		}
 	});
+	$("[name='teamspeak_query_encrypt_switch']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

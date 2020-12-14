@@ -36,6 +36,7 @@ try {
 			}
 		}
 
+		$errcnf = 0;
 		if(isset($groupslist) && $groupslist != NULL) {
 			if(isset($cfg['rankup_definition']) && $cfg['rankup_definition'] != NULL) {
 				foreach($cfg['rankup_definition'] as $time => $value) {
@@ -144,7 +145,7 @@ try {
 								<h1 class="page-header">
 									<span><?php echo $lang['stmy0002'],' ',$lang['wihlset']; ?></span>
 									<div class="btn pull-right expertelement">
-										<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" value="switchexpert1" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
+										<input id="switchexpert1" class="switch-animate" type="checkbox" data-size="mini" value="switchexpert1" data-label-width="100" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-off-text="OFF">
 									</div>
 								</h1>
 							</div>
@@ -234,7 +235,7 @@ try {
 								<h1 class="page-header">
 									<span><?php echo $lang['stmy0002'],' ',$lang['wihlset']; ?></span>
 									<div class="btn pull-right">
-										<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" value="switchexpert2" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
+										<input id="switchexpert2" class="switch-animate" type="checkbox" checked data-size="mini" value="switchexpert2" data-label-width="100" data-label-text="<?php echo $lang['wigrpimp'] ?>" data-on-text="ON">
 									</div>
 								</h1>
 							</div>
@@ -323,8 +324,11 @@ try {
 		prefix: 'Sec.:'
 	});
 	function addrankupgroup() {
+		$("[name='rankupkeep[]']").last().bootstrapSwitch('destroy', true);
 		var $clone = $("div[name='rankupgroup']").last().clone();
+		$("[name='rankupkeep[]']").last().bootstrapSwitch();
 		$clone.insertBefore("#addrankupgroup");
+		$("[name='rankupkeep[]']").last().bootstrapSwitch();
 		$clone.find('.bootstrap-select').replaceWith(function() { return $('select', this); });
 		$clone.find('select').selectpicker('val', '');
 		$clone.find('.bootstrap-touchspin').replaceWith(function() { return $('input', this); });;
@@ -359,6 +363,8 @@ try {
 		document.getElementById("old").classList.add("hidden");
 		$('#switchexpert1').bootstrapSwitch('state', false, false);
 	});
+	$("[name='rankupkeep[]']").bootstrapSwitch();
+	$("[id='switchexpert1']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

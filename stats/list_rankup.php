@@ -22,31 +22,33 @@ try {
 	$start = ($seite * $user_pro_seite) - $user_pro_seite;
 
 	if ($keysort == 'active' && $keyorder == 'asc') {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`count` - `idle`) LIMIT :start, :userproseite");
-		$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
-		$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
-		$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
-		$dbdata->execute();
+		$order = '(`count` - `idle`)';
 	} elseif ($keysort == 'active' && $keyorder == 'desc') {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY (`idle` - `count`) LIMIT :start, :userproseite");
-		$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
-		$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
-		$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
-		$dbdata->execute();
-	} elseif ($searchstring == '') {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE 1=1$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
-		$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
-		$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
-		$dbdata->execute();
+		$order = '(`idle` - `count`)';
 	} else {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter ORDER BY `$keysort` $keyorder LIMIT :start, :userproseite");
-		$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
-		$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
-		$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
-		$dbdata->execute();
+		$order = "`{$keysort}` ".$keyorder;
 	}
 
-	if($user_pro_seite > 0) {
+	if ($cfg['stats_column_default_sort_2'] == 'active' && $cfg['stats_column_default_order_2'] == 'asc') {
+		$order .= ', (`count` - `idle`)';
+	} elseif ($keysort == 'active' && $keyorder == 'desc') {
+		$order .= ', (`idle` - `count`)';
+	} else {
+		$order .= ", `{$cfg['stats_column_default_sort_2']}` ".$cfg['stats_column_default_order_2'];
+	}
+	
+	if ($searchstring == '') {
+		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE 1=1$filter ORDER BY $order LIMIT :start, :userproseite");
+	} else {
+		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue) $filter ORDER BY $order LIMIT :start, :userproseite");
+		$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
+	}
+
+	$dbdata->bindValue(':start', (int) $start, PDO::PARAM_INT);
+	$dbdata->bindValue(':userproseite', (int) $user_pro_seite, PDO::PARAM_INT);
+	$dbdata->execute();
+
+	if($user_pro_seite > 0 && isset($sumentries[0])) {
 		$seiten_anzahl_gerundet = ceil($sumentries[0] / $user_pro_seite);
 	} else {
 		$seiten_anzahl_gerundet = 0;
