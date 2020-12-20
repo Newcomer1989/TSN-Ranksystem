@@ -56,7 +56,7 @@ try {
 		$alwgr = substr($alwgr,0,-1);
 		$excgr = substr($excgr,0,-1);
 
-		if(!isset($err_lvl)) {
+		if(!isset($err_lvl) || $err_lvl < 3) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name','{$name}'), ('assign_groups_active','{$assign_groups_active}'), ('assign_groups_limit','{$limit}'), ('assign_groups_groupids','{$alwgr}'), ('assign_groups_excepted_groupids','{$excgr}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;

@@ -5,7 +5,7 @@ function server_usage($mysqlcon,$cfg,$dbname,$serverinfo,&$db_cache) {
 	$sqlexec = '';
 
 	// Stats for Server Usage
-	if(key($db_cache['max_timestamp_server_usage'])  == 0 || ($nowtime - key($db_cache['max_timestamp_server_usage'])) > 898) { // every 15 mins
+	if(key($db_cache['max_timestamp_server_usage']) === '' || ($nowtime - key($db_cache['max_timestamp_server_usage'])) > 898) { // every 15 mins
 		unset($db_cache['max_timestamp_server_usage']);
 		$db_cache['max_timestamp_server_usage'][$nowtime] = '';
 

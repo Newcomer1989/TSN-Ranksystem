@@ -106,7 +106,7 @@ function db_ex_imp($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 				enter_logfile($cfg,2,"  Cannot create $filepath.sql.zip!");
 			} else {
 				$zip->addFile($filepath.".sql",$filename.".sql");
-				if(version_compare(phpversion(), '7.2', '>=')) {
+				if(version_compare(phpversion(), '7.2', '>=') && version_compare(phpversion("zip"), '1.2.0', '>=')) {
 					$zip->setEncryptionName($filename.".sql", ZipArchive::EM_AES_256, $cfg['teamspeak_query_pass']);
 				}
 				$zip->close();

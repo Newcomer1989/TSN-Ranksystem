@@ -117,7 +117,7 @@ function run_bot(&$cfg) {
 				enter_logfile($cfg,2,"  Error due getting TS3 server version - ".$e->getCode().': '.$e->getMessage());
 			}
 			
-			if(version_compare($ts3version['version'],'3.12.9','<=') && version_compare($ts3version['version'],'3.0.0','>=')) {
+			if(version_compare($ts3version['version'],'3.13.2','<=') && version_compare($ts3version['version'],'3.0.0','>=')) {
 				enter_logfile($cfg,3,"      Your TS3 server is outdated, please update it!");
 			}
 

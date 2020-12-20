@@ -44,7 +44,7 @@ try {
 			$err_msg .= '</pre><br>';
 			if($job_check['database_export']['timestamp'] == 4) {
 				$err_msg .= "Exported file successfully.";
-				if(version_compare(phpversion(), '7.2', '>=')) {
+				if(version_compare(phpversion(), '7.2', '>=') && version_compare(phpversion("zip"), '1.2.0', '>=')) {
 					$err_msg .= "<br><u>".sprintf($lang['wihladmex2'], "</u>")."<br><pre>".$cfg['teamspeak_query_pass']."</pre>";
 				}
 			}
