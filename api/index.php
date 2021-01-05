@@ -14,7 +14,7 @@ header("Content-Type: application/json; charset=UTF-8");
 if (isset($_GET['apikey'])) {
 	$matchkey = 0;
 	foreach($cfg['stats_api_keys'] as $apikey => $desc) {
-		if ($apikey == $_GET['apikey']) $matchkey = 1;
+		if (hash_equals($apikey, $_GET['apikey'])) $matchkey = 1;
 	}
 	if ($matchkey == 0) {
 		$json = array(
