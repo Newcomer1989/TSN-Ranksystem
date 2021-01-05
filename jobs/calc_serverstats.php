@@ -407,8 +407,6 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 				$cfg['temp_db_version']
 			);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
 			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
