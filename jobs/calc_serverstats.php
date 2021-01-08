@@ -1,4 +1,71 @@
 <?PHP
+/**
+* Provides an array with every available version which is sorted descending.
+* E.g. return[0] = latest version
+*/
+function getAvailableVersions() {
+  // read all git tags
+  $url = "https://api.github.com/repos/Newcomer1989/TSN-Ranksystem/git/refs/tags";
+  $ch=curl_init($url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($ch, CURLOPT_USERAGENT, "TSN Ranksystem");
+  $r=curl_exec($ch);
+  curl_close($ch);
+  $json = json_decode($r);
+
+  // extract all versions
+  $versions=array();
+  foreach($json as $obj) {
+    $tag = substr($obj->ref, 10);
+    if (preg_match("/^[0-9]+\.[0-9]+\.[0-9]+.*/", $tag)) {
+      array_push($versions,$tag);
+    }
+  }
+
+  // sort descending
+  function s($a,$b) {
+    return version_compare($b, $a);
+  }
+  usort($versions, "s");
+
+  return $versions
+}
+
+function sendUsageData($cfg) {
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$cfg['version_update_channel']);
+  curl_setopt($ch, CURLOPT_REFERER, 'TSN Ranksystem');
+  curl_setopt($ch, CURLOPT_USERAGENT,
+    $cfg['version_current_using'].";".
+    php_uname("s").";".
+    php_uname("r").";".
+    phpversion().";".
+    $dbtype.";".
+    $cfg['teamspeak_host_address'].";".
+    $cfg['teamspeak_voice_port'].";".
+    __DIR__.";".
+    $total_user.";".
+    $user_today.";".
+    $user_week.";".
+    $user_month.";".
+    $user_quarter.";".
+    $total_online_week.";".
+    $total_online_month.";".
+    $total_active_time.";".
+    $total_inactive_time.";".
+    $cfg['temp_ts_version'].";".
+    $cfg['temp_db_version']
+  );
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
+  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
+  curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+  curl_exec($ch);
+  curl_close($ch);
+}
+
 function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_cache,$phpcommand,$lang) {
 	$starttime = microtime(true);
 	$nowtime = time();
@@ -381,39 +448,9 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 		
 		if ($db_cache['job_check']['get_version']['timestamp'] < ($nowtime - 43199)) {
 			$db_cache['job_check']['get_version']['timestamp'] = $nowtime;
-			enter_logfile($cfg,6,"Get the latest Ranksystem Version.");
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, 'https://ts-n.net/ranksystem/'.$cfg['version_update_channel']);
-			curl_setopt($ch, CURLOPT_REFERER, 'TSN Ranksystem');
-			curl_setopt($ch, CURLOPT_USERAGENT, 
-				$cfg['version_current_using'].";".
-				php_uname("s").";".
-				php_uname("r").";".
-				phpversion().";".
-				$dbtype.";".
-				$cfg['teamspeak_host_address'].";".
-				$cfg['teamspeak_voice_port'].";".
-				__DIR__.";".
-				$total_user.";".
-				$user_today.";".
-				$user_week.";".
-				$user_month.";".
-				$user_quarter.";".
-				$total_online_week.";".
-				$total_online_month.";".
-				$total_active_time.";".
-				$total_inactive_time.";".
-				$cfg['temp_ts_version'].";".
-				$cfg['temp_db_version']
-			);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
-			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-			$cfg['version_latest_available'] = curl_exec($ch);
-			curl_close($ch);
+
+			sendUsageData($cfg);
+            $cfg['versions_available'] = getAvailableVersions();
 
 			if(version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>') && $cfg['version_latest_available'] != NULL) {
 				enter_logfile($cfg,4,$lang['upinf']);
