@@ -1,5 +1,29 @@
 <?PHP
-function update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand,$norotate=NULL) {
+require_once('./../other/_constants.php');
+
+function getUpdateVersion($cfg, $level) {
+  $current=explode('.', $cfg['version_current_using']);
+
+  switch(strtolower($level)) {
+    case 'none':
+      $matches = array($cfg['version_current_using']);
+    case 'major':
+      $matches = array($cfg['versions_available'][0]);
+      break;
+    case 'minor':
+      preg_match($current[0], $cfg['versions_available'], $matches);
+      break;
+    case 'patch':
+      preg_match($current[0].$current[1], $cfg['versions_available'], $matches);
+      break;
+    default:
+      $matches = array(getUpdateVersion($cfg, 'major');
+  }
+
+  return $matches[0];
+}
+
+function update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand,$norotate=NULL,$mode='default') {
 	$nowtime = time();
 	$sqlexec = '';
 	$norotate = true;
@@ -8,6 +32,18 @@ function update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand,$norotate=NULL) {
 	$countbackuperr = 0;
 	
 	$tables = array('addons_config','cfg_params','groups','job_check','server_usage','stats_server','stats_user','user','user_snapshot');
+
+	// check update mode
+	if ($mode == 'default') {
+	  $mode = getenv('UPDATE_MODE', true) ?: getenv('UPDATE_MODE');
+	}
+	$current_version=$cfg['version_current_using'];
+	$next_version=getUpdateVersion($cfg, $mode);
+
+    enter_logfile($cfg,4,"      Update mode: ".$mode." updating from ".$current_version." to ".$next_version,$norotate);
+    if (compare_version($cfg['version_current_using'], $next_version, '>=')) {
+        return($sqlexec);
+    }
 	
 	foreach ($tables as $table) {
 		try {
@@ -111,7 +147,7 @@ function update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand,$norotate=NULL) {
 			if(!is_dir(substr(__DIR__,0,-4).$thisFileName)) {
 				$contents = $zip->getFromName($thisFileName);
 				$updateThis = '';
-				if($thisFileName == 'other/dbconfig.php' || $thisFileName == 'install.php' || $thisFileName == 'other/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
+				if($thisFileName == DB_CONFIG || $thisFileName == 'install.php' || $thisFileName == 'other/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
 					enter_logfile($cfg,5,"      Did not touch ".$thisFileName,$norotate);
 				} else {
 					if(($updateThis = fopen(substr(__DIR__,0,-4).'/'.$thisFileName, 'w')) === false) {

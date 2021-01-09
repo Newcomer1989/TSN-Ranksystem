@@ -1,4 +1,5 @@
 <?PHP
+require_once('./constants.php');
 
 function check_shutdown($cfg) {
 	if(!file_exists($cfg['logs_path']."pid")) {
@@ -479,5 +480,25 @@ function start_session($cfg) {
 
 	session_start();
 	return $prot;
+}
+
+function writeDatabaseConfig($type='type', $host='hostname', $user='dbuser', $pass='dbpass', $dbname='ts3_ranksystem') {
+  $newconfig='<?php
+  $db[\'type\']=\''.$type.'\';
+  $db[\'host\']=\''.$host.'\';
+  $db[\'user\']=\''.$user.'\';
+  $db[\'pass\']=\''.$pass.'\';
+  $db[\'dbname\']=\''.$dbname.'\';
+  ?>';
+
+  try {
+    $dbconfig = fopen(DB_CONFIG,'w');
+    $successful = fwrite($dbconfig, $newconfig) != False;
+    fclose($dbconfig);
+  } catch (Exception $e) {
+    $successful = False
+  }
+
+  return $successful;
 }
 ?>

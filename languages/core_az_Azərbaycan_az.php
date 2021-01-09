@@ -1,4 +1,5 @@
 <?PHP
+require_once('./../other/_constants.php');
 $lang = array();
 $lang['achieve']			= "Nail olmaq";
 $lang['adduser']			= "%s istifadəçisi % (unikal Müştəri-ID: %s; Müştəri bazası ID %s) bilinmir -> indi Ranks Sisteminə əlavə edildi";
@@ -60,7 +61,7 @@ $lang['insterr1']			= "DİQQƏT: Siz Ranksystem'i qurmağa çalışırsınız, a
 $lang['insterr2']			= "%1\$s tələb olunur, lakin quraşdırılmamışdır. Yüklə <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> və yenidən cəhd edin!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "PHP %1\$s function is needed to be enabled but seems to be disabled. Please enable the PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> function and try it again!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "PHP versiyanız (%s) 5.5.0-dən aşağıdır. PHP-ni yeniləyin və yenidən cəhd edin!";
-$lang['isntwicfg']			= "Verilənlər bazası konfiqurasiyasını saxlaya bilmir! Tam yazma icazələrini təyin edin 'other/dbconfig.php' (Linux: chmod 740; Windows: 'full access') və sonra yenidən cəhd edin.";
+$lang['isntwicfg']			= "Verilənlər bazası konfiqurasiyasını saxlaya bilmir! Tam yazma icazələrini təyin edin '".DB_CONFIG."' (Linux: chmod 740; Windows: 'full access') və sonra yenidən cəhd edin.";
 $lang['isntwicfg2']			= "Veb-interfeysin konfiqurasiyası";
 $lang['isntwichm']			= "\"%s\" qovluğunda qeyd icazəsi yoxdur. Tam hüquqlar verin (Linux: chmod 740; Windows: 'full access') və Ranksystem'i yenidən başlatmağa çalışın.";
 $lang['isntwiconf']			= "Ranksystem'i konfiqurasiya etmək üçün %s açın!";
@@ -408,7 +409,7 @@ $lang['wichpw4']			= "Şifrə dəyiş";
 $lang['wiconferr']			= "Ranksystem-in konfiqurasiyasında bir səhv var. Veb-interfeysə keçin və rank parametrləri düzəlt!";
 $lang['widaform']			= "Tarix formatı";
 $lang['widaformdesc']		= "Göstərilən tarix formatını seçin.<br><br>Məsələn:<br>%a gün, %h saat, %i dəqiqə, %s saniyə";
-$lang['widbcfgerr']			= "Verilənlər bazası konfiqurasiyaları qənaət edərkən səhv baş verdi!  'other/dbconfig.php' bağlantısı uğursuz oldu.";
+$lang['widbcfgerr']			= "Verilənlər bazası konfiqurasiyaları qənaət edərkən səhv baş verdi!  '".DB_CONFIG."' bağlantısı uğursuz oldu.";
 $lang['widbcfgsuc']			= "Verilənlər bazası konfiqurasiyaları uğurla qeyd edildi.";
 $lang['widbg']				= "Log Səviyyəsi";
 $lang['widbgdesc']			= "Sıralama sistemi log səviyyəsi seçin. Bununla siz \"ranksystem.log\" faylına neçə məlumatın yazılmasına qərar verə bilərsiniz.<br><br>Giriş səviyyəsinin nə qədər yüksək olduğu halda daha çox məlumat alacaqsınız.<br><br>Giriş Səviyyəsinin dəyişdirilməsi Ranksystem botun yenidən başlaması ilə qüvvəyə çatır.<br><br>Xahiş edirik Ranksystem-ın \"6 - DEBUG\" üzərindən daha uzun müddət çalışmasına imkan verməyin, bu sizin fayl sisteminizə zərbə vuracaq!";

@@ -1,5 +1,6 @@
 <?PHP
-require_once('dbconfig.php');
+require_once('./_constants.php');
+require_once('../'.DB_CONFIG);
 
 $rspathhex = get_rspath();
 
