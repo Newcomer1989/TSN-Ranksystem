@@ -1,4 +1,5 @@
 <?PHP
+require_once('./../other/_constants.php');
 $lang = array();
 $lang['achieve']			= "Achieve";
 $lang['adduser']			= "Added new user %s (unique Client-ID: %s; Client-database-ID %s) to the Ranksystem database.";
@@ -60,7 +61,7 @@ $lang['insterr1']			= "ATTENTION: You are trying to install the Ranksystem, but 
 $lang['insterr2']			= "%1\$s is needed but seems not to be installed. Install <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> and try it again!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "PHP %1\$s function is needed to be enabled but seems to be disabled. Please enable the PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> function and try it again!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Your PHP version (%s) is below 5.5.0. Update your PHP and try it again!";
-$lang['isntwicfg']			= "Can't save the database configuration! Please assign full write-out permissions on 'other/dbconfig.php' (Linux: chmod 740; Windows: 'full access') and try again after.";
+$lang['isntwicfg']			= "Can't save the database configuration! Please assign full write-out permissions on '".DB_CONFIG."' (Linux: chmod 740; Windows: 'full access') and try again after.";
 $lang['isntwicfg2']			= "Configure Webinterface";
 $lang['isntwichm']			= "Write-out permissions on folder \"%s\" are missing. Please assign full rights (Linux: chmod 740; Windows: 'full access') and try to start the Ranksystem again.";
 $lang['isntwiconf']			= "Open the %s to configure the Ranksystem!";
@@ -408,7 +409,7 @@ $lang['wichpw4']			= "Change Password";
 $lang['wiconferr']			= "There is an error in the configuration of the Ranksystem. Please go to the webinterface and correct the rank settings!";
 $lang['widaform']			= "Date format";
 $lang['widaformdesc']		= "Choose the showing date format.<br><br>Example:<br>%a days, %h hours, %i mins, %s secs";
-$lang['widbcfgerr']			= "Error while saving the database configurations! Connection failed or write-out error for 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Error while saving the database configurations! Connection failed or write-out error for '".DB_CONFIG."'";
 $lang['widbcfgsuc']			= "Database configurations saved successfully.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";

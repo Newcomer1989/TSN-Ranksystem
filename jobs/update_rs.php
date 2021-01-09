@@ -1,4 +1,5 @@
 <?PHP
+require_once('./../other/_constants.php');
 
 function getUpdateVersion($cfg, $level) {
   $current=explode('.', $cfg['version_current_using']);
@@ -146,7 +147,7 @@ function update_rs($mysqlcon,$lang,$cfg,$dbname,$phpcommand,$norotate=NULL,$mode
 			if(!is_dir(substr(__DIR__,0,-4).$thisFileName)) {
 				$contents = $zip->getFromName($thisFileName);
 				$updateThis = '';
-				if($thisFileName == 'other/dbconfig.php' || $thisFileName == 'install.php' || $thisFileName == 'other/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
+				if($thisFileName == DB_CONFIG || $thisFileName == 'install.php' || $thisFileName == 'other/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
 					enter_logfile($cfg,5,"      Did not touch ".$thisFileName,$norotate);
 				} else {
 					if(($updateThis = fopen(substr(__DIR__,0,-4).'/'.$thisFileName, 'w')) === false) {

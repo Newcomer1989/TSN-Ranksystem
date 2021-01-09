@@ -1,4 +1,6 @@
 <?PHP
+require_once('./../other/_constants.php');
+require_once('./../other/_functions.php');
 require_once('_preload.php');
 
 try {
@@ -15,19 +17,10 @@ try {
 	}
 
 	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$newconfig='<?php
-	$db[\'type\']=\''.$_POST['dbtype'].'\';
-	$db[\'host\']=\''.$_POST['dbhost'].'\';
-	$db[\'user\']=\''.$_POST['dbuser'].'\';
-	$db[\'pass\']=\''.$_POST['dbpass'].'\';
-	$db[\'dbname\']=\''.$_POST['dbname'].'\';
-	?>';
 		$dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'].';charset=utf8mb4';
 		try {
 			$mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass']);
-			$handle=fopen('../other/dbconfig.php','w');
-			if(!fwrite($handle,$newconfig))
-			{
+			if(!writeDatabaseConfig($_POST['dbtype'], $_POST['dbhost'], $_POST['dbuser'], $_POST['dbpass'], $_POST['dbname'])) {
 				$err_msg = sprintf($lang['widbcfgerr']);
 				$err_lvl = 3;
 			} else {

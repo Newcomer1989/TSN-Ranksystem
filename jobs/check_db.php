@@ -1,4 +1,6 @@
 <?PHP
+require_once('./../other/_constants.php');
+
 function check_db($mysqlcon,$lang,&$cfg,$dbname) {
 	$cfg['version_latest_available'] = '1.3.15';
 	enter_logfile($cfg,5,"Check Ranksystem database for updates...");
@@ -30,7 +32,7 @@ function check_db($mysqlcon,$lang,&$cfg,$dbname) {
 	function set_new_version($mysqlcon,$cfg,$dbname) {
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('version_current_using','{$cfg['version_latest_available']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) {
 			enter_logfile($cfg,1,"  An error happens due updating the Ranksystem Database:".print_r($mysqlcon->errorInfo(), true));
-			shutdown($mysqlcon,$cfg,1,"  Check the database connection and properties in other/dbconfig.php and check also the database permissions.");
+			shutdown($mysqlcon,$cfg,1,"  Check the database connection and properties in '".DB_CONFIG."' and check also the database permissions.");
 		} else {
 			$cfg['version_current_using'] = $cfg['version_latest_available'];
 			enter_logfile($cfg,4,"  Database successfully updated!");
