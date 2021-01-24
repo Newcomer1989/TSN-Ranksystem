@@ -269,8 +269,12 @@ if($cfg['webinterface_admin_client_unique_id_list'] == NULL && isset($_SESSION[$
 	$err_msg = $lang['winav11']; $err_lvl = 2;
 }
 
-if((!isset($_SERVER['HTTPS']) || isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != "on") && !isset($err_msg) && basename($_SERVER['SCRIPT_NAME']) == "index.php") {
+$js_test_https = '';
+if(!isset($err_msg) && basename($_SERVER['SCRIPT_NAME']) == "index.php") {
 	$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."\">";
-	$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
+	$msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>');
+	$js_test_https  = '<script> if (location.protocol !== \'https:\') {';
+	$js_test_https .= 'document.write(\'' . error_handling_str_builder($msg, 2) . '\')';
+	$js_test_https .= '} </script>';
 }
 ?>
