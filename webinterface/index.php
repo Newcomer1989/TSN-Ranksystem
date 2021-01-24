@@ -102,6 +102,7 @@ try {
 	?>
 			<div id="page-wrapper">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?PHP echo $js_test_https ?>
 				<div class="container-fluid">
 					<div id="login-overlay" class="modal-dialog">
 						<div class="modal-content">
