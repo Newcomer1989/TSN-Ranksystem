@@ -31,7 +31,7 @@ try {
 			$cfg['stats_api_keys'] = NULL;
 		}
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_api_keys','{$cfg['stats_api_keys']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_api_keys',".$mysqlcon->quote($cfg['stats_api_keys']).") ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {

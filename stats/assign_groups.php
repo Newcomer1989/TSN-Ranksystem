@@ -118,7 +118,7 @@ try {
 					$set_groups = substr($set_groups, 0, -1);
 
 					if($set_groups != '' && $limit_raised == 0 && $excepted == 0) {
-						if ($mysqlcon->exec("INSERT INTO `$dbname`.`addon_assign_groups` SET `uuid`='$uuid',`grpids`='$set_groups'; DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}") === false) {
+						if ($mysqlcon->exec("INSERT INTO `$dbname`.`addon_assign_groups` SET `uuid`='$uuid',`grpids`='$set_groups'; DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 							$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 						} elseif($mysqlcon->exec("UPDATE `$dbname`.`job_check` SET `timestamp`=1 WHERE `job_name`='reload_trigger'; ") === false) {
 							$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;

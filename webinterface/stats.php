@@ -14,7 +14,14 @@ try {
 		$err_lvl = 3;
 	}
 
+	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
+		$err_lvl = 3;
+	}
+
 	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+		if(is_array($_POST['channelid'])) $_POST['channelid'] = $_POST['channelid'][0];
+
 		$old_nav = $cfg['stats_show_site_navigation_switch'];
 		if (isset($_POST['stats_show_site_navigation_switch'])) $cfg['stats_show_site_navigation_switch'] = 1; else $cfg['stats_show_site_navigation_switch'] = 0;
 		if (isset($_POST['teamspeak_verification_channel_id'])) $cfg['teamspeak_verification_channel_id'] = $_POST['teamspeak_verification_channel_id']; else $cfg['teamspeak_verification_channel_id'] = 0;
@@ -28,6 +35,7 @@ try {
 		$cfg['stats_connects_gold'] = $_POST['stats_connects_gold'];
 		$cfg['stats_connects_legend'] = $_POST['stats_connects_legend'];
 		$cfg['stats_server_news'] = addslashes($_POST['stats_server_news']);
+		$cfg['teamspeak_verification_channel_id'] = $_POST['channelid'];
 
 		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}'),('stats_show_maxclientsline_switch','{$cfg['stats_show_maxclientsline_switch']}'),('stats_time_bronze','{$cfg['stats_time_bronze']}'),('stats_time_silver','{$cfg['stats_time_silver']}'),('stats_time_gold','{$cfg['stats_time_gold']}'),('stats_time_legend','{$cfg['stats_time_legend']}'),('stats_connects_bronze','{$cfg['stats_connects_bronze']}'),('stats_connects_silver','{$cfg['stats_connects_silver']}'),('stats_connects_gold','{$cfg['stats_connects_gold']}'),('stats_connects_legend','{$cfg['stats_connects_legend']}'),('teamspeak_verification_channel_id','{$cfg['teamspeak_verification_channel_id']}'),('stats_server_news','{$cfg['stats_server_news']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
@@ -192,18 +200,13 @@ try {
 									</div>
 								</div>
 								<div class="row">&nbsp;</div>
-								<div class="form-group">
+								
+								<div class="form-group expertelement">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiverifydesc"><?php echo $lang['wiverify']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<input type="text" class="form-control" name="teamspeak_verification_channel_id" value="<?php echo $cfg['teamspeak_verification_channel_id']; ?>">
-										<script>
-										$("input[name='teamspeak_verification_channel_id']").TouchSpin({
-											min: 0,
-											max: 16777215,
-											verticalbuttons: true,
-											prefix: 'ID:'
-										});
-										</script>
+										<?PHP
+										echo select_channel($channellist, $cfg['teamspeak_verification_channel_id']);
+										?>
 									</div>
 								</div>
 								<div class="row">&nbsp;</div>

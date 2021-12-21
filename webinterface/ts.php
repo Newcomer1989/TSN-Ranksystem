@@ -17,9 +17,15 @@ try {
 	if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 		$err_msg = "DB Error1: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 	}
+	
+	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
+		$err_lvl = 3;
+	}
 
 	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		$cfg['webinterface_admin_client_unique_id_list'] = '';
+		if(is_array($_POST['channelid'])) $_POST['channelid'] = $_POST['channelid'][0];
 		
 		if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != NULL) {
 			$cfg['webinterface_admin_client_unique_id_list'] = implode(',',$_POST['webinterface_admin_client_unique_id_list']);
@@ -31,7 +37,7 @@ try {
 		$cfg['teamspeak_query_user'] = htmlspecialchars($_POST['teamspeak_query_user'], ENT_QUOTES);
 		$cfg['teamspeak_query_pass'] = htmlspecialchars($_POST['teamspeak_query_pass'], ENT_QUOTES);
 		$cfg['teamspeak_query_nickname'] = htmlspecialchars($_POST['teamspeak_query_nickname'], ENT_QUOTES);
-		$cfg['teamspeak_default_channel_id'] = $_POST['teamspeak_default_channel_id'];
+		$cfg['teamspeak_default_channel_id'] = $_POST['channelid'];
 		$cfg['teamspeak_query_command_delay'] = $_POST['teamspeak_query_command_delay'];
 		$cfg['teamspeak_avatar_download_delay']= $_POST['teamspeak_avatar_download_delay'];
 
@@ -155,15 +161,9 @@ try {
 									<div class="form-group expertelement">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<input type="text" class="form-control" name="teamspeak_default_channel_id" value="<?php echo $cfg['teamspeak_default_channel_id']; ?>">
-											<script>
-											$("input[name='teamspeak_default_channel_id']").TouchSpin({
-												min: 0,
-												max: 2147483647,
-												verticalbuttons: true,
-												prefix: 'ID:'
-											});
-											</script>
+											<?PHP
+											echo select_channel($channellist, $cfg['teamspeak_default_channel_id']);
+											?>
 										</div>
 									</div>
 									<div class="row expertelement">&nbsp;</div>

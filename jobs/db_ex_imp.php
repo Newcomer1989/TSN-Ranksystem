@@ -27,7 +27,7 @@ function db_ex_imp($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 		} else {
 			
 			$dump = fopen($filepath.".sql", 'a');
-			fwrite($dump, "-- Ranksystem SQL Export\n-- from $datetime\n");
+			fwrite($dump, "-- Ranksystem SQL Export\n-- from $datetime\n\nSTART TRANSACTION;\n\n");
 			fclose($dump);
 
 			foreach ($tables as $table => $value) {
@@ -93,11 +93,23 @@ function db_ex_imp($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 					fclose($dump);
 
 					unset($out, $sqldata);
+					
+					if (($job_status = $mysqlcon->query("SELECT `timestamp` FROM `$dbname`.`job_check` WHERE `job_name`='database_export';")->fetch(PDO::FETCH_ASSOC)) === false) {
+						$err++;
+						enter_logfile($cfg,2,"  Executing SQL commands failed: ".print_r($mysqlcon->errorInfo(), true));
+					} elseif($job_status['timestamp'] == 3) {
+						$db_cache['job_check']['database_export']['timestamp'] = 3;
+						enter_logfile($cfg,4,"DB Export job(s) canceled by request");
+						$dump = fopen($filepath.".sql", 'a');
+						fwrite($dump, "\nROLLBACK;\n\n-- Canceled export");
+						fclose($dump);
+						return;
+					}
 				}
 			}
 			
 			$dump = fopen($filepath.".sql", 'a');
-			fwrite($dump, "-- Finished export");
+			fwrite($dump, "COMMIT;\n\n-- Finished export");
 			fclose($dump);
 
 			$zip = new ZipArchive();
@@ -107,7 +119,11 @@ function db_ex_imp($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 			} else {
 				$zip->addFile($filepath.".sql",$filename.".sql");
 				if(version_compare(phpversion(), '7.2', '>=') && version_compare(phpversion("zip"), '1.2.0', '>=')) {
-					$zip->setEncryptionName($filename.".sql", ZipArchive::EM_AES_256, $cfg['teamspeak_query_pass']);
+					try {
+						$zip->setEncryptionName($filename.".sql", ZipArchive::EM_AES_256, $cfg['teamspeak_query_pass']);
+					} catch (Exception $e) {
+						enter_logfile($cfg,2,"  Error due creating secured zip-File: ".$e->getCode().': '.$e->getMessage(). " ..Update PHP to Version 7.2 or above and update libzip to version 1.2.0 or above.");
+					}
 				}
 				$zip->close();
 				if(!unlink($filepath.".sql")) {

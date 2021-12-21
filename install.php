@@ -1,5 +1,5 @@
 ﻿<?PHP
-$rsversion = '1.3.15';
+$rsversion = '1.3.19';
 
 require_once('other/_functions.php');
 require_once('other/config.php');
@@ -168,7 +168,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('check_update'),('database_export'),('get_version'),('clean_db'),('clean_clients'),('calc_donut_chars'),('calc_server_stats'),('get_avatars'),('last_snapshot_id'),('last_snapshot_time'),('last_update'),('reload_trigger'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after'),('runtime_check'),('update_groups')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('calc_user_removed'),('check_update'),('database_export'),('get_version'),('clean_db'),('clean_clients'),('calc_donut_chars'),('calc_server_stats'),('get_avatars'),('last_snapshot_id'),('last_snapshot_time'),('last_update'),('reload_trigger'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after'),('runtime_check'),('update_channel'),('update_groups')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -193,12 +193,67 @@ $db[\'dbname\']=\''.$dbname.'\';
 			}
 		}
 		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`addons_config` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE,`value` varchar(5000) CHARACTER SET utf8 COLLATE utf8_unicode_ci)") === false) {
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`addons_config` (`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE,`value` varchar(16000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
-		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_active','0'),('assign_groups_name',''),('assign_groups_excepted_groupids',''),('assign_groups_groupids',''),('assign_groups_limit','')") === false) {
+
+		$channelinfo_desc = $mysqlcon->quote('[CENTER][B][SIZE=15]User Toplist (last week)[/SIZE][/B][/CENTER]
+
+[SIZE=11][B]1st[/B]     [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_1}]{$CLIENT_NICKNAME_1}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_1} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_1}]{$CLIENT_CURRENT_CHANNEL_NAME_1}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_1|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_1}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_1}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_1}[/SIZE]
+
+[SIZE=11][B]2nd[/B]    [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_2}]{$CLIENT_NICKNAME_2}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_2} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_2}]{$CLIENT_CURRENT_CHANNEL_NAME_2}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_2|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_2}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_2}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_2}[/SIZE]
+
+[SIZE=11][B]3rd[/B]     [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_3}]{$CLIENT_NICKNAME_3}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_3} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_3}]{$CLIENT_CURRENT_CHANNEL_NAME_3}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_3|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_3}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_3}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_3}[/SIZE]
+
+[SIZE=10][B]4th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_4}]{$CLIENT_NICKNAME_4}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_4} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_4}]{$CLIENT_CURRENT_CHANNEL_NAME_4}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_4|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_4}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_4}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_4}[/SIZE]
+
+[SIZE=10][B]5th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_5}]{$CLIENT_NICKNAME_5}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_5} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_5}]{$CLIENT_CURRENT_CHANNEL_NAME_5}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_5|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_5}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_5}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_5}[/SIZE]
+
+[SIZE=10][B]6th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_6}]{$CLIENT_NICKNAME_6}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_6} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_6}]{$CLIENT_CURRENT_CHANNEL_NAME_6}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_6|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_6}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_6}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_6}[/SIZE]
+
+[SIZE=10][B]7th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_7}]{$CLIENT_NICKNAME_7}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_7} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_7}]{$CLIENT_CURRENT_CHANNEL_NAME_7}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_7|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_7}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_7}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_7}[/SIZE]
+
+[SIZE=10][B]8th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_8}]{$CLIENT_NICKNAME_8}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_8} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_8}]{$CLIENT_CURRENT_CHANNEL_NAME_8}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_8|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_8}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_8}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_8}[/SIZE]
+
+[SIZE=10][B]9th[/B]       [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_9}]{$CLIENT_NICKNAME_9}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_9} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_9}]{$CLIENT_CURRENT_CHANNEL_NAME_9}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_9|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_9}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_9}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_9}[/SIZE]
+
+[SIZE=10][B]10th[/B]     [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_10}]{$CLIENT_NICKNAME_10}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_10} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
+currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_10}]{$CLIENT_CURRENT_CHANNEL_NAME_10}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
+last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
+[SIZE=8]Last week active: {$CLIENT_ACTIVE_TIME_LAST_WEEK_10}; reached Servergroup: [IMG]https://domain.com/ranksystem/{$CLIENT_CURRENT_RANK_GROUP_ICON_URL_10}[/IMG] {$CLIENT_CURRENT_RANK_GROUP_NAME_10}[/SIZE]
+
+
+[SIZE=6]Updated: {$LAST_UPDATE_TIME}[/SIZE]', ENT_QUOTES);
+
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_active','0'),('assign_groups_name',''),('assign_groups_excepted_groupids',''),('assign_groups_groupids',''),('assign_groups_limit',''),('channelinfo_toplist_active','0'),('channelinfo_toplist_desc',{$channelinfo_desc}),('channelinfo_toplist_lastdesc',''),('channelinfo_toplist_delay','600'),('channelinfo_toplist_channelid','0'),('channelinfo_toplist_modus','1'),('channelinfo_toplist_lastupdate','0')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -209,6 +264,11 @@ $db[\'dbname\']=\''.$dbname.'\';
 		}
 		
 		if($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (`token` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY, `timestamp` int(10) UNSIGNED NOT NULL default '0', `sessionid` varchar(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL)") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+
+		if($mysqlcon->exec("CREATE TABLE `$dbname`.`channel` (`cid` int(10) UNSIGNED NOT NULL default '0',`pid` int(10) UNSIGNED NOT NULL default '0',`channel_order` int(10) UNSIGNED NOT NULL default '0',`channel_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`cid`))") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
@@ -250,7 +310,7 @@ if (isset($_POST['install'])) {
 			try {
 				$mysqlcon = new PDO($dbserver2, $_POST['dbuser'], $_POST['dbpass'], $dboptions);
 			} catch (PDOException $e) {
-				$err_msg = $lang['dbconerr'].$e->getMessage(); $err_lvl = 1;
+				$err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage()); $err_lvl = 1;
 			}
 		}
 		
@@ -287,7 +347,7 @@ if(isset($_POST['confweb'])) {
 		try {
 			$mysqlcon = new PDO($dbserver2, $db['user'], $db['pass']);
 		} catch (PDOException $e) {
-			$err_msg = $lang['dbconerr'].$e->getMessage(); $err_lvl = 1;
+			$err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage()); $err_lvl = 1;
 		}
 	}
 	if(!isset($err_lvl) || $err_lvl != 1) {
@@ -297,7 +357,7 @@ if(isset($_POST['confweb'])) {
 		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
 		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
 		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_date_format', $dateformat), ('default_language', 'en'), ('default_session_sametime', 'Strict'), ('default_header_origin', ''), ('default_header_xss', '1; mode=block'), ('default_header_contenttyp', '1'), ('default_header_frame', 'SAMEORIGIN'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>7=>0'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', ''), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', ''), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_api_keys', ''), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_nation_switch', '0'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_platform_switch', '0'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'lastseen'), ('stats_column_default_sort_2', 'rank'), ('stats_column_default_order', 'desc'), ('stats_column_default_order_2', 'asc'), ('stats_column_version_switch', '0'), ('stats_imprint_switch', '0'), ('stats_imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'), ('stats_imprint_address_url', 'https://site.url/imprint/'), ('stats_imprint_email', 'info@example.com'), ('stats_imprint_notes', NULL), ('stats_imprint_phone', '+49 171 1234567'), ('stats_imprint_privacypolicy', 'Add your own privacy policy here. (editable in the webinterface)'), ('stats_imprint_privacypolicy_url', 'https://site.url/privacy/'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_maxclientsline_switch', 0), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_fresh_installation', '1'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('default_cmdline_sec_switch', '1'), ('default_date_format', $dateformat), ('default_language', 'en'), ('default_session_sametime', 'Strict'), ('default_header_origin', ''), ('default_header_xss', '1; mode=block'), ('default_header_contenttyp', '1'), ('default_header_frame', 'SAMEORIGIN'), ('logs_path', '{$logpath}'), ('logs_timezone', 'Europe/Berlin'), ('logs_debug_level', '5'), ('logs_rotation_size', '5'), ('rankup_boost_definition', ''), ('rankup_clean_clients_period', '86400'), ('rankup_clean_clients_switch', '1'), ('rankup_client_database_id_change_switch', '0'), ('rankup_definition', '31536000=>7=>0'), ('rankup_excepted_channel_id_list', ''), ('rankup_excepted_group_id_list', ''), ('rankup_excepted_mode', '0'), ('rankup_excepted_unique_client_id_list', ''), ('rankup_hash_ip_addresses_mode', '2'), ('rankup_ignore_idle_time', '600'), ('rankup_message_to_user', $rankupmsg), ('rankup_message_to_user_switch', '1'), ('rankup_next_message_1', $nextupinfomsg1), ('rankup_next_message_2', $nextupinfomsg2), ('rankup_next_message_3', $nextupinfomsg3), ('rankup_next_message_mode', '1'), ('rankup_time_assess_mode', '0'), ('stats_api_keys', ''), ('stats_column_active_time_switch', '0'), ('stats_column_current_group_since_switch', '1'), ('stats_column_current_server_group_switch', '1'), ('stats_column_client_db_id_switch', '0'), ('stats_column_client_name_switch', '1'), ('stats_column_idle_time_switch', '1'), ('stats_column_last_seen_switch', '1'), ('stats_column_nation_switch', '0'), ('stats_column_next_rankup_switch', '1'), ('stats_column_next_server_group_switch', '1'), ('stats_column_online_time_switch', '1'), ('stats_column_platform_switch', '0'), ('stats_column_rank_switch', '1'), ('stats_column_unique_id_switch', '0'), ('stats_column_default_sort', 'lastseen'), ('stats_column_default_sort_2', 'rank'), ('stats_column_default_order', 'desc'), ('stats_column_default_order_2', 'asc'), ('stats_column_version_switch', '0'), ('stats_imprint_switch', '0'), ('stats_imprint_address', 'Max Mustermann<br>Musterstraße 13<br>05172 Musterhausen<br>Germany'), ('stats_imprint_address_url', 'https://site.url/imprint/'), ('stats_imprint_email', 'info@example.com'), ('stats_imprint_notes', NULL), ('stats_imprint_phone', '+49 171 1234567'), ('stats_imprint_privacypolicy', 'Add your own privacy policy here. (editable in the webinterface)'), ('stats_imprint_privacypolicy_url', 'https://site.url/privacy/'), ('stats_server_news', $servernews), ('stats_show_clients_in_highest_rank_switch', '1'), ('stats_show_excepted_clients_switch', '1'), ('stats_show_maxclientsline_switch', 0), ('stats_show_site_navigation_switch', '1'), ('stats_time_bronze','50'), ('stats_time_silver','100'), ('stats_time_gold','250'), ('stats_time_legend','500'), ('stats_connects_bronze','50'), ('stats_connects_silver','100'), ('stats_connects_gold','250'), ('stats_connects_legend','500'), ('teamspeak_avatar_download_delay', '0'), ('teamspeak_default_channel_id', '0'), ('teamspeak_host_address', '127.0.0.1'), ('teamspeak_query_command_delay', '0'), ('teamspeak_query_encrypt_switch', '0'), ('teamspeak_query_nickname', 'Ranksystem'), ('teamspeak_query_pass', ''), ('teamspeak_query_port', '10011'), ('teamspeak_query_user', 'serveradmin'), ('teamspeak_verification_channel_id', '0'), ('teamspeak_voice_port', '9987'), ('version_current_using', '{$rsversion}'), ('version_latest_available', '{$rsversion}'), ('version_update_channel', 'stable'), ('webinterface_access_count', '0'), ('webinterface_access_last', '0'), ('webinterface_admin_client_unique_id_list', ''), ('webinterface_advanced_mode', '0'), ('webinterface_fresh_installation', '1'), ('webinterface_pass', '{$pass}'), ('webinterface_user', '{$user}');") === false) {
 			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
 		} else {
 			$err_msg = $lang['isntwiusr'].'<br><br>';

@@ -32,6 +32,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * @ignore
    */
   protected $channelList = null;
+  protected $channelListtsn = null;
 
   /**
    * @ignore
@@ -135,6 +136,26 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     return $this->filterList($this->channelList, $filter);
   }
 
+  public function channelListtsn(array $filter = array(), $params = null)
+  {
+    if($this->channelListtsn === null)
+    {
+	  # params: -topic -flags -voice -limits -icon -secondsempty
+      $channels = $this->request("channellist $params")->toAssocArray("cid");
+
+      $this->channelListtsn = array();
+
+      foreach($channels as $cid => $channel)
+      {
+        $this->channelListtsn[$cid] = new TeamSpeak3_Node_Channel($this, $channel);
+      }
+
+      $this->resetNodeList();
+    }
+
+    return $this->filterList($this->channelListtsn, $filter);
+  }
+
   /**
    * Resets the list of channels online.
    *
@@ -144,6 +165,12 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   {
     $this->resetNodeList();
     $this->channelList = null;
+  }
+  
+  public function channelListResettsn()
+  {
+    $this->resetNodeList();
+    $this->channelListtsn = null;
   }
 
   /**

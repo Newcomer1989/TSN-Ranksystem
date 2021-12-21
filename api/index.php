@@ -147,7 +147,6 @@ if (isset($_GET['groups'])) {
 		"mode_desc" => $modedesc
 	);
 	$count = 0;
-	krsort($sql['rankup_definition']);
 	foreach (explode(',', $sql['rankup_definition']) as $entry) {
 		list($key, $value) = explode('=>', $entry);
 		$addnewvalue1[$count] = array(
@@ -170,8 +169,18 @@ if (isset($_GET['groups'])) {
 	}
 	if(isset($_GET['groupid'])) {
 		$groupid = htmlspecialchars_decode($_GET['groupid']);
+		$explode_groupid = explode(',', $groupid);
 		if($filter != ' WHERE') $filter .= " AND";
-		$filter .= " (`cldgroup` = :groupid OR `cldgroup` LIKE (:groupid0) OR `cldgroup` LIKE (:groupid1) OR `cldgroup` LIKE (:groupid2))";
+		$filter .= " (";
+		$cnt = 0;
+		foreach($explode_groupid as $groupid) {
+			if($cnt > 0) $filter .= " OR ";
+			$filter .= "`cldgroup` = :groupid".$cnt; $cnt++;
+			$filter .= " OR `cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+			$filter .= " OR `cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+			$filter .= " OR `cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+		}
+		$filter .= ")";
 	}
 	if(isset($_GET['name'])) {
 		$name = htmlspecialchars_decode($_GET['name']);
@@ -208,8 +217,17 @@ if (isset($_GET['groups'])) {
 				),
 				"groupid" => array(
 					"desc" => "Get only user, which are in the given servergroup database ID",
-					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup",
-					"example" => "/api/?user&groupid=6"
+					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup. Multiple servergroups can be specified comma-separated.",
+					"example" => array(
+						"1" => array(
+							"desc" => "Filter by a single servergroup database ID",
+							"url" => "/api/?userstats&groupid=6"
+						),
+						"2" => array(
+							"desc" => "Filter by multiple servergroup database IDs. Only one of the specified groups must apply to get the concerned user.",
+							"url" => "/api/?userstats&groupid=6,9,48"
+						)
+					)
 				),
 				"limit" => array(
 					"desc" => "Define a number that limits the number of results. Maximum value is 1000. Default is 100.",
@@ -273,10 +291,17 @@ if (isset($_GET['groups'])) {
 	} else {
 		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user` {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
 		if(isset($_GET['cldbid'])) $dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid', $groupid, PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid0', $groupid.'%', PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid1', '%'.$groupid.'%', PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid2', '%'.$groupid, PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) {
+			$groupid = htmlspecialchars_decode($_GET['groupid']);
+			$explode_groupid = explode(',', $groupid);
+			$cnt = 0;
+			foreach($explode_groupid as $groupid) {
+				$dbdata->bindValue(':groupid'.$cnt, $groupid, PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, $groupid.',%', PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, '%,'.$groupid.',%', PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, '%,'.$groupid, PDO::PARAM_STR); $cnt++;
+			}
+		}
 		if(isset($_GET['name'])) $dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
 		if(isset($_GET['uuid'])) $dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
 
@@ -294,8 +319,18 @@ if (isset($_GET['groups'])) {
 	}
 	if(isset($_GET['groupid'])) {
 		$groupid = htmlspecialchars_decode($_GET['groupid']);
+		$explode_groupid = explode(',', $groupid);
 		if($filter != ' WHERE') $filter .= " AND";
-		$filter .= " (`user`.`cldgroup` = :groupid OR `user`.`cldgroup` LIKE (:groupid0) OR `user`.`cldgroup` LIKE (:groupid1) OR `user`.`cldgroup` LIKE (:groupid2))";
+		$filter .= " (";
+		$cnt = 0;
+		foreach($explode_groupid as $groupid) {
+			if($cnt > 0) $filter .= " OR ";
+			$filter .= "`user`.`cldgroup` = :groupid".$cnt; $cnt++;
+			$filter .= " OR `user`.`cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+			$filter .= " OR `user`.`cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+			$filter .= " OR `user`.`cldgroup` LIKE (:groupid".$cnt.")"; $cnt++;
+		}
+		$filter .= ")";
 	}
 	if(isset($_GET['name'])) {
 		$name = htmlspecialchars_decode($_GET['name']);
@@ -332,8 +367,17 @@ if (isset($_GET['groups'])) {
 				),
 				"groupid" => array(
 					"desc" => "Get only user, which are in the given servergroup database ID",
-					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup",
-					"example" => "/api/?userstats&groupid=6"
+					"usage" => "Use \$_GET parameter 'groupid' and add as value a database ID of a servergroup. Multiple servergroups can be specified comma-separated.",
+					"example" => array(
+						"1" => array(
+							"desc" => "Filter by a single servergroup database ID",
+							"url" => "/api/?userstats&groupid=6"
+						),
+						"2" => array(
+							"desc" => "Filter by multiple servergroup database IDs. Only one of the specified groups must apply to get the concerned user.",
+							"url" => "/api/?userstats&groupid=6,9,48"
+						)
+					)
 				),
 				"limit" => array(
 					"desc" => "Define a number that limits the number of results. Maximum value is 1000. Default is 100.",
@@ -397,10 +441,17 @@ if (isset($_GET['groups'])) {
 	} else {
 		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`stats_user` INNER JOIN `$dbname`.`user` ON `user`.`uuid` = `stats_user`.`uuid` {$filter} ORDER BY {$sort} {$order} LIMIT :start, :limit");
 		if(isset($_GET['cldbid'])) $dbdata->bindValue(':cldbid', (int) $cldbid, PDO::PARAM_INT);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid', $groupid, PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid0', $groupid.'%', PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid1', '%'.$groupid.'%', PDO::PARAM_STR);
-		if(isset($_GET['groupid'])) $dbdata->bindValue(':groupid2', '%'.$groupid, PDO::PARAM_STR);
+		if(isset($_GET['groupid'])) {
+			$groupid = htmlspecialchars_decode($_GET['groupid']);
+			$explode_groupid = explode(',', $groupid);
+			$cnt = 0;
+			foreach($explode_groupid as $groupid) {
+				$dbdata->bindValue(':groupid'.$cnt, $groupid, PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, $groupid.',%', PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, '%,'.$groupid.',%', PDO::PARAM_STR); $cnt++;
+				$dbdata->bindValue(':groupid'.$cnt, '%,'.$groupid, PDO::PARAM_STR); $cnt++;
+			}
+		}
 		if(isset($_GET['name'])) $dbdata->bindValue(':name', '%'.$name.'%', PDO::PARAM_STR);
 		if(isset($_GET['uuid'])) $dbdata->bindValue(':uuid', '%'.$uuid.'%', PDO::PARAM_STR);
 

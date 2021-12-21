@@ -19,7 +19,7 @@ try {
 			$err_msg = $lang['wichpw1']; $err_lvl = 3;
 		} else {
 			$cfg['webinterface_pass'] = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
-			if ($_POST['newpwd1'] != $_POST['newpwd2'] || $_POST['newpwd1'] == NULL) {
+			if ($_POST['newpwd1'] !== $_POST['newpwd2'] || $_POST['newpwd1'] == NULL) {
 				$err_msg = $lang['wichpw2']; $err_lvl = 3;
 			} elseif($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_pass','{$cfg['webinterface_pass']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;

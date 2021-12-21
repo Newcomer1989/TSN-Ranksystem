@@ -23,7 +23,7 @@ require_once('_preload.php');
 					<div class="row">
 						<div class="col-lg-12">
 							<h4><strong><span class="text-success"><?PHP echo $lang['stri0004']; ?></span></strong></h4>
-							<p>The <a href="//ts-ranksystem.com" target="_blank" rel="noopener noreferrer">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2020 powered by <a href="//ts-n.net/" target="_blank" rel="noopener noreferrer">TS-N.NET</a></p>
+							<p>The <a href="//ts-ranksystem.com" target="_blank" rel="noopener noreferrer">Ranksystem</a> was coded by <strong>Newcomer1989</strong> Copyright &copy; 2009-2021 powered by <a href="//ts-n.net/" target="_blank" rel="noopener noreferrer">TS-N.NET</a></p>
 							<br>
 						</div>
 					</div>
@@ -41,7 +41,7 @@ require_once('_preload.php');
 						<div class="col-lg-12">
 							<h4><strong><span class="text-danger"><?PHP echo $lang['stri0009'];?></span></strong></h4>
 							<p><?PHP echo $lang['stri0010']; ?></p>
-							<p><a href="//php.net/" target="_blank" rel="noopener noreferrer">PHP</a> - Copyright &copy; 2001-2019 the <a href="//secure.php.net/credits.php" target="_blank" rel="noopener noreferrer">PHP Group</a></p><br>
+							<p><a href="//php.net/" target="_blank" rel="noopener noreferrer">PHP</a> - Copyright &copy; 2001-2021 the <a href="//secure.php.net/credits.php" target="_blank" rel="noopener noreferrer">PHP Group</a></p><br>
 							<p><?PHP echo $lang['stri0011']; ?></p>
 							<p><a href="//jquery.com" target="_blank" rel="noopener noreferrer">jQuery v3.5.1</a> - Copyright &copy; 2020 The jQuery Foundation</p> 
 							<p><a href="//fontawesome.com" target="_blank" rel="noopener noreferrer">Font Awesome 5.15.1</a> - Copyright &copy; Fonticons, Inc.</p>
@@ -56,6 +56,7 @@ require_once('_preload.php');
 							<p><a href="//developer.snapappointments.com/bootstrap-select" target="_blank" rel="noopener noreferrer">bootstrap-select v1.13.14</a> - Copyright &copy; 2012-2020 SnapAppointments, LLC</p>
 							<p><a href="//wenzhixin.net.cn" target="_blank" rel="noopener noreferrer">Bootstrap Show Password 1.0.3</a> - Copyright &copy; 2014 zhixin wen</p>
 							<p><a href="//github.com/1000hz/bootstrap-validator" target="_blank" rel="noopener noreferrer">Bootstrap Validator</a> - Copyright &copy; 2016 Cina Saffary</p>
+							<p><a href="//www.smarty.net/" target="_blank" rel="noopener noreferrer">Smarty PHP Template Engine</a> - Copyright &copy; 2002-2021 New Digital Group, Inc.</p>
 							<br>
 						</div>
 					</div>

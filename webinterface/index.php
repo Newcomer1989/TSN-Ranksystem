@@ -86,7 +86,7 @@ try {
 		exit;
 	} elseif(isset($_POST['username'])) {
 		$nowtime = time();
-		enter_logfile($cfg,5,sprintf($lang['brute1'], getclientip(), $_POST['username']));
+		enter_logfile($cfg,5,sprintf($lang['brute1'], getclientip(), htmlspecialchars($_POST['username'])));
 		$cfg['webinterface_access_count']++;
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$nowtime}'),('webinterface_access_count','{$cfg['webinterface_access_count']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 		$err_msg = $lang['errlogin'];

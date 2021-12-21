@@ -134,6 +134,12 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$job_end WHERE `job_name`='calc_user_limit';\n";
 		}
 	}
+	
+	if ($db_cache['job_check']['calc_user_removed']['timestamp'] < ($nowtime - 1800)) {
+		$db_cache['job_check']['calc_user_removed']['timestamp'] = $nowtime;
+		$atime = $nowtime - 3600;
+		$sqlexec .= "UPDATE `$dbname`.`stats_user` AS `s` INNER JOIN `$dbname`.`user` AS `u` ON `s`.`uuid`=`u`.`uuid` SET `s`.`removed`='0' WHERE `s`.`removed`='1' AND `u`.`lastseen`>{$atime};\nUPDATE `$dbname`.`job_check` SET `timestamp`='{$nowtime}' WHERE `job_name`='calc_user_removed';\n";
+	}
 
 	enter_logfile($cfg,6,"calc_userstats needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);

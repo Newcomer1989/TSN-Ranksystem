@@ -25,6 +25,7 @@ try {
 		$cfg['default_header_xss'] = htmlspecialchars($_POST['default_header_xss'], ENT_QUOTES);
 		if (isset($_POST['default_header_contenttyp'])) $cfg['default_header_contenttyp'] = 1; else $cfg['default_header_contenttyp'] = 0;
 		$cfg['default_header_frame'] = htmlspecialchars($_POST['default_header_frame'], ENT_QUOTES);
+		if (isset($_POST['default_cmdline_sec_switch'])) $cfg['default_cmdline_sec_switch'] = 1; else $cfg['default_cmdline_sec_switch'] = 0;
 		$cfg['logs_timezone'] = $_POST['logs_timezone'];
 		$cfg['default_date_format'] = $_POST['default_date_format'];
 		$cfg['logs_path'] = addslashes($_POST['logs_path']);
@@ -37,7 +38,7 @@ try {
 		if (isset($_POST['rankup_clean_clients_switch'])) $cfg['rankup_clean_clients_switch'] = 1; else $cfg['rankup_clean_clients_switch'] = 0;
 		$cfg['rankup_clean_clients_period'] = $_POST['rankup_clean_clients_period'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('default_session_sametime','{$cfg['default_session_sametime']}'),('default_header_origin','{$cfg['default_header_origin']}'),('default_header_xss','{$cfg['default_header_xss']}'),('default_header_contenttyp','{$cfg['default_header_contenttyp']}'),('default_header_frame','{$cfg['default_header_frame']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('default_session_sametime','{$cfg['default_session_sametime']}'),('default_header_origin','{$cfg['default_header_origin']}'),('default_header_xss','{$cfg['default_header_xss']}'),('default_header_contenttyp','{$cfg['default_header_contenttyp']}'),('default_header_frame','{$cfg['default_header_frame']}'),('default_cmdline_sec_switch','{$cfg['default_cmdline_sec_switch']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
@@ -260,6 +261,17 @@ try {
 								</div>
 								<div class="row">&nbsp;</div>
 								<div class="form-group">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wicmdlinesecdesc"><?php echo $lang['wicmdlinesec']; ?><i class="help-hover fas fa-question-circle"></i></label>
+									<div class="col-sm-8">
+									<?PHP if ($cfg['default_cmdline_sec_switch'] == 1) {
+										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="default_cmdline_sec_switch" value="',$cfg['default_cmdline_sec_switch'],'">';
+									} else {
+										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="default_cmdline_sec_switch" value="',$cfg['default_cmdline_sec_switch'],'">';
+									} ?>
+									</div>
+								</div>
+								<div class="row">&nbsp;</div>
+								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wichdbiddesc"><?php echo $lang['wichdbid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-lg-8">
 										<?PHP if ($cfg['rankup_client_database_id_change_switch'] == 1) {
@@ -457,6 +469,22 @@ try {
 		</div>
 	  </div>
 	</div>
+	<div class="modal fade" id="wicmdlinesecdesc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wicmdlinesec']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo $lang['wicmdlinesecdesc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	<div class="modal fade" id="witszdesc" tabindex="-1">
 	  <div class="modal-dialog">
 		<div class="modal-content">
@@ -605,6 +633,7 @@ try {
 		}
 	});
 	$("[name='default_header_contenttyp']").bootstrapSwitch();
+	$("[name='default_cmdline_sec_switch']").bootstrapSwitch();
 	$("[name='rankup_client_database_id_change_switch']").bootstrapSwitch();
 	$("[name='rankup_clean_clients_switch']").bootstrapSwitch();
 	</script>

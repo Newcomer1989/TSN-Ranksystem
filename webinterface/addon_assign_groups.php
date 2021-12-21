@@ -57,8 +57,17 @@ try {
 		$excgr = substr($excgr,0,-1);
 
 		if(!isset($err_lvl) || $err_lvl < 3) {
-			if ($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name','{$name}'), ('assign_groups_active','{$assign_groups_active}'), ('assign_groups_limit','{$limit}'), ('assign_groups_groupids','{$alwgr}'), ('assign_groups_excepted_groupids','{$excgr}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}") === false) {
-				$err_msg = print_r($mysqlcon->errorInfo(), true);
+			$sqlexec = $mysqlcon->prepare("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name', :assign_groups_name), ('assign_groups_active', :assign_groups_active), ('assign_groups_limit', :assign_groups_limit), ('assign_groups_groupids', :assign_groups_groupids), ('assign_groups_excepted_groupids', :assign_groups_excepted_groupids) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`= :csrf_token;");
+			$sqlexec->bindParam(':assign_groups_name', $name, PDO::PARAM_STR);
+			$sqlexec->bindParam(':assign_groups_active', $assign_groups_active, PDO::PARAM_STR);
+			$sqlexec->bindParam(':assign_groups_limit', $limit, PDO::PARAM_STR);
+			$sqlexec->bindParam(':assign_groups_groupids', $alwgr, PDO::PARAM_STR);
+			$sqlexec->bindParam(':assign_groups_excepted_groupids', $excgr, PDO::PARAM_STR);
+			$sqlexec->bindParam(':csrf_token', $_POST['csrf_token']);
+			$sqlexec->execute();
+
+			if ($sqlexec->errorCode() != 0) {
+				$err_msg = print_r($sqlexec->errorInfo(), true);
 				$err_lvl = 3;
 			} elseif($addons_config['assign_groups_active']['value'] != $assign_groups_active && $assign_groups_active == 1) {
 				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');

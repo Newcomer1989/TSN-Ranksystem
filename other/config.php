@@ -9,7 +9,9 @@ if(isset($db['type']) === false) {
 $dbname = $db['dbname'];
 $dbtype = $db['type'];
 
-$mysqlcon = db_connect($db['type'], $db['host'], $db['dbname'], $db['user'], $db['pass']);
+if(!isset($persistent)) $persistent=NULL;
+
+$mysqlcon = db_connect($db['type'], $db['host'], $db['dbname'], $db['user'], $db['pass'], $persistent);
 
 if (isset($mysqlcon) && ($newcfg = $mysqlcon->query("SELECT * FROM `$dbname`.`cfg_params`"))) {
 	if(isset($newcfg) && $newcfg != NULL) {

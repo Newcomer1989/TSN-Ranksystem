@@ -40,7 +40,7 @@ try {
 		$err_msg = '<b>'.$lang['wihladmrs'].":</b><br><br><pre>"; $err_lvl = 2;
 		$err_msg .= get_status($lang, $job_check);
 
-		if(in_array($job_check['database_export']['timestamp'], ["0","4"], true)) {
+		if(in_array($job_check['database_export']['timestamp'], ["0","3","4"], true)) {
 			$err_msg .= '</pre><br>';
 			if($job_check['database_export']['timestamp'] == 4) {
 				$err_msg .= "Exported file successfully.";
@@ -50,17 +50,30 @@ try {
 			}
 			$err_msg .= '<br>'.sprintf($lang['wihladmrs9'], '<form class="btn-group" name="confirm" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>&nbsp;', '</button></form>');
 		} else {
-			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
+			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'].'<br><br>'.sprintf($lang['wihladmrs17'], '<form class="btn-group" name="cancel" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i>&nbsp;', '</button></form>');
 		}
 	}
 
 	if (isset($_POST['confirm']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(in_array($job_check['database_export']['timestamp'], ["0","4"], true)) {
+		if(in_array($job_check['database_export']['timestamp'], ["0","3","4"], true)) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('database_export','0') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
 			} else {
 				$err_msg = $lang['wihladmrs10'];
+				$err_lvl = NULL;
+			}
+		} else {
+			$err_msg = $lang['errukwn'];
+			$err_lvl = 3;
+		}
+	} elseif (isset($_POST['cancel']) && isset($db_csrf[$_POST['csrf_token']])) {
+		if(in_array($job_check['database_export']['timestamp'], ["0","1","2","4"], true)) {
+			if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('database_export','3') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
+				$err_lvl = 3;
+			} else {
+				$err_msg = $lang['wihladmrs18'];
 				$err_lvl = NULL;
 			}
 		} else {

@@ -33,38 +33,53 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 						$temp_cldbid = $client['client_database_id'];
 					}
 				}
-				$db_cache['all_user'][$uuid]['count'] += $value['timecount'];
-				if($db_cache['all_user'][$uuid]['count'] < 0) {
-					$db_cache['all_user'][$uuid]['count'] = $db_cache['all_user'][$uuid]['idle'] = 0;
-				} elseif ($db_cache['all_user'][$uuid]['idle'] > $db_cache['all_user'][$uuid]['count']) {
-					$db_cache['all_user'][$uuid]['idle'] = $db_cache['all_user'][$uuid]['count'];
-				}
-				if($isonline != 1) {
-					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+				if($value['timecount'] == 0 && $value['timestamp'] == 4273093200) {
+					//remove user
+					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+						enter_logfile($cfg,2,"Database error on selecting user (admin function remove user): ".print_r($mysqlcon->errorInfo(), true));
 					} else {
 						$temp_cldbid = $user[$uuid]['cldbid'];
-						$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='{$db_cache['all_user'][$uuid]['count']}', `idle`='{$db_cache['all_user'][$uuid]['idle']}' WHERE `uuid`='{$uuid}';\n";
+						$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`admin_addtime` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`stats_user` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user_iphash` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$temp_cldbid}';\n";
+						enter_logfile($cfg,4,sprintf($lang['wihladm45'],$user[$uuid]['name'],$uuid,$temp_cldbid).' ('.$lang['wihladm46'].')');
+						if(isset($db_cache['all_user'][$uuid])) unset($db_cache['all_user'][$uuid]);
+						if(isset($db_cache['admin_addtime'][$uuid])) unset($db_cache['admin_addtime'][$uuid]);
+						if(isset($db_cache['addon_assign_groups'][$uuid])) unset($db_cache['addon_assign_groups'][$uuid]);
 					}
-				}
-				if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid';") === false) {
-					enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
-				}
-				if(($usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$temp_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-					enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+					unset($user);
 				} else {
-					foreach($usersnap as $id => $valuesnap) {
-						$valuesnap['count'] += $value['timecount'];
-						if($valuesnap['count'] < 0) {
-							$valuesnap['count'] = $valuesnap['idle'] = 0;
-						} elseif ($valuesnap['idle'] > $valuesnap['count']) {
-							$valuesnap['idle'] = $valuesnap['count'];
-						}
-						$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap['count']}', `idle`='{$valuesnap['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}';\n";
+					$db_cache['all_user'][$uuid]['count'] += $value['timecount'];
+					if($db_cache['all_user'][$uuid]['count'] < 0) {
+						$db_cache['all_user'][$uuid]['count'] = $db_cache['all_user'][$uuid]['idle'] = 0;
+					} elseif ($db_cache['all_user'][$uuid]['idle'] > $db_cache['all_user'][$uuid]['count']) {
+						$db_cache['all_user'][$uuid]['idle'] = $db_cache['all_user'][$uuid]['count'];
 					}
+					if($isonline != 1) {
+						if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+							enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+						} else {
+							$temp_cldbid = $user[$uuid]['cldbid'];
+							$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='{$db_cache['all_user'][$uuid]['count']}', `idle`='{$db_cache['all_user'][$uuid]['idle']}' WHERE `uuid`='{$uuid}';\n";
+						}
+					}
+					if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid';") === false) {
+						enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+					}
+					if(($usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$temp_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+					} else {
+						foreach($usersnap as $id => $valuesnap) {
+							$valuesnap['count'] += $value['timecount'];
+							if($valuesnap['count'] < 0) {
+								$valuesnap['count'] = $valuesnap['idle'] = 0;
+							} elseif ($valuesnap['idle'] > $valuesnap['count']) {
+								$valuesnap['idle'] = $valuesnap['count'];
+							}
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap['count']}', `idle`='{$valuesnap['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}';\n";
+						}
+					}
+					enter_logfile($cfg,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid).' ('.$lang['wihladm46'].')');
+					unset($user, $usersnap);
 				}
-				enter_logfile($cfg,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid));
-				unset($user, $usersnap);
 			}
 		}
 		unset($db_cache['admin_addtime']);

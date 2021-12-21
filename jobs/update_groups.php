@@ -4,7 +4,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 	$nowtime = time();
 	$sqlexec = '';
 	
-	if($db_cache['job_check']['update_groups']['timestamp'] < ($nowtime - 4)) {
+	if($db_cache['job_check']['update_groups']['timestamp'] < ($nowtime - 6)) {
 		$db_cache['job_check']['update_groups']['timestamp'] = $nowtime;
 		$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='update_groups';\n";
 		try {

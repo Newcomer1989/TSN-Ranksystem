@@ -91,7 +91,7 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 	// clean usersnaps older then 1 month + clean old server usage - older then a year
 	if ($db_cache['job_check']['clean_db']['timestamp'] < ($nowtime - 86400)) {
 		$db_cache['job_check']['clean_db']['timestamp'] = $nowtime;
-		$sqlexec .= "DELETE FROM `$dbname`.`server_usage` WHERE `timestamp` < (UNIX_TIMESTAMP() - 31536000);\nDELETE `b` FROM `$dbname`.`user` AS `a` RIGHT JOIN `$dbname`.`stats_user` AS `b` ON `a`.`uuid`=`b`.`uuid` WHERE `a`.`uuid` IS NULL;\nUPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_db';\nDELETE FROM `$dbname`.`csrf_token` WHERE `timestamp` < (UNIX_TIMESTAMP() - 3600);\nDELETE `h` FROM `$dbname`.`user_iphash` AS `h` LEFT JOIN `$dbname`.`user` AS `u` ON `u`.`uuid` = `h`.`uuid` WHERE (`u`.`uuid` IS NULL OR `u`.`online`!=1);\n";
+		$sqlexec .= "DELETE FROM `$dbname`.`server_usage` WHERE `timestamp` < (UNIX_TIMESTAMP() - 31536000);\nDELETE `b` FROM `$dbname`.`user` AS `a` RIGHT JOIN `$dbname`.`stats_user` AS `b` ON `a`.`uuid`=`b`.`uuid` WHERE `a`.`uuid` IS NULL;\nUPDATE `$dbname`.`job_check` SET `timestamp`='{$nowtime}' WHERE `job_name`='clean_db';\nDELETE FROM `$dbname`.`csrf_token` WHERE `timestamp` < (UNIX_TIMESTAMP() - 3600);\nDELETE `h` FROM `$dbname`.`user_iphash` AS `h` LEFT JOIN `$dbname`.`user` AS `u` ON `u`.`uuid` = `h`.`uuid` WHERE (`u`.`uuid` IS NULL OR `u`.`online`!=1);\n";
 		enter_logfile($cfg,4,$lang['clean0003']);
 	}
 

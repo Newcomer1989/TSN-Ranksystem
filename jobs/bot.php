@@ -17,6 +17,7 @@ error_reporting(E_ALL);
 ini_set("log_errors", 1);
 
 require_once(substr(__DIR__,0,-4).'other/_functions.php');
+$persistent = 1;
 require_once(substr(__DIR__,0,-4).'other/config.php');
 $lang = set_language(get_language($cfg));
 
@@ -25,7 +26,7 @@ ini_set("error_log", $cfg['logs_path'].'ranksystem.log');
 
 require_once(substr(__DIR__,0,-4).'other/phpcommand.php');
 
-if(isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) {
+if((isset($_SERVER['HTTP_HOST']) || isset($_SERVER['REMOTE_ADDR'])) && isset($cfg_params['default_cmdline_sec_switch']) && $cfg_params['default_cmdline_sec_switch'] == 1) {
 	shutdown($mysqlcon,$cfg,1,"Request to start the Ranksystem from ".$_SERVER['REMOTE_ADDR'].". It seems the request came not from the command line!");
 }
 if(version_compare(PHP_VERSION, '5.5.0', '<')) {
@@ -51,6 +52,7 @@ enter_logfile($cfg,9,"Initialize Bot...");
 require_once(substr(__DIR__,0,-4).'libs/ts3_lib/TeamSpeak3.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_user.php');
 require_once(substr(__DIR__,0,-4).'jobs/get_avatars.php');
+require_once(substr(__DIR__,0,-4).'jobs/update_channel.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_groups.php');
 require_once(substr(__DIR__,0,-4).'jobs/calc_serverstats.php');
 require_once(substr(__DIR__,0,-4).'jobs/server_usage.php');
@@ -63,6 +65,7 @@ require_once(substr(__DIR__,0,-4).'jobs/event_userenter.php');
 require_once(substr(__DIR__,0,-4).'jobs/update_rs.php');
 require_once(substr(__DIR__,0,-4).'jobs/reset_rs.php');
 require_once(substr(__DIR__,0,-4).'jobs/db_ex_imp.php');
+require_once(substr(__DIR__,0,-4).'libs/smarty/Smarty.class.php');
 
 enter_logfile($cfg,9,"Running on OS: ".php_uname("s")." ".php_uname("r"));
 enter_logfile($cfg,9,"Using PHP Version: ".PHP_VERSION);
@@ -70,6 +73,17 @@ if(version_compare(PHP_VERSION, '7.2.0', '<')) {
 	enter_logfile($cfg,3,"Your PHP Version: (".PHP_VERSION.") is outdated and no longer supported. Please update it!");
 }
 enter_logfile($cfg,9,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
+
+enter_logfile($cfg,9,"Starting connection test to the Ranksystem update-server (may need a few seconds)...");
+$update_server = fsockopen('193.70.102.252', 443, $errno, $errstr, 10);
+if(!$update_server) {
+	enter_logfile($cfg,2,"  Connection to Ranksystem update-server failed: $errstr ($errno)");
+	enter_logfile($cfg,3,"    This connection is neccessary to receive updates for the Ranksystem!");
+	enter_logfile($cfg,3,"    Please whitelist the IP 193.70.102.252 (TCP port 443) on your network (firewall)");
+} else {
+	enter_logfile($cfg,9,"  Connection test successful");
+}
+enter_logfile($cfg,9,"Starting connection test to the Ranksystem update-server [done]");
 
 check_db($mysqlcon,$lang,$cfg,$dbname);
 $cfg['temp_db_version'] = $mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION);
@@ -85,20 +99,28 @@ enter_logfile($cfg,9,"Ranksystem Version: ".$cfg['version_current_using']." (on 
 enter_logfile($cfg,4,"Loading addons...");
 require_once(substr(__DIR__,0,-4).'other/load_addons_config.php');
 $addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
-if($addons_config['assign_groups_active']['value'] == '1') {
-	enter_logfile($cfg,4,"  Addon: 'assign_groups' [ON]");
-	include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
-	$cfg['temp_addon_assign_groups'] = "enabled";
-} else {
-	enter_logfile($cfg,4,"  Addon: 'assign_groups' [OFF]");
-	$cfg['temp_addon_assign_groups'] = "disabled";
-}
+	if($addons_config['assign_groups_active']['value'] == '1') {
+		enter_logfile($cfg,4,"  Addon: 'assign_groups' [ON]");
+		include(substr(__DIR__,0,-4).'jobs/addon_assign_groups.php');
+		$cfg['temp_addon_assign_groups'] = "enabled";
+	} else {
+		enter_logfile($cfg,4,"  Addon: 'assign_groups' [OFF]");
+		$cfg['temp_addon_assign_groups'] = "disabled";
+	}
+	if($addons_config['channelinfo_toplist_active']['value'] == '1') {
+		enter_logfile($cfg,4,"  Addon: 'channelinfo_toplist' [ON]");
+		include(substr(__DIR__,0,-4).'jobs/addon_channelinfo_toplist.php');
+		$cfg['temp_addon_channelinfo_toplist'] = "enabled";
+	} else {
+		enter_logfile($cfg,4,"  Addon: 'channelinfo_toplist' [OFF]");
+		$cfg['temp_addon_channelinfo_toplist'] = "disabled";
+	}
 enter_logfile($cfg,4,"Loading addons [done]");
 
 function run_bot(&$cfg) {
 	global $mysqlcon, $db, $dbname, $dbtype, $lang, $phpcommand, $addons_config, $max_execution_time, $memory_limit, $ts3server;
 
-	enter_logfile($cfg,9,"Connect to TS3 Server (Address: \"".$cfg['teamspeak_host_address']."\" Voice-Port: \"".$cfg['teamspeak_voice_port']."\" Query-Port: \"".$cfg['teamspeak_query_port']."\" SSH: \"".$cfg['teamspeak_query_encrypt_switch']."\" Query-Slowmode: \"".number_format(($cfg['teamspeak_query_command_delay']/1000000),1)."\").");
+	enter_logfile($cfg,9,"Connect to TS3 Server (Address: '".$cfg['teamspeak_host_address']."' Voice-Port: '".$cfg['teamspeak_voice_port']."' Query-Port: '".$cfg['teamspeak_query_port']."' SSH: '".$cfg['teamspeak_query_encrypt_switch']."' Query-Slowmode: '".number_format(($cfg['teamspeak_query_command_delay']/1000000),1)."').");
 
 	try {
 		if($cfg['temp_ts_no_reconnection'] != 1) {
@@ -315,7 +337,7 @@ function run_bot(&$cfg) {
 		$looptime = $cfg['temp_count_laps'] = $cfg['temp_whole_laptime'] = $cfg['temp_count_laptime'] = 0; $cfg['temp_last_laptime'] = '';
 		usleep(3000000);
 
-		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
+		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
 			shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 		}
 
@@ -339,9 +361,12 @@ function run_bot(&$cfg) {
 					$db_cache['groups'] = $fetched_array;
 					break;
 				case 5:
-					$db_cache['addon_assign_groups'] = $fetched_array;
+					$db_cache['channel'] = $fetched_array;
 					break;
 				case 6:
+					$db_cache['addon_assign_groups'] = $fetched_array;
+					break;
+				case 7:
 					$db_cache['admin_addtime'] = $fetched_array;
 					break 2;
 			}
@@ -362,7 +387,7 @@ function run_bot(&$cfg) {
 			
 			if($db_cache['job_check']['reload_trigger']['timestamp'] == 1) {
 				unset($db_cache['addon_assign_groups'],$db_cache['admin_addtime']);
-				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`groups`;")) === false) {
+				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`;")) === false) {
 					shutdown($mysqlcon,$cfg,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 				}
 
@@ -380,6 +405,9 @@ function run_bot(&$cfg) {
 							break;
 						case 3:
 							$db_cache['groups'] = $fetched_array;
+							break;
+						case 4:
+							$db_cache['channel'] = $fetched_array;
 							break 2;
 					}
 					$get_db_data->nextRowset();
@@ -408,9 +436,13 @@ function run_bot(&$cfg) {
 			$sqlexec .= server_usage($mysqlcon,$cfg,$dbname,$serverinfo,$db_cache);
 			$sqlexec .= calc_user_snapshot($cfg,$dbname,$db_cache);
 			$sqlexec .= update_groups($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache);
+			$sqlexec .= update_channel($ts3server,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,$db_cache);
 
 			if($addons_config['assign_groups_active']['value'] == '1') {
 				$sqlexec .= addon_assign_groups($addons_config,$ts3server,$cfg,$dbname,$allclients,$db_cache);
+			}
+			if($addons_config['channelinfo_toplist_active']['value'] == '1') {
+				$sqlexec .= addon_channelinfo_toplist($addons_config,$ts3server,$mysqlcon,$cfg,$dbname,$lang,$db_cache);
 			}
 
 			$startsql = microtime(true);
