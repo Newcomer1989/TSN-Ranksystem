@@ -422,7 +422,7 @@ function check_db($mysqlcon,$lang,&$cfg,$dbname) {
 				enter_logfile($cfg,4,"    [1.3.18] Added new cfg_params values.");
 			}
 
-			if($mysqlcon->exec("CREATE TABLE `$dbname`.`channel` (`cid` int(10) UNSIGNED NOT NULL default '0',`pid` int(10) UNSIGNED NOT NULL default '0',`channel_order` int(10) UNSIGNED NOT NULL default '0',`channel_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`cid`));") === false) { } else {
+			if($mysqlcon->exec("CREATE TABLE IF NOT EXISTS `$dbname`.`channel` (`cid` int(10) UNSIGNED NOT NULL default '0',`pid` int(10) UNSIGNED NOT NULL default '0',`channel_order` int(10) UNSIGNED NOT NULL default '0',`channel_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,PRIMARY KEY (`cid`));") === false) { } else {
 				enter_logfile($cfg,4,"    [1.3.18] Created new table channel successfully.");
 			}
 			
