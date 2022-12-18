@@ -94,6 +94,25 @@ function clean($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 		$sqlexec .= "DELETE FROM `$dbname`.`server_usage` WHERE `timestamp` < (UNIX_TIMESTAMP() - 31536000);\nDELETE `b` FROM `$dbname`.`user` AS `a` RIGHT JOIN `$dbname`.`stats_user` AS `b` ON `a`.`uuid`=`b`.`uuid` WHERE `a`.`uuid` IS NULL;\nUPDATE `$dbname`.`job_check` SET `timestamp`='{$nowtime}' WHERE `job_name`='clean_db';\nDELETE FROM `$dbname`.`csrf_token` WHERE `timestamp` < (UNIX_TIMESTAMP() - 3600);\nDELETE `h` FROM `$dbname`.`user_iphash` AS `h` LEFT JOIN `$dbname`.`user` AS `u` ON `u`.`uuid` = `h`.`uuid` WHERE (`u`.`uuid` IS NULL OR `u`.`online`!=1);\n";
 		enter_logfile($cfg,4,$lang['clean0003']);
 	}
+	
+	// clean user_iphash
+	if ($db_cache['job_check']['clean_user_iphash']['timestamp'] < ($nowtime - 3500)) {
+		if(($sqlhashs = $mysqlcon->query("SELECT * FROM `$dbname`.`user_iphash`")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+			enter_logfile($cfg,2,"clean user_iphash:".print_r($mysqlcon->errorInfo(), true));
+		}
+		
+		$rem_uuids = '';
+		foreach($sqlhashs as $uuid => $values) {
+			if(isset($db_cache['all_user'][$uuid]) && $db_cache['all_user'][$uuid]['lastseen'] < ($nowtime - 100)) {
+				$rem_uuids .= "'".$uuid."',";
+			}
+		}
+		if($rem_uuids != '') {
+			$rem_uuids = substr($rem_uuids, 0, -1);
+			$sqlexec .= "DELETE FROM `$dbname`.`user_iphash` WHERE `uuid` IN ({$rem_uuids});\n";
+		}
+		$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='$nowtime' WHERE `job_name`='clean_user_iphash';\n";
+	}
 
 	enter_logfile($cfg,6,"clean needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);

@@ -1,5 +1,5 @@
 <?PHP
-function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
+function calc_userstats($ts3,$mysqlcon,&$cfg,$dbname,&$db_cache) {
 	$starttime = microtime(true);
 	$nowtime = time();
 	$sqlexec = '';
@@ -72,7 +72,11 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 
 				try {
 					$clientinfo = $ts3->clientInfoDb($userstats['cldbid']);
-					$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);
+					if($clientinfo['client_description'] !== NULL) {
+						$clientdesc = $mysqlcon->quote($clientinfo['client_description'], ENT_QUOTES);
+					} else {
+						$clientdesc = "NULL";
+					}
 					if($clientinfo['client_totalconnections'] > 16777215) $clientinfo['client_totalconnections'] = 16777215;
 				} catch (Exception $e) {
 					if($e->getCode() == 512 || $e->getCode() == 1281) {
@@ -81,8 +85,8 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 							$getcldbid = $ts3->clientFindDb($uuid, TRUE);
 							if($getcldbid[0] != $userstats['cldbid']) {
 								enter_logfile($cfg,4,"  Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by the Ranksystem changed its cldbid. New cldbid is ".$getcldbid[0]."."); 
+								$db_cache['all_user'][$uuid]['cldbid'] = $getcldbid[0];
 								if($cfg['rankup_client_database_id_change_switch'] == 1) {
-									$db_cache['all_user'][$uuid]['cldbid'] = $getcldbid[0];
 									$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=0,`idle`=0 WHERE `uuid`='$uuid';\nUPDATE `$dbname`.`stats_user` SET `count_week`=0,`count_month`=0,`idle_week`=0,`idle_month`=0,`active_week`=0,`active_month`=0 WHERE `uuid`='$uuid';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
 									enter_logfile($cfg,4,"    ".sprintf($lang['changedbid'], $userstats['name'], $uuid, $userstats['cldbid'], $getcldbid[0]));
 								} else {
@@ -116,7 +120,7 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 						enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$e->getMessage()."; Error due command clientdbinfo for client-database-ID {$userstats['cldbid']} (permission: b_virtualserver_client_dbinfo needed).");
 					}
 
-					$clientdesc = $clientinfo['client_base64HashClientUID'] = $mysqlcon->quote('', ENT_QUOTES);
+					$clientdesc = $clientinfo['client_base64HashClientUID'] = "NULL";
 					$clientinfo['client_totalconnections'] = $clientinfo['client_total_bytes_uploaded'] = $clientinfo['client_total_bytes_downloaded'] = 0;
 				}
 

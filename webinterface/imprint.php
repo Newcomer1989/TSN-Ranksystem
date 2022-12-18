@@ -27,7 +27,7 @@ try {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres']);
+			$err_msg = $lang['wisvsuc'];
 			$err_lvl = NULL;
 		}
 		$cfg['stats_imprint_address'] = $_POST['stats_imprint_address'];

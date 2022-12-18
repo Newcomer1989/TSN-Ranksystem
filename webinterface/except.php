@@ -19,12 +19,17 @@ try {
 		$err_lvl = 3;
 	}
 
+	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
+		$err_lvl = 3;
+	}
+
 	if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
 		$err_msg = "DB Error1: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 	}
 
 	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$err_msg = $cfg['rankup_excepted_group_id_list'] = $cfg['rankup_excepted_unique_client_id_list'] = '';
+		$err_msg = $cfg['rankup_excepted_group_id_list'] = $cfg['rankup_excepted_unique_client_id_list'] = $cfg['rankup_excepted_channel_id_list'] = '';
 		$errcnf = 0;
 		$cfg['rankup_excepted_mode'] = $_POST['rankup_excepted_mode'];
 		
@@ -34,7 +39,9 @@ try {
 		if (isset($_POST['rankup_excepted_group_id_list']) && $_POST['rankup_excepted_group_id_list'] != NULL) {
 			$cfg['rankup_excepted_group_id_list'] = implode(',',$_POST['rankup_excepted_group_id_list']);
 		}
-		$cfg['rankup_excepted_channel_id_list'] = $_POST['rankup_excepted_channel_id_list'];
+		if (isset($_POST['channelid']) && $_POST['channelid'] != NULL) {
+			$cfg['rankup_excepted_channel_id_list'] = implode(',',$_POST['channelid']);
+		}
 
 		if($errcnf == 0) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_excepted_mode','{$cfg['rankup_excepted_mode']}'),('rankup_excepted_unique_client_id_list','{$cfg['rankup_excepted_unique_client_id_list']}'),('rankup_excepted_group_id_list','{$cfg['rankup_excepted_group_id_list']}'),('rankup_excepted_channel_id_list','{$cfg['rankup_excepted_channel_id_list']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
@@ -54,7 +61,9 @@ try {
 		if (isset($_POST['rankup_excepted_group_id_list']) && $_POST['rankup_excepted_group_id_list'] != NULL) {
 			$cfg['rankup_excepted_group_id_list'] = array_flip($_POST['rankup_excepted_group_id_list']);
 		}
-		$cfg['rankup_excepted_channel_id_list'] = array_flip(explode(',', $cfg['rankup_excepted_channel_id_list']));
+		if (isset($_POST['channelid']) && $_POST['channelid'] != NULL) {
+			$cfg['rankup_excepted_channel_id_list'] = array_flip($_POST['channelid']);
+		}
 	} elseif(isset($_POST['update'])) {
 		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
 		rem_session_ts3();
@@ -127,9 +136,11 @@ try {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexciddesc"><?php echo $lang['wiexcid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="rankup_excepted_channel_id_list" maxlength="21588"><?php if(!empty($cfg['rankup_excepted_channel_id_list'])) echo implode(',',array_flip($cfg['rankup_excepted_channel_id_list'])); ?></textarea>
-										<div class="help-block with-errors"></div>
+										<?PHP
+										echo select_channel($channellist, $cfg['rankup_excepted_channel_id_list'], 1);
+										?>
 									</div>
+
 								</div>
 							</div>
 							<div class="col-md-3"></div>

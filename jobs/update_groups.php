@@ -99,7 +99,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				$iconid = ($iconid < 0) ? (pow(2, 32)) - ($iconid * -1) : $iconid;
 				$iconfile = 0;
 				if($iconid > 600) {
-					if (!isset($db_cache['groups'][$sgid]) || $db_cache['groups'][$sgid]['iconid'] != $iconid || $iconarr["i".$iconid] > $db_cache['groups'][$sgid]['icondate']) {
+					if (!isset($db_cache['groups'][$sgid]) || $db_cache['groups'][$sgid]['iconid'] != $iconid || isset($iconarr["i".$iconid]) && $iconarr["i".$iconid] > $db_cache['groups'][$sgid]['icondate']) {
 						try {
 							check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
 							enter_logfile($cfg,5,sprintf($lang['upgrp0011'], $sgname, $sgid));

@@ -149,6 +149,7 @@ try {
 											if ('.' === $file || '..' === $file) continue;
 											if (is_dir($cfg['logs_path'].$file)) continue;
 											if(substr($file, 0, 10) != 'db_export_') continue;
+											if(substr($file, -4, 4) != '.zip' && substr($file, -4, 4) != '.sql') continue;
 										?>
 											<div class="col-sm-6">
 												<?PHP echo $cfg['logs_path'].$file; ?>

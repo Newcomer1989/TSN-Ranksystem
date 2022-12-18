@@ -1,5 +1,5 @@
 ﻿<?PHP
-$rsversion = '1.3.19';
+$rsversion = '1.3.21';
 
 require_once('other/_functions.php');
 require_once('other/config.php');
@@ -79,7 +79,16 @@ $db[\'dbname\']=\''.$dbname.'\';
 		$err_lvl = 2;
 	} else {
 		$count = 1;
-		if(($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) { }
+		$stmt = $mysqlcon->query('SHOW DATABASES');
+		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+			if ($row['Database'] == $dbname) {
+				$dbExists = true;
+				break;
+			}
+		}
+		if ($dbExists) {
+			if(($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) { }
+		}
 		
 		if($mysqlcon->exec("CREATE DATABASE `$dbname`") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
@@ -168,7 +177,7 @@ $db[\'dbname\']=\''.$dbname.'\';
 			$count++;
 		}
 		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('calc_user_removed'),('check_update'),('database_export'),('get_version'),('clean_db'),('clean_clients'),('calc_donut_chars'),('calc_server_stats'),('get_avatars'),('last_snapshot_id'),('last_snapshot_time'),('last_update'),('reload_trigger'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after'),('runtime_check'),('update_channel'),('update_groups')") === false) {
+		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES ('calc_user_limit'),('calc_user_lastscan'),('calc_user_removed'),('check_update'),('clean_user_iphash'),('database_export'),('get_version'),('clean_db'),('clean_clients'),('calc_donut_chars'),('calc_server_stats'),('get_avatars'),('last_snapshot_id'),('last_snapshot_time'),('last_update'),('reload_trigger'),('reset_user_time'),('reset_user_delete'),('reset_group_withdraw'),('reset_webspace_cache'),('reset_usage_graph'),('reset_stop_after'),('runtime_check'),('update_channel'),('update_groups')") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}

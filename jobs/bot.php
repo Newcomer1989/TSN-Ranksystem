@@ -145,7 +145,7 @@ function run_bot(&$cfg) {
 
 			enter_logfile($cfg,9,"    Select virtual server...");
 			try {
-				if(version_compare($ts3version['version'],'3.4.0','>=')) {
+				if(version_compare($ts3version['version'],'3.4.0','>=') || version_compare($ts3version['version'],'3.0.0','<=')) {
 					usleep($cfg['teamspeak_query_command_delay']);
 					$ts3server = $ts3host->serverGetByPort($cfg['teamspeak_voice_port'], $cfg['teamspeak_query_nickname']);
 				} else {

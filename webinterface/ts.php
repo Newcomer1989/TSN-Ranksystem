@@ -14,8 +14,10 @@ try {
 		$err_lvl = 3;
 	}
 
-	if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
-		$err_msg = "DB Error1: ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
+	$monthago = time() - 2592000;
+	if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `lastseen`>'{$monthago}' ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+		$err_msg = print_r($mysqlcon->errorInfo(), true);
+		$err_lvl = 3;
 	}
 	
 	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
@@ -30,7 +32,8 @@ try {
 		if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != NULL) {
 			$cfg['webinterface_admin_client_unique_id_list'] = implode(',',$_POST['webinterface_admin_client_unique_id_list']);
 		}
-		$cfg['teamspeak_host_address'] = $_POST['teamspeak_host_address'];
+		
+		$cfg['teamspeak_host_address'] = preg_replace('/\s/', '', $_POST['teamspeak_host_address']);
 		$cfg['teamspeak_query_port'] = $_POST['teamspeak_query_port'];
 		if (isset($_POST['teamspeak_query_encrypt_switch'])) $cfg['teamspeak_query_encrypt_switch'] = 1; else $cfg['teamspeak_query_encrypt_switch'] = 0;
 		$cfg['teamspeak_voice_port'] = $_POST['teamspeak_voice_port'];
@@ -79,7 +82,7 @@ try {
 										<div class="form-group required-field-block">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3hostdesc"><?php echo $lang['wits3host']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<input type="text" class="form-control required" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port inside this field. You should enter the port (e.g. 9987) inside the TS3-Voice-Port!" name="teamspeak_host_address" value="<?php echo $cfg['teamspeak_host_address']; ?>" maxlength="65535" required>
+												<input type="text" class="form-control required" data-pattern="^[^.]+[^:]*$" data-error="Do not enter the port here. Please enter the port (e.g. 9987) inside the TS3 Voice-Port!" name="teamspeak_host_address" value="<?php echo $cfg['teamspeak_host_address']; ?>" maxlength="65535" required>
 												<div class="help-block with-errors"></div>
 											</div>
 										</div>

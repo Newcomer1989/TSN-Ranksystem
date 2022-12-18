@@ -408,8 +408,6 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 				$cfg['temp_db_version']
 			);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
 			curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
@@ -435,14 +433,20 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 		}
 		
 		//Calc Rank
+		$dbversion = $mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION);
+		preg_match("/^[0-9\.-]+/", $dbversion, $version_number);
 		if ($cfg['rankup_time_assess_mode'] == 1) {
-			$sqlexec .= "SET @a:=0;\nUPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY (`count` - `idle`) DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`;\n";
-			//MySQL 8 or above
-			//UPDATE `user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY (`count` - `idle`) DESC) AS `rank`, `uuid` FROM `$dbname`.`user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;
+			if(version_compare($version_number[0], '10.6', '>=') || version_compare($version_number[0], '5.5.5-10.6', '>=')) {
+				$sqlexec .= "UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY (`count` - `idle`) DESC) AS `rank`, `uuid` FROM `$dbname`.`user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;\n";
+			} else {
+				$sqlexec .= "SET @a:=0;\nUPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY (`count` - `idle`) DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`;\n";
+			}
 		} else {
-			$sqlexec .= "SET @a:=0;\nUPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY `count` DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`;\n";
-			//MySQL 8 or above
-			//UPDATE `user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY `count` DESC) AS `rank`, `uuid` FROM `$dbname`.`user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;
+			if(version_compare($version_number[0], '10.6', '>=') || version_compare($version_number[0], '5.5.5-10.6', '>=')) {
+				$sqlexec .= "UPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT RANK() OVER (ORDER BY `count` DESC) AS `rank`, `uuid` FROM `$dbname`.`user` WHERE `except`<2) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`rank`;\n";
+			} else {
+				$sqlexec .= "SET @a:=0;\nUPDATE `$dbname`.`user` AS `u` INNER JOIN (SELECT @a:=@a+1 `nr`,`uuid` FROM `$dbname`.`user` WHERE `except`<2 ORDER BY `count` DESC) AS `s` USING (`uuid`) SET `u`.`rank`=`s`.`nr`;\n";
+			}
 		}
 	}
 

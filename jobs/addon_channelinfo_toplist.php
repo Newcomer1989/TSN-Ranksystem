@@ -92,12 +92,12 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 				$smarty->assign('CLIENT_NEXT_RANKUP_TIME_'.($nr + 1),$userdata[$nr]['nextup']);
 				
 				$smarty->assign('CLIENT_CURRENT_RANK_GROUP_ID_'.($nr + 1),$userdata[$nr]['grpid']);
-				if(isset($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname'])) {
+				if(isset($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname']) && $userdata[$nr]['grpid'] != 0) {
 					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_NAME_'.($nr + 1),substr($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname'],1,-1));
 				} else {
 					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_NAME_'.($nr + 1),'unknown_group');
 				}
-				if(isset($db_cache['groups'][$userdata[$nr]['grpid']]['iconid']) && isset($db_cache['groups'][$userdata[$nr]['grpid']]['ext'])) {
+				if(isset($db_cache['groups'][$userdata[$nr]['grpid']]['iconid']) && isset($db_cache['groups'][$userdata[$nr]['grpid']]['ext']) && $userdata[$nr]['grpid'] != 0) {
 					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_ICON_URL_'.($nr + 1),'tsicons/'.$db_cache['groups'][$userdata[$nr]['grpid']]['iconid'].'.'.$db_cache['groups'][$userdata[$nr]['grpid']]['ext']);
 				} else {
 					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_ICON_URL_'.($nr + 1),'file_not_found');

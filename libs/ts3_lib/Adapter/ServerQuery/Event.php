@@ -115,7 +115,7 @@ class TeamSpeak3_Adapter_ServerQuery_Event implements ArrayAccess
   /**
    * @ignore
    */
-  public function offsetExists($offset)
+  public function offsetExists($offset): bool
   {
     return array_key_exists($offset, $this->data) ? TRUE : FALSE;
   }
@@ -123,6 +123,7 @@ class TeamSpeak3_Adapter_ServerQuery_Event implements ArrayAccess
   /**
    * @ignore
    */
+  #[\ReturnTypeWillChange]
   public function offsetGet($offset)
   {
     if(!$this->offsetExists($offset))
@@ -136,7 +137,7 @@ class TeamSpeak3_Adapter_ServerQuery_Event implements ArrayAccess
   /**
    * @ignore
    */
-  public function offsetSet($offset, $value)
+  public function offsetSet($offset, $value): void
   {
     throw new TeamSpeak3_Node_Exception("event '" . $this->getType() . "' is read only");
   }
@@ -144,7 +145,7 @@ class TeamSpeak3_Adapter_ServerQuery_Event implements ArrayAccess
   /**
    * @ignore
    */
-  public function offsetUnset($offset)
+  public function offsetUnset($offset): void
   {
     unset($this->data[$offset]);
   }

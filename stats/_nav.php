@@ -393,14 +393,14 @@ if(!isset($_GET["user"])) {
 				</li>
 				<li class="dropdown">
 					<?PHP
-					$dropdownlist = '';
+					$dropdownlist = $dropdownfront = '';
 					if(is_dir(substr(__DIR__,0,-5).'languages/')) {
 						foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
 							if ('.' === $file || '..' === $file || is_dir($file)) continue;
 							$sep_lang = preg_split("/[._]/", $file);
 							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-								if($_SESSION[$rspathhex.'language'] == $sep_lang[1]) {
-									$dropdownfront = '<a href="" class="dropdown-toggle" data-toggle="dropdown"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;<b class="caret"></b></a><ul class="dropdown-menu">';
+								if(isset($_SESSION[$rspathhex.'language']) && $_SESSION[$rspathhex.'language'] == $sep_lang[1]) {
+									$dropdownfront .= '<a href="" class="dropdown-toggle" data-toggle="dropdown"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;<b class="caret"></b></a><ul class="dropdown-menu">';
 								}
 								$dropdownlist .= '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
 							}

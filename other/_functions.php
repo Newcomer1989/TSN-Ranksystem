@@ -6,6 +6,48 @@ function check_shutdown($cfg) {
 	}
 }
 
+function date_format_to($format, $syntax) {
+	$strf_syntax = [
+		'%O', '%d', '%a', '%e', '%A', '%u', '%w', '%j',
+		'%V',
+		'%B', '%m', '%b', '%-m',
+		'%G', '%Y', '%y',
+		'%P', '%p', '%l', '%I', '%H', '%M', '%S',
+		'%z', '%Z',
+		'%s'
+	];
+	$date_syntax = [
+		'S', 'd', 'D', 'j', 'l', 'N', 'w', 'z',
+		'W',
+		'F', 'm', 'M', 'n',
+		'o', 'Y', 'y',
+		'a', 'A', 'g', 'h', 'H', 'i', 's',
+		'O', 'T',
+		'U'
+	];
+	switch ( $syntax ) {
+		case 'date':
+			$from = $strf_syntax;
+			$to   = $date_syntax;
+			break;
+
+		case 'strf':
+			$from = $date_syntax;
+			$to   = $strf_syntax;
+			break;
+
+		default:
+			return false;
+	}
+	$pattern = array_map(
+		function ( $s ) {
+			return '/(?<!\\\\|\%)' . $s . '/';
+		},
+		$from
+	);
+	return preg_replace($pattern, $to, $format);
+}
+
 function db_connect($dbtype, $dbhost, $dbname, $dbuser, $dbpass, $exit=NULL, $persistent=NULL) {
 	if($dbtype != "type") {
 		$dbserver  = $dbtype.':host='.$dbhost.';dbname='.$dbname.';charset=utf8mb4';
@@ -114,7 +156,7 @@ function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 		$lastfilter = 'init';
 		foreach($buffer as $line) {
 			if(substr($line, 0, 2) != "20" && in_array($lastfilter, $filters)) {
-				array_push($lines, htmlspecialchars($line));
+				array_push($lines, $line);
 				if (count($lines)>$number_lines) {
 					break;
 				}
@@ -123,11 +165,11 @@ function getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter = NULL) {
 			foreach($filters as $filter) {
 				if(($filter != NULL && strstr($line, $filter) && $filter2 == NULL) || ($filter2 != NULL && strstr($line, $filter2) && $filter != NULL && strstr($line, $filter))) {
 					if($filter == "CRITICAL" || $filter == "ERROR") {
-						array_push($lines, '<span class="text-danger">'.htmlspecialchars($line).'</span>');
+						array_push($lines, '<span class="text-danger">'.$line.'</span>');
 					} elseif($filter == "WARNING") {
-						array_push($lines, '<span class="text-warning">'.htmlspecialchars($line).'</span>');
+						array_push($lines, '<span class="text-warning">'.$line.'</span>');
 					} else {
-						array_push($lines, htmlspecialchars($line));
+						array_push($lines, $line);
 					}
 					$lastfilter = $filter;
 					if (count($lines)>$number_lines) {
@@ -272,9 +314,11 @@ function rem_session_ts3() {
 	unset($_SESSION[$rspathhex.'uuid_verified']);
 }
 
-function select_channel($channellist, $cfg_cid) {
+function select_channel($channellist, $cfg_cid, $multiple=NULL) {
 	if(isset($channellist) && count($channellist)>0) {
-		$selectbox = '<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" name="channelid[]">';
+		$options = '';
+		if($multiple == 1) $options = ' multiple=""';
+		$selectbox = '<select class="selectpicker form-control" data-live-search="true" data-actions-box="true"'.$options.' name="channelid[]">';
 		$channelarr = sort_channel_tree($channellist);
 		
 		foreach ($channelarr as $cid => $channel) {
@@ -294,7 +338,7 @@ function select_channel($channellist, $cfg_cid) {
 			$chname = htmlspecialchars($channel['channel_name']);
 			if (isset($channel['iconid']) && $channel['iconid'] != 0) $iconid=$channel['iconid']."."; else $iconid="placeholder.png";
 			if ($cid != 0) {
-				if($cid == $cfg_cid) {
+				if($multiple !== 1 && $cid == $cfg_cid || $multiple === 1 && is_array($cfg_cid) && isset($cfg_cid[$cid])) {
 					$selectbox .= '<option selected="selected" data-content="';
 				} else {
 					$selectbox .= '<option data-content="';
@@ -340,6 +384,11 @@ function select_channel($channellist, $cfg_cid) {
 			}
 		}
 		$selectbox .= '</select>';
+	} elseif ($multiple === 1) {
+		$selectbox = '<textarea class="form-control" data-pattern="^([0-9]{1,9},)*[0-9]{1,9}$" data-error="Only use digits separated with a comma! Also must the first and last value be digit!" rows="1" name="channelid" maxlength="21588">';
+		if(!empty($cfg_cid)) $selectbox .= implode(',',array_flip($cfg_cid));
+		$selectbox .= '</textarea>';
+		$selectbox .= '<div class="help-block with-errors"></div>';
 	} else {
 		$selectbox = '<input type="text" class="form-control" name="channelid" value="'.$cfg_cid.'">';
 		$selectbox .= '<script>$("input[name=\'channelid\']").TouchSpin({
@@ -593,7 +642,11 @@ function start_session($cfg) {
 	}
 
 	if(version_compare(PHP_VERSION, '7.3.0', '>=')) {
-		ini_set('session.cookie_samesite', $cfg['default_session_sametime']);
+		if(isset($cfg['default_session_sametime'])) {
+			ini_set('session.cookie_samesite', $cfg['default_session_sametime']);
+		} else {
+			ini_set('session.cookie_samesite', "Strict");
+		}
 	}
 
 	session_start();

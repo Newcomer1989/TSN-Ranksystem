@@ -1,8 +1,9 @@
 <?PHP
 function db_ex_imp($ts3,$mysqlcon,$lang,$cfg,$dbname,&$db_cache) {
 	$starttime = microtime(true);
+	#enter_logfile($cfg,5,"  started DB Export");
 
-	if (in_array($db_cache['job_check']['database_export']['timestamp'], ["1","2"], true)) {
+	if (in_array($db_cache['job_check']['database_export']['timestamp'], ["1","2"])) {
 
 		enter_logfile($cfg,4,"DB Export job(s) started");
 
