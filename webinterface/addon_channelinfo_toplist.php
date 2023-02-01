@@ -41,7 +41,7 @@ try {
 				$err_msg = print_r($sqlexec->errorInfo(), true);
 				$err_lvl = 3;
 			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
 				$err_lvl = NULL;
 			}
 		}
@@ -57,7 +57,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_addon_channelinfo_toplist">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -148,7 +148,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>

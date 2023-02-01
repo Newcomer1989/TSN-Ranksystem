@@ -60,7 +60,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_admin_remtime">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -91,8 +91,8 @@ try {
 											<div class="col-sm-8 pull-right">
 												<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 												<?PHP
-												echo '<option data-icon="fas fa-eye-slash" value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '>&nbsp;hide</option>';
-												echo '<option data-icon="fas fa-eye" value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '>&nbsp;show</option>';
+												echo '<option data-icon="fas fa-eye-slash" value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '><span class="item-margin">hide</span></option>';
+												echo '<option data-icon="fas fa-eye" value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '><span class="item-margin">show</span></option>';
 												?>
 												</select>
 											</div>
@@ -172,7 +172,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>

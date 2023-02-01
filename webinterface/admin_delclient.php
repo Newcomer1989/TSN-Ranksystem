@@ -55,9 +55,9 @@ try {
 		$err_msg .= '<br><br><form class="btn-group" name="confirm" action="admin_delclient.php" method="POST">
 		<input type="hidden" name="csrf_token" value="'.$csrf_token.'">
 		<input type="hidden" name="uuids" value="'.$uuids.'">
-		<button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>&nbsp;'.$lang['wihladm43'].'</button></form>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<form class="btn-group" name="cancel" action="admin_delclient.php" method="POST">
+		<button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i><span class="item-margin">'.$lang['wihladm43'].'</span></button></form><span class="item-margin"><form class="btn-group" name="cancel" action="admin_delclient.php" method="POST">
 		<input type="hidden" name="csrf_token" value="'.$csrf_token.'">
-		<button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i>&nbsp;'.$lang['wihladmrs14'].'</button></form>';
+		<button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i><span class="item-margin">'.$lang['wihladmrs14'].'</span></button></form></span>';
 		$err_lvl = 1;	
 	} elseif(isset($_POST['update'])) {
 		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
@@ -65,7 +65,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_admin_delclient">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -121,7 +121,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>

@@ -2,6 +2,11 @@
 require_once('_preload.php');
 
 try {
+	if(isset($_POST['update'])) {
+		$cfg['default_style'] = $_SESSION[$rspathhex.'style'] = $_POST['default_style'];
+		$GLOBALS['style'] = get_style($cfg['default_style']);
+	}
+
 	require_once('_nav.php');
 
 	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
@@ -38,39 +43,22 @@ try {
 		if (isset($_POST['rankup_clean_clients_switch'])) $cfg['rankup_clean_clients_switch'] = 1; else $cfg['rankup_clean_clients_switch'] = 0;
 		$cfg['rankup_clean_clients_period'] = $_POST['rankup_clean_clients_period'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('default_session_sametime','{$cfg['default_session_sametime']}'),('default_header_origin','{$cfg['default_header_origin']}'),('default_header_xss','{$cfg['default_header_xss']}'),('default_header_contenttyp','{$cfg['default_header_contenttyp']}'),('default_header_frame','{$cfg['default_header_frame']}'),('default_cmdline_sec_switch','{$cfg['default_cmdline_sec_switch']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('default_style','{$cfg['default_style']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('default_session_sametime','{$cfg['default_session_sametime']}'),('default_header_origin','{$cfg['default_header_origin']}'),('default_header_xss','{$cfg['default_header_xss']}'),('default_header_contenttyp','{$cfg['default_header_contenttyp']}'),('default_header_frame','{$cfg['default_header_frame']}'),('default_cmdline_sec_switch','{$cfg['default_cmdline_sec_switch']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
-			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
+			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
 			$err_lvl = NULL;
 		}
 		$cfg['logs_path'] = $_POST['logs_path'];
-		
-		if(isset($cfg['default_language']) && is_dir(substr(__DIR__,0,-12).'languages/')) {
-			foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
-				if ('.' === $file || '..' === $file || is_dir($file)) continue;
-				$sep_lang = preg_split("/[._]/", $file);
-				if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-					if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
-						require_once('../languages/core_'.$sep_lang[1].'_'.$sep_lang[2].'_'.$sep_lang[3].'.'.$sep_lang[4]);
-						$required_lang = 1;
-						break;
-					}
-				}
-			}
-		}
-		if(!isset($required_lang)) {
-			require_once('../languages/core_en_english_gb.php');
-		}
 	} elseif(isset($_POST['update'])) {
 		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
 		rem_session_ts3();
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_other">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 	<?PHP if(isset($err_msg2)) error_handling($err_msg2, $err_lvl2); ?>
 				<div class="container-fluid">
@@ -90,12 +78,12 @@ try {
 									<div class="col-sm-8">
 										<select class="selectpicker show-tick form-control" name="default_language">
 										<?PHP
-										if(is_dir(substr(__DIR__,0,-12).'languages/')) {
-											foreach(scandir(substr(__DIR__,0,-12).'languages/') as $file) {
+										if(is_dir($GLOBALS['langpath'])) {
+											foreach(scandir($GLOBALS['langpath']) as $file) {
 												if ('.' === $file || '..' === $file || is_dir($file)) continue;
 												$sep_lang = preg_split("/[._]/", $file);
 												if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-													echo '<option data-icon="flag-icon flag-icon-'.$sep_lang[3].'" data-subtext="'.$sep_lang[2].'" value="'.$sep_lang[1].'"'.($cfg['default_language'] === $sep_lang[1] ? ' selected="selected"' : '').'>&nbsp;'.strtoupper($sep_lang[1]).'</option>';
+													echo '<option data-icon="flag-icon flag-icon-'.$sep_lang[3].'" data-subtext="'.$sep_lang[2].'" value="'.$sep_lang[1].'"'.($cfg['default_language'] === $sep_lang[1] ? ' selected="selected"' : '').'><span class="item-margin">'.strtoupper($sep_lang[1]).'</span></option>';
 												}
 											}
 										}
@@ -170,12 +158,38 @@ try {
 								</div>
 								<div class="row">&nbsp;</div>
 								<div class="form-group">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wistyledesc"><?php echo $lang['wistyle']; ?><i class="help-hover fas fa-question-circle"></i></label>
+									<div class="col-sm-8">
+										<select class="selectpicker show-tick form-control" name="default_style">
+										<option data-icon="fas fa-ban" value="" <?PHP if(!isset($cfg['default_style']) || $cfg['default_style'] == "") echo " selected=selected"; ?>><span class="item-margin"><?PHP echo $lang['wihladmrs0']; ?></span></option>
+										<option data-divider="true"></option>
+										<?PHP
+										if(is_dir($GLOBALS['stylepath'])) {
+											foreach(scandir($GLOBALS['stylepath']) as $folder) {
+												if ('.' === $folder || '..' === $folder) continue;
+												if(is_dir($GLOBALS['stylepath'].DIRECTORY_SEPARATOR.$folder)) {
+													foreach(scandir($GLOBALS['stylepath'].DIRECTORY_SEPARATOR.$folder) as $file) {
+														if ('.' === $file || '..' === $file || is_dir($file)) continue;
+														$sep_style = preg_split("/[._]/", $file);
+														if($file == "ST.css") {
+															echo '<option value="'.$folder.'"'.($cfg['default_style'] === $folder ? ' selected="selected"' : '').'><span class="item-margin">'.$folder.'</style></option>';
+														}
+													}
+												}
+											}
+										}
+										?>
+										</select>
+									</div>
+								</div>
+								<div class="row">&nbsp;</div>
+								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiupchdesc"><?php echo $lang['wiupch']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
 										<select class="selectpicker show-tick form-control basic" name="version_update_channel">
 										<?PHP
-										echo '<option data-icon="fas fa-parachute-box" ata-subtext="[recommended]" value="stable"'; if($cfg['version_update_channel']=="stable") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiupch0'],'</option>';
-										echo '<option data-icon="fas fa-flask" value="beta"'; if($cfg['version_update_channel']=="beta") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiupch1'],'</option>';
+										echo '<option data-icon="fas fa-parachute-box" ata-subtext="[recommended]" value="stable"'; if($cfg['version_update_channel']=="stable") echo " selected=selected"; echo '><span class="item-margin">',$lang['wiupch0'],'</span></option>';
+										echo '<option data-icon="fas fa-flask" value="beta"'; if($cfg['version_update_channel']=="beta") echo " selected=selected"; echo '><span class="item-margin">',$lang['wiupch1'],'</span></option>';
 										?>
 										</select>
 									</div>
@@ -187,10 +201,10 @@ try {
 									<div class="col-sm-8">
 										<select class="selectpicker show-tick form-control basic" name="rankup_hash_ip_addresses_mode">
 										<?PHP
-										echo '<option data-icon="fas fa-lock" data-subtext="[recommended]" value="2"'; if($cfg['rankup_hash_ip_addresses_mode']=="2") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha2'],'</option>';
-										echo '<option data-icon="fas fa-shield-alt" value="1"'; if($cfg['rankup_hash_ip_addresses_mode']=="1") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha1'],'</option>';
+										echo '<option data-icon="fas fa-lock" data-subtext="[recommended]" value="2"'; if($cfg['rankup_hash_ip_addresses_mode']=="2") echo " selected=selected"; echo '><span class="item-margin">',$lang['wishcolha2'],'</span></option>';
+										echo '<option data-icon="fas fa-shield-alt" value="1"'; if($cfg['rankup_hash_ip_addresses_mode']=="1") echo " selected=selected"; echo '><span class="item-margin">',$lang['wishcolha1'],'</span></option>';
 										echo '<option data-divider="true">&nbsp;</option>';
-										echo '<option data-icon="fas fa-ban" value="0"'; if($cfg['rankup_hash_ip_addresses_mode']=="0") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolha0'],'</option>';
+										echo '<option data-icon="fas fa-ban" value="0"'; if($cfg['rankup_hash_ip_addresses_mode']=="0") echo " selected=selected"; echo '><span class="item-margin">',$lang['wishcolha0'],'</span></option>';
 										?>
 										</select>
 									</div>
@@ -316,7 +330,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>
@@ -494,6 +508,22 @@ try {
 		  </div>
 		  <div class="modal-body">
 			<?php echo $lang['witszdesc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+	<div class="modal fade" id="wistyledesc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wistyle']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo sprintf($lang['wistyledesc'], 'admin@ts-ranksystem.com'); ?>
 		  </div>
 		  <div class="modal-footer">
 			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>

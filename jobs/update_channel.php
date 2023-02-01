@@ -4,7 +4,7 @@ function update_channel($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache
 	$nowtime = time();
 	$sqlexec = '';
 	
-	if($db_cache['job_check']['update_channel']['timestamp'] < ($nowtime - 7)) {
+	if(intval($db_cache['job_check']['update_channel']['timestamp']) < ($nowtime - 7)) {
 		$db_cache['job_check']['update_channel']['timestamp'] = $nowtime;
 		$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='update_channel';\n";
 		
@@ -20,10 +20,10 @@ function update_channel($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache
 				$db_cache['channel'][$channel['cid']]['pid'] == $channel['pid'] &&
 				$db_cache['channel'][$channel['cid']]['channel_order'] == $channel['channel_order'] &&
 				$db_cache['channel'][$channel['cid']]['channel_name'] == $chname) {
-					enter_logfile($cfg,7,"Continue channel ".$chname." (CID: ".$channel['cid'].")");
+					enter_logfile(7,"Continue channel ".$chname." (CID: ".$channel['cid'].")");
 					continue;
 				} else {
-					enter_logfile($cfg,6,"Update/Insert channel ".$chname." (CID: ".$channel['cid'].")");
+					enter_logfile(6,"Update/Insert channel ".$chname." (CID: ".$channel['cid'].")");
 					$updatechannel[] = array(
 						"cid" => $channel['cid'],
 						"pid" => $channel['pid'],
@@ -46,7 +46,7 @@ function update_channel($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache
 				unset($updatechannel, $sqlinsertvalues);
 			}
 		} catch (Exception $e) {
-			enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+			enter_logfile(2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 		}
 		
 		if(isset($db_cache['channel'])) {
@@ -62,10 +62,10 @@ function update_channel($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache
 		if(isset($delchannel) && $delchannel != NULL) {
 			$delchannel = substr($delchannel, 0, -1);
 			$sqlexec .= "DELETE FROM `$dbname`.`channel` WHERE `cid` IN ($delchannel);\n";
-			enter_logfile($cfg,6,"DELETE FROM `$dbname`.`channel` WHERE `cid` IN ($delchannel);");
+			enter_logfile(6,"DELETE FROM `$dbname`.`channel` WHERE `cid` IN ($delchannel);");
 		}
 
-		enter_logfile($cfg,6,"update_channel needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+		enter_logfile(6,"update_channel needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 		return($sqlexec);
 	}
 }

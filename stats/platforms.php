@@ -4,7 +4,7 @@ require_once('_preload.php');
 try {
 	$sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_platforms` ORDER BY `count` DESC")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_platforms">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -17,7 +17,7 @@ try {
 					<div class="row">
 						<div class="col-lg-12">
 							<div class="table-responsive">
-								<table class="table table-bordered table-hover">
+								<table class="table table-bordered table-hover" id="platforms">
 									<tbody>
 									<tr>
 										<th>#</th>

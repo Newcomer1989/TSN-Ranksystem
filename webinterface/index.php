@@ -29,13 +29,13 @@ try {
 		}
 	}
 
-	if(file_exists($cfg['logs_path'].'ranksystem.log') && !is_writable($cfg['logs_path'].'ranksystem.log')) {
-		$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$cfg['logs_path'].'</pre><br>', '<pre>chmod 0740 '.$cfg['logs_path'].'ranksystem.log</pre><br><br>', '<pre>'.$cfg['logs_path'].'ranksystem.log</pre>');
+	if(file_exists($GLOBALS['logfile']) && !is_writable($GLOBALS['logfile'])) {
+		$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$GLOBALS['logpath'].'</pre><br>', '<pre>chmod 0740 '.$GLOBALS['logfile'].'</pre><br><br>', '<pre>'.$GLOBALS['logfile'].'</pre>');
 		$err_lvl = 3; $dis_login = 0;
 	}
 
-	if(!is_writable($cfg['logs_path'])) {
-		$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$cfg['logs_path'].'</pre><br>', '<pre>chmod 0740 '.$cfg['logs_path'].'</pre><br><br>', '<pre>'.$cfg['logs_path'].'</pre>');
+	if(!is_writable($GLOBALS['logpath'])) {
+		$err_msg = sprintf($lang['chkfileperm'], '<pre>chown -R www-data:www-data '.$GLOBALS['logpath'].'</pre><br>', '<pre>chmod 0740 '.$GLOBALS['logpath'].'</pre><br><br>', '<pre>'.$GLOBALS['logpath'].'</pre>');
 		$err_lvl = 3; $dis_login = 0;
 	}
 
@@ -64,43 +64,47 @@ try {
 		$err_msg = "Your PHP Version: (".PHP_VERSION.") is outdated and no longer supported. Please update it!";
 		$err_lvl = 2;
 	}
+	
+	if(!isset($cfg['webinterface_access_count']) || $cfg['webinterface_access_count'] != NULL) $cfg['webinterface_access_count'] = 0;
+	if(!isset($cfg['webinterface_access_last']) || $cfg['webinterface_access_last'] != NULL) $cfg['webinterface_access_last'] = 0;
 
 	if(($cfg['webinterface_access_last'] + 1) >= time()) {
 		$waittime = $cfg['webinterface_access_last'] + 2 - time();
 		$err_msg = sprintf($lang['errlogin2'],$waittime);
 		$err_lvl = 3;
 	} elseif ($cfg['webinterface_access_count'] >= 10) {
-		enter_logfile($cfg,3,sprintf($lang['brute'], getclientip()));
+		enter_logfile(3,sprintf($lang['brute'], getclientip()));
 		$err_msg = $lang['errlogin3'];
 		$err_lvl = 3;
 		$bantime = time() + 299;
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$bantime}'),('webinterface_access_count','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
-	} elseif (isset($_POST['username']) && $_POST['username'] == $cfg['webinterface_user'] && password_verify($_POST['password'], $cfg['webinterface_pass'])) {
+	} elseif (isset($_POST['username']) && hash_equals($_POST['username'], $cfg['webinterface_user']) && password_verify($_POST['password'], $cfg['webinterface_pass'])) {
 		$_SESSION[$rspathhex.'username'] = $cfg['webinterface_user'];
 		$_SESSION[$rspathhex.'password'] = $cfg['webinterface_pass'];
 		$_SESSION[$rspathhex.'clientip'] = getclientip();
 		$_SESSION[$rspathhex.'newversion'] = $cfg['version_latest_available'];
-		enter_logfile($cfg,6,sprintf($lang['brute2'], getclientip()));
+		if(isset($cfg['stats_news_html'])) $_SESSION[$rspathhex.'stats_news_html'] = $cfg['stats_news_html'];
+		enter_logfile(6,sprintf($lang['brute2'], getclientip()));
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_count','0') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 		header("Location: $prot://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 		exit;
 	} elseif(isset($_POST['username'])) {
 		$nowtime = time();
-		enter_logfile($cfg,5,sprintf($lang['brute1'], getclientip(), htmlspecialchars($_POST['username'])));
+		enter_logfile(5,sprintf($lang['brute1'], getclientip(), htmlspecialchars($_POST['username'])));
 		$cfg['webinterface_access_count']++;
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$nowtime}'),('webinterface_access_count','{$cfg['webinterface_access_count']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 		$err_msg = $lang['errlogin'];
 		$err_lvl = 3;
 	}
 
-	if(isset($_SESSION[$rspathhex.'username']) && $_SESSION[$rspathhex.'username'] == $cfg['webinterface_user'] && $_SESSION[$rspathhex.'password'] == $cfg['webinterface_pass']) {
+	if(isset($_SESSION[$rspathhex.'username']) && hash_equals($_SESSION[$rspathhex.'username'], $cfg['webinterface_user']) && hash_equals($_SESSION[$rspathhex.'password'], $cfg['webinterface_pass'])) {
 		header("Location: $prot://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']), '/\\')."/bot.php");
 		exit;
 	}
 
 	require_once('_nav.php');
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_index">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div id="login-overlay" class="modal-dialog">

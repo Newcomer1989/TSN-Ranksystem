@@ -42,13 +42,14 @@ try {
 		if (isset($_POST['channelid']) && $_POST['channelid'] != NULL) {
 			$cfg['rankup_excepted_channel_id_list'] = implode(',',$_POST['channelid']);
 		}
+		if (isset($_POST['rankup_excepted_remove_group_switch'])) $cfg['rankup_excepted_remove_group_switch'] = 1; else $cfg['rankup_excepted_remove_group_switch'] = 0;
 
 		if($errcnf == 0) {
-			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_excepted_mode','{$cfg['rankup_excepted_mode']}'),('rankup_excepted_unique_client_id_list','{$cfg['rankup_excepted_unique_client_id_list']}'),('rankup_excepted_group_id_list','{$cfg['rankup_excepted_group_id_list']}'),('rankup_excepted_channel_id_list','{$cfg['rankup_excepted_channel_id_list']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_excepted_mode','{$cfg['rankup_excepted_mode']}'),('rankup_excepted_unique_client_id_list','{$cfg['rankup_excepted_unique_client_id_list']}'),('rankup_excepted_group_id_list','{$cfg['rankup_excepted_group_id_list']}'),('rankup_excepted_channel_id_list','{$cfg['rankup_excepted_channel_id_list']}'),('rankup_excepted_remove_group_switch','{$cfg['rankup_excepted_remove_group_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
 			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
 				$err_lvl = NULL;
 			}
 		} else {
@@ -70,7 +71,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_except">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -90,9 +91,9 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="rankup_excepted_mode">
 												<?PHP
-												echo '<option data-icon="fas fa-stopwatch" value="0"'; if($cfg['rankup_excepted_mode']=="0") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiexres1'],'</option>';
-												echo '<option data-icon="fas fa-pause" value="1"'; if($cfg['rankup_excepted_mode']=="1") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiexres2'],'</option>';
-												echo '<option data-icon="fas fa-sync" value="2"'; if($cfg['rankup_excepted_mode']=="2") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wiexres3'],'</option>';
+												echo '<option data-icon="fas fa-stopwatch" value="0"'; if($cfg['rankup_excepted_mode']=="0") echo " selected=selected"; echo '><span class="item-margin">',$lang['wiexres1'],'</span></option>';
+												echo '<option data-icon="fas fa-pause" value="1"'; if($cfg['rankup_excepted_mode']=="1") echo " selected=selected"; echo '><span class="item-margin">',$lang['wiexres2'],'</span></option>';
+												echo '<option data-icon="fas fa-sync" value="2"'; if($cfg['rankup_excepted_mode']=="2") echo " selected=selected"; echo '><span class="item-margin">',$lang['wiexres3'],'</span></option>';
 												?>
 												</select>
 											</div>
@@ -123,7 +124,7 @@ try {
 													if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
 													if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
 													if ($groupID != 0) {
-														echo '<option data-content="&nbsp;&nbsp;<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'>&nbsp;&nbsp;',$groupParam['sgidname'],'&nbsp;<span class=\'text-muted small\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+													echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
 													}
 												}
 												?>
@@ -142,13 +143,24 @@ try {
 									</div>
 
 								</div>
+								<div class="row">&nbsp;</div>
+								<div class="form-group expertelement">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiexregrpdesc"><?php echo $lang['wiexregrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
+									<div class="col-sm-8">
+										<?PHP if ($cfg['rankup_excepted_remove_group_switch'] == 1) {
+											echo '<input id="switch-animate" type="checkbox" checked data-size="mini" name="rankup_excepted_remove_group_switch" value="',$cfg['rankup_excepted_remove_group_switch'],'">';
+										} else {
+											echo '<input id="switch-animate" type="checkbox" data-size="mini" name="rankup_excepted_remove_group_switch" value="',$cfg['rankup_excepted_remove_group_switch'],'">';
+										} ?>
+									</div>
+								</div>
 							</div>
 							<div class="col-md-3"></div>
 						</div>
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>
@@ -221,7 +233,24 @@ try {
 		</div>
 	  </div>
 	</div>
+	<div class="modal fade" id="wiexregrpdesc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wiexregrp']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo $lang['wiexregrpdesc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	<script>
+	$("[name='rankup_excepted_remove_group_switch']").bootstrapSwitch();
 	$('form[data-toggle="validator"]').validator({
 		custom: {
 			pattern: function ($el) {

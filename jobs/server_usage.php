@@ -10,11 +10,11 @@ function server_usage($mysqlcon,$cfg,$dbname,$serverinfo,&$db_cache) {
 		$db_cache['max_timestamp_server_usage'][$nowtime] = '';
 
 		//Calc time next rankup
-		enter_logfile($cfg,6,"Calc next rankup for offline user");
+		enter_logfile(6,"Calc next rankup for offline user");
 		$upnextuptime = $nowtime - 1800;
 		$server_used_slots = $serverinfo['virtualserver_clientsonline'] - $serverinfo['virtualserver_queryclientsonline'];
 		if(($uuidsoff = $mysqlcon->query("SELECT `uuid`,`idle`,`count` FROM `$dbname`.`user` WHERE `online`<>1 AND `lastseen`>$upnextuptime")->fetchAll(PDO::FETCH_ASSOC)) === false) {
-			enter_logfile($cfg,2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
+			enter_logfile(2,"calc_serverstats 13:".print_r($mysqlcon->errorInfo(), true));
 		}
 		if(count($uuidsoff) != 0) {
 			foreach($uuidsoff as $uuid) {
@@ -60,9 +60,9 @@ function server_usage($mysqlcon,$cfg,$dbname,$serverinfo,&$db_cache) {
 		} else {
 			$sqlexec .= "INSERT INTO `$dbname`.`server_usage` (`timestamp`,`clients`,`channel`) VALUES ($nowtime,$server_used_slots,{$serverinfo['virtualserver_channelsonline']});\n";
 		}
-		enter_logfile($cfg,6,"Calc next rankup for offline user [DONE]");
+		enter_logfile(6,"Calc next rankup for offline user [DONE]");
 	}
 
-	enter_logfile($cfg,6,"server_usage needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+	enter_logfile(6,"server_usage needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);
 }

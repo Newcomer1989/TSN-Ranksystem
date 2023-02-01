@@ -31,7 +31,7 @@ try {
 				$_SESSION[$rspathhex.'tsconnections'] = 0;
 			}
 			if ($clientinfo[0]['firstcon'] == 0) {
-				$_SESSION[$rspathhex.'tscreated'] = "unkown";
+				$_SESSION[$rspathhex.'tscreated'] = $lang['unknown'];
 			} else {
 				$_SESSION[$rspathhex.'tscreated'] = date('d-m-Y', $clientinfo[0]['firstcon']);
 			}
@@ -118,7 +118,7 @@ try {
 		}
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_verify">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); 
 			if(isset($_SESSION[$rspathhex.'multiple']) && count($_SESSION[$rspathhex.'multiple']) > 1 || ((isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) && $cfg['teamspeak_verification_channel_id'] != NULL && $cfg['teamspeak_verification_channel_id'] != 0)) {
 				?>

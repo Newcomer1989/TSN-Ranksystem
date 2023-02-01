@@ -5,16 +5,16 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 	$sqlexec = '';
 
 	if(empty($cfg['rankup_definition'])) {
-		shutdown($mysqlcon,$cfg,1,"calc_user:".$lang['wiconferr']);
+		shutdown($mysqlcon,1,"calc_user:".$lang['wiconferr']);
 	}
 	
-	$addtime = $nowtime - $db_cache['job_check']['calc_user_lastscan']['timestamp'];
+	$addtime = $nowtime - intval($db_cache['job_check']['calc_user_lastscan']['timestamp']);
 
 	if($addtime > 1800) {
-		enter_logfile($cfg,4,"Much time gone since last scan.. set addtime to 1 second.");
+		enter_logfile(4,"Much time gone since last scan.. set addtime to 1 second.");
 		$addtime = 1;
 	} elseif($addtime < 0) {
-		enter_logfile($cfg,3,"Negative time valie (now < last scan).. Error in your machine time!.. set addtime to 1 second.");
+		enter_logfile(3,"Negative time valie (now < last scan).. Error in your machine time!.. set addtime to 1 second.");
 		$addtime = 1;
 	}
 
@@ -36,11 +36,11 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 				if($value['timecount'] == 0 && $value['timestamp'] == 4273093200) {
 					//remove user
 					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-						enter_logfile($cfg,2,"Database error on selecting user (admin function remove user): ".print_r($mysqlcon->errorInfo(), true));
+						enter_logfile(2,"Database error on selecting user (admin function remove user): ".print_r($mysqlcon->errorInfo(), true));
 					} else {
 						$temp_cldbid = $user[$uuid]['cldbid'];
 						$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`admin_addtime` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`stats_user` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user_iphash` WHERE `uuid`='{$uuid}';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$temp_cldbid}';\n";
-						enter_logfile($cfg,4,sprintf($lang['wihladm45'],$user[$uuid]['name'],$uuid,$temp_cldbid).' ('.$lang['wihladm46'].')');
+						enter_logfile(4,sprintf($lang['wihladm45'],$user[$uuid]['name'],$uuid,$temp_cldbid).' ('.$lang['wihladm46'].')');
 						if(isset($db_cache['all_user'][$uuid])) unset($db_cache['all_user'][$uuid]);
 						if(isset($db_cache['admin_addtime'][$uuid])) unset($db_cache['admin_addtime'][$uuid]);
 						if(isset($db_cache['addon_assign_groups'][$uuid])) unset($db_cache['addon_assign_groups'][$uuid]);
@@ -55,17 +55,17 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 					}
 					if($isonline != 1) {
 						if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid` FROM `$dbname`.`user` WHERE `uuid`='{$uuid}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-							enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+							enter_logfile(2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 						} else {
 							$temp_cldbid = $user[$uuid]['cldbid'];
 							$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='{$db_cache['all_user'][$uuid]['count']}', `idle`='{$db_cache['all_user'][$uuid]['idle']}' WHERE `uuid`='{$uuid}';\n";
 						}
 					}
 					if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime` WHERE `timestamp`=".$value['timestamp']." AND `uuid`='$uuid';") === false) {
-						enter_logfile($cfg,2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+						enter_logfile(2,"Database error on updating user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 					}
 					if(($usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$temp_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
-						enter_logfile($cfg,2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
+						enter_logfile(2,"Database error on selecting user (admin function remove/add time): ".print_r($mysqlcon->errorInfo(), true));
 					} else {
 						foreach($usersnap as $id => $valuesnap) {
 							$valuesnap['count'] += $value['timecount'];
@@ -77,7 +77,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$valuesnap['count']}', `idle`='{$valuesnap['idle']}' WHERE `cldbid`='{$temp_cldbid}' AND `id`='{$id}';\n";
 						}
 					}
-					enter_logfile($cfg,4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid).' ('.$lang['wihladm46'].')');
+					enter_logfile(4,sprintf($lang['sccupcount2'],$value['timecount'],$uuid).' ('.$lang['wihladm46'].')');
 					unset($user, $usersnap);
 				}
 			}
@@ -108,7 +108,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 				if(isset($db_cache['all_user'][$uid]['except']) && ($db_cache['all_user'][$uid]['except'] == 3 || $db_cache['all_user'][$uid]['except'] == 2) && $cfg['rankup_excepted_mode'] == 2) { 
 				 	$db_cache['all_user'][$uid]['count'] = 0;
 				 	$db_cache['all_user'][$uid]['idle'] = 0;
-					enter_logfile($cfg,5,sprintf($lang['resettime'], $client['client_nickname'], $uid, $client['client_database_id']));
+					enter_logfile(5,sprintf($lang['resettime'], $client['client_nickname'], $uid, $client['client_database_id']));
 					$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$client['client_database_id']}';\n";
 				}
 				$except = 0;
@@ -116,7 +116,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 			if(isset($db_cache['all_user'][$uid])) {
 				$idle = $db_cache['all_user'][$uid]['idle'] + $clientidle;
 				if ($db_cache['all_user'][$uid]['cldbid'] != $client['client_database_id'] && $cfg['rankup_client_database_id_change_switch'] == 1) {
-					enter_logfile($cfg,5,sprintf($lang['changedbid'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['all_user'][$uid]['cldbid']));
+					enter_logfile(5,sprintf($lang['changedbid'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['all_user'][$uid]['cldbid']));
 						$count = 1;
 						$idle  = 0;
 						$boosttime = 0;
@@ -135,9 +135,9 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 										try {
 											$ts3->serverGroupClientDel($boost['group'], $client['client_database_id']);
 											$boosttime = 0;
-											enter_logfile($cfg,5,sprintf($lang['sgrprm'], $db_cache['groups'][$boost['group']]['sgidname'], $boost['group'], $client['client_nickname'], $uid, $client['client_database_id']).' [Boost-Group]');
+											enter_logfile(5,sprintf($lang['sgrprm'], $db_cache['groups'][$boost['group']]['sgidname'], $boost['group'], $client['client_nickname'], $uid, $client['client_database_id']).' [Boost-Group]');
 										} catch (Exception $e) {
-											enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
+											enter_logfile(2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
 											$db_cache['all_user'][$uid]['grouperror'] = $nowtime;
 										}
 									}
@@ -195,10 +195,10 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 									usleep($cfg['teamspeak_query_command_delay']);
 									try {
 										$ts3->serverGroupClientDel($db_cache['all_user'][$uid]['grpid'], $client['client_database_id']);
-										enter_logfile($cfg,5,sprintf($lang['sgrprm'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid'], $client['client_nickname'], $uid, $client['client_database_id']));
+										enter_logfile(5,sprintf($lang['sgrprm'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid'], $client['client_nickname'], $uid, $client['client_database_id']));
 										if(isset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']])) unset($client_groups_rankup[$db_cache['all_user'][$uid]['grpid']]);
 									} catch (Exception $e) {
-										enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
+										enter_logfile(2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$db_cache['all_user'][$uid]['grpid']]['sgidname'], $db_cache['all_user'][$uid]['grpid']));
 										$db_cache['all_user'][$uid]['grouperror'] = $nowtime;
 									}
 								}
@@ -208,7 +208,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 								try {
 									$ts3->serverGroupClientAdd($rank['group'], $client['client_database_id']);
 									$db_cache['all_user'][$uid]['grpsince'] = $nowtime;
-									enter_logfile($cfg,5,sprintf($lang['sgrpadd'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group'], $client['client_nickname'], $uid, $client['client_database_id']));
+									enter_logfile(5,sprintf($lang['sgrpadd'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group'], $client['client_nickname'], $uid, $client['client_database_id']));
 									if ($cfg['rankup_message_to_user_switch'] == 1) {
 										$days  = $dtF->diff($dtT)->format('%a');
 										$hours = $dtF->diff($dtT)->format('%h');
@@ -217,7 +217,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 										sendmessage($ts3, $cfg, $uid, sprintf($cfg['rankup_message_to_user'],$days,$hours,$mins,$secs,$db_cache['groups'][$rank['group']]['sgidname'],$client['client_nickname']), 1, NULL, sprintf($lang['sgrprerr'], $name, $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'],$rank['group']), 2);
 									}
 								} catch (Exception $e) {
-									enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group']));
+									enter_logfile(2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$rank['group']]['sgidname'], $rank['group']));
 									$db_cache['all_user'][$uid]['grouperror'] = $nowtime;
 								}
 							}
@@ -237,11 +237,15 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 						try {
 							usleep($cfg['teamspeak_query_command_delay']);
 							$ts3->serverGroupClientDel($removegroup, $client['client_database_id']);
-							enter_logfile($cfg,5,sprintf("Removed WRONG servergroup %s (ID: %s) from user %s (unique Client-ID: %s; Client-database-ID %s).", $db_cache['groups'][$removegroup]['sgidname'], $removegroup, $client['client_nickname'], $uid, $client['client_database_id']));
+							enter_logfile(5,sprintf("Removed WRONG servergroup %s (ID: %s) from user %s (unique Client-ID: %s; Client-database-ID %s).", $db_cache['groups'][$removegroup]['sgidname'], $removegroup, $client['client_nickname'], $uid, $client['client_database_id']));
 						} catch (Exception $e) {
-							enter_logfile($cfg,2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$removegroup]['sgidname'], $removegroup));
+							enter_logfile(2,"TS3 error: ".$e->getCode().': '.$e->getMessage()." ; ".sprintf($lang['sgrprerr'], $client['client_nickname'], $uid, $client['client_database_id'], $db_cache['groups'][$removegroup]['sgidname'], $removegroup));
 							$db_cache['all_user'][$uid]['grouperror'] = $nowtime;
 						}
+					} elseif ($cfg['rankup_excepted_remove_group_switch'] == 1 && $removegroup != NULL && $removegroup != 0 && $removegroup == $db_cache['all_user'][$uid]['grpid'] && $cfg['rankup_excepted_mode'] == 0 && ($db_cache['all_user'][$uid]['except'] == 3 || $db_cache['all_user'][$uid]['except'] == 2) && (!isset($db_cache['all_user'][$uid]['grouperror']) || $db_cache['all_user'][$uid]['grouperror'] < ($nowtime - 300))) {
+						usleep($cfg['teamspeak_query_command_delay']);
+						$ts3->serverGroupClientDel($removegroup, $client['client_database_id']);
+						enter_logfile(5,sprintf("Removed servergroup %s (ID: %s) cause EXCEPTED (%s) from user %s (unique Client-ID: %s; Client-database-ID %s).", $db_cache['groups'][$removegroup]['sgidname'], $removegroup, exception_client_code($db_cache['all_user'][$uid]['except']), $client['client_nickname'], $uid, $client['client_database_id']));
 					}
 				}
 				unset($client_groups_rankup);
@@ -302,7 +306,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 				$db_cache['all_user'][$uid]['boosttime'] = 0;
 				$db_cache['all_user'][$uid]['grpsince'] = 0;
 				$db_cache['all_user'][$uid]['except'] = $except;
-				enter_logfile($cfg,5,sprintf($lang['adduser'], $client['client_nickname'], $uid, $client['client_database_id']));
+				enter_logfile(5,sprintf($lang['adduser'], $client['client_nickname'], $uid, $client['client_database_id']));
 			}
 			$db_cache['all_user'][$uid]['name'] = $client['client_nickname'];
 			$db_cache['all_user'][$uid]['lastseen'] = $nowtime;
@@ -335,7 +339,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 		unset($insertdata, $sqlinsertvalues);
 	}
 
-	enter_logfile($cfg,6,"calc_user needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+	enter_logfile(6,"calc_user needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);
 }
 ?>

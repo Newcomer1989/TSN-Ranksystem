@@ -25,7 +25,7 @@ try {
 		$newcount = $cfg['webinterface_access_count'] + 1;
 		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_access_last','{$nowtime}'),('webinterface_access_count','{$newcount}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) { }
 		
-		require_once(substr(__DIR__,0,-12).'libs/ts3_lib/TeamSpeak3.php');
+		require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'libs/ts3_lib/TeamSpeak3.php');
 		try {
 			if($cfg['teamspeak_query_encrypt_switch'] == 1) {
 				$ts3 = TeamSpeak3::factory("serverquery://".rawurlencode($cfg['teamspeak_query_user']).":".rawurlencode($cfg['teamspeak_query_pass'])."@".$cfg['teamspeak_host_address'].":".$cfg['teamspeak_query_port']."/?server_port=".$cfg['teamspeak_voice_port']."&ssh=1");
@@ -58,7 +58,7 @@ try {
 									usleep($cfg['teamspeak_query_command_delay']);
 									$ts3->clientGetByUid($client['client_unique_identifier'])->message(sprintf($lang['wirtpw4'], $cfg['webinterface_user'], $pwd, '[URL=http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).']','[/URL]'));
 									$err_msg .= sprintf($lang['wirtpw5'],'<a href="http'.(!empty($_SERVER['HTTPS'])?"s":"").'://'.$_SERVER['SERVER_NAME'].dirname($_SERVER['SCRIPT_NAME']).'/">','</a>'); $err_lvl = 1;
-									enter_logfile($cfg,3,sprintf($lang['wirtpw6'],getclientip()));
+									enter_logfile(3,sprintf($lang['wirtpw6'],getclientip()));
 								} catch (Exception $e) {
 									$err_msg .= $lang['errorts3'].$e->getCode().': '.$e->getMessage(); $err_lvl = 3;
 								}
@@ -84,7 +84,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_resetpassword">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div id="login-overlay" class="modal-dialog">

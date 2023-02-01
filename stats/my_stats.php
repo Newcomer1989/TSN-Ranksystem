@@ -78,7 +78,7 @@ try {
 		}
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_my_stats">
 			<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); 
 			if(isset($_SESSION[$rspathhex.'multiple']) && count($_SESSION[$rspathhex.'multiple']) > 1 || isset($_SESSION[$rspathhex.'connected']) && $_SESSION[$rspathhex.'connected'] == 0 || !isset($_SESSION[$rspathhex.'connected'])) { echo "</div></div></body></html>"; exit; } ?>
 				<div class="container-fluid">

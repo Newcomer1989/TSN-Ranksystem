@@ -3,11 +3,12 @@ require_once('../other/_functions.php');
 require_once('../other/config.php');
 
 start_session($cfg);
+$lang = set_language(get_language());
 
 error_reporting(E_ALL);
 ini_set("log_errors", 1);
 set_error_handler("php_error_handling");
-ini_set("error_log", $cfg['logs_path'].'ranksystem.log');
+ini_set("error_log", $GLOBALS['logfile']);
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -48,7 +49,93 @@ $sort = (isset($_GET['sort'])) ? htmlspecialchars_decode($_GET['sort']) : '1';
 $order = (isset($_GET['order']) && strtolower($_GET['order']) == 'desc') ? 'DESC' : 'ASC';
 $part = (isset($_GET['part']) && is_numeric($_GET['part']) && $_GET['part'] > 0) ? (($_GET['part'] - 1) * $limit) : 0;
 
-if (isset($_GET['groups'])) {
+if (isset($_GET['bot'])) {
+	if(!isset($_GET['check']) && !isset($_GET['restart']) && !isset($_GET['start']) && !isset($_GET['stop'])) {
+		$json = array(
+			"usage" => array(
+				"_desc" => array(
+					"0" => "You are able to use bot commands with this function (start, stop, ..).",
+					"1" => "Use the Parameter, which are described below!",
+					"2" => "",
+					"3" => "Return values are:",
+					"4" => "- 'rc'",
+					"5" => "- 'msg'",
+					"6" => "- 'ranksystemlog'",
+					"7" => "",
+					"8" => "# RC",
+					"9" => "The return Code of the transaction (i.e. start process):",
+					"10" => "0 - EXIT_SUCCESS",
+					"11" => "1 - EXIT_FAILURE",
+					"12" => "",
+					"13" => "# MSG",
+					"14" => "An additional message of the process. In case of EXIT_FAILURE, you will receive here an error message.",
+					"15" => "",
+					"16" => "# RANKSYSTEMLOG",
+					"17" => "A short log extract of the last rows of the Ranksystem logfile to get more information about the Bot itself.",
+				),
+				"check" => array(
+					"desc" => "Check the Ranksystem Bot is running. If not, it will be started with this.",
+					"usage" => "Use \$_GET parameter 'check' without any value",
+					"example" => "/api/?bot&check"
+				),
+				"restart" => array(
+					"desc" => "Restarts the Ranksystem Bot.",
+					"usage" => "Use \$_GET parameter 'restart' without any value",
+					"example" => "/api/?bot&restart"
+				),
+				"start" => array(
+					"desc" => "Starts the Ranksystem Bot.",
+					"usage" => "Use \$_GET parameter 'start' without any value",
+					"example" => "/api/?bot&start"
+				),
+				"stop" => array(
+					"desc" => "Stops the Ranksystem Bot",
+					"usage" => "Use \$_GET parameter 'stop' without any value",
+					"example" => "/api/?bot&stop"
+				)
+			)
+		);
+	} else {
+		$check_permission = 0;
+		foreach($cfg['stats_api_keys'] as $apikey => $desc) {
+			if (hash_equals($apikey, $_GET['apikey']) && $desc['perm_bot'] == 1) {
+				$check_permission = 1;
+				break;
+			}
+		}
+		if ($check_permission == 1) {
+			if(isset($_GET['check'])) {
+				$result = bot_check();
+			} elseif(isset($_GET['restart'])) {
+				$result = bot_restart();
+			} elseif(isset($_GET['start'])) {
+				$result = bot_start();
+			} elseif(isset($_GET['stop'])) {
+				$result = bot_stop();
+			}
+			if(isset($result['log']) && $result['log'] != NULL) {
+				$ranksystemlog = $result['log'];
+			} else {
+				$ranksystemlog = "NULL";
+			}
+			$json = array(
+				"rc" => $result['rc'],
+				"msg" => $result['msg'],
+				"ranksystemlog" => $ranksystemlog
+			);
+		} else {
+			$json = array(
+				"Error" => array(
+					"invalid" => array(
+						"permissions" => "API Key is not permitted to start/stop the Ranksystem Bot"
+					)
+				)
+			);
+			echo json_encode($json);
+			exit;
+		}
+	}
+} elseif (isset($_GET['groups'])) {
 	$sgidname = $all = '----------_none_selected_----------';
 	$sgid = -1;
 	if(isset($_GET['all'])) $all = 1;
@@ -463,6 +550,11 @@ if (isset($_GET['groups'])) {
 } else {
 	$json = array(
 		"usage" => array(
+			"bot" => array(
+				"desc" => "Use this to trigger Bot commands as starting or stopping the Ranksystem Bot.",
+				"usage" => "Use \$_GET parameter 'bot'",
+				"example" => "/api/?bot"
+			),
 			"groups" => array(
 				"desc" => "Get details about the TeamSpeak servergroups",
 				"usage" => "Use \$_GET parameter 'groups'",

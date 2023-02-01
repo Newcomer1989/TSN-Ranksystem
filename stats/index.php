@@ -2,20 +2,20 @@
 require_once('_preload.php');
 
 try {
-	if(is_dir(substr(__DIR__,0,-5).'languages/')) {
-		foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+	if(is_dir($GLOBALS['langpath'])) {
+		foreach(scandir($GLOBALS['langpath']) as $file) {
 			if ('.' === $file || '..' === $file || is_dir($file)) continue;
 			$sep_lang = preg_split("/[._]/", $file);
 			if(isset($sep_lang[0]) && $sep_lang[0] == 'nations' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[2]) && strtolower($sep_lang[2]) == 'php') {
 				if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
-					require_once('../languages/nations_'.$sep_lang[1].'.php');
+					require_once($GLOBALS['langpath'].'nations_'.$sep_lang[1].'.php');
 					$required_nations = 1;
 					break;
 				}
 			}
 		}
 		if(!isset($required_nations)) {
-			require_once('../languages/nations_en.php');
+			require_once($GLOBALS['langpath'].'nations_en.php');
 		}
 	}
 
@@ -27,7 +27,7 @@ try {
 		$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_index">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -136,7 +136,7 @@ try {
 								<div class="panel-heading">
 									<div class="row">
 										<div class="col-xs-6">
-											<h3 class="panel-title"><i class="fas fa-chart-area"></i>&nbsp;<?PHP echo $lang['stix0008']; ?></h3>
+											<h3 class="panel-title"><i class="fas fa-chart-area"></i><span class="item-margin"><?PHP echo $lang['stix0008']; ?></span></h3>
 										</div>
 										<div class="col-xs-6">
 											<div class="btn-group pull-right">
@@ -160,7 +160,7 @@ try {
 						<div class="col-lg-3">
 							<div class="panel panel-primary">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stix0016']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['stix0016']; ?></span></h3>
 								</div>
 								<div class="panel-body">
 									<div id="time-gap-donut"></div>
@@ -170,7 +170,7 @@ try {
 						<div class="col-lg-3">
 							<div class="panel panel-green">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stix0017']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['stix0017']; ?></span></h3>
 								</div>
 								<div class="panel-body">
 									<div id="client-version-donut"></div>
@@ -187,7 +187,7 @@ try {
 						<div class="col-lg-3">
 							<div class="panel panel-yellow">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stix0018']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['stix0018']; ?></span></h3>
 								</div>
 								<div class="panel-body">
 									<div id="user-descent-donut"></div>
@@ -204,7 +204,7 @@ try {
 						<div class="col-lg-3">
 							<div class="panel panel-red">
 								<div class="panel-heading">
-									<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['stix0019']; ?></h3>
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['stix0019']; ?></span></h3>
 								</div>
 								<div class="panel-body">
 									<div id="user-platform-donut"></div>
@@ -313,7 +313,7 @@ try {
 						<div class="col-lg-6">
 							<h2><?PHP echo $lang['stix0020']; ?></h2>
 							<div class="table-responsive">
-								<table class="table table-bordered table-hover">
+								<table class="table table-bordered table-hover" id="ts-server-details-left">
 									<tbody>
 										<tr>
 											<td><?PHP echo $lang['stix0023']; ?></td>
@@ -341,7 +341,7 @@ try {
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0031']; ?></td>
-											<td><?PHP $serveruptime = new DateTime("@".$sql_res['server_uptime']); if ($sql_res['server_status'] == 0) { echo '-&nbsp;&nbsp;&nbsp;(<i>'.$lang['stix0032'].'&nbsp;'.(new DateTime("@0"))->diff($serveruptime)->format($cfg['default_date_format']).')</i>'; } else { echo $lang['stix0033']; } ?></td>
+											<td><?PHP $serveruptime = new DateTime("@".$sql_res['server_uptime']); if ($sql_res['server_status'] == 0) { echo '-&nbsp;&nbsp;&nbsp;(<i>'.$lang['stix0032'].'<span class="item-margin">'.(new DateTime("@0"))->diff($serveruptime)->format($cfg['default_date_format']).')</span></i>'; } else { echo $lang['stix0033']; } ?></td>
 										</tr>
 										<tr>
 											<td><?PHP echo $lang['stix0034']; ?></td>
@@ -354,11 +354,11 @@ try {
 						<div class="col-lg-6">
 							<h2><?PHP echo $lang['stix0035']; ?></h2>
 							<div class="table-responsive">
-								<table class="table table-bordered table-hover">
+								<table class="table table-bordered table-hover" id="ts-server-details-right">
 									<tbody>
 										<tr>
 											<td><?PHP echo $lang['stix0036']; ?></td>
-											<td><?PHP if(file_exists("../tsicons/servericon.".$groupslist[0]['ext'])) {
+											<td><?PHP if(isset($groupslist[0]) && file_exists("../tsicons/servericon.".$groupslist[0]['ext'])) {
 												$img_content = file_get_contents("../tsicons/servericon.".$groupslist[0]['ext']);
 												echo $sql_res['server_name'] .'<div class="pull-right"><img src="data:',$groupslist[0]['ext'],';base64,'.base64_encode($img_content).'" width="16" height="16" alt="servericon"></div>';
 											} else { echo $sql_res['server_name']; } ?></td>
@@ -470,6 +470,33 @@ try {
 	<input type="hidden" id="tsn33" value="<?PHP echo $sql_res['platform_other']; ?>">
 	<input type="hidden" id="tsn34" value="<?PHP echo ($sql_res['server_used_slots'] + $sql_res['server_free_slots']); ?>">
 	<input type="hidden" id="tsn35" value="<?PHP echo $cfg['stats_show_maxclientsline_switch']; ?>">
+	<input type="hidden" id="donut_time_color_1" value="">
+	<input type="hidden" id="donut_time_color_2" value="">
+	<input type="hidden" id="donut_version_color_1" value="">
+	<input type="hidden" id="donut_version_color_2" value="">
+	<input type="hidden" id="donut_version_color_3" value="">
+	<input type="hidden" id="donut_version_color_4" value="">
+	<input type="hidden" id="donut_version_color_5" value="">
+	<input type="hidden" id="donut_version_color_6" value="">
+	<input type="hidden" id="donut_nation_color_1" value="">
+	<input type="hidden" id="donut_nation_color_2" value="">
+	<input type="hidden" id="donut_nation_color_3" value="">
+	<input type="hidden" id="donut_nation_color_4" value="">
+	<input type="hidden" id="donut_nation_color_5" value="">
+	<input type="hidden" id="donut_nation_color_6" value="">
+	<input type="hidden" id="donut_platform_color_1" value="">
+	<input type="hidden" id="donut_platform_color_2" value="">
+	<input type="hidden" id="donut_platform_color_3" value="">
+	<input type="hidden" id="donut_platform_color_4" value="">
+	<input type="hidden" id="donut_platform_color_5" value="">
+	<input type="hidden" id="donut_platform_color_6" value="">
+	<input type="hidden" id="graph_lineColors_1" value="">
+	<input type="hidden" id="graph_lineColors_2" value="">
+	<input type="hidden" id="graph_pointFillColors_1" value="">
+	<input type="hidden" id="graph_pointFillColors_2" value="">
+	<input type="hidden" id="graph_pointStrokeColors_1" value="">
+	<input type="hidden" id="graph_pointStrokeColors_2" value="">
+	<input type="hidden" id="graph_fillOpacity" value="">
 	<?PHP require_once('_footer.php'); ?>
 	</body>
 	</html>

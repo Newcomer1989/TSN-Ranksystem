@@ -30,14 +30,24 @@ try {
 		if (isset($_POST['stats_column_next_rankup_switch'])) $cfg['stats_column_next_rankup_switch'] = 1; else $cfg['stats_column_next_rankup_switch'] = 0;
 		if (isset($_POST['stats_column_next_server_group_switch'])) $cfg['stats_column_next_server_group_switch'] = 1; else $cfg['stats_column_next_server_group_switch'] = 0;
 		if (isset($_POST['stats_column_current_group_since_switch'])) $cfg['stats_column_current_group_since_switch'] = 1; else $cfg['stats_column_current_group_since_switch'] = 0;
+		if (isset($_POST['stats_column_online_day_switch'])) $cfg['stats_column_online_day_switch'] = 1; else $cfg['stats_column_online_day_switch'] = 0;
+		if (isset($_POST['stats_column_idle_day_switch'])) $cfg['stats_column_idle_day_switch'] = 1; else $cfg['stats_column_idle_day_switch'] = 0;
+		if (isset($_POST['stats_column_active_day_switch'])) $cfg['stats_column_active_day_switch'] = 1; else $cfg['stats_column_active_day_switch'] = 0;
+		if (isset($_POST['stats_column_online_week_switch'])) $cfg['stats_column_online_week_switch'] = 1; else $cfg['stats_column_online_week_switch'] = 0;
+		if (isset($_POST['stats_column_idle_week_switch'])) $cfg['stats_column_idle_week_switch'] = 1; else $cfg['stats_column_idle_week_switch'] = 0;
+		if (isset($_POST['stats_column_active_week_switch'])) $cfg['stats_column_active_week_switch'] = 1; else $cfg['stats_column_active_week_switch'] = 0;
+		if (isset($_POST['stats_column_online_month_switch'])) $cfg['stats_column_online_month_switch'] = 1; else $cfg['stats_column_online_month_switch'] = 0;
+		if (isset($_POST['stats_column_idle_month_switch'])) $cfg['stats_column_idle_month_switch'] = 1; else $cfg['stats_column_idle_month_switch'] = 0;
+		if (isset($_POST['stats_column_active_month_switch'])) $cfg['stats_column_active_month_switch'] = 1; else $cfg['stats_column_active_month_switch'] = 0;
 		if (isset($_POST['stats_show_excepted_clients_switch'])) $cfg['stats_show_excepted_clients_switch'] = 1; else $cfg['stats_show_excepted_clients_switch'] = 0;
 		if (isset($_POST['stats_show_clients_in_highest_rank_switch'])) $cfg['stats_show_clients_in_highest_rank_switch'] = 1; else $cfg['stats_show_clients_in_highest_rank_switch'] = 0;
+
 		$cfg['stats_column_default_order'] = $_POST['stats_column_default_order'];
 		$cfg['stats_column_default_sort'] = $_POST['stats_column_default_sort'];
 		$cfg['stats_column_default_order_2'] = $_POST['stats_column_default_order_2'];
 		$cfg['stats_column_default_sort_2'] = $_POST['stats_column_default_sort_2'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_nation_switch','{$cfg['stats_column_nation_switch']}'),('stats_column_version_switch','{$cfg['stats_column_version_switch']}'),('stats_column_platform_switch','{$cfg['stats_column_platform_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_column_default_order_2','{$cfg['stats_column_default_order_2']}'),('stats_column_default_sort_2','{$cfg['stats_column_default_sort_2']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_column_rank_switch','{$cfg['stats_column_rank_switch']}'),('stats_column_client_name_switch','{$cfg['stats_column_client_name_switch']}'),('stats_column_unique_id_switch','{$cfg['stats_column_unique_id_switch']}'),('stats_column_client_db_id_switch','{$cfg['stats_column_client_db_id_switch']}'),('stats_column_last_seen_switch','{$cfg['stats_column_last_seen_switch']}'),('stats_column_nation_switch','{$cfg['stats_column_nation_switch']}'),('stats_column_version_switch','{$cfg['stats_column_version_switch']}'),('stats_column_platform_switch','{$cfg['stats_column_platform_switch']}'),('stats_column_online_time_switch','{$cfg['stats_column_online_time_switch']}'),('stats_column_idle_time_switch','{$cfg['stats_column_idle_time_switch']}'),('stats_column_active_time_switch','{$cfg['stats_column_active_time_switch']}'),('stats_column_current_server_group_switch','{$cfg['stats_column_current_server_group_switch']}'),('stats_column_current_group_since_switch','{$cfg['stats_column_current_group_since_switch']}'),('stats_column_online_day_switch','{$cfg['stats_column_online_day_switch']}'),('stats_column_idle_day_switch','{$cfg['stats_column_idle_day_switch']}'),('stats_column_active_day_switch','{$cfg['stats_column_active_day_switch']}'),('stats_column_online_week_switch','{$cfg['stats_column_online_week_switch']}'),('stats_column_idle_week_switch','{$cfg['stats_column_idle_week_switch']}'),('stats_column_active_week_switch','{$cfg['stats_column_active_week_switch']}'),('stats_column_online_month_switch','{$cfg['stats_column_online_month_switch']}'),('stats_column_idle_month_switch','{$cfg['stats_column_idle_month_switch']}'),('stats_column_active_month_switch','{$cfg['stats_column_active_month_switch']}'),('stats_column_next_rankup_switch','{$cfg['stats_column_next_rankup_switch']}'),('stats_column_next_server_group_switch','{$cfg['stats_column_next_server_group_switch']}'),('stats_column_default_order','{$cfg['stats_column_default_order']}'),('stats_column_default_sort','{$cfg['stats_column_default_sort']}'),('stats_column_default_order_2','{$cfg['stats_column_default_order_2']}'),('stats_column_default_sort_2','{$cfg['stats_column_default_sort_2']}'),('stats_show_excepted_clients_switch','{$cfg['stats_show_excepted_clients_switch']}'),('stats_show_clients_in_highest_rank_switch','{$cfg['stats_show_clients_in_highest_rank_switch']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
@@ -50,7 +60,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_ranklist">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -179,6 +189,88 @@ try {
 											</div>
 										</div>
 										<div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumo'] ,' ', $lang['stix0013']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_online_day_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_online_day_switch" value="',$cfg['stats_column_online_day_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_online_day_switch" value="',$cfg['stats_column_online_day_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumi'] ,' ', $lang['stix0013']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_idle_day_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_idle_day_switch" value="',$cfg['stats_column_idle_day_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_idle_day_switch" value="',$cfg['stats_column_idle_day_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsuma'] ,' ', $lang['stix0013']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_active_day_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_active_day_switch" value="',$cfg['stats_column_active_day_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_active_day_switch" value="',$cfg['stats_column_active_day_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumo'] ,' ', $lang['stix0014']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_online_week_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_online_week_switch" value="',$cfg['stats_column_online_week_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_online_week_switch" value="',$cfg['stats_column_online_week_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumi'] ,' ', $lang['stix0014']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_idle_week_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_idle_week_switch" value="',$cfg['stats_column_idle_week_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_idle_week_switch" value="',$cfg['stats_column_idle_week_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsuma'] ,' ', $lang['stix0014']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_active_week_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_active_week_switch" value="',$cfg['stats_column_active_week_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_active_week_switch" value="',$cfg['stats_column_active_week_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumo'] ,' ', $lang['stix0015']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_online_month_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_online_month_switch" value="',$cfg['stats_column_online_month_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_online_month_switch" value="',$cfg['stats_column_online_month_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsumi'] ,' ', $lang['stix0015']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_idle_month_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_idle_month_switch" value="',$cfg['stats_column_idle_month_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_idle_month_switch" value="',$cfg['stats_column_idle_month_switch'],'">';
+												} ?>
+											</div>
+										</div><div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listsuma'] ,' ', $lang['stix0015']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<?PHP if ($cfg['stats_column_active_month_switch'] == 1) {
+													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_column_active_month_switch" value="',$cfg['stats_column_active_month_switch'],'">';
+												} else {
+													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_column_active_month_switch" value="',$cfg['stats_column_active_month_switch'],'">';
+												} ?>
+											</div>
+										</div>
+										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishcoldesc"><?php echo $lang['listacsg']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
 												<?PHP if ($cfg['stats_column_current_server_group_switch'] == 1) {
@@ -229,21 +321,10 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="stats_column_default_sort">
 												<?PHP
-												echo '<option data-icon="fas fa-hashtag" data-subtext="[default]" value="rank"'.($cfg['stats_column_default_sort'] === '1' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listrank'].'</option>';
-												echo '<option data-icon="fas fa-user" value="name"'.($cfg['stats_column_default_sort'] === 'name' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnick'].'</option>';
-												echo '<option data-icon="fas fa-id-card" value="uuid"'.($cfg['stats_column_default_sort'] === 'uuid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listuid'].'</option>';
-												echo '<option data-icon="fas fa-database" value="cldbid"'.($cfg['stats_column_default_sort'] === 'cldbid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listcldbid'].'</option>';
-												echo '<option data-icon="fas fa-user-clock" value="lastseen"'.($cfg['stats_column_default_sort'] === 'lastseen' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listseen'].'</option>';
-												echo '<option data-icon="fas fa-globe-europe" value="nation"'.($cfg['stats_column_default_sort'] === 'nation' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnat'].'</option>';
-												echo '<option data-icon="fas fa-tag" value="version"'.($cfg['stats_column_default_sort'] === 'version' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listver'].'</option>';
-												echo '<option data-icon="fas fa-server" value="platform"'.($cfg['stats_column_default_sort'] === 'platform' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listpla'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-start" value="count"'.($cfg['stats_column_default_sort'] === 'count' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumo'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-end" value="idle"'.($cfg['stats_column_default_sort'] === 'idle' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumi'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-half" value="active"'.($cfg['stats_column_default_sort'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsuma'].'</option>';
-												echo '<option data-icon="fas fa-clipboard-check" value="grpid"'.($cfg['stats_column_default_sort'] === 'grpid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listacsg'].'</option>';
-												echo '<option data-icon="fas fa-history" value="grpidsince"'.($cfg['stats_column_default_sort'] === 'grpidsince' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listgrps'].'</option>';
-												echo '<option data-icon="fas fa-clock" value="nextup"'.($cfg['stats_column_default_sort'] === 'nextup' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxup'].'</option>';
-												echo '<option data-icon="fas fa-clipboard-list" value="active"'.($cfg['stats_column_default_sort'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxsg'].'</option>';
+												$arr_sort_options = sort_options($lang);
+												foreach ($arr_sort_options as $opt => $val) {
+													echo '<option data-icon="'.$val['icon'].'" value="'.$val['option'].'"'.($cfg['stats_column_default_sort'] === $val['option'] ? ' selected="selected"' : '').'><span class="item-margin">'.$val['title'].'</span></option>';
+												}
 												?>
 												</select>
 											</div>
@@ -253,8 +334,8 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="stats_column_default_order">
 												<?PHP
-												echo '<option data-subtext="[ASC]" data-icon="fas fa-sort-asc" value="asc"'.($cfg['stats_column_default_order'] === 'asc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['asc'].'</option>';
-												echo '<option data-subtext="[DESC]" data-icon="fas fa-sort-desc" value="desc"'.($cfg['stats_column_default_order'] === 'desc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['desc'].'</option>';
+												echo '<option data-subtext="[ASC]" data-icon="fas fa-sort-asc" value="asc"'.($cfg['stats_column_default_order'] === 'asc' ? ' selected="selected"' : '').'><span class="item-margin">'.$lang['asc'].'</span></option>';
+												echo '<option data-subtext="[DESC]" data-icon="fas fa-sort-desc" value="desc"'.($cfg['stats_column_default_order'] === 'desc' ? ' selected="selected"' : '').'><span class="item-margin">'.$lang['desc'].'</span></option>';
 												?>
 												</select>
 											</div>
@@ -265,21 +346,9 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="stats_column_default_sort_2">
 												<?PHP
-												echo '<option data-icon="fas fa-hashtag" data-subtext="[default]" value="rank"'.($cfg['stats_column_default_sort_2'] === '1' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listrank'].'</option>';
-												echo '<option data-icon="fas fa-user" value="name"'.($cfg['stats_column_default_sort_2'] === 'name' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnick'].'</option>';
-												echo '<option data-icon="fas fa-id-card" value="uuid"'.($cfg['stats_column_default_sort_2'] === 'uuid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listuid'].'</option>';
-												echo '<option data-icon="fas fa-database" value="cldbid"'.($cfg['stats_column_default_sort_2'] === 'cldbid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listcldbid'].'</option>';
-												echo '<option data-icon="fas fa-user-clock" value="lastseen"'.($cfg['stats_column_default_sort_2'] === 'lastseen' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listseen'].'</option>';
-												echo '<option data-icon="fas fa-globe-europe" value="nation"'.($cfg['stats_column_default_sort_2'] === 'nation' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnat'].'</option>';
-												echo '<option data-icon="fas fa-tag" value="version"'.($cfg['stats_column_default_sort_2'] === 'version' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listver'].'</option>';
-												echo '<option data-icon="fas fa-server" value="platform"'.($cfg['stats_column_default_sort_2'] === 'platform' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listpla'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-start" value="count"'.($cfg['stats_column_default_sort_2'] === 'count' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumo'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-end" value="idle"'.($cfg['stats_column_default_sort_2'] === 'idle' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsumi'].'</option>';
-												echo '<option data-icon="fas fa-hourglass-half" value="active"'.($cfg['stats_column_default_sort_2'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listsuma'].'</option>';
-												echo '<option data-icon="fas fa-clipboard-check" value="grpid"'.($cfg['stats_column_default_sort_2'] === 'grpid' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listacsg'].'</option>';
-												echo '<option data-icon="fas fa-history" value="grpidsince"'.($cfg['stats_column_default_sort_2'] === 'grpidsince' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listgrps'].'</option>';
-												echo '<option data-icon="fas fa-clock" value="nextup"'.($cfg['stats_column_default_sort_2'] === 'nextup' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxup'].'</option>';
-												echo '<option data-icon="fas fa-clipboard-list" value="active"'.($cfg['stats_column_default_sort_2'] === 'active' ? ' selected="selected"' : '').'>&nbsp;'.$lang['listnxsg'].'</option>';
+												foreach ($arr_sort_options as $opt => $val) {
+													echo '<option data-icon="'.$val['icon'].'" value="'.$val['option'].'"'.($cfg['stats_column_default_sort_2'] === $val['option'] ? ' selected="selected"' : '').'><span class="item-margin">'.$val['title'].'</span></option>';
+												}
 												?>
 												</select>
 											</div>
@@ -289,8 +358,8 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control basic" name="stats_column_default_order_2">
 												<?PHP
-												echo '<option data-subtext="[ASC]" data-icon="fas fa-sort-asc" value="asc"'.($cfg['stats_column_default_order_2'] === 'asc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['asc'].'</option>';
-												echo '<option data-subtext="[DESC]" data-icon="fas fa-sort-desc" value="desc"'.($cfg['stats_column_default_order_2'] === 'desc' ? ' selected="selected"' : '').'>&nbsp;'.$lang['desc'].'</option>';
+												echo '<option data-subtext="[ASC]" data-icon="fas fa-sort-asc" value="asc"'.($cfg['stats_column_default_order_2'] === 'asc' ? ' selected="selected"' : '').'><span class="item-margin">'.$lang['asc'].'</span></option>';
+												echo '<option data-subtext="[DESC]" data-icon="fas fa-sort-desc" value="desc"'.($cfg['stats_column_default_order_2'] === 'desc' ? ' selected="selected"' : '').'><span class="item-margin">'.$lang['desc'].'</span></option>';
 												?>
 												</select>
 											</div>
@@ -324,7 +393,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>
@@ -463,6 +532,15 @@ try {
 	$("[name='stats_column_current_group_since_switch']").bootstrapSwitch();
 	$("[name='stats_show_excepted_clients_switch']").bootstrapSwitch();
 	$("[name='stats_show_clients_in_highest_rank_switch']").bootstrapSwitch();
+	$("[name='stats_column_online_day_switch']").bootstrapSwitch();
+	$("[name='stats_column_idle_day_switch']").bootstrapSwitch();
+	$("[name='stats_column_active_day_switch']").bootstrapSwitch();
+	$("[name='stats_column_online_week_switch']").bootstrapSwitch();
+	$("[name='stats_column_idle_week_switch']").bootstrapSwitch();
+	$("[name='stats_column_active_week_switch']").bootstrapSwitch();
+	$("[name='stats_column_online_month_switch']").bootstrapSwitch();
+	$("[name='stats_column_idle_month_switch']").bootstrapSwitch();
+	$("[name='stats_column_active_month_switch']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

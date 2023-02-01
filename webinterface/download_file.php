@@ -12,15 +12,15 @@ try {
 		$err_lvl = 3;
 	}
 
-	if (isset($db_csrf[$_GET['csrf_token']]) && isset($_GET['file']) && substr($_GET['file'],0,10) == "db_export_" && file_exists($cfg['logs_path'].$_GET['file'])) {
+	if (isset($db_csrf[$_GET['csrf_token']]) && isset($_GET['file']) && substr($_GET['file'],0,10) == "db_export_" && file_exists($GLOBALS['logpath'].$_GET['file']) && isset($_SESSION[$rspathhex.'username']) && hash_equals($_SESSION[$rspathhex.'username'], $cfg['webinterface_user']) && hash_equals($_SESSION[$rspathhex.'password'], $cfg['webinterface_pass'])) {
 		header('Content-Description: File Transfer');
 		header('Content-Type: application/octet-stream');
-		header('Content-Disposition: attachment; filename="'.basename($cfg['logs_path'].$_GET['file']).'"');
+		header('Content-Disposition: attachment; filename="'.basename($GLOBALS['logpath'].$_GET['file']).'"');
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate');
 		header('Pragma: public');
-		header('Content-Length: ' . filesize($cfg['logs_path'].$_GET['file']));
-		readfile($cfg['logs_path'].$_GET['file']);
+		header('Content-Length: ' . filesize($GLOBALS['logpath'].$_GET['file']));
+		readfile($GLOBALS['logpath'].$_GET['file']);
 	} else {
 		rem_session_ts3();
 		echo "Error on downloading file. File do not exists (anymore)? If yes, try it again. There could happened a problem with your session.";

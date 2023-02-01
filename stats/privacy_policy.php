@@ -3,7 +3,7 @@ require_once('_preload.php');
 
 try {
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_privacy_policy">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">

@@ -6,9 +6,9 @@ function calc_user_snapshot($cfg,$dbname,&$db_cache) {
 
 	// Event Handling each 6 hours
 	// Duplicate users Table in snapshot Table
-	if(($nowtime - $db_cache['job_check']['last_snapshot_time']['timestamp']) > 21600) {
+	if(($nowtime - intval($db_cache['job_check']['last_snapshot_time']['timestamp'])) > 21600) {
 		if(isset($db_cache['all_user'])) {
-			$db_cache['job_check']['last_snapshot_id']['timestamp'] = $nextid = $db_cache['job_check']['last_snapshot_id']['timestamp'] + 1;
+			$db_cache['job_check']['last_snapshot_id']['timestamp'] = $nextid = intval($db_cache['job_check']['last_snapshot_id']['timestamp']) + 1;
 			if ($nextid > 121) $nextid = $nextid - 121;
 			
 			$allinsertsnap = '';
@@ -25,6 +25,6 @@ function calc_user_snapshot($cfg,$dbname,&$db_cache) {
 		}
 	}
 
-	enter_logfile($cfg,6,"calc_user_snapshot needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+	enter_logfile(6,"calc_user_snapshot needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 	return($sqlexec);
 }

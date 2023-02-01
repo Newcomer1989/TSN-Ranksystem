@@ -120,15 +120,15 @@ try {
 		$err_msg = '<b>'.$lang['wihladmrs'].":</b><br><br><pre>"; $err_lvl = 2;
 		$err_msg .= reset_status($lang, $job_check);
 
-		if(in_array($job_check['reset_user_time']['timestamp'], ["0","4"], true) && in_array($job_check['reset_user_delete']['timestamp'], ["0","4"], true) && in_array($job_check['reset_group_withdraw']['timestamp'], ["0","4"], true) && in_array($job_check['reset_webspace_cache']['timestamp'], ["0","4"], true) && in_array($job_check['reset_usage_graph']['timestamp'], ["0","4"], true)) {
-			$err_msg .= '</pre><br><br><br>'.sprintf($lang['wihladmrs9'], '<form class="btn-group" name="confirm" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>&nbsp;', '</button></form>');
+		if(in_array(intval($job_check['reset_user_time']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_user_delete']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_group_withdraw']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_webspace_cache']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_usage_graph']['timestamp']), [0,4], true)) {
+			$err_msg .= '</pre><br><br><br>'.sprintf($lang['wihladmrs9'], '<form class="btn-group" name="confirm" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>', '</button></form>');
 		} else {
-			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
+			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
 		}
 	}
 
 	if (isset($_POST['confirm']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(in_array($job_check['reset_user_time']['timestamp'], ["0","4"], true) && in_array($job_check['reset_user_delete']['timestamp'], ["0","4"], true) && in_array($job_check['reset_group_withdraw']['timestamp'], ["0","4"], true) && in_array($job_check['reset_webspace_cache']['timestamp'], ["0","4"], true) && in_array($job_check['reset_usage_graph']['timestamp'], ["0","4"], true)) {
+		if(in_array(intval($job_check['reset_user_time']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_user_delete']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_group_withdraw']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_webspace_cache']['timestamp']), [0,4], true) && in_array(intval($job_check['reset_usage_graph']['timestamp']), [0,4], true)) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('reset_user_time','0'),('reset_user_delete','0'),('reset_group_withdraw','0'),('reset_webspace_cache','0'),('reset_usage_graph','0'),('reset_stop_after','0') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
@@ -141,7 +141,7 @@ try {
 		}
 	} elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
 		if($job_check['reset_user_time']['timestamp'] != 0 || $job_check['reset_user_delete']['timestamp'] != 0 || $job_check['reset_group_withdraw']['timestamp'] != 0 || $job_check['reset_webspace_cache']['timestamp'] != 0 || $job_check['reset_usage_graph']['timestamp'] != 0) {
-			$err_msg = '<b>'.$lang['wihladmrs6'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
+			$err_msg = '<b>'.$lang['wihladmrs6'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
 			$err_lvl = 3;
 		} elseif($_POST['reset_user_time'] == 0 && !isset($_POST['reset_group_withdraw']) && !isset($_POST['reset_webspace_cache']) && !isset($_POST['reset_usage_graph'])) {
 			$err_msg = $lang['wihladmrs15']; $err_lvl = 3;
@@ -173,7 +173,7 @@ try {
 
 			$err_msg = $lang['wihladmrs11'].': '.$est_time.'.<br>'.$lang['wihladmrs12'].'<br><br><pre>';
 			$err_msg .= reset_status($lang, $job_check, $check = 1);
-			$err_msg .= '</pre><br><br><form class="btn-group" name="startjobs" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><input type="hidden" name="reset_user_time" value="'.$_POST['reset_user_time'].'"><input type="hidden" name="reset_group_withdraw" value="'.$_POST['reset_group_withdraw'].'"><input type="hidden" name="reset_webspace_cache" value="'.$_POST['reset_webspace_cache'].'"><input type="hidden" name="reset_usage_graph" value="'.$_POST['reset_usage_graph'].'"><input type="hidden" name="reset_stop_after" value="'.$_POST['reset_stop_after'].'"><button type="submit" class="btn btn-success btn-sm" name="startjobs"><i class="fas fa-check"></i>&nbsp;'.$lang['wihladmrs13'].'</button></form>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<form class="btn-group" name="cancel" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i>&nbsp;'.$lang['wihladmrs14'].'</button></form>';
+			$err_msg .= '</pre><br><br><form class="btn-group" name="startjobs" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><input type="hidden" name="reset_user_time" value="'.$_POST['reset_user_time'].'"><input type="hidden" name="reset_group_withdraw" value="'.$_POST['reset_group_withdraw'].'"><input type="hidden" name="reset_webspace_cache" value="'.$_POST['reset_webspace_cache'].'"><input type="hidden" name="reset_usage_graph" value="'.$_POST['reset_usage_graph'].'"><input type="hidden" name="reset_stop_after" value="'.$_POST['reset_stop_after'].'"><button type="submit" class="btn btn-success btn-sm" name="startjobs"><i class="fas fa-check"></i><span class="item-margin">'.$lang['wihladmrs13'].'</span></button></form><span class="item-margin"><form class="btn-group" name="cancel" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i><span class="item-margin">'.$lang['wihladmrs14'].'</span></button></form></span>';
 			$err_lvl = 1;
 		}		
 	} elseif(isset($_POST['startjobs']) && isset($db_csrf[$_POST['csrf_token']])) {
@@ -192,7 +192,7 @@ try {
 			$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = '<b>'.$lang['wihladmrs5'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
+			$err_msg = '<b>'.$lang['wihladmrs5'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="reset.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
 			$err_lvl = NULL;
 		}
 	} elseif(isset($_POST['update']) || isset($_POST['confirm'])) {
@@ -201,7 +201,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_reset">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -231,36 +231,36 @@ try {
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm31desc"><?php echo $lang['wihladm31']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
 													<select class="selectpicker show-tick form-control basic" name="reset_user_time">
-														<option data-icon="fas fa-ban" selected="selected" value="0">&nbsp;<?PHP echo $lang['winxmode1']; ?></option>
-														<option data-divider="true">&nbsp;</option>
-														<option data-icon="fas fa-history" value="1">&nbsp;<?PHP echo $lang['wihladm311']; ?></option>
-														<option data-icon="fas fa-user-slash" value="2">&nbsp;<?PHP echo $lang['wihladm312']; ?></option>
+														<option data-icon="fas fa-ban" selected="selected" value="0"><span class="item-margin"><?PHP echo $lang['winxmode1']; ?></span></option>
+														<option data-divider="true"></option>
+														<option data-icon="fas fa-history" value="1"><span class="item-margin"><?PHP echo $lang['wihladm311']; ?></span></option>
+														<option data-icon="fas fa-user-slash" value="2"><span class="item-margin"><?PHP echo $lang['wihladm312']; ?></span></option>
 													</select>
 											</div>
 										</div>
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm32desc"><?php echo $lang['wihladm32']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<input class="switch-animate" type="checkbox" data-size="mini" name="reset_group_withdraw" value="0">
+												<input class="switch-animate" type="checkbox" data-size="mini" id="reset_group_withdraw" name="reset_group_withdraw" value="0">
 											</div>
 										</div>
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm33desc"><?php echo $lang['wihladm33']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<input class="switch-animate" type="checkbox" data-size="mini" name="reset_webspace_cache" value="0">
+												<input class="switch-animate" type="checkbox" data-size="mini" id="reset_webspace_cache" name="reset_webspace_cache" value="0">
 											</div>
 										</div>
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm34desc"><?php echo $lang['wihladm34']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<input class="switch-animate" type="checkbox" data-size="mini" name="reset_usage_graph" value="0">
+												<input class="switch-animate" type="checkbox" data-size="mini" id="reset_usage_graph" name="reset_usage_graph" value="0">
 											</div>
 										</div>
 										<div class="row">&nbsp;</div>
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wihladm36desc"><?php echo $lang['wihladm36']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<input class="switch-animate" type="checkbox" data-size="mini" name="reset_stop_after" value="0">
+												<input class="switch-animate" type="checkbox" data-size="mini" id="reset_stop_after" name="reset_stop_after" value="0">
 											</div>
 										</div>
 									</div>
@@ -377,10 +377,10 @@ try {
 	  </div>
 	</div>
 	<script>
-	$("[name='reset_group_withdraw']").bootstrapSwitch();
-	$("[name='reset_webspace_cache']").bootstrapSwitch();
-	$("[name='reset_usage_graph']").bootstrapSwitch();
-	$("[name='reset_stop_after']").bootstrapSwitch();
+	$("[id='reset_group_withdraw']").bootstrapSwitch();
+	$("[id='reset_webspace_cache']").bootstrapSwitch();
+	$("[id='reset_usage_graph']").bootstrapSwitch();
+	$("[id='reset_stop_after']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

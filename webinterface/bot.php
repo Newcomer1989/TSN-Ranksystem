@@ -103,65 +103,65 @@ try {
 		exit;
 	}
 
-	$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
+	$logoutput = getlog($number_lines,$filters,$filter2,$inactivefilter);
 
 	if (isset($_POST['start']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(!is_writable($cfg['logs_path'])) {
+		if(!is_writable($GLOBALS['logpath'])) {
 			$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel start request!"; $err_lvl = 3;
 		} else {
 			$output = '';
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php start", $resultexec);
-			if (file_exists($cfg['logs_path']."autostart_deactivated")) {
-				unlink($cfg['logs_path']."autostart_deactivated");
+			exec($phpcommand." ".dirname(__DIR__).DIRECTORY_SEPARATOR."worker.php start", $resultexec);
+			if (file_exists($GLOBALS['autostart'])) {
+				unlink($GLOBALS['autostart']);
 			}
 			foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
 			$err_msg = $lang['wibot2'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';
 			$err_lvl = 1;
 			usleep(80000);
-			$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
+			$logoutput = getlog($number_lines,$filters,$filter2,$inactivefilter);
 		}
 	}
 
 	if (isset($_POST['stop']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(!is_writable($cfg['logs_path'])) {
+		if(!is_writable($GLOBALS['logpath'])) {
 			$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel stop request!"; $err_lvl = 3;
 		} else {
 			$output = '';
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php stop", $resultexec);
-			file_put_contents($cfg['logs_path']."autostart_deactivated","");
+			exec($phpcommand." ".dirname(__DIR__).DIRECTORY_SEPARATOR."worker.php stop", $resultexec);
+			file_put_contents($GLOBALS['autostart'],"");
 			foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
 			$err_msg = $lang['wibot1'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';;
 			$err_lvl = 1;
 			usleep(80000);
-			$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
+			$logoutput = getlog($number_lines,$filters,$filter2,$inactivefilter);
 		}
 	}
 
 	if (isset($_POST['restart']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(!is_writable($cfg['logs_path'])) {
+		if(!is_writable($GLOBALS['logpath'])) {
 			$err_msg = "!!!! Logs folder is not writable !!!!<br>Cancel restart request!"; $err_lvl = 3;
 		} else {
 			$output = '';
-			exec($phpcommand." ".substr(__DIR__,0,-12)."worker.php restart", $resultexec);
-			if (file_exists($cfg['logs_path']."autostart_deactivated")) {
-				unlink($cfg['logs_path']."autostart_deactivated");
+			exec($phpcommand." ".dirname(__DIR__).DIRECTORY_SEPARATOR."worker.php restart", $resultexec);
+			if (file_exists($GLOBALS['autostart'])) {
+				unlink($GLOBALS['autostart']);
 			}
 			foreach($resultexec as $line) $output .= print_r($line, true).'<br>';
 			$err_msg = $lang['wibot3'].'<br><br>Result of worker.php:<br><pre>'.$output.'</pre>';
 			$err_lvl = 1;
 			usleep(80000);
-			$logoutput = getlog($cfg,$number_lines,$filters,$filter2,$inactivefilter);
+			$logoutput = getlog($number_lines,$filters,$filter2,$inactivefilter);
 		}
 	}
 
 	$disabled = '';
-	if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NULL || $cfg['teamspeak_voice_port'] == NULL || $cfg['teamspeak_query_user'] == NULL || $cfg['teamspeak_query_pass'] == NULL || $cfg['teamspeak_query_nickname'] == NULL || $cfg['rankup_definition'] == NULL || $cfg['logs_path'] == NULL) {
+	if($cfg['teamspeak_host_address'] == NULL || $cfg['teamspeak_query_port'] == NULL || $cfg['teamspeak_voice_port'] == NULL || $cfg['teamspeak_query_user'] == NULL || $cfg['teamspeak_query_pass'] == NULL || $cfg['teamspeak_query_nickname'] == NULL || $cfg['rankup_definition'] == NULL || $GLOBALS['logpath'] == NULL) {
 		$disabled = 1;
 		$err_msg = $lang['wibot9'];
 		$err_lvl = 2;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_bot">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -177,7 +177,7 @@ try {
 						<div class="row">
 							<div class="text-center">
 								<button type="submit" class="btn btn-primary" name="start"<?PHP if($disabled == 1) echo " disabled"; ?>>
-								<i class="fas fa-power-off"></i>&nbsp;<?PHP echo $lang['wibot5']; ?>
+								<i class="fas fa-power-off"></i><span class="item-margin"><?PHP echo $lang['wibot5']; ?></span>
 								</button>
 							</div>
 						</div>
@@ -189,7 +189,7 @@ try {
 						<div class="row">
 							<div class="text-center">
 								<button type="submit" class="btn btn-primary" name="stop">
-								<i class="fas fa-times"></i>&nbsp;<?PHP echo $lang['wibot6']; ?>
+								<i class="fas fa-times"></i><span class="item-margin"><?PHP echo $lang['wibot6']; ?></span>
 								</button>
 							</div>
 						</div>
@@ -201,7 +201,7 @@ try {
 						<div class="row">
 							<div class="text-center">
 								<button type="submit" class="btn btn-primary" name="restart"<?PHP if($disabled == 1) echo " disabled"; ?>>
-								<i class="fas fa-sync"></i>&nbsp;<?PHP echo $lang['wibot7']; ?>
+								<i class="fas fa-sync"></i><span class="item-margin"><?PHP echo $lang['wibot7']; ?></span>
 								</button>
 							</div>
 						</div>

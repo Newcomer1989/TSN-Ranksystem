@@ -5,10 +5,10 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 
 	$smarty = new Smarty();
 
-	$smarty->setTemplateDir($cfg['logs_path'].'smarty/templates');
-	$smarty->setCompileDir($cfg['logs_path'].'smarty/templates_c');
-	$smarty->setCacheDir($cfg['logs_path'].'smarty/cache');
-	$smarty->setConfigDir($cfg['logs_path'].'smarty/configs');
+	$smarty->setTemplateDir($GLOBALS['logpath'].'smarty/templates');
+	$smarty->setCompileDir($GLOBALS['logpath'].'smarty/templates_c');
+	$smarty->setCacheDir($GLOBALS['logpath'].'smarty/cache');
+	$smarty->setConfigDir($GLOBALS['logpath'].'smarty/configs');
 
 	if(isset($addons_config['channelinfo_toplist_active']['value']) && $addons_config['channelinfo_toplist_active']['value'] == '1') {
 		if($addons_config['channelinfo_toplist_lastupdate']['value'] < ($nowtime - $addons_config['channelinfo_toplist_delay']['value'])) {
@@ -46,10 +46,10 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 			}
 			
 			$filter = " AND `user`.`uuid` NOT IN ($notinuuid) AND `user`.`cldgroup` NOT IN ($notingroup) $andnotgroup ".$filter;
-			#enter_logfile($cfg,2,'SQL: '."SELECT * FROM `$dbname`.`stats_user` INNER JOIN `$dbname`.`user` ON `user`.`uuid` = `stats_user`.`uuid` WHERE `removed`='0' {$filter} DESC LIMIT 10");
+			#enter_logfile(2,'SQL: '."SELECT * FROM `$dbname`.`stats_user` INNER JOIN `$dbname`.`user` ON `user`.`uuid` = `stats_user`.`uuid` WHERE `removed`='0' {$filter} DESC LIMIT 10");
 
 			if(($userdata = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_user` INNER JOIN `$dbname`.`user` ON `user`.`uuid` = `stats_user`.`uuid` WHERE `removed`='0' {$filter} DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC)) === false) {
-				enter_logfile($cfg,2,'addon_channelinfo1: '.print_r($mysqlcon->errorInfo(), true));
+				enter_logfile(2,'addon_channelinfo1: '.print_r($mysqlcon->errorInfo(), true));
 			}
 
 			$smarty->assign('LAST_UPDATE_TIME',(DateTime::createFromFormat('U.u', number_format(microtime(true), 6, '.', ''))->setTimeZone(new DateTimeZone($cfg['logs_timezone']))->format("Y-m-d H:i:s")));
@@ -125,16 +125,16 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 						$addons_config['channelinfo_toplist_lastupdate']['value'] = $nowtime;
 						$toplist_desc = $mysqlcon->quote($toplist_desc, ENT_QUOTES);
 						$sqlexec .= "INSERT IGNORE INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('channelinfo_toplist_lastdesc',{$toplist_desc}),('channelinfo_toplist_lastupdate','{$nowtime}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);\n";
-						enter_logfile($cfg,5,'  Addon: \'channelinfo_toplist\' writing new channelinfo toplist to channel description.');
+						enter_logfile(5,'  Addon: \'channelinfo_toplist\' writing new channelinfo toplist to channel description.');
 					} catch (Exception $e) {
-						enter_logfile($cfg,2,'addon_channelinfo2: ['.$e->getCode().']: '.$e->getMessage());
+						enter_logfile(2,'addon_channelinfo2: ['.$e->getCode().']: '.$e->getMessage());
 					}
 				}
 			} catch (Exception $e) {
 				$errmsg = str_replace('"', '\'', $e->getMessage());
 				$addons_config['channelinfo_toplist_lastupdate']['value'] = $nowtime;
 				$sqlexec .= "INSERT IGNORE INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('channelinfo_toplist_lastupdate','{$nowtime}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);\n";
-				enter_logfile($cfg,2,'  Addon: \'channelinfo_toplist\'; There might be a syntax error in your \'channel description\', which is defined in the webinterface! Error message: ['.$e->getCode().']: '.$errmsg);
+				enter_logfile(2,'  Addon: \'channelinfo_toplist\'; There might be a syntax error in your \'channel description\', which is defined in the webinterface! Error message: ['.$e->getCode().']: '.$errmsg);
 			}
 		}
 	}

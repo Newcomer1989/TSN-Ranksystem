@@ -19,12 +19,12 @@ try {
 			$err_msg = $lang['wichpw1']; $err_lvl = 3;
 		} else {
 			$cfg['webinterface_pass'] = password_hash($_POST['newpwd1'], PASSWORD_DEFAULT);
-			if ($_POST['newpwd1'] !== $_POST['newpwd2'] || $_POST['newpwd1'] == NULL) {
+			if (!hash_equals($_POST['newpwd1'], $_POST['newpwd2']) || $_POST['newpwd1'] == NULL) {
 				$err_msg = $lang['wichpw2']; $err_lvl = 3;
 			} elseif($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('webinterface_pass','{$cfg['webinterface_pass']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)") === false) {
 				$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 			} else {
-				enter_logfile($cfg,3,sprintf($lang['wichpw3'],getclientip()));
+				enter_logfile(3,sprintf($lang['wichpw3'],getclientip()));
 				$err_msg = $lang['wisvsuc']; $err_lvl = NULL;
 			}
 		}
@@ -34,7 +34,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_changepassword">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div id="login-overlay" class="modal-dialog">
@@ -68,7 +68,7 @@ try {
 											</div>
 											<br>
 											<p>
-												<button type="submit" class="btn btn-success btn-block" name="changepw"><i class="fas fa-save"></i>&nbsp;<?PHP echo $lang['wichpw4']; ?></button>
+												<button type="submit" class="btn btn-success btn-block" name="changepw"><i class="fas fa-save"></i><span class="item-margin"><?PHP echo $lang['wichpw4']; ?></span></button>
 											</p>
 										</form>
 									</div>

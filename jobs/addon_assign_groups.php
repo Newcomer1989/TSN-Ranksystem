@@ -20,18 +20,18 @@ function addon_assign_groups($addons_config,$ts3,$cfg,$dbname,$allclients,&$db_c
 						try {
 							usleep($cfg['teamspeak_query_command_delay']);
 							$ts3->serverGroupClientDel($group, $cldbid);
-							enter_logfile($cfg,6,"Removed servergroup $group from user $nickname (UID: $uid), requested by Add-on 'Assign Servergroups'");
+							enter_logfile(6,"Removed servergroup $group from user $nickname (UID: $uid), requested by Add-on 'Assign Servergroups'");
 						}
 						catch (Exception $e) {
-							enter_logfile($cfg,2,"addon_assign_groups:".$e->getCode().': '."Error while removing group: ".$e->getMessage());
+							enter_logfile(2,"addon_assign_groups:".$e->getCode().': '."Error while removing group: ".$e->getMessage());
 						}
 					} else {
 						try {
 							usleep($cfg['teamspeak_query_command_delay']);
 							$ts3->serverGroupClientAdd($group, $cldbid);
-							enter_logfile($cfg,6,"Added servergroup $group from user $nickname (UID: $uid), requested by Add-on 'Assign Servergroups'");
+							enter_logfile(6,"Added servergroup $group from user $nickname (UID: $uid), requested by Add-on 'Assign Servergroups'");
 						} catch (Exception $e) {
-							enter_logfile($cfg,2,"addon_assign_groups:".$e->getCode().': '."Error while adding group: ".$e->getMessage());
+							enter_logfile(2,"addon_assign_groups:".$e->getCode().': '."Error while adding group: ".$e->getMessage());
 						}
 					}
 				}

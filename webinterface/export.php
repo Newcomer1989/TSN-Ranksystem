@@ -14,6 +14,9 @@ try {
 		$err_lvl = 3;
 	}
 
+	if(!is_int($job_check['database_export']['timestamp'])) {
+		$job_check['database_export']['timestamp'] = intval($job_check['database_export']['timestamp']);
+	}
 	function get_status($lang, $job_check, $check = NULL) {
 		$err_msg = "<b>".$lang['wihladmex']."</b>: ";
 		switch($job_check['database_export']['timestamp']) {
@@ -40,7 +43,7 @@ try {
 		$err_msg = '<b>'.$lang['wihladmrs'].":</b><br><br><pre>"; $err_lvl = 2;
 		$err_msg .= get_status($lang, $job_check);
 
-		if(in_array($job_check['database_export']['timestamp'], ["0","3","4"], true)) {
+		if(in_array($job_check['database_export']['timestamp'], [0,3,4], true)) {
 			$err_msg .= '</pre><br>';
 			if($job_check['database_export']['timestamp'] == 4) {
 				$err_msg .= "Exported file successfully.";
@@ -48,14 +51,14 @@ try {
 					$err_msg .= "<br><u>".sprintf($lang['wihladmex2'], "</u>")."<br><pre>".$cfg['teamspeak_query_pass']."</pre>";
 				}
 			}
-			$err_msg .= '<br>'.sprintf($lang['wihladmrs9'], '<form class="btn-group" name="confirm" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>&nbsp;', '</button></form>');
+			$err_msg .= '<br>'.sprintf($lang['wihladmrs9'], '<form class="btn-group" name="confirm" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-success btn-sm" name="confirm"><i class="fas fa-check"></i>', '</button></form>');
 		} else {
-			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'].'<br><br>'.sprintf($lang['wihladmrs17'], '<form class="btn-group" name="cancel" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i>&nbsp;', '</button></form>');
+			$err_msg .= '</pre><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>', '</button></form>').'<br><br>'.$lang['wihladmrs8'].'<br><br>'.sprintf($lang['wihladmrs17'], '<form class="btn-group" name="cancel" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-danger btn-sm" name="cancel"><i class="fas fa-times"></i>', '</button></form>');
 		}
 	}
 
 	if (isset($_POST['confirm']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(in_array($job_check['database_export']['timestamp'], ["0","3","4"], true)) {
+		if(in_array($job_check['database_export']['timestamp'], [0,3,4], true)) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('database_export','0') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
@@ -68,7 +71,7 @@ try {
 			$err_lvl = 3;
 		}
 	} elseif (isset($_POST['cancel']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(in_array($job_check['database_export']['timestamp'], ["0","1","2","4"], true)) {
+		if(in_array($job_check['database_export']['timestamp'], [0,1,2,4], true)) {
 			if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`,`timestamp`) VALUES ('database_export','3') ON DUPLICATE KEY UPDATE `timestamp`=VALUES(`timestamp`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
 				$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 				$err_lvl = 3;
@@ -81,7 +84,7 @@ try {
 			$err_lvl = 3;
 		}
 	} elseif (isset($_POST['delete']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(substr($_POST['delete'],0,10) == "db_export_" && unlink($cfg['logs_path'].$_POST['delete'])) {
+		if(substr($_POST['delete'],0,10) == "db_export_" && unlink($GLOBALS['logpath'].$_POST['delete'])) {
 			$err_msg = sprintf($lang['wihladmex3'], $_POST['delete']);
 			$err_lvl = NULL;
 		} else {
@@ -96,7 +99,7 @@ try {
 			$err_msg = $lang['isntwidbmsg'].print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
-			$err_msg = '<b>'.$lang['wihladmex1'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>&nbsp;', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
+			$err_msg = '<b>'.$lang['wihladmex1'].'</b><br><br>'.sprintf($lang['wihladmrs7'], '<form class="btn-group" name="refresh" action="export.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary btn-sm" name="refresh"><i class="fas fa-sync"></i>', '</button></form>').'<br><br>'.$lang['wihladmrs8'];
 			if(($snapshot = $mysqlcon->query("SELECT COUNT(*) AS `count` from `$dbname`.`user_snapshot`")->fetch()) === false) { } else {
 				$est_time = round($snapshot['count'] * 0.00005) + 5;
 				$dtF = new \DateTime('@0');
@@ -112,7 +115,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_export">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -145,26 +148,26 @@ try {
 										</div>
 										<div class="form-group" name="filegroup">
 										<?PHP
-										foreach(scandir($cfg['logs_path']) as $file) {
+										foreach(scandir($GLOBALS['logpath']) as $file) {
 											if ('.' === $file || '..' === $file) continue;
-											if (is_dir($cfg['logs_path'].$file)) continue;
+											if (is_dir($GLOBALS['logpath'].$file)) continue;
 											if(substr($file, 0, 10) != 'db_export_') continue;
 											if(substr($file, -4, 4) != '.zip' && substr($file, -4, 4) != '.sql') continue;
 										?>
 											<div class="col-sm-6">
-												<?PHP echo $cfg['logs_path'].$file; ?>
+												<?PHP echo $GLOBALS['logpath'].$file; ?>
 											</div>
 											<div class="col-sm-1">
-												<?PHP echo human_readable_size(filesize($cfg['logs_path'].$file),$lang); ?>
+												<?PHP echo human_readable_size(filesize($GLOBALS['logpath'].$file),$lang); ?>
 											</div>
 											<div class="col-sm-3">
-												<?PHP echo md5_file($cfg['logs_path'].$file); ?>
+												<?PHP echo md5_file($GLOBALS['logpath'].$file); ?>
 											</div>
 											<div class="col-sm-1 text-center delete">
 												<form id="<?PHP echo $file.'dow' ?>" method="POST">
 													<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 													<input type="hidden" name="download" value="<?PHP echo $file; ?>">
-													<?PHP if(in_array($job_check['database_export']['timestamp'], ["0","4"], true)) { ?>
+													<?PHP if(in_array($job_check['database_export']['timestamp'], [0,4], true)) { ?>
 														<a href="download_file.php?csrf_token=<?PHP echo $csrf_token; ?>&file=<?PHP echo $file ?>">
 														<span onclick="document.getElementById('<?PHP echo $file.'dow' ?>').submit();" style="cursor: pointer; pointer-events: all;">
 														<svg class="svg-inline--fa fa-download fa-w-16" style="margin-top: 10px;cursor: pointer;" title="download file" aria-labelledby="svg-inline--fa-title-D8LEkIGcdqdt" data-prefix="fas" data-icon="download" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg=""><title id="svg-inline--fa-title-D8LEkIGcdqdt"><?PHP echo $lang['wihladmex5']; ?></title><path fill="currentColor" d="M216 0h80c13.3 0 24 10.7 24 24v168h87.7c17.8 0 26.7 21.5 14.1 34.1L269.7 378.3c-7.5 7.5-19.8 7.5-27.3 0L90.1 226.1c-12.6-12.6-3.7-34.1 14.1-34.1H192V24c0-13.3 10.7-24 24-24zm296 376v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h146.7l49 49c20.1 20.1 52.5 20.1 72.6 0l49-49H488c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z" style="--darkreader-inline-fill:currentColor;" data-darkreader-inline-fill=""></path></svg>
@@ -177,7 +180,7 @@ try {
 												<form id="<?PHP echo $file.'del' ?>" method="POST">
 													<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 													<input type="hidden" name="delete" value="<?PHP echo $file ?>">
-													<?PHP if(in_array($job_check['database_export']['timestamp'], ["0","4"], true)) { ?>
+													<?PHP if(in_array($job_check['database_export']['timestamp'], [0,4], true)) { ?>
 														<span onclick="document.getElementById('<?PHP echo $file.'del' ?>').submit();" style="cursor: pointer; pointer-events: all;">
 															<svg class="svg-inline--fa fa-trash fa-w-14" style="margin-top: 10px;cursor: pointer;" title="delete file" onclick="javascript:this.form.submit();" aria-labelledby="svg-inline--fa-title-gtKCZkgszs1S" data-prefix="fas" data-icon="trash" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg=""><title id="svg-inline--fa-title-gtKCZkgszs1S"><?PHP echo $lang['wihladmex6']; ?></title><path fill="currentColor" d="M32 464a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48V128H32zm272-256a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zm-96 0a16 16 0 0 1 32 0v224a16 16 0 0 1-32 0zM432 32H312l-9.4-18.7A24 24 0 0 0 281.1 0H166.8a23.72 23.72 0 0 0-21.4 13.3L136 32H16A16 16 0 0 0 0 48v32a16 16 0 0 0 16 16h416a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16z" style="--darkreader-inline-fill:currentColor;" data-darkreader-inline-fill=""></path></svg>
 														</span>
@@ -196,7 +199,7 @@ try {
 								<form name="post" id="post" method="POST">
 								<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
 								<div class="text-center">
-									<button type="submit" class="btn btn-primary" name="export"><?php echo $lang['wihladmex7']; ?></button>
+									<button type="submit" class="btn btn-primary" name="export"><span class="item-margin"><?php echo $lang['wihladmex7']; ?></span></button>
 								</div>
 								</form>
 							</div>

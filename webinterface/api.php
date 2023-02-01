@@ -21,7 +21,8 @@ try {
 			$apidefinition = [];
 			foreach($_POST['apikey'] as $rowid => $apikey) {
 				$desc = isset($_POST["desc"][$rowid]) ? $_POST["desc"][$rowid] : null;
-				$apidefinition[] = "$apikey=>$desc";
+				if(isset($_POST["perm_bot"]) && in_array($rowid,$_POST["perm_bot"])) $perm_bot = 1; else $perm_bot = 0;
+				$apidefinition[] = "$apikey=>$desc=>$perm_bot";
 			}
 
 			$stats_api_keys = implode(",", $apidefinition);
@@ -44,8 +45,8 @@ try {
 		} else {
 			$keyarr = explode(',', $stats_api_keys);
 			foreach ($keyarr as $entry) {
-				list($key, $value) = explode('=>', $entry);
-				$addnewvalue[$key] = $value;
+				list($key, $desc, $perm_bot) = explode('=>', $entry);
+				$addnewvalue[$key] = array("key"=>$key,"desc"=>$desc,"perm_bot"=>$perm_bot);
 				$cfg['stats_api_keys'] = $addnewvalue;
 			}
 		}
@@ -55,7 +56,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_api">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					
@@ -76,10 +77,16 @@ try {
 										<div class="row">&nbsp;</div>
 										<div class="row">&nbsp;</div>
 										<div class="form-group">
-											<div class="col-sm-5">
+											<div class="col-sm-4">
 												<b><?php echo $lang['apikey'] ?></b>
 											</div>
-											<div class="col-sm-6">
+											<div class="col-sm-1">
+												<b><?php echo $lang['permission'] ?></b>
+											</div>
+											<div class="col-sm-1">
+												<b><?php echo "" ?></b>
+											</div>
+											<div class="col-sm-5">
 												<b><?php echo $lang['descr']; ?></b>
 											</div>
 											<div class="col-sm-1"></div>
@@ -89,8 +96,11 @@ try {
 												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="tempapikey[]" value="<?PHP $apikey= bin2hex(openssl_random_pseudo_bytes(32)); echo $apikey; ?>">
 												<div class="help-block with-errors"></div>
 											</div>
+											<div class="col-sm-1">
+												<span class="d-inline-block" data-toggle="tooltip" title="Permission: Allow to start/stop Ranksystem Bot via API (ON = Allow ; OFF = Deny)"><input class="switch-animate" type="checkbox" data-size="mini" name="temp_perm_bot[]" value=""></span>
+											</div>
 											<div class="col-sm-1 text-left"></div>
-											<div class="col-sm-6">
+											<div class="col-sm-5">
 												<input type="text" data-pattern="^[^,=>]{1,128}$" data-error="No comma, equal sign or greater-than sign allowed and maximum 128 characters!" maxlength="128" class="form-control" name="tempdesc[]" value="" placeholder="set a description..">
 												<div class="help-block with-errors"></div>
 											</div>
@@ -98,26 +108,35 @@ try {
 											<div class="col-sm-2"></div>
 										</div>
 									<?PHP
+									$rowid = 0;
 									if(isset($cfg['stats_api_keys']) && $cfg['stats_api_keys'] != '') {
-										foreach($cfg['stats_api_keys'] as $apikey => $desc) {
+										foreach($cfg['stats_api_keys'] as $apikey) {
 										?>
 										<div class="form-group" name="apidef">
 											<div class="col-sm-4">
-												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="apikey[]" value="<?PHP echo $apikey; ?>">
+												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="apikey[]" value="<?PHP echo $apikey['key']; ?>">
 												<div class="help-block with-errors"></div>
 											</div>
-											<div class="col-sm-1 text-left">
-												<i class="fas fa-link" onclick="openurl('../api/?apikey=<?PHP echo $apikey; ?>')" style="margin-top:10px;cursor:pointer;" title="open URL"></i>&nbsp;
-												<i class="fas fa-copy" onclick="copyurl('<?PHP echo $_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'api/?apikey=',$apikey; ?>')" style="margin-top:10px;cursor:pointer;" title="copy URL to clipboard"></i>
+											<div class="col-sm-1">
+												<?PHP if ($apikey['perm_bot'] == 1) {
+													echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" checked data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
+												} else {
+													echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
+												} ?>
 											</div>
-											<div class="col-sm-6">
-												<input type="text" data-pattern="^[^,=>]{1,128}$" data-error="No comma, equal sign or greater-than sign allowed and maximum 128 characters!" maxlength="128" class="form-control" name="desc[]" value="<?PHP echo $desc; ?>" placeholder="set a description..">
+											<div class="col-sm-1 text-left">
+												<span class="item-margin"><i class="fas fa-link" onclick="openurl('../api/?apikey=<?PHP echo $apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="open URL"></i></span>
+												<span class="item-margin"><i class="fas fa-copy" onclick="copyurl('<?PHP echo $_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'api/?apikey=',$apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="copy URL to clipboard"></i></span>
+											</div>
+											<div class="col-sm-5">
+												<input type="text" data-pattern="^[^,=>]{1,128}$" data-error="No comma, equal sign or greater-than sign allowed and maximum 128 characters!" maxlength="128" class="form-control" name="desc[]" value="<?PHP echo $apikey['desc']; ?>" placeholder="set a description..">
 												<div class="help-block with-errors"></div>
 											</div>
 											<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
 											<div class="col-sm-2"></div>
 										</div>
 										<?PHP
+										$rowid++;
 										}
 									}
 									?>
@@ -129,7 +148,7 @@ try {
 												echo '<div class="col-sm-11"></div>';
 											}?>
 											<div class="col-sm-1 text-center">
-												<span class="d-inline-block" ata-toggle="tooltip" title="Add new line">
+												<span class="d-inline-block" data-toggle="tooltip" title="Add new line">
 													<button class="btn btn-primary" onclick="addapikey()" style="margin-top: 5px;" type="button"><i class="fas fa-plus"></i></button>
 												</span>
 											</div>
@@ -142,7 +161,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>
@@ -184,11 +203,16 @@ try {
 	});
 	function addapikey() {
 		var $clone = $("div[name='template']").last().clone();
+		var $lastvalue = $("div[name='apidef'] input[name='perm_bot[]']").last().val();
+		$lastvalue++;
 		$clone.removeClass("hidden");
 		$clone.attr('name','apidef');
 		$clone.insertBefore("#addapikey");
 		$("input[name='tempapikey[]']").last().attr('name', 'apikey[]');
 		$("input[name='tempdesc[]']").last().attr('name', 'desc[]');
+		$("input[name='temp_perm_bot[]']").last().attr('name', 'perm_bot[]');
+		$("div[name='apidef'] input[name='perm_bot[]']").last().attr('value',$lastvalue);
+		$("div[name='apidef'] input[name='perm_bot[]']").last().bootstrapSwitch();
 		$('.delete').removeClass("hidden");
 		if (document.contains(document.getElementById("noentry"))) {
 			document.getElementById("noentry").remove();
@@ -235,6 +259,10 @@ try {
 	function copyurl(url) {
 	  navigator.clipboard.writeText(url).then(function() { });
 	}
+	$("[name='perm_bot[]']").bootstrapSwitch();
+	$(function () {
+		$('[data-toggle="tooltip"]').tooltip()
+	})
 	</script>
 	</body>
 	</html>

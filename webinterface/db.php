@@ -31,8 +31,8 @@ try {
 				$err_msg = sprintf($lang['widbcfgerr']);
 				$err_lvl = 3;
 			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '&nbsp;&nbsp;<form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
-			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i>&nbsp;'.$lang['wibot7'].'</button></form>');
+				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
+			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
 				$err_lvl = 0;
 				$db['type']	= $_POST['dbtype'];
 				$db['host']	= $_POST['dbhost'];
@@ -51,7 +51,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_db">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -74,7 +74,7 @@ try {
 											<div class="col-sm-8">
 												<select class="selectpicker show-tick form-control required" id="basic" name="dbtype" required>
 												<option disabled value=""> -- select database -- </option>
-												<option data-divider="true">&nbsp;</option>
+												<option data-divider="true"></option>
 												<?PHP
 												echo '<option data-subtext="Cubrid" value="cubrid"'; if($db['type']=="cubrid") echo " selected=selected"; echo '>cubrid</option>';
 												echo '<option data-subtext="FreeTDS / Microsoft SQL Server / Sybase" value="dblib"'; if($db['type']=="dblib") echo " selected=selected"; echo '>dblib</option>';
@@ -137,7 +137,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>

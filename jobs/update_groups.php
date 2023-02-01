@@ -4,7 +4,7 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 	$nowtime = time();
 	$sqlexec = '';
 	
-	if($db_cache['job_check']['update_groups']['timestamp'] < ($nowtime - 6)) {
+	if(!isset($db_cache['job_check']['update_groups']['timestamp']) || intval($db_cache['job_check']['update_groups']['timestamp']) < ($nowtime - 6)) {
 		$db_cache['job_check']['update_groups']['timestamp'] = $nowtime;
 		$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='update_groups';\n";
 		try {
@@ -22,10 +22,10 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 			unset($iconlist);
 		} catch (Exception $e) {
 			if ($e->getCode() != 1281) {
-				enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+				enter_logfile(2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 			} else {
 				$iconarr["xxxxx"] = 0;
-				enter_logfile($cfg,6,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+				enter_logfile(6,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 			}
 		}
 
@@ -41,28 +41,28 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 			$extension = '';
 			if (!isset($db_cache['groups']['0']) || $db_cache['groups']['0']['iconid'] != $sIconId || (isset($iconarr["i".$sIconId]) && $iconarr["i".$sIconId] > $db_cache['groups']['0']['icondate'])) {
 				if(isset($db_cache['groups']['0']) && isset($iconarr["i".$sIconId])) {
-					enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid:".$db_cache['groups']['0']['iconid']."; TSicondate:".$iconarr["i".$sIconId]."; DBicondate:".$db_cache['groups']['0']['icondate'].";");
+					enter_logfile(6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid:".$db_cache['groups']['0']['iconid']."; TSicondate:".$iconarr["i".$sIconId]."; DBicondate:".$db_cache['groups']['0']['icondate'].";");
 				} else {
-					enter_logfile($cfg,6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid: empty; TSicondate: empty; DBicondate: empty;");
+					enter_logfile(6,"Servericon TSiconid:".$serverinfo['virtualserver_icon_id']."; powed TSiconid:".$sIconId."; DBiconid: empty; TSicondate: empty; DBicondate: empty;");
 				}
 				if($sIconId > 600) {
 					try {
 						usleep($cfg['teamspeak_query_command_delay']);
-						enter_logfile($cfg,5,$lang['upgrp0002']);
+						enter_logfile(5,$lang['upgrp0002']);
 						$sIconFile = $ts3->iconDownload();
 						$extension = mime2extension(TeamSpeak3_Helper_Convert::imageMimeType($sIconFile));
 						if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/servericon." . $extension, $sIconFile) === false) {
-							enter_logfile($cfg,2,$lang['upgrp0003'].' '.sprintf($lang['errperm'], 'tsicons'));
+							enter_logfile(2,$lang['upgrp0003'].' '.sprintf($lang['errperm'], 'tsicons'));
 						}
 					} catch (Exception $e) {
-						enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().'; '.$lang['upgrp0004'].$e->getMessage());
+						enter_logfile(2,$lang['errorts3'].$e->getCode().'; '.$lang['upgrp0004'].$e->getMessage());
 					}
 				} elseif($sIconId == 0) {
 					foreach (glob(substr(dirname(__FILE__),0,-4) . "tsicons/servericon.*") as $file) {
 						if(unlink($file) === false) {
-							enter_logfile($cfg,2,$lang['upgrp0005'].' '.sprintf($lang['errperm'], 'tsicons'));
+							enter_logfile(2,$lang['upgrp0005'].' '.sprintf($lang['errperm'], 'tsicons'));
 						} else {
-							enter_logfile($cfg,5,$lang['upgrp0006']);
+							enter_logfile(5,$lang['upgrp0006']);
 						}
 					}
 					$iconarr["i".$sIconId] = $sIconId = 0;
@@ -101,16 +101,16 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				if($iconid > 600) {
 					if (!isset($db_cache['groups'][$sgid]) || $db_cache['groups'][$sgid]['iconid'] != $iconid || isset($iconarr["i".$iconid]) && $iconarr["i".$iconid] > $db_cache['groups'][$sgid]['icondate']) {
 						try {
-							check_shutdown($cfg); usleep($cfg['teamspeak_query_command_delay']);
-							enter_logfile($cfg,5,sprintf($lang['upgrp0011'], $sgname, $sgid));
+							check_shutdown(); usleep($cfg['teamspeak_query_command_delay']);
+							enter_logfile(5,sprintf($lang['upgrp0011'], $sgname, $sgid));
 							$iconfile = $servergroup->iconDownload();
 							$extension = mime2extension(TeamSpeak3_Helper_Convert::imageMimeType($iconfile));
 							if(file_put_contents(substr(dirname(__FILE__),0,-4) . "tsicons/" . $iconid . "." . $extension, $iconfile) === false) {
-								enter_logfile($cfg,2,sprintf($lang['upgrp0007'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
+								enter_logfile(2,sprintf($lang['upgrp0007'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 							}
 							$iconcount++;
 						} catch (Exception $e) {
-							enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.sprintf($lang['upgrp0008'], $sgname, $sgid).$e->getMessage());
+							enter_logfile(2,$lang['errorts3'].$e->getCode().': '.sprintf($lang['upgrp0008'], $sgname, $sgid).$e->getMessage());
 						}
 					} else {
 						$extension = $db_cache['groups'][$sgid]['ext'];
@@ -118,9 +118,9 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				} elseif($iconid == 0) {
 					foreach (glob(substr(dirname(__FILE__),0,-4) . "tsicons/" . $iconid . ".*") as $file) {
 						if(unlink($file) === false) {
-							enter_logfile($cfg,2,sprintf($lang['upgrp0009'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
+							enter_logfile(2,sprintf($lang['upgrp0009'], $sgname, $sgid).' '.sprintf($lang['errperm'], 'tsicons'));
 						} else {
-							enter_logfile($cfg,5,sprintf($lang['upgrp0010'], $sgname, $sgid));
+							enter_logfile(5,sprintf($lang['upgrp0010'], $sgname, $sgid));
 						}
 					}
 					$iconarr["i".$iconid] = 0;
@@ -133,10 +133,10 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				}
 
 				if(isset($db_cache['groups'][$servergroup['sgid']]) && $db_cache['groups'][$servergroup['sgid']]['sgidname'] == $sgname && $db_cache['groups'][$servergroup['sgid']]['iconid'] == $iconid && $db_cache['groups'][$servergroup['sgid']]['icondate'] == $iconarr["i".$iconid] && $db_cache['groups'][$servergroup['sgid']]['sortid'] == $servergroup['sortid']) {
-					enter_logfile($cfg,7,"Continue server group ".$sgname." (CID: ".$servergroup['sgid'].")");
+					enter_logfile(7,"Continue server group ".$sgname." (CID: ".$servergroup['sgid'].")");
 					continue;
 				} else {
-					enter_logfile($cfg,6,"Update/Insert server group ".$sgname." (CID: ".$servergroup['sgid'].")");
+					enter_logfile(6,"Update/Insert server group ".$sgname." (CID: ".$servergroup['sgid'].")");
 					$updategroups[] = array(
 						"sgid" => $servergroup['sgid'],
 						"sgidname" => $sgname,
@@ -177,14 +177,14 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 						foreach($cfg['rankup_definition'] as $rank) {
 							if(in_array($sgid, $rank)) {
 								if(in_array($sgid, $cfg['rankup_definition'])) {
-									enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
+									enter_logfile(2,sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 									if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
 										foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
 											usleep($cfg['teamspeak_query_command_delay']);
 											try {
 												$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 											} catch (Exception $e) {
-												enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+												enter_logfile(6,"  ".sprintf($lang['upusrerr'], $clientid));
 											}
 										}
 									}
@@ -192,27 +192,27 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 							}
 						}
 						if(isset($cfg['rankup_boost_definition'][$sgid])) {
-							enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiboost']));
+							enter_logfile(2,sprintf($lang['upgrp0001'], $sgid, $lang['wiboost']));
 							if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
 								foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
 									usleep($cfg['teamspeak_query_command_delay']);
 									try {
 										$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 									} catch (Exception $e) {
-										enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+										enter_logfile(6,"  ".sprintf($lang['upusrerr'], $clientid));
 									}
 								}
 							}
 						}
 						if(isset($cfg['rankup_excepted_group_id_list'][$sgid])) {
-							enter_logfile($cfg,2,sprintf($lang['upgrp0001'], $sgid, $lang['wiexgrp']));
+							enter_logfile(2,sprintf($lang['upgrp0001'], $sgid, $lang['wiexgrp']));
 							if(isset($cfg['webinterface_admin_client_unique_id_list']) && $cfg['webinterface_admin_client_unique_id_list'] != NULL) {
 								foreach ($cfg['webinterface_admin_client_unique_id_list'] as $clientid) {
 									usleep($cfg['teamspeak_query_command_delay']);
 									try {
 										$ts3->clientGetByUid($clientid)->message(sprintf($lang['upgrp0001'], $sgid, $lang['wigrptime']));
 									} catch (Exception $e) {
-										enter_logfile($cfg,6,"  ".sprintf($lang['upusrerr'], $clientid));
+										enter_logfile(6,"  ".sprintf($lang['upusrerr'], $clientid));
 									}
 								}
 							}
@@ -225,11 +225,11 @@ function update_groups($ts3,$mysqlcon,$lang,$cfg,$dbname,$serverinfo,&$db_cache,
 				$delsgroupids = substr($delsgroupids, 0, -1);
 				$sqlexec .= "DELETE FROM `$dbname`.`groups` WHERE `sgid` IN ($delsgroupids);\n";
 			}
-			enter_logfile($cfg,6,"update_groups needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
+			enter_logfile(6,"update_groups needs: ".(number_format(round((microtime(true) - $starttime), 5),5)));
 			return($sqlexec);
 
 		} catch (Exception $e) {
-			enter_logfile($cfg,2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
+			enter_logfile(2,$lang['errorts3'].$e->getCode().': '.$lang['errgrplist'].$e->getMessage());
 		}
 	}
 }

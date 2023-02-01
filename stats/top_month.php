@@ -32,7 +32,8 @@ try {
 		$texttime = $lang['sttw0003'];
 	}
 
-	$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM (SELECT `uuid`,`removed`,`count_month`,`idle_month` FROM `$dbname`.`stats_user` WHERE `removed`!=1) `s` INNER JOIN `$dbname`.`user` `u` ON `u`.`uuid`=`s`.`uuid` WHERE `u`.`uuid` NOT IN ($notinuuid) AND `u`.`cldgroup` NOT IN ($notingroup) $andnotgroup AND `s`.`idle_month`<`s`.`count_month` ORDER BY $order DESC LIMIT 10")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
+	$timeago = time() - 2592000;
+	$db_arr = $mysqlcon->query("SELECT `s`.`uuid`,`s`.`count_month`,`s`.`idle_month`,`u`.`name`,`u`.`online`,`u`.`cldgroup` FROM `$dbname`.`stats_user` `s`, `$dbname`.`user` `u` WHERE `u`.`uuid` = `s`.`uuid` AND `s`.`removed`!=1 AND `u`.`lastseen`>{$timeago} AND `u`.`uuid` NOT IN ({$notinuuid}) AND `u`.`cldgroup` NOT IN ({$notingroup}) {$andnotgroup} AND `s`.`idle_month`<`s`.`count_month` AND `s`.`count_month`>=0 AND `s`.`idle_month`>=0 ORDER BY $order DESC LIMIT 10")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 
 	$count_ids = $mysqlcon->query("SELECT COUNT(DISTINCT(`id`)) AS `count` from `$dbname`.`user_snapshot`")->fetch();
 
@@ -46,8 +47,8 @@ try {
 		} else {
 			$hours = $client['count_month'];
 		}
-		$top10_sum = round(($client['count_month']/3600)) + $top10_sum;
-		$top10_idle_sum = round(($client['idle_month']/3600)) + $top10_idle_sum;
+		$top10_sum += $client['count_month'];
+		$top10_idle_sum += $client['idle_month'];
 		$client_data[$count10] = array(
 			'name'		=>	htmlspecialchars($client['name']),
 			'title'		=>	htmlspecialchars($client['name']),
@@ -59,19 +60,21 @@ try {
 
 	for($count10 = $count10; $count10 <= 10; $count10++) {
 		$client_data[$count10] = array(
-			'name'		=>	"<i>unkown</i>",
-			'title'		=>	"unkown",
-			'count'		=>	"0",
-			'online'	=>	"0"
+			'name'		=>	"<i>".$lang['unknown']."</i>",
+			'title'		=>	$lang['unknown'],
+			'count'		=>	0,
+			'online'	=>	0
 		);
 	}
 
-	$sum = $mysqlcon->query("SELECT SUM(`count`) AS `count`, SUM(`idle`) AS `idle`, COUNT(*) AS `user` FROM `$dbname`.`user`")->fetch();
+	$sum = $mysqlcon->query("SELECT SUM(`s`.`count_month`) AS `count`, SUM(`s`.`idle_month`) AS `idle`, COUNT(*) AS `user` FROM `$dbname`.`stats_user` `s`, `$dbname`.`user` `u` WHERE `u`.`uuid` = `s`.`uuid` AND `s`.`removed`!=1 AND `u`.`lastseen`>{$timeago} AND `u`.`uuid` NOT IN ({$notinuuid}) AND `u`.`cldgroup` NOT IN ({$notingroup}) {$andnotgroup} AND `s`.`idle_month`<`s`.`count_month` AND `s`.`count_month`>=0 AND `s`.`idle_month`>=0;")->fetch();
+	$top10_sum = round(($top10_sum/3600));
+	$top10_idle_sum = round(($top10_idle_sum/3600));
 	$others_sum = round(($sum['count']/3600)) - $top10_sum;
 	$others_idle_sum = round(($sum['idle']/3600)) - $top10_idle_sum;
 	$sumentries = $sum['user'] - 10;
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_top_month">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -320,7 +323,7 @@ try {
 							<div class="col-lg-3">
 								<div class="panel panel-primary">
 									<div class="panel-heading">
-										<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0008']; ?></h3>
+										<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['sttw0008']; ?></span></h3>
 									</div>
 									<div class="panel-body">
 										<div id="top10vs_donut1"></div>
@@ -331,7 +334,7 @@ try {
 
 								<div class="panel panel-green">
 									<div class="panel-heading">
-										<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0009']; ?></h3>
+										<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['sttw0009']; ?></span></h3>
 									</div>
 									<div class="panel-body">
 										<div id="top10vs_donut2"></div>
@@ -342,7 +345,7 @@ try {
 
 								<div class="panel panel-yellow">
 									<div class="panel-heading">
-										<h3 class="panel-title"><i class="fas fa-chart-bar"></i>&nbsp;<?PHP echo $lang['sttw0010']; ?></h3>
+										<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['sttw0010']; ?></span></h3>
 									</div>
 									<div class="panel-body">
 										<div id="top10vs_donut3"></div>
@@ -356,36 +359,44 @@ try {
 			</div>
 		</div>
 		<?PHP require_once('_footer.php'); ?>
+<input type="hidden" id="donut_time_color_1" value="">
+<input type="hidden" id="donut_time_color_2" value="">
+<input type="hidden" id="donut_version_color_1" value="">
+<input type="hidden" id="donut_version_color_2" value="">
+<input type="hidden" id="donut_nation_color_1" value="">
+<input type="hidden" id="donut_nation_color_2" value="">
 		<script>
-			Morris.Donut({
-			  element: 'top10vs_donut1',
-			  data: [
-				{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_sum ?>},
-				{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_sum ?>},
-			  ]
-			});
-			Morris.Donut({
-			  element: 'top10vs_donut2',
-			  data: [
-				{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_sum - $top10_idle_sum ?>},
-				{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_sum - $others_idle_sum ?>},
-			  ],
-				colors: [
-				'#5cb85c',
-				'#80ce80'
-			]
-			});
-			Morris.Donut({
-			  element: 'top10vs_donut3',
-			  data: [
-				{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_idle_sum ?>},
-				{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_idle_sum ?>},
-			  ],
-			  colors: [
-				'#f0ad4e',
-				'#ffc675'
-			]
-			});
+const donut_time_color_1 = window.getComputedStyle(document.getElementById('donut_time_color_1')).getPropertyValue('color');
+const donut_time_color_2 = window.getComputedStyle(document.getElementById('donut_time_color_2')).getPropertyValue('color');
+const donut_version_color_1 = window.getComputedStyle(document.getElementById('donut_version_color_1')).getPropertyValue('color');
+const donut_version_color_2 = window.getComputedStyle(document.getElementById('donut_version_color_2')).getPropertyValue('color');
+const donut_nation_color_1 = window.getComputedStyle(document.getElementById('donut_nation_color_1')).getPropertyValue('color');
+const donut_nation_color_2 = window.getComputedStyle(document.getElementById('donut_nation_color_2')).getPropertyValue('color');
+
+Morris.Donut({
+  element: 'top10vs_donut1',
+  data: [
+	{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_sum ?>},
+	{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_sum ?>},
+  ],
+  colors: [donut_time_color_1, donut_time_color_2]
+});
+Morris.Donut({
+  element: 'top10vs_donut2',
+  data: [
+	{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_sum - $top10_idle_sum ?>},
+	{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_sum - $others_idle_sum ?>},
+  ],
+  colors: [donut_version_color_1, donut_version_color_2]
+});
+Morris.Donut({
+  element: 'top10vs_donut3',
+  data: [
+	{label: <?PHP echo '"',$lang['sttw0011'],'"'; ?>, value: <?PHP echo $top10_idle_sum ?>},
+	{label: <?PHP echo '"'.sprintf($lang['sttw0012'].'"', $sumentries); ?>, value: <?PHP echo $others_idle_sum ?>},
+  ],
+  colors: [donut_nation_color_1, donut_nation_color_2]
+});
 		</script>
 	</body>
 	</html>

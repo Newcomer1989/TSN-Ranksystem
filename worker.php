@@ -4,12 +4,13 @@ require_once(__DIR__.'/other/config.php');
 require_once(__DIR__.'/other/phpcommand.php');
 
 $GLOBALS['exec'] = FALSE;
-if($cfg['logs_path'] == NULL) { $cfg['logs_path'] = "./logs/"; }
+if($cfg['logs_path'] == NULL) { $cfg['logs_path'] = ".".DIRECTORY_SEPARATOR."logs".DIRECTORY_SEPARATOR; }
+$GLOBALS['logpath'] = $cfg['logs_path'];
 $GLOBALS['logfile'] = $cfg['logs_path'].'ranksystem.log';
 $GLOBALS['pidfile'] = $cfg['logs_path'].'pid';
 $GLOBALS['autostart'] = $cfg['logs_path'].'autostart_deactivated';
 
-function checkProcess($pid = null) {
+function checkProcess($pid = NULL) {
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if(!empty($pid)) {
 			exec("wmic process where \"processid=".$pid."\" get processid 2>nul", $result);
@@ -64,8 +65,7 @@ function start($delay = 0) {
 		sleep(10);
 	}
 	
-	global $cfg;
-	if(!is_writable($cfg['logs_path'])) {
+	if(!is_writable($GLOBALS['logpath'])) {
 		echo "\n !!!! Logs folder is not writable !!!!\n\n";
 		echo " Cancel start request...\n\n";
 		exit;
@@ -129,7 +129,6 @@ function start($delay = 0) {
 }
 
 function stop() {
-	global $cfg;
 	if (checkProcess() == TRUE) {
 		echo "Stopping the Ranksystem Bot.\n";
 		$pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
@@ -146,7 +145,7 @@ function stop() {
 				} else {
 					exec("kill -9 ".$pid);
 				}
-				enter_logfile($cfg,4,"Stop command received! Bot does not react, process killed!");
+				echo "Stop command received! Bot does not react, process killed!";
 				break;
 			}
 		}

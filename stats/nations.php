@@ -2,26 +2,26 @@
 require_once('_preload.php');
 
 try {
-	if(is_dir(substr(__DIR__,0,-5).'languages/')) {
-		foreach(scandir(substr(__DIR__,0,-5).'languages/') as $file) {
+	if(is_dir($GLOBALS['langpath'])) {
+		foreach(scandir($GLOBALS['langpath']) as $file) {
 			if ('.' === $file || '..' === $file || is_dir($file)) continue;
 			$sep_lang = preg_split("/[._]/", $file);
 			if(isset($sep_lang[0]) && $sep_lang[0] == 'nations' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[2]) && strtolower($sep_lang[2]) == 'php') {
 				if(strtolower($cfg['default_language']) == strtolower($sep_lang[1])) {
-					require_once('../languages/nations_'.$sep_lang[1].'.php');
+					require_once($GLOBALS['langpath'].'nations_'.$sep_lang[1].'.php');
 					$required_nations = 1;
 					break;
 				}
 			}
 		}
 		if(!isset($required_nations)) {
-			require_once('../languages/nations_en.php');
+			require_once($GLOBALS['langpath'].'nations_en.php');
 		}
 	}
 
 	$sql_res = $mysqlcon->query("SELECT * FROM `$dbname`.`stats_nations` ORDER BY `count` DESC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC);
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_nations">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -33,7 +33,7 @@ try {
 					</div>
 					<div class="row">
 						<div class="col-lg-12">
-							<div class="table-responsive">
+							<div class="table-responsive" id="nations">
 								<table class="table table-bordered table-hover">
 									<tbody>
 									<tr>
@@ -57,7 +57,7 @@ try {
 		} else {
 			echo 'flag-icon flag-icon-',strtolower($country);
 		}
-		echo '"></span>&nbsp;&nbsp;',$country,'</td><td><a href="list_rankup.php?sort=rank&order=desc&search=filter:country:',$country,':">';
+		echo '"></span><span class="item-margin">',$country,'</span></td><td><a href="list_rankup.php?sort=rank&order=desc&search=filter:country:',$country,':">';
 		if(isset($nation[$country])) echo $nation[$country];
 		echo '</td><td>',$value['count'],'</td><td>',number_format(round(($value['count'] * 100 / $sum_of_all), 1), 1),' %</td></tr>';
 	}

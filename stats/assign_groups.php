@@ -141,7 +141,7 @@ try {
 		}
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="stats_assign_groups">
 			<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">

@@ -18,7 +18,7 @@ $phpcommand = 'php';
 ## WINDOWS
 #$phpcommand = 'C:\PHP7\php.exe';
 #$phpcommand = 'C:\wamp\bin\php\php.exe';
-#$phpcommand = 'C:\xampp\php\php.exe';
+#$phpcommand = 'C:\xampp\php80\php.exe';
 # On blanks or special characters inside the path, you need to escape these with special marks -->  \"  <-- at the beginning and end of the path, see example below
 #$phpcommand = '\"C:\Program Files (x86)\PHP\php.exe\"';
 #$phpcommand = '\"C:\Program Files (x86)\Plesk\Additional\PHP73\php.exe\"';

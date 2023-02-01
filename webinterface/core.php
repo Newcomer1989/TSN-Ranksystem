@@ -31,7 +31,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_core">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -47,30 +47,34 @@ try {
 							<div class="col-md-3"></div>
 							<div class="col-md-6">
 								<div class="row">&nbsp;</div>
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
-									<div class="col-sm-8">
-										<select class="selectpicker show-tick form-control basic" name="rankup_time_assess_mode">
-										<?PHP
-										echo '<option data-icon="fas fa-microphone-slash" value="0"'; if($cfg['rankup_time_assess_mode']=="0") echo " selected=selected"; echo '>&nbsp;',$lang['wishcolot'],'</option>';
-										echo '<option data-icon="fas fa-microphone" value="1"'; if($cfg['rankup_time_assess_mode']=="1") echo " selected=selected"; echo '>&nbsp;&nbsp;',$lang['wishcolat'],'</option>';
-										?>
-										</select>
-									</div>
-								</div>
-								<div class="row">&nbsp;</div>
-								<div class="form-group">
-									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
-									<div class="col-sm-8">
-										<input type="text" class="form-control" name="rankup_ignore_idle_time" value="<?php echo $cfg['rankup_ignore_idle_time']; ?>">
-										<script>
-										$("input[name='rankup_ignore_idle_time']").TouchSpin({
-											min: 0,
-											max: 65535,
-											verticalbuttons: true,
-											prefix: 'Sec.:'
-										});
-										</script>
+								<div class="panel panel-default">
+									<div class="panel-body">
+										<div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wisupidledesc"><?php echo $lang['wisupidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<select class="selectpicker show-tick form-control basic" name="rankup_time_assess_mode">
+												<?PHP
+												echo '<option data-icon="fas fa-microphone-slash fa-fw" value="0"'; if($cfg['rankup_time_assess_mode']=="0") echo " selected=selected"; echo '><span class="item-margin">',$lang['wishcolot'],'</span></option>';
+												echo '<option data-icon="fas fa-microphone fa-fw" value="1"'; if($cfg['rankup_time_assess_mode']=="1") echo " selected=selected"; echo '><span class="item-margin">',$lang['wishcolat'],'</span></option>';
+												?>
+												</select>
+											</div>
+										</div>
+										<div class="row">&nbsp;</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiignidledesc"><?php echo $lang['wiignidle']; ?><i class="help-hover fas fa-question-circle"></i></label>
+											<div class="col-sm-8">
+												<input type="text" class="form-control" name="rankup_ignore_idle_time" value="<?php echo $cfg['rankup_ignore_idle_time']; ?>">
+												<script>
+												$("input[name='rankup_ignore_idle_time']").TouchSpin({
+													min: 0,
+													max: 65535,
+													verticalbuttons: true,
+													prefix: 'Sec.:'
+												});
+												</script>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -79,7 +83,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>

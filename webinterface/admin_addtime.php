@@ -59,7 +59,7 @@ try {
 		exit;
 	}
 	?>
-			<div id="page-wrapper">
+			<div id="page-wrapper" class="webinterface_admin_addtime">
 	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
 				<div class="container-fluid">
 					<div class="row">
@@ -90,8 +90,8 @@ try {
 											<div class="col-sm-8 pull-right">
 												<select class="selectpicker show-tick form-control" id="number" name="number" onchange="this.form.submit();">
 												<?PHP
-												echo '<option data-icon="fas fa-eye-slash" value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '>&nbsp;hide</option>';
-												echo '<option data-icon="fas fa-eye" value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '>&nbsp;show</option>';
+												echo '<option data-icon="fas fa-eye-slash" value="yes"'; if(!isset($_SESSION[$rspathhex.'showexcepted']) || $_SESSION[$rspathhex.'showexcepted'] == "yes") echo " selected=selected"; echo '><span class="item-margin">hide</span></option>';
+												echo '<option data-icon="fas fa-eye" value="no"'; if(isset($_SESSION[$rspathhex.'showexcepted']) && $_SESSION[$rspathhex.'showexcepted'] == "no") echo " selected=selected"; echo '><span class="item-margin">show</span></option>';
 												?>
 												</select>
 											</div>
@@ -102,7 +102,7 @@ try {
 												<select class="selectpicker show-tick form-control" data-actions-box="true" data-live-search="true" multiple name="user[]">
 												<?PHP
 												foreach ($user_arr as $user) {
-													echo '<option value="',$user['uuid'],'" data-subtext="UUID: ',$user['uuid'],'; DBID: ',$user['cldbid'],'">',htmlspecialchars($user['name']),'</option>';
+													echo '<option value="',$user['uuid'],'" data-subtext="UUID:&nbsp;',$user['uuid'],';&nbsp;DBID: ',$user['cldbid'],'">',htmlspecialchars($user['name']),'</option>';
 												}
 												?>
 												</select>
@@ -171,7 +171,7 @@ try {
 						<div class="row">&nbsp;</div>
 						<div class="row">
 							<div class="text-center">
-								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i>&nbsp;<?php echo $lang['wisvconf']; ?></button>
+								<button type="submit" class="btn btn-primary" name="update"><i class="fas fa-save"></i><span class="item-margin"><?php echo $lang['wisvconf']; ?></span></button>
 							</div>
 						</div>
 						<div class="row">&nbsp;</div>
