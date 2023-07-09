@@ -1,8 +1,8 @@
-﻿<?PHP
+<?php
 $rsversion = '1.3.22';
 
-require_once('other/_functions.php');
-require_once('other/config.php');
+require_once 'other/_functions.php';
+require_once 'other/config.php';
 start_session($cfg);
 $lang = set_language(get_language($cfg));
 ?>
@@ -21,81 +21,86 @@ $lang = set_language(get_language($cfg));
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="index.php">TSN Ranksystem - <?PHP echo $lang['install'],' (',$rsversion,')'; ?></a>
+				<a class="navbar-brand" href="index.php">TSN Ranksystem - <?php echo $lang['install'],' (',$rsversion,')'; ?></a>
 			</div>
 			<ul class="nav navbar-right top-nav">
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fas fa-globe-europe"></i>&nbsp;<b class="caret"></b></a>
 					<ul class="dropdown-menu">
-					<?PHP
-					if(is_dir($GLOBALS['langpath'])) {
-						foreach(scandir($GLOBALS['langpath']) as $file) {
-							if ('.' === $file || '..' === $file || is_dir($file)) continue;
-							$sep_lang = preg_split("/[._]/", $file);
-							if(isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
-								echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
-							}
-						}
-					}
-					?>
+					<?php
+                    if (is_dir($GLOBALS['langpath'])) {
+                        foreach (scandir($GLOBALS['langpath']) as $file) {
+                            if ('.' === $file || '..' === $file || is_dir($file)) {
+                                continue;
+                            }
+                            $sep_lang = preg_split('/[._]/', $file);
+                            if (isset($sep_lang[0]) && $sep_lang[0] == 'core' && isset($sep_lang[1]) && strlen($sep_lang[1]) == 2 && isset($sep_lang[4]) && strtolower($sep_lang[4]) == 'php') {
+                                echo '<li><a href="?lang='.$sep_lang[1].'"><span class="flag-icon flag-icon-'.$sep_lang[3].'"></span>&nbsp;&nbsp;'.strtoupper($sep_lang[1]).' - '.$sep_lang[2].'</a></li>';
+                            }
+                        }
+                    }
+?>
 					</ul>
 				</li>
 			</ul>
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
-					<?PHP
-					if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
-						echo '<li class="active"><a>1. ',$lang['instdb'],'</a></li>';
-					} else {
-						echo '<li><a>1. ',$lang['instdb'],'</a></li>';
-					}
-					if (isset($_POST['install'])) {
-						echo '<li class="active"><a>2. ',$lang['isntwiusrcr'],'</a></li>';
-					} else {
-						echo '<li><a>2. ',$lang['isntwiusrcr'],'</a></li>';
-					}
-					if (isset($_POST['confweb'])) {
-						echo '<li class="active"><a class="active">3. ',$lang['isntwicfg2'],'</a></li>';
-					} else {
-						echo '<li><a>3. ',$lang['isntwicfg2'],'</a></li>';
-					}
-					?>
+					<?php
+if (! isset($_POST['install']) && ! isset($_POST['confweb'])) {
+    echo '<li class="active"><a>1. ',$lang['instdb'],'</a></li>';
+} else {
+    echo '<li><a>1. ',$lang['instdb'],'</a></li>';
+}
+if (isset($_POST['install'])) {
+    echo '<li class="active"><a>2. ',$lang['isntwiusrcr'],'</a></li>';
+} else {
+    echo '<li><a>2. ',$lang['isntwiusrcr'],'</a></li>';
+}
+if (isset($_POST['confweb'])) {
+    echo '<li class="active"><a class="active">3. ',$lang['isntwicfg2'],'</a></li>';
+} else {
+    echo '<li><a>3. ',$lang['isntwicfg2'],'</a></li>';
+}
+?>
 				</ul>
 			</div>
 		</nav>
-<?PHP
+<?php
 
-function install($type, $host, $user, $pass, $dbname, $lang, $mysqlcon, &$err_msg, &$err_lvl, &$install_webuser) {
-	$newconfig='<?php
+function install($type, $host, $user, $pass, $dbname, $lang, $mysqlcon, &$err_msg, &$err_lvl, &$install_webuser)
+{
+    $newconfig = '<?php
 $db[\'type\']=\''.$type.'\';
 $db[\'host\']=\''.$host.'\';
 $db[\'user\']=\''.$user.'\';
 $db[\'pass\']=\''.$pass.'\';
 $db[\'dbname\']=\''.$dbname.'\';
 ?>';
-	
-	if(!is_writable('./other/dbconfig.php')) {
-		$err_msg = $lang['isntwicfg'];
-		$err_lvl = 2;
-	} else {
-		$count = 1;
-		$stmt = $mysqlcon->query('SHOW DATABASES');
-		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			if ($row['Database'] == $dbname) {
-				$dbExists = true;
-				break;
-			}
-		}
-		if ($dbExists) {
-			if(($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) { }
-		}
-		
-		if($mysqlcon->exec("CREATE DATABASE `$dbname`") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
 
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (
+    if (! is_writable('./other/dbconfig.php')) {
+        $err_msg = $lang['isntwicfg'];
+        $err_lvl = 2;
+    } else {
+        $count = 1;
+        $stmt = $mysqlcon->query('SHOW DATABASES');
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if ($row['Database'] == $dbname) {
+                $dbExists = true;
+                break;
+            }
+        }
+        if ($dbExists) {
+            if (($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) {
+            }
+        }
+
+        if ($mysqlcon->exec("CREATE DATABASE `$dbname`") === false) {
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`user` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`cldbid` int(10) NOT NULL default '0',
 			`count` DECIMAL(14,3) NOT NULL default '0',
@@ -116,24 +121,28 @@ $db[\'dbname\']=\''.$dbname.'\';
 			`grpsince` int(10) UNSIGNED NOT NULL default '0',
 			`cid` int(10) NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		} else {
-			if($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-			if($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-			if($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`groups` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        } else {
+            if ($mysqlcon->exec("CREATE INDEX `user_version` ON `$dbname`.`user` (`version`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+            if ($mysqlcon->exec("CREATE INDEX `user_cldbid` ON `$dbname`.`user` (`cldbid` ASC,`uuid`,`rank`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+            if ($mysqlcon->exec("CREATE INDEX `user_online` ON `$dbname`.`user` (`online`,`lastseen`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`groups` (
 			`sgid` int(10) UNSIGNED NOT NULL default '0' PRIMARY KEY,
 			`sgidname` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
 			`iconid` bigint(10) NOT NULL default '0',
@@ -142,53 +151,60 @@ $db[\'dbname\']=\''.$dbname.'\';
 			`type` tinyint(1) NOT NULL default '0',
 			`ext` char(3) CHARACTER SET utf8 COLLATE utf8_unicode_ci
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`cfg_params` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`cfg_params` (
 			`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`value` varchar(21588) CHARACTER SET utf8 COLLATE utf8_unicode_ci
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`server_usage` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`server_usage` (
 			`timestamp` int(10) UNSIGNED NOT NULL default '0',
 			`clients` smallint(5) UNSIGNED NOT NULL default '0',
 			`channel` smallint(5) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		} else {
-			if($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_snapshot` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        } else {
+            if ($mysqlcon->exec("CREATE INDEX `serverusage_timestamp` ON `$dbname`.`server_usage` (`timestamp`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`user_snapshot` (
 			`id` tinyint(3) UNSIGNED NOT NULL default '0',
 			`cldbid` int(10) UNSIGNED NOT NULL default '0',
 			`count` int(10) UNSIGNED NOT NULL default '0',
 			`idle` int(10) UNSIGNED NOT NULL default '0',
 			PRIMARY KEY (`id`,`cldbid`)
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		} else {
-			if($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-			if($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_server` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        } else {
+            if ($mysqlcon->exec("CREATE INDEX `snapshot_id` ON `$dbname`.`user_snapshot` (`id`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+            if ($mysqlcon->exec("CREATE INDEX `snapshot_cldbid` ON `$dbname`.`user_snapshot` (`cldbid`)") === false) {
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_server` (
 			`total_user` int(10) NOT NULL default '0',
 			`total_online_time` bigint(13) NOT NULL default '0',
 			`total_online_month` bigint(11) NOT NULL default '0',
@@ -244,11 +260,12 @@ $db[\'dbname\']=\''.$dbname.'\';
 			`user_month` int(10) NOT NULL default '0',
 			`user_quarter` int(10) NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_user` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`active_day` mediumint(8) UNSIGNED NOT NULL default '0',
 			`active_month` mediumint(8) UNSIGNED NOT NULL default '0',
@@ -267,43 +284,48 @@ $db[\'dbname\']=\''.$dbname.'\';
 			`removed` tinyint(1) NOT NULL default '0',
 			`total_connections` MEDIUMINT(8) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`stats_server` SET `total_user`='9999'") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`admin_addtime` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`stats_server` SET `total_user`='9999'") === false) {
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`admin_addtime` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
 			`timestamp` int(10) UNSIGNED NOT NULL default '0',
 			`timecount` int(10) NOT NULL default '0',
 			PRIMARY KEY (`uuid`,`timestamp`)
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_iphash` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`user_iphash` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`iphash` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
 			`ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_unicode_ci
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`job_check` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`job_check` (
 			`job_name` varchar(20) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`timestamp` int(10) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`job_check` (`job_name`) VALUES
 			('calc_donut_chars'),
 			('calc_server_stats'),
 			('calc_user_lastscan'),
@@ -332,54 +354,60 @@ $db[\'dbname\']=\''.$dbname.'\';
 			('update_channel'),
 			('update_groups')
 		;") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
 
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_nations` (
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_nations` (
 			`nation` char(2) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`count` smallint(5) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_versions` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_versions` (
 			`version` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`count` smallint(5) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_platforms` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`stats_platforms` (
 			`platform` varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`count` smallint(5) UNSIGNED NOT NULL default '0'
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		} else {
-			if($mysqlcon->exec("INSERT INTO `$dbname`.`stats_platforms` (`platform`,`count`) VALUES
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        } else {
+            if ($mysqlcon->exec("INSERT INTO `$dbname`.`stats_platforms` (`platform`,`count`) VALUES
 				('Windows',0),
 				('Android',0),
 				('OSX',0),
 				('iOS',0),
 				('Linux',0)
 			;") === false) {
-				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				$count++;
-			}
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`addons_config` (
+                $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+                $err_lvl = 2;
+                $count++;
+            }
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`addons_config` (
 			`param` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci UNIQUE,
 			`value` varchar(16000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
 
-		$channelinfo_desc = $mysqlcon->quote('[CENTER][B][SIZE=15]User Toplist (last week)[/SIZE][/B][/CENTER]
+        $channelinfo_desc = $mysqlcon->quote('[CENTER][B][SIZE=15]User Toplist (last week)[/SIZE][/B][/CENTER]
 
 [SIZE=11][B]1st[/B]     [URL=client://0/{$CLIENT_UNIQUE_IDENTIFIER_1}]{$CLIENT_NICKNAME_1}[/URL][/SIZE][SIZE=7] {if {$CLIENT_ONLINE_STATUS_1} === \'Online\'}[COLOR=GREEN](Online)[/COLOR]
 currently in channel [URL=channelid://{$CLIENT_CURRENT_CHANNEL_ID_1}]{$CLIENT_CURRENT_CHANNEL_NAME_1}[/URL]{else}[COLOR=RED](Offline)[/COLOR]
@@ -434,7 +462,7 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 
 [SIZE=6]Updated: {$LAST_UPDATE_TIME}[/SIZE]', ENT_QUOTES);
 
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES
 			('assign_groups_active','0'),
 			('assign_groups_name',''),
 			('assign_groups_excepted_groupids',''),
@@ -448,122 +476,131 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			('channelinfo_toplist_modus','1'),
 			('channelinfo_toplist_lastupdate','0')
 		;") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`addon_assign_groups` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`addon_assign_groups` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`grpids` varchar(1000) CHARACTER SET utf8 COLLATE utf8_unicode_ci
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
-		
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
+
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`csrf_token` (
 			`token` varchar(64) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`timestamp` int(10) UNSIGNED NOT NULL default '0',
 			`sessionid` varchar(128) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
 
-		if($mysqlcon->exec("CREATE TABLE `$dbname`.`channel` (
+        if ($mysqlcon->exec("CREATE TABLE `$dbname`.`channel` (
 			`cid` int(10) UNSIGNED NOT NULL default '0' PRIMARY KEY,
 			`pid` int(10) UNSIGNED NOT NULL default '0',
 			`channel_order` int(10) UNSIGNED NOT NULL default '0',
 			`channel_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 		);") === false) {
-			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-			$count++;
-		}
+            $err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true).'<br>';
+            $err_lvl = 2;
+            $count++;
+        }
 
-		if($count == 1) {
-			$err_msg = sprintf($lang['instdbsuc'], $dbname); $err_lvl = NULL;
-			$install_webuser = 1;
-			
-			$dbconfig = fopen('./other/dbconfig.php','w');
-			if(!fwrite($dbconfig, $newconfig)) {
-				$err_msg = $lang['isntwicfg'];
-				$err_lvl = 2;
-			}
-			fclose($dbconfig);
-		}
-	}
+        if ($count == 1) {
+            $err_msg = sprintf($lang['instdbsuc'], $dbname);
+            $err_lvl = null;
+            $install_webuser = 1;
+
+            $dbconfig = fopen('./other/dbconfig.php', 'w');
+            if (! fwrite($dbconfig, $newconfig)) {
+                $err_msg = $lang['isntwicfg'];
+                $err_lvl = 2;
+            }
+            fclose($dbconfig);
+        }
+    }
 }
 
 if (isset($_POST['install'])) {
-	unset($err_msg);
-	if ($_POST['dbtype'] == 'mysql') {
-		if(!in_array('pdo_mysql', get_loaded_extensions())) {
-			unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP MySQL','//php.net/manual/en/ref.pdo-mysql.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-		} else {
-			$dboptions = array();
-		}
-	} else {
-		$dboptions = array();
-	}
-	
-	if(!isset($err_msg)) {
-		$dbserver  = $_POST['dbtype'].':host='.$_POST['dbhost'].'; dbname='.$_POST['dbname'].';charset=utf8mb4';
-		$dbserver2 = $_POST['dbtype'].':host='.$_POST['dbhost'].';charset=utf8mb4';
-		$dbexists = 0;
-		try {
-			$mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass'], $dboptions);
-			$dbexists = 1;
-		} catch (PDOException $e) {
-			try {
-				$mysqlcon = new PDO($dbserver2, $_POST['dbuser'], $_POST['dbpass'], $dboptions);
-			} catch (PDOException $e) {
-				$err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage()); $err_lvl = 1;
-			}
-		}
-		
-		if(!is_writable('./other/dbconfig.php')) {
-			$err_msg = $lang['isntwicfg'];
-			$err_lvl = 2;
-		}
-	}
-	
-	if(!isset($err_msg)) {
-		if(isset($_POST['installchecked'])) {
-			install($_POST['dbtype'], $_POST['dbhost'], $_POST['dbuser'], $_POST['dbpass'], $_POST['dbname'], $lang, $mysqlcon, $err_msg, $err_lvl, $install_webuser);
-		} elseif($dbexists == 1) {
-			$err_msg = sprintf($lang['insterr1'],$_POST['dbname']);
-			$err_lvl = 2;
-			$show_warning = 1;
-		} else {
-			install($_POST['dbtype'], $_POST['dbhost'], $_POST['dbuser'], $_POST['dbpass'], $_POST['dbname'], $lang, $mysqlcon, $err_msg, $err_lvl, $install_webuser);
-		}
-	}
+    unset($err_msg);
+    if ($_POST['dbtype'] == 'mysql') {
+        if (! in_array('pdo_mysql', get_loaded_extensions())) {
+            unset($err_msg);
+            $err_msg = sprintf($lang['insterr2'], 'PHP MySQL', '//php.net/manual/en/ref.pdo-mysql.php', get_cfg_var('cfg_file_path'));
+            $err_lvl = 3;
+        } else {
+            $dboptions = [];
+        }
+    } else {
+        $dboptions = [];
+    }
+
+    if (! isset($err_msg)) {
+        $dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].'; dbname='.$_POST['dbname'].';charset=utf8mb4';
+        $dbserver2 = $_POST['dbtype'].':host='.$_POST['dbhost'].';charset=utf8mb4';
+        $dbexists = 0;
+        try {
+            $mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass'], $dboptions);
+            $dbexists = 1;
+        } catch (PDOException $e) {
+            try {
+                $mysqlcon = new PDO($dbserver2, $_POST['dbuser'], $_POST['dbpass'], $dboptions);
+            } catch (PDOException $e) {
+                $err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage());
+                $err_lvl = 1;
+            }
+        }
+
+        if (! is_writable('./other/dbconfig.php')) {
+            $err_msg = $lang['isntwicfg'];
+            $err_lvl = 2;
+        }
+    }
+
+    if (! isset($err_msg)) {
+        if (isset($_POST['installchecked'])) {
+            install($_POST['dbtype'], $_POST['dbhost'], $_POST['dbuser'], $_POST['dbpass'], $_POST['dbname'], $lang, $mysqlcon, $err_msg, $err_lvl, $install_webuser);
+        } elseif ($dbexists == 1) {
+            $err_msg = sprintf($lang['insterr1'], $_POST['dbname']);
+            $err_lvl = 2;
+            $show_warning = 1;
+        } else {
+            install($_POST['dbtype'], $_POST['dbhost'], $_POST['dbuser'], $_POST['dbpass'], $_POST['dbname'], $lang, $mysqlcon, $err_msg, $err_lvl, $install_webuser);
+        }
+    }
 }
 
-if(isset($_POST['confweb'])) {
-	require_once('other/dbconfig.php');
-	$user=$_POST['user'];
-	$pass=password_hash($_POST['pass'], PASSWORD_DEFAULT);
-	$logpath = addslashes(__DIR__.DIRECTORY_SEPARATOR."logs".DIRECTORY_SEPARATOR);
-	$dbname = $db['dbname'];
-	$dbserver = $db['type'].':host='.$db['host'].'; dbname=`'.$db['dbname'].'`;charset=utf8mb4';
-	$dbserver2 = $db['type'].':host='.$db['host'];
-	try {
-		$mysqlcon = new PDO($dbserver, $db['user'], $db['pass']);
-	} catch (PDOException $e) {
-		try {
-			$mysqlcon = new PDO($dbserver2, $db['user'], $db['pass']);
-		} catch (PDOException $e) {
-			$err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage()); $err_lvl = 1;
-		}
-	}
-	if(!isset($err_lvl) || $err_lvl != 1) {
-		$dateformat = $mysqlcon->quote("%a days, %h hours, %i mins, %s secs");
-		$nextupinfomsg1 = $mysqlcon->quote("Your next rank up will be in %1\$s days, %2\$s hours, %3\$s minutes and %4\$s seconds. The next servergroup you will reach is [B]%5\$s[/B].");
-		$nextupinfomsg2 = $mysqlcon->quote("You have already reached the highest rank.");
-		$nextupinfomsg3 = $mysqlcon->quote("You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.");
-		$servernews = $mysqlcon->quote("<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.");
-		$rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
-		if($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
+if (isset($_POST['confweb'])) {
+    require_once 'other/dbconfig.php';
+    $user = $_POST['user'];
+    $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
+    $logpath = addslashes(__DIR__.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR);
+    $dbname = $db['dbname'];
+    $dbserver = $db['type'].':host='.$db['host'].'; dbname=`'.$db['dbname'].'`;charset=utf8mb4';
+    $dbserver2 = $db['type'].':host='.$db['host'];
+    try {
+        $mysqlcon = new PDO($dbserver, $db['user'], $db['pass']);
+    } catch (PDOException $e) {
+        try {
+            $mysqlcon = new PDO($dbserver2, $db['user'], $db['pass']);
+        } catch (PDOException $e) {
+            $err_msg = htmlspecialchars($lang['dbconerr'].$e->getMessage());
+            $err_lvl = 1;
+        }
+    }
+    if (! isset($err_lvl) || $err_lvl != 1) {
+        $dateformat = $mysqlcon->quote('%a days, %h hours, %i mins, %s secs');
+        $nextupinfomsg1 = $mysqlcon->quote('Your next rank up will be in %1$s days, %2$s hours, %3$s minutes and %4$s seconds. The next servergroup you will reach is [B]%5$s[/B].');
+        $nextupinfomsg2 = $mysqlcon->quote('You have already reached the highest rank.');
+        $nextupinfomsg3 = $mysqlcon->quote('You are excepted from the Ranksystem. If you wish to rank contact an admin on the TS3 server.');
+        $servernews = $mysqlcon->quote('<strong>Message</strong><br>This is an example Message.<br>Change this Message inside the webinterface.');
+        $rankupmsg = $mysqlcon->quote('Hey, you reached a higher rank, since you already connected for %1$s days, %2$s hours and %3$s minutes to our TS3 server.[B]Keep it up![/B] ;-) ');
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES
 			('default_cmdline_sec_switch', '1'),
 			('default_date_format', {$dateformat}),
 			('default_header_contenttyp', '1'),
@@ -671,136 +708,158 @@ if(isset($_POST['confweb'])) {
 			('webinterface_pass', '{$pass}'),
 			('webinterface_user', '{$user}')
 			;") === false) {
-			$err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true); $err_lvl = 2;
-		} else {
-			$err_msg = $lang['isntwiusr'].'<br><br>';
-			$err_msg = $lang['isntwiusr2'].'<br><br>';
-			$err_msg .= sprintf($lang['isntwiconf'],"<a href=\"webinterface\\\">/webinterface/</a>").'<br><br>';
-			if(!unlink('./install.php')) {
-				$err_msg .= $lang['isntwidel'];
-			}
-			$install_finished = 1; $err_lvl = NULL;
-		}
-	}
+            $err_msg = $lang['isntwidbmsg'].$mysqlcon->errorCode().' '.print_r($mysqlcon->errorInfo(), true);
+            $err_lvl = 2;
+        } else {
+            $err_msg = $lang['isntwiusr'].'<br><br>';
+            $err_msg = $lang['isntwiusr2'].'<br><br>';
+            $err_msg .= sprintf($lang['isntwiconf'], '<a href="webinterface\\">/webinterface/</a>').'<br><br>';
+            if (! unlink('./install.php')) {
+                $err_msg .= $lang['isntwidel'];
+            }
+            $install_finished = 1;
+            $err_lvl = null;
+        }
+    }
 }
 
-if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
-	unset($err_msg);
-	unset($err_lvl);
-	$err_msg = '';
-	if(!is_writable('./other/dbconfig.php')) {
-		$err_msg = $lang['isntwicfg']; $err_lvl = 3;
-	}
+if (! isset($_POST['install']) && ! isset($_POST['confweb'])) {
+    unset($err_msg);
+    unset($err_lvl);
+    $err_msg = '';
+    if (! is_writable('./other/dbconfig.php')) {
+        $err_msg = $lang['isntwicfg'];
+        $err_lvl = 3;
+    }
 
-	$file_err_count=0;
-	$file_err_msg = '';
-	try {
-		$scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__));
-		$files = array(); 
-		foreach ($scandir as $object) {
-			if(!strstr($object, '/.') && !strstr($object, '\.')) {
-				if (!$object->isDir()) {
-					if(!is_writable($object->getPathname())) {
-						$file_err_msg .= "File is not writeable ".$object."<br>";
-						$file_err_count++;
-					}
-				} else {
-					if(!is_writable($object->getPathname())) {
-						$file_err_msg .= "Folder is not writeable ".$object."<br>";
-						$file_err_count++;
-					}
-				}
-			}
-		}
-	} catch (Exception $e) {
-		$err_msg .= "File Permissions Error: ".$e->getCode()." ".$e->getMessage();
-		$err_lvl = 3;
-	}
-	
-	if($file_err_count!=0) {
-		$err_msg = "<b>Wrong file/folder permissions!</b><br>You need to correct the owner and access permissions of the named files/folders!<br><br>The <u>owner</u> of all files and folders of the Ranksystem installation folder must be the user of your webserver (e.g.: www-data).<br>On Linux systems you may do something like this (linux shell command):<br>chown -R www-data:www-data ".__DIR__."<br><br>Also the <u>access permission</u> must be set, that the user of your webserver is able to read, write and execute files.<br>On Linux systems you may do something like this (linux shell command):<br>chmod -R 640 ".__DIR__."<br><br><br>List of concerned files/folders:<br>";
-		$err_lvl = 3;
-		$err_msg .= $file_err_msg;
-	}
+    $file_err_count = 0;
+    $file_err_msg = '';
+    try {
+        $scandir = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(__DIR__));
+        $files = [];
+        foreach ($scandir as $object) {
+            if (! strstr($object, '/.') && ! strstr($object, '\.')) {
+                if (! $object->isDir()) {
+                    if (! is_writable($object->getPathname())) {
+                        $file_err_msg .= 'File is not writeable '.$object.'<br>';
+                        $file_err_count++;
+                    }
+                } else {
+                    if (! is_writable($object->getPathname())) {
+                        $file_err_msg .= 'Folder is not writeable '.$object.'<br>';
+                        $file_err_count++;
+                    }
+                }
+            }
+        }
+    } catch (Exception $e) {
+        $err_msg .= 'File Permissions Error: '.$e->getCode().' '.$e->getMessage();
+        $err_lvl = 3;
+    }
 
-	if(!class_exists('PDO')) {
-		$err_msg = sprintf($lang['insterr2'],'PHP PDO','//php.net/manual/en/book.pdo.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	}
-	if(version_compare(phpversion(), '5.5.0', '<')) {
-		$err_msg = sprintf($lang['insterr4'],phpversion()); $err_lvl = 3;
-	}
-	if(!function_exists('simplexml_load_file')) {
-		$err_msg = sprintf($lang['insterr2'],'PHP SimpleXML','//php.net/manual/en/book.simplexml.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	}
-	if(!in_array('curl', get_loaded_extensions())) {
-		$err_msg = sprintf($lang['insterr2'],'PHP cURL','//php.net/manual/en/book.curl.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	}
-	if(!in_array('zip', get_loaded_extensions())) {
-		$err_msg = sprintf($lang['insterr2'],'PHP Zip','//php.net/manual/en/book.zip.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	}
-	if(!in_array('mbstring', get_loaded_extensions())) {
-		$err_msg = sprintf($lang['insterr2'],'PHP mbstring','//php.net/manual/en/book.mbstring.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	}
-	if(!in_array('openssl', get_loaded_extensions())) {
-		unset($err_msg); $err_msg = sprintf($lang['insterr2'],'PHP OpenSSL','//php.net/manual/en/book.openssl.php',get_cfg_var('cfg_file_path')); $err_lvl = 3; $dis_login = 1;
-	}
-	if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-		if(!in_array('com_dotnet', get_loaded_extensions())) {
-			$err_msg = sprintf($lang['insterr2'],'PHP COM and .NET (Windows only)','//php.net/manual/en/book.com.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-		}
-	}
-	if(!function_exists('exec')) {
-		unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
-	} else {
-		if ($err_msg == NULL) {
-			require_once('other/phpcommand.php');
-			exec("$phpcommand -v", $phpversioncheck);
-			$output = '';
-			foreach($phpversioncheck as $line) $output .= print_r($line, true).'<br>';
-			if(empty($phpversioncheck) || strtoupper(substr($phpversioncheck[0], 0, 3)) != "PHP") {
-				$err_msg .= sprintf($lang['chkphpcmd'], "\"other/phpcommand.php\"", "<u>\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>'); $err_lvl = 3;
-			} else {
-				$exploded = explode(' ',$phpversioncheck[0]);
-				if($exploded[1] != phpversion()) {
-					$err_msg .= sprintf($lang['chkphpmulti'], phpversion(), "<u>\"other/phpcommand.php\"</u>", $exploded[1], "\"other/phpcommand.php\"</u>", "\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
-					if(getenv('PATH')!='') {
-						$err_msg .= "<br><br>".sprintf($lang['chkphpmulti2'], '<br>'.getenv('PATH')); $err_lvl = 2;
-					}
-				}
-			}
-		}
-	}
-	
-	if($err_msg == '' && (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on")) {
-		$host = "<a href=\"https://".$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF'])."/install.php", '/\\')."\">";
-		$err_msg = sprintf($lang['winav10'], $host,'</a>!<br>', '<br>'); $err_lvl = 2;
-	}
-	
-	if(!isset($err_lvl)) {
-		unset($err_msg);
-	}
+    if ($file_err_count != 0) {
+        $err_msg = '<b>Wrong file/folder permissions!</b><br>You need to correct the owner and access permissions of the named files/folders!<br><br>The <u>owner</u> of all files and folders of the Ranksystem installation folder must be the user of your webserver (e.g.: www-data).<br>On Linux systems you may do something like this (linux shell command):<br>chown -R www-data:www-data '.__DIR__.'<br><br>Also the <u>access permission</u> must be set, that the user of your webserver is able to read, write and execute files.<br>On Linux systems you may do something like this (linux shell command):<br>chmod -R 640 '.__DIR__.'<br><br><br>List of concerned files/folders:<br>';
+        $err_lvl = 3;
+        $err_msg .= $file_err_msg;
+    }
+
+    if (! class_exists('PDO')) {
+        $err_msg = sprintf($lang['insterr2'], 'PHP PDO', '//php.net/manual/en/book.pdo.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    }
+    if (version_compare(phpversion(), '5.5.0', '<')) {
+        $err_msg = sprintf($lang['insterr4'], phpversion());
+        $err_lvl = 3;
+    }
+    if (! function_exists('simplexml_load_file')) {
+        $err_msg = sprintf($lang['insterr2'], 'PHP SimpleXML', '//php.net/manual/en/book.simplexml.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    }
+    if (! in_array('curl', get_loaded_extensions())) {
+        $err_msg = sprintf($lang['insterr2'], 'PHP cURL', '//php.net/manual/en/book.curl.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    }
+    if (! in_array('zip', get_loaded_extensions())) {
+        $err_msg = sprintf($lang['insterr2'], 'PHP Zip', '//php.net/manual/en/book.zip.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    }
+    if (! in_array('mbstring', get_loaded_extensions())) {
+        $err_msg = sprintf($lang['insterr2'], 'PHP mbstring', '//php.net/manual/en/book.mbstring.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    }
+    if (! in_array('openssl', get_loaded_extensions())) {
+        unset($err_msg);
+        $err_msg = sprintf($lang['insterr2'], 'PHP OpenSSL', '//php.net/manual/en/book.openssl.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+        $dis_login = 1;
+    }
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        if (! in_array('com_dotnet', get_loaded_extensions())) {
+            $err_msg = sprintf($lang['insterr2'], 'PHP COM and .NET (Windows only)', '//php.net/manual/en/book.com.php', get_cfg_var('cfg_file_path'));
+            $err_lvl = 3;
+        }
+    }
+    if (! function_exists('exec')) {
+        unset($err_msg);
+        $err_msg = sprintf($lang['insterr3'], 'exec', '//php.net/manual/en/book.exec.php', get_cfg_var('cfg_file_path'));
+        $err_lvl = 3;
+    } else {
+        if ($err_msg == null) {
+            require_once 'other/phpcommand.php';
+            exec("$phpcommand -v", $phpversioncheck);
+            $output = '';
+            foreach ($phpversioncheck as $line) {
+                $output .= print_r($line, true).'<br>';
+            }
+            if (empty($phpversioncheck) || strtoupper(substr($phpversioncheck[0], 0, 3)) != 'PHP') {
+                $err_msg .= sprintf($lang['chkphpcmd'], '"other/phpcommand.php"', '<u>"other/phpcommand.php"</u>', '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>');
+                $err_lvl = 3;
+            } else {
+                $exploded = explode(' ', $phpversioncheck[0]);
+                if ($exploded[1] != phpversion()) {
+                    $err_msg .= sprintf($lang['chkphpmulti'], phpversion(), '<u>"other/phpcommand.php"</u>', $exploded[1], '"other/phpcommand.php"</u>', '"other/phpcommand.php"</u>', '<pre>'.$phpcommand.'</pre>');
+                    if (getenv('PATH') != '') {
+                        $err_msg .= '<br><br>'.sprintf($lang['chkphpmulti2'], '<br>'.getenv('PATH'));
+                        $err_lvl = 2;
+                    }
+                }
+            }
+        }
+    }
+
+    if ($err_msg == '' && (! isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != 'on')) {
+        $host = '<a href="https://'.$_SERVER['HTTP_HOST'].rtrim(dirname($_SERVER['PHP_SELF']).'/install.php', '/\\').'">';
+        $err_msg = sprintf($lang['winav10'], $host, '</a>!<br>', '<br>');
+        $err_lvl = 2;
+    }
+
+    if (! isset($err_lvl)) {
+        unset($err_msg);
+    }
 }
-	
-if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 || $err_lvl == 2 || $err_lvl == 3) {
-	if(isset($show_warning)) {
-		$dbhost = $_POST['dbhost'];
-		$dbname = $_POST['dbname'];
-		$dbuser = $_POST['dbuser'];
-		$dbpass = $_POST['dbpass'];
-	} elseif(isset($_GET["dbhost"]) && isset($_GET["dbname"]) && isset($_GET["dbuser"]) && isset($_GET["dbpass"])) {
-		$dbhost = $_GET["dbhost"];
-		$dbname = $_GET['dbname'];
-		$dbuser = $_GET['dbuser'];
-		$dbpass = $_GET['dbpass'];
-	} else {
-		$dbhost = "";
-		$dbname = "";
-		$dbuser = "";
-		$dbpass = "";
-	}
-	?>
+
+if ((! isset($_POST['install']) && ! isset($_POST['confweb'])) || $err_lvl == 1 || $err_lvl == 2 || $err_lvl == 3) {
+    if (isset($show_warning)) {
+        $dbhost = $_POST['dbhost'];
+        $dbname = $_POST['dbname'];
+        $dbuser = $_POST['dbuser'];
+        $dbpass = $_POST['dbpass'];
+    } elseif (isset($_GET['dbhost']) && isset($_GET['dbname']) && isset($_GET['dbuser']) && isset($_GET['dbpass'])) {
+        $dbhost = $_GET['dbhost'];
+        $dbname = $_GET['dbname'];
+        $dbuser = $_GET['dbuser'];
+        $dbpass = $_GET['dbpass'];
+    } else {
+        $dbhost = '';
+        $dbname = '';
+        $dbuser = '';
+        $dbpass = '';
+    }
+    ?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-lg-12">
@@ -869,16 +928,16 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 				<div class="row">&nbsp;</div>
 				<div class="row">
 					<div class="text-center">
-						<?PHP
-						if(isset($err_lvl) && $err_lvl == 3) {
-							echo "<button type=\"submit\" class=\"btn btn-primary\" name=\"install\" disabled>",$lang['instdb'],"</button>";
-						} else {
-							echo "<button type=\"submit\" class=\"btn btn-primary\" name=\"install\">",$lang['instdb'],"</button>";
-						}
-						if(isset($show_warning)) {
-							echo '<input type="hidden" name="installchecked" value="">';
-						}
-						?>
+						<?php
+                        if (isset($err_lvl) && $err_lvl == 3) {
+                            echo '<button type="submit" class="btn btn-primary" name="install" disabled>',$lang['instdb'],'</button>';
+                        } else {
+                            echo '<button type="submit" class="btn btn-primary" name="install">',$lang['instdb'],'</button>';
+                        }
+                        if (isset($show_warning)) {
+                            echo '<input type="hidden" name="installchecked" value="">';
+                        }
+    ?>
 					</div>
 				</div>
 				<div class="row">&nbsp;</div>
@@ -897,7 +956,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo sprintf($lang['isntwidbtypedesc'], '<a href="https://ts-ranksystem.com/#linux" target="_blank">https://ts-ranksystem.com/#linux</a>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -913,7 +972,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo $lang['isntwidbhostdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -929,7 +988,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo $lang['isntwidbusrdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -945,7 +1004,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo $lang['isntwidbpassdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -961,7 +1020,7 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo $lang['isntwidbnamedesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -977,16 +1036,18 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 			<?php echo $lang['isntwiusrdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
 	</div>
-<?PHP
-} elseif(isset($install_webuser)) {
-?>
+<?php
+} elseif (isset($install_webuser)) {
+    ?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-lg-12">
@@ -1031,30 +1092,32 @@ if ((!isset($_POST['install']) && !isset($_POST['confweb'])) || $err_lvl == 1 ||
 				<div class="row">&nbsp;</div>
 				<div class="row">
 					<div class="text-center">
-						<?PHP
-						if(isset($err_lvl) && $err_lvl == 3) {
-							echo "<button type=\"submit\" class=\"btn btn-primary\" name=\"confweb\" disabled>",$lang['isntwiusrcr'],"</button>";
-						} else {
-							echo "<button type=\"submit\" class=\"btn btn-primary\" name=\"confweb\">",$lang['isntwiusrcr'],"</button>";
-						}
-						?>
+						<?php
+                        if (isset($err_lvl) && $err_lvl == 3) {
+                            echo '<button type="submit" class="btn btn-primary" name="confweb" disabled>',$lang['isntwiusrcr'],'</button>';
+                        } else {
+                            echo '<button type="submit" class="btn btn-primary" name="confweb">',$lang['isntwiusrcr'],'</button>';
+                        }
+    ?>
 					</div>
 				</div>
 				<div class="row">&nbsp;</div>
 			</form>
 		</div>
 	</div>
-<?PHP
-} elseif(isset($install_finished)) {
-?>
+<?php
+} elseif (isset($install_finished)) {
+    ?>
 	<div id="page-wrapper">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 		<div class="container-fluid">
 			<div class="row">
 			</div>
 		</div>
 	</div>
-<?PHP
+<?php
 }
 ?>
 <script>

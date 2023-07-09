@@ -1,96 +1,99 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
-	require_once('../other/load_addons_config.php');
-	$addons_config = load_addons_config($mysqlcon,$lang,$cfg,$dbname);
+    require_once '_nav.php';
+    require_once '../other/load_addons_config.php';
+    $addons_config = load_addons_config($mysqlcon, $lang, $cfg, $dbname);
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	$assign_groups_active = 0;
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_POST['assign_groups_active']) && !isset($_POST['assign_groups_groupids']) && !isset($_POST['assign_groups_excepted_groupids'])) {
-		$err_msg = $lang['stag0010'];
-		$err_lvl = 3;
-	} elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$limit = $alwgr = $excgr = $name = '';
-		if (isset($_POST['assign_groups_active'])) $assign_groups_active = 1;
-		foreach($_POST['assign_groups_limit'] as $rowid => $value) {
-			$name .= isset($_POST["assign_groups_name"][$rowid]) ? $_POST["assign_groups_name"][$rowid].';' : ';';
-			$limit .= isset($_POST["assign_groups_limit"][$rowid]) ? intval($_POST["assign_groups_limit"][$rowid]).';' : '1;';
-			if(isset($_POST['assign_groups_groupids'][$rowid])) {
-				foreach ($_POST['assign_groups_groupids'][$rowid] as $group) {
-					$alwgr .= $group.',';
-				}
-				$alwgr = substr($alwgr,0,-1);
-			} else {
-				$err_msg = $lang['stag0010'];
-				$err_lvl = 3;
-			}
-			$alwgr .= ';';
-			if(isset($_POST['assign_groups_excepted_groupids'][$rowid])) {
-				foreach ($_POST['assign_groups_excepted_groupids'][$rowid] as $group) {
-					$excgr .= $group.',';
-				}
-				$excgr = substr($excgr,0,-1);
-			} else {
-				
-			}
-			$excgr .= ';';
-		}
-		$name = substr($name,0,-1);
-		$limit = substr($limit,0,-1);
-		$alwgr = substr($alwgr,0,-1);
-		$excgr = substr($excgr,0,-1);
+    $assign_groups_active = 0;
+    if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']]) && isset($_POST['assign_groups_active']) && ! isset($_POST['assign_groups_groupids']) && ! isset($_POST['assign_groups_excepted_groupids'])) {
+        $err_msg = $lang['stag0010'];
+        $err_lvl = 3;
+    } elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        $limit = $alwgr = $excgr = $name = '';
+        if (isset($_POST['assign_groups_active'])) {
+            $assign_groups_active = 1;
+        }
+        foreach ($_POST['assign_groups_limit'] as $rowid => $value) {
+            $name .= isset($_POST['assign_groups_name'][$rowid]) ? $_POST['assign_groups_name'][$rowid].';' : ';';
+            $limit .= isset($_POST['assign_groups_limit'][$rowid]) ? intval($_POST['assign_groups_limit'][$rowid]).';' : '1;';
+            if (isset($_POST['assign_groups_groupids'][$rowid])) {
+                foreach ($_POST['assign_groups_groupids'][$rowid] as $group) {
+                    $alwgr .= $group.',';
+                }
+                $alwgr = substr($alwgr, 0, -1);
+            } else {
+                $err_msg = $lang['stag0010'];
+                $err_lvl = 3;
+            }
+            $alwgr .= ';';
+            if (isset($_POST['assign_groups_excepted_groupids'][$rowid])) {
+                foreach ($_POST['assign_groups_excepted_groupids'][$rowid] as $group) {
+                    $excgr .= $group.',';
+                }
+                $excgr = substr($excgr, 0, -1);
+            } else {
+            }
+            $excgr .= ';';
+        }
+        $name = substr($name, 0, -1);
+        $limit = substr($limit, 0, -1);
+        $alwgr = substr($alwgr, 0, -1);
+        $excgr = substr($excgr, 0, -1);
 
-		if(!isset($err_lvl) || $err_lvl < 3) {
-			$sqlexec = $mysqlcon->prepare("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name', :assign_groups_name), ('assign_groups_active', :assign_groups_active), ('assign_groups_limit', :assign_groups_limit), ('assign_groups_groupids', :assign_groups_groupids), ('assign_groups_excepted_groupids', :assign_groups_excepted_groupids) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`= :csrf_token;");
-			$sqlexec->bindParam(':assign_groups_name', $name, PDO::PARAM_STR);
-			$sqlexec->bindParam(':assign_groups_active', $assign_groups_active, PDO::PARAM_STR);
-			$sqlexec->bindParam(':assign_groups_limit', $limit, PDO::PARAM_STR);
-			$sqlexec->bindParam(':assign_groups_groupids', $alwgr, PDO::PARAM_STR);
-			$sqlexec->bindParam(':assign_groups_excepted_groupids', $excgr, PDO::PARAM_STR);
-			$sqlexec->bindParam(':csrf_token', $_POST['csrf_token']);
-			$sqlexec->execute();
+        if (! isset($err_lvl) || $err_lvl < 3) {
+            $sqlexec = $mysqlcon->prepare("INSERT INTO `$dbname`.`addons_config` (`param`,`value`) VALUES ('assign_groups_name', :assign_groups_name), ('assign_groups_active', :assign_groups_active), ('assign_groups_limit', :assign_groups_limit), ('assign_groups_groupids', :assign_groups_groupids), ('assign_groups_excepted_groupids', :assign_groups_excepted_groupids) ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`= :csrf_token;");
+            $sqlexec->bindParam(':assign_groups_name', $name, PDO::PARAM_STR);
+            $sqlexec->bindParam(':assign_groups_active', $assign_groups_active, PDO::PARAM_STR);
+            $sqlexec->bindParam(':assign_groups_limit', $limit, PDO::PARAM_STR);
+            $sqlexec->bindParam(':assign_groups_groupids', $alwgr, PDO::PARAM_STR);
+            $sqlexec->bindParam(':assign_groups_excepted_groupids', $excgr, PDO::PARAM_STR);
+            $sqlexec->bindParam(':csrf_token', $_POST['csrf_token']);
+            $sqlexec->execute();
 
-			if ($sqlexec->errorCode() != 0) {
-				$err_msg = print_r($sqlexec->errorInfo(), true);
-				$err_lvl = 3;
-			} elseif($addons_config['assign_groups_active']['value'] != $assign_groups_active && $assign_groups_active == 1) {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
-				$err_lvl = NULL;
-			} else {
-				$err_msg = $lang['wisvsuc'];
-				$err_lvl = NULL;
-			}
-		}
+            if ($sqlexec->errorCode() != 0) {
+                $err_msg = print_r($sqlexec->errorInfo(), true);
+                $err_lvl = 3;
+            } elseif ($addons_config['assign_groups_active']['value'] != $assign_groups_active && $assign_groups_active == 1) {
+                $err_msg = $lang['wisvsuc'].' '.sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
+                $err_lvl = null;
+            } else {
+                $err_msg = $lang['wisvsuc'];
+                $err_lvl = null;
+            }
+        }
 
-		$addons_config['assign_groups_groupids']['value'] = $alwgr;
-		$addons_config['assign_groups_excepted_groupids']['value'] = $excgr;
-		$addons_config['assign_groups_name']['value'] = $name;
-		$addons_config['assign_groups_limit']['value'] = $limit;
-		$addons_config['assign_groups_active']['value'] = $assign_groups_active;
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+        $addons_config['assign_groups_groupids']['value'] = $alwgr;
+        $addons_config['assign_groups_excepted_groupids']['value'] = $excgr;
+        $addons_config['assign_groups_name']['value'] = $name;
+        $addons_config['assign_groups_limit']['value'] = $limit;
+        $addons_config['assign_groups_active']['value'] = $assign_groups_active;
+    } elseif (isset($_POST['update'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_addon_assign_groups">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					<div class="row">
 						<div class="col-lg-12">
@@ -100,7 +103,7 @@ try {
 						</div>
 					</div>
 					<form class="form-horizontal" name="update" method="POST">
-					<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+					<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 					<div class="form-horizontal">
 						<div class="row">
 							<div class="col-md-12">
@@ -116,10 +119,10 @@ try {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0014"><?php echo $lang['stag0013']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-									<?PHP if ($addons_config['assign_groups_active']['value'] == '1') {
-										echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="assign_groups_active" value="',$assign_groups_active,'">';
+									<?php if ($addons_config['assign_groups_active']['value'] == '1') {
+									    echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="assign_groups_active" value="',$assign_groups_active,'">';
 									} else {
-										echo '<input class="switch-animate" type="checkbox" data-size="mini" name="assign_groups_active" value="',$assign_groups_active,'">';
+									    echo '<input class="switch-animate" type="checkbox" data-size="mini" name="assign_groups_active" value="',$assign_groups_active,'">';
 									} ?>
 									</div>
 								</div>
@@ -143,17 +146,31 @@ try {
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0003"><?php echo $lang['stag0002']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
 												<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" multiple name="temp_assign_groups_groupids[]">
-												<?PHP
-												foreach ($groupslist as $groupID => $groupParam) {
-													if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-													if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-													if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-													if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-													if ($groupID != 0) {
-														echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
-													}
-												}
-												?>
+												<?php
+									            foreach ($groupslist as $groupID => $groupParam) {
+									                if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+									                    $iconid = $groupParam['iconid'].'.';
+									                } else {
+									                    $iconid = 'placeholder.png';
+									                }
+									                if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+									                    $disabled = ' disabled';
+									                } else {
+									                    $disabled = '';
+									                }
+									                if ($groupParam['type'] == 0) {
+									                    $grouptype = ' [TEMPLATE GROUP]';
+									                } else {
+									                    $grouptype = '';
+									                }
+									                if ($groupParam['type'] == 2) {
+									                    $grouptype = ' [QUERY GROUP]';
+									                }
+									                if ($groupID != 0) {
+									                    echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
+									                }
+									            }
+    ?>
 												</select>
 											</div>
 										</div>
@@ -175,35 +192,49 @@ try {
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0018"><?php echo $lang['wiexgrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
 												<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" multiple name="temp_assign_groups_excepted_groupids[]">
-												<?PHP
-												foreach ($groupslist as $groupID => $groupParam) {
-													if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-													if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-													if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-													if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-													if ($groupID != 0) {
-														echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
-													}
-												}
-												?>
+												<?php
+    foreach ($groupslist as $groupID => $groupParam) {
+        if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+            $iconid = $groupParam['iconid'].'.';
+        } else {
+            $iconid = 'placeholder.png';
+        }
+        if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+            $disabled = ' disabled';
+        } else {
+            $disabled = '';
+        }
+        if ($groupParam['type'] == 0) {
+            $grouptype = ' [TEMPLATE GROUP]';
+        } else {
+            $grouptype = '';
+        }
+        if ($groupParam['type'] == 2) {
+            $grouptype = ' [QUERY GROUP]';
+        }
+        if ($groupID != 0) {
+            echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
+        }
+    }
+    ?>
 												</select>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-							<?PHP
-							
-							$alwgr = explode(';',$addons_config['assign_groups_groupids']['value']);
-							$limit = explode(';',$addons_config['assign_groups_limit']['value']);
-							$excgr = explode(';',$addons_config['assign_groups_excepted_groupids']['value']);
-							if(isset($addons_config['assign_groups_name']['value'])) {
-								$name = explode(';',$addons_config['assign_groups_name']['value']);
-							} else {
-								$name = '';
-							}
-							foreach($alwgr as $rowid => $value) {
-							?>
+							<?php
+
+                            $alwgr = explode(';', $addons_config['assign_groups_groupids']['value']);
+    $limit = explode(';', $addons_config['assign_groups_limit']['value']);
+    $excgr = explode(';', $addons_config['assign_groups_excepted_groupids']['value']);
+    if (isset($addons_config['assign_groups_name']['value'])) {
+        $name = explode(';', $addons_config['assign_groups_name']['value']);
+    } else {
+        $name = '';
+    }
+    foreach ($alwgr as $rowid => $value) {
+        ?>
 							<div class="col-md-6" name="onlyforcount">
 								<div class="panel panel-default">
 									<div class="panel-body">
@@ -217,20 +248,40 @@ try {
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0003"><?php echo $lang['stag0002']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<select class="selectpicker form-control<?PHP if(!isset($alwgr[$rowid]) || $alwgr[$rowid]==NULL) echo " form-control-danger"; ?>" data-live-search="true" data-actions-box="true" multiple name="assign_groups_groupids[<?PHP echo $rowid; ?>][]">
-												<?PHP
-												$assign_groups_groupids = explode(',', $alwgr[$rowid]);
-												foreach ($groupslist as $groupID => $groupParam) {
-													if (in_array($groupID, $assign_groups_groupids)) $selected=" selected"; else $selected="";
-													if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-													if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-													if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-													if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-													if ($groupID != 0) {
-														echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
-													}
-												}
-												?>
+												<select class="selectpicker form-control<?php if (! isset($alwgr[$rowid]) || $alwgr[$rowid] == null) {
+												    echo ' form-control-danger';
+												} ?>" data-live-search="true" data-actions-box="true" multiple name="assign_groups_groupids[<?php echo $rowid; ?>][]">
+												<?php
+                                                $assign_groups_groupids = explode(',', $alwgr[$rowid]);
+        foreach ($groupslist as $groupID => $groupParam) {
+            if (in_array($groupID, $assign_groups_groupids)) {
+                $selected = ' selected';
+            } else {
+                $selected = '';
+            }
+            if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+                $iconid = $groupParam['iconid'].'.';
+            } else {
+                $iconid = 'placeholder.png';
+            }
+            if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+                $disabled = ' disabled';
+            } else {
+                $disabled = '';
+            }
+            if ($groupParam['type'] == 0) {
+                $grouptype = ' [TEMPLATE GROUP]';
+            } else {
+                $grouptype = '';
+            }
+            if ($groupParam['type'] == 2) {
+                $grouptype = ' [QUERY GROUP]';
+            }
+            if ($groupID != 0) {
+                echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+            }
+        }
+        ?>
 												</select>
 											</div>
 										</div>
@@ -251,29 +302,47 @@ try {
 										<div class="form-group">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#stag0018"><?php echo $lang['wiexgrp']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" multiple name="assign_groups_excepted_groupids[<?PHP echo $rowid; ?>][]">
-												<?PHP
-												$assign_groups_excepted_groupids = explode(',', $excgr[$rowid]);
-												foreach ($groupslist as $groupID => $groupParam) {
-													if (in_array($groupID, $assign_groups_excepted_groupids)) $selected=" selected"; else $selected="";
-													if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-													if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-													if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-													if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-													if ($groupID != 0) {
-														echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
-													}
-												}
-												?>
+												<select class="selectpicker form-control" data-live-search="true" data-actions-box="true" multiple name="assign_groups_excepted_groupids[<?php echo $rowid; ?>][]">
+												<?php
+        $assign_groups_excepted_groupids = explode(',', $excgr[$rowid]);
+        foreach ($groupslist as $groupID => $groupParam) {
+            if (in_array($groupID, $assign_groups_excepted_groupids)) {
+                $selected = ' selected';
+            } else {
+                $selected = '';
+            }
+            if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+                $iconid = $groupParam['iconid'].'.';
+            } else {
+                $iconid = 'placeholder.png';
+            }
+            if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+                $disabled = ' disabled';
+            } else {
+                $disabled = '';
+            }
+            if ($groupParam['type'] == 0) {
+                $grouptype = ' [TEMPLATE GROUP]';
+            } else {
+                $grouptype = '';
+            }
+            if ($groupParam['type'] == 2) {
+                $grouptype = ' [QUERY GROUP]';
+            }
+            if ($groupID != 0) {
+                echo '<option data-content="<span class=\'item-margin\'><img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'></span><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+            }
+        }
+        ?>
 												</select>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-							<?PHP
-							}
-							?>
+							<?php
+    }
+    ?>
 							
 							<div class="col-md-6" id="addboostgroup">
 								<div class="panel panel-default">
@@ -318,7 +387,7 @@ try {
 			<?php echo $lang['stag0001desc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -334,7 +403,7 @@ try {
 			<?php echo $lang['stag0003']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -350,7 +419,7 @@ try {
 			<?php echo $lang['stag0018']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -366,7 +435,7 @@ try {
 			<?php echo $lang['stag0005']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -382,7 +451,7 @@ try {
 			<?php echo $lang['stag0014']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -398,7 +467,7 @@ try {
 			<?php echo $lang['stag0021']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -438,6 +507,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>

@@ -1,79 +1,86 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
+    require_once '_nav.php';
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	$monthago = time() - 2592000;
-	if(($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `lastseen`>'{$monthago}' ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
-	
-	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    $monthago = time() - 2592000;
+    if (($user_arr = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `lastseen`>'{$monthago}' ORDER BY `name` ASC")->fetchAll(PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$cfg['webinterface_admin_client_unique_id_list'] = '';
-		if(is_array($_POST['channelid'])) $_POST['channelid'] = $_POST['channelid'][0];
-		
-		if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != NULL) {
-			$cfg['webinterface_admin_client_unique_id_list'] = implode(',',$_POST['webinterface_admin_client_unique_id_list']);
-		}
-		
-		if(isset($_POST['teamspeak_host_address']) && $_POST['teamspeak_host_address'] != NULL) {
-			$cfg['teamspeak_host_address'] = preg_replace('/\s/', '', $_POST['teamspeak_host_address']);
-		} else {
-			$cfg['teamspeak_host_address'] = '';
-		}
-		$cfg['teamspeak_query_port'] = $_POST['teamspeak_query_port'];
-		if (isset($_POST['teamspeak_query_encrypt_switch'])) $cfg['teamspeak_query_encrypt_switch'] = 1; else $cfg['teamspeak_query_encrypt_switch'] = 0;
-		$cfg['teamspeak_voice_port'] = $_POST['teamspeak_voice_port'];
-		$cfg['teamspeak_query_user'] = htmlspecialchars($_POST['teamspeak_query_user'], ENT_QUOTES);
-		$cfg['teamspeak_query_pass'] = htmlspecialchars($_POST['teamspeak_query_pass'], ENT_QUOTES);
-		$cfg['teamspeak_query_nickname'] = htmlspecialchars($_POST['teamspeak_query_nickname'], ENT_QUOTES);
-		$cfg['teamspeak_default_channel_id'] = $_POST['channelid'];
-		$cfg['teamspeak_query_command_delay'] = $_POST['teamspeak_query_command_delay'];
-		$cfg['teamspeak_avatar_download_delay']= $_POST['teamspeak_avatar_download_delay'];
-		if(isset($_POST['teamspeak_chatcommand_prefix']) && $_POST['teamspeak_chatcommand_prefix'] != NULL) {
-			$cfg['teamspeak_chatcommand_prefix'] = htmlspecialchars($_POST['teamspeak_chatcommand_prefix'], ENT_QUOTES);
-		} else {
-			$cfg['teamspeak_chatcommand_prefix'] = "!";
-		}
+    if (($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('teamspeak_host_address','{$cfg['teamspeak_host_address']}'),('teamspeak_query_encrypt_switch','{$cfg['teamspeak_query_encrypt_switch']}'),('teamspeak_query_port','{$cfg['teamspeak_query_port']}'),('teamspeak_voice_port','{$cfg['teamspeak_voice_port']}'),('teamspeak_query_user','{$cfg['teamspeak_query_user']}'),('teamspeak_query_pass','{$cfg['teamspeak_query_pass']}'),('teamspeak_query_nickname','{$cfg['teamspeak_query_nickname']}'),('teamspeak_default_channel_id','{$cfg['teamspeak_default_channel_id']}'),('teamspeak_query_command_delay','{$cfg['teamspeak_query_command_delay']}'),('teamspeak_avatar_download_delay','{$cfg['teamspeak_avatar_download_delay']}'),('webinterface_admin_client_unique_id_list','{$cfg['webinterface_admin_client_unique_id_list']}'),('teamspeak_chatcommand_prefix','{$cfg['teamspeak_chatcommand_prefix']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
-			$err_msg = print_r($mysqlcon->errorInfo(), true);
-			$err_lvl = 3;
-		} else {
-			$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
+    if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        $cfg['webinterface_admin_client_unique_id_list'] = '';
+        if (is_array($_POST['channelid'])) {
+            $_POST['channelid'] = $_POST['channelid'][0];
+        }
+
+        if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != null) {
+            $cfg['webinterface_admin_client_unique_id_list'] = implode(',', $_POST['webinterface_admin_client_unique_id_list']);
+        }
+
+        if (isset($_POST['teamspeak_host_address']) && $_POST['teamspeak_host_address'] != null) {
+            $cfg['teamspeak_host_address'] = preg_replace('/\s/', '', $_POST['teamspeak_host_address']);
+        } else {
+            $cfg['teamspeak_host_address'] = '';
+        }
+        $cfg['teamspeak_query_port'] = $_POST['teamspeak_query_port'];
+        if (isset($_POST['teamspeak_query_encrypt_switch'])) {
+            $cfg['teamspeak_query_encrypt_switch'] = 1;
+        } else {
+            $cfg['teamspeak_query_encrypt_switch'] = 0;
+        }
+        $cfg['teamspeak_voice_port'] = $_POST['teamspeak_voice_port'];
+        $cfg['teamspeak_query_user'] = htmlspecialchars($_POST['teamspeak_query_user'], ENT_QUOTES);
+        $cfg['teamspeak_query_pass'] = htmlspecialchars($_POST['teamspeak_query_pass'], ENT_QUOTES);
+        $cfg['teamspeak_query_nickname'] = htmlspecialchars($_POST['teamspeak_query_nickname'], ENT_QUOTES);
+        $cfg['teamspeak_default_channel_id'] = $_POST['channelid'];
+        $cfg['teamspeak_query_command_delay'] = $_POST['teamspeak_query_command_delay'];
+        $cfg['teamspeak_avatar_download_delay'] = $_POST['teamspeak_avatar_download_delay'];
+        if (isset($_POST['teamspeak_chatcommand_prefix']) && $_POST['teamspeak_chatcommand_prefix'] != null) {
+            $cfg['teamspeak_chatcommand_prefix'] = htmlspecialchars($_POST['teamspeak_chatcommand_prefix'], ENT_QUOTES);
+        } else {
+            $cfg['teamspeak_chatcommand_prefix'] = '!';
+        }
+
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('teamspeak_host_address','{$cfg['teamspeak_host_address']}'),('teamspeak_query_encrypt_switch','{$cfg['teamspeak_query_encrypt_switch']}'),('teamspeak_query_port','{$cfg['teamspeak_query_port']}'),('teamspeak_voice_port','{$cfg['teamspeak_voice_port']}'),('teamspeak_query_user','{$cfg['teamspeak_query_user']}'),('teamspeak_query_pass','{$cfg['teamspeak_query_pass']}'),('teamspeak_query_nickname','{$cfg['teamspeak_query_nickname']}'),('teamspeak_default_channel_id','{$cfg['teamspeak_default_channel_id']}'),('teamspeak_query_command_delay','{$cfg['teamspeak_query_command_delay']}'),('teamspeak_avatar_download_delay','{$cfg['teamspeak_avatar_download_delay']}'),('webinterface_admin_client_unique_id_list','{$cfg['webinterface_admin_client_unique_id_list']}'),('teamspeak_chatcommand_prefix','{$cfg['teamspeak_chatcommand_prefix']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+            $err_msg = print_r($mysqlcon->errorInfo(), true);
+            $err_lvl = 3;
+        } else {
+            $err_msg = $lang['wisvsuc'].' '.sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
 			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
-			$err_lvl = NULL;
-		}
-		
-		if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != NULL) {
-			$cfg['webinterface_admin_client_unique_id_list'] = array_flip($_POST['webinterface_admin_client_unique_id_list']);
-		}
+            $err_lvl = null;
+        }
 
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+        if (isset($_POST['webinterface_admin_client_unique_id_list']) && $_POST['webinterface_admin_client_unique_id_list'] != null) {
+            $cfg['webinterface_admin_client_unique_id_list'] = array_flip($_POST['webinterface_admin_client_unique_id_list']);
+        }
+    } elseif (isset($_POST['update'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_ts">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					<div class="row">
 						<div class="col-lg-12">
@@ -83,7 +90,7 @@ try {
 						</div>
 					</div>
 					<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
-						<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+						<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-6">
 								<div class="panel panel-default">
@@ -98,10 +105,10 @@ try {
 										<div class="form-group expertelement">
 											<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3encryptdesc"><?php echo $lang['wits3encrypt']; ?><i class="help-hover fas fa-question-circle"></i></label>
 											<div class="col-sm-8">
-												<?PHP if ($cfg['teamspeak_query_encrypt_switch'] == 1) {
-													echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
+												<?php if ($cfg['teamspeak_query_encrypt_switch'] == 1) {
+												    echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
 												} else {
-													echo '<input class="switch-animate" type="checkbox" data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
+												    echo '<input class="switch-animate" type="checkbox" data-size="mini" name="teamspeak_query_encrypt_switch" value="',$cfg['teamspeak_query_encrypt_switch'],'">';
 												} ?>
 											</div>
 										</div>									
@@ -173,9 +180,9 @@ try {
 									<div class="form-group expertelement">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3dchdesc"><?php echo $lang['wits3dch']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
-											<?PHP
-											echo select_channel($channellist, $cfg['teamspeak_default_channel_id']);
-											?>
+											<?php
+                                            echo select_channel($channellist, $cfg['teamspeak_default_channel_id']);
+    ?>
 										</div>
 									</div>
 									<div class="row expertelement">&nbsp;</div>
@@ -183,15 +190,33 @@ try {
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3smdesc"><?php echo $lang['wits3sm']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control" id="basic" name="teamspeak_query_command_delay">
-											<?PHP
-											echo '<option data-icon="fas fa-ban" data-subtext="[recommended]" value="0"'; if($cfg['teamspeak_query_command_delay']=="0") echo ' selected="selected"'; echo '><span class="item-margin">disabled (Realtime)</span></option>';
-											echo '<option data-divider="true">&nbsp;</option>';
-											echo '<option data-subtext="(0,2 seconds)" value="200000"'; if($cfg['teamspeak_query_command_delay']=="200000") echo ' selected="selected"'; echo '>Low delay</option>';
-											echo '<option data-subtext="(0,5 seconds)" value="500000"'; if($cfg['teamspeak_query_command_delay']=="500000") echo ' selected="selected"'; echo '>Middle delay</option>';
-											echo '<option data-subtext="(1,0 seconds)" value="1000000"'; if($cfg['teamspeak_query_command_delay']=="1000000") echo ' selected="selected"'; echo '>High delay</option>';
-											echo '<option data-subtext="(2,0 seconds)" value="2000000"'; if($cfg['teamspeak_query_command_delay']=="2000000") echo ' selected="selected"'; echo '>Huge delay</option>';
-											echo '<option data-subtext="(5,0 seconds)" value="5000000"'; if($cfg['teamspeak_query_command_delay']=="5000000") echo ' selected="selected"'; echo '>Ultra delay</option>';
-											?>
+											<?php
+    echo '<option data-icon="fas fa-ban" data-subtext="[recommended]" value="0"';
+    if ($cfg['teamspeak_query_command_delay'] == '0') {
+        echo ' selected="selected"';
+    } echo '><span class="item-margin">disabled (Realtime)</span></option>';
+    echo '<option data-divider="true">&nbsp;</option>';
+    echo '<option data-subtext="(0,2 seconds)" value="200000"';
+    if ($cfg['teamspeak_query_command_delay'] == '200000') {
+        echo ' selected="selected"';
+    } echo '>Low delay</option>';
+    echo '<option data-subtext="(0,5 seconds)" value="500000"';
+    if ($cfg['teamspeak_query_command_delay'] == '500000') {
+        echo ' selected="selected"';
+    } echo '>Middle delay</option>';
+    echo '<option data-subtext="(1,0 seconds)" value="1000000"';
+    if ($cfg['teamspeak_query_command_delay'] == '1000000') {
+        echo ' selected="selected"';
+    } echo '>High delay</option>';
+    echo '<option data-subtext="(2,0 seconds)" value="2000000"';
+    if ($cfg['teamspeak_query_command_delay'] == '2000000') {
+        echo ' selected="selected"';
+    } echo '>Huge delay</option>';
+    echo '<option data-subtext="(5,0 seconds)" value="5000000"';
+    if ($cfg['teamspeak_query_command_delay'] == '5000000') {
+        echo ' selected="selected"';
+    } echo '>Ultra delay</option>';
+    ?>
 											</select>
 										</div>
 									</div>
@@ -210,30 +235,38 @@ try {
 											</script>
 										</div>
 									</div>
-									<?PHP
-									if(!array_key_exists('webinterface_fresh_installation', $cfg) || $cfg['webinterface_fresh_installation'] != 1) { ?>
+									<?php
+                                    if (! array_key_exists('webinterface_fresh_installation', $cfg) || $cfg['webinterface_fresh_installation'] != 1) { ?>
 									<div class="row">&nbsp;</div>
 									<div class="form-group">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiadmuuiddesc"><?php echo $lang['wiadmuuid']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8">
 											<select class="selectpicker show-tick form-control" data-actions-box="true" data-live-search="true" multiple name="webinterface_admin_client_unique_id_list[]">
-											<?PHP
-											foreach ($user_arr as $user) {
-												if ($cfg['webinterface_admin_client_unique_id_list'] != NULL && array_key_exists($user['uuid'], $cfg['webinterface_admin_client_unique_id_list'])) $selected=" selected"; else $selected="";
-												echo '<option value="',$user['uuid'],'" data-subtext="UUID: ',$user['uuid'],'; DBID: ',$user['cldbid'],'" ',$selected,'>',htmlspecialchars($user['name']),'</option>';
-											}
-											?>
+											<?php
+    foreach ($user_arr as $user) {
+        if ($cfg['webinterface_admin_client_unique_id_list'] != null && array_key_exists($user['uuid'], $cfg['webinterface_admin_client_unique_id_list'])) {
+            $selected = ' selected';
+        } else {
+            $selected = '';
+        }
+        echo '<option value="',$user['uuid'],'" data-subtext="UUID: ',$user['uuid'],'; DBID: ',$user['cldbid'],'" ',$selected,'>',htmlspecialchars($user['name']),'</option>';
+    }
+                                        ?>
 											</select>
 										</div>
 									</div>
 									<div class="form-group expertelement">
 										<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wits3predesc"><?php echo $lang['wits3pre']; ?><i class="help-hover fas fa-question-circle"></i></label>
 										<div class="col-sm-8 required-field-block">
-											<input type="text" class="form-control required" name="teamspeak_chatcommand_prefix" value="<?php if(!isset($cfg['teamspeak_chatcommand_prefix']) || $cfg['teamspeak_chatcommand_prefix'] == NULL) { echo "!"; } else { echo $cfg['teamspeak_chatcommand_prefix']; } ?>" minlength="1" maxlength="30" required>
+											<input type="text" class="form-control required" name="teamspeak_chatcommand_prefix" value="<?php if (! isset($cfg['teamspeak_chatcommand_prefix']) || $cfg['teamspeak_chatcommand_prefix'] == null) {
+											    echo '!';
+											} else {
+											    echo $cfg['teamspeak_chatcommand_prefix'];
+											} ?>" minlength="1" maxlength="30" required>
 											<div class="help-block with-errors"></div>
 										</div>
 									</div>
-									<?PHP } ?>
+									<?php } ?>
 								</div>
 							</div>
 						</div>
@@ -259,7 +292,7 @@ try {
 			<?php echo $lang['wits3hostdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -275,7 +308,7 @@ try {
 			<?php echo sprintf($lang['wits3encryptdesc'], '<pre>sudo apt-get install php-ssh2</pre>', '<pre>query_ssh_ip=0.0.0.0,::<br>query_ssh_port=10022<br>query_protocols=ssh,raw<br>query_ssh_rsa_host_key=ssh_host_rsa_key</pre>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -291,7 +324,7 @@ try {
 			<?php echo $lang['wits3querydesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -307,7 +340,7 @@ try {
 			<?php echo $lang['wits3voicedesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -323,7 +356,7 @@ try {
 			<?php echo sprintf($lang['wits3querusrdesc'], '<a href="https://ts-ranksystem.com/#linux" target="_blank">https://ts-ranksystem.com/</a>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -339,7 +372,7 @@ try {
 			<?php echo $lang['wits3querpwdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -355,7 +388,7 @@ try {
 			<?php echo $lang['wits3qnmdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -371,7 +404,7 @@ try {
 			<?php echo $lang['wits3dchdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -387,7 +420,7 @@ try {
 			<?php echo sprintf($lang['wits3smdesc'], '<pre>disabled	(0,0)		0,10<br>low delay	(0,2)		2,60<br>middle delay	(0,5)		6,50<br>high delay	(1,0)		13,00<br>huge delay	(2,0)		26,00<br>ultra delay	(5,0)		65,00</pre>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -403,7 +436,7 @@ try {
 			<?php echo $lang['wits3avatdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -419,7 +452,7 @@ try {
 			<?php echo sprintf($lang['wiadmuuiddesc'], '<a href="//ts-ranksystem.com/?commands" target="_blank">', '</a>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -435,7 +468,7 @@ try {
 			<?php echo $lang['wits3predesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -457,6 +490,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>

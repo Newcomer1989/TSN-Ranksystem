@@ -1,58 +1,59 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
+    require_once '_nav.php';
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$newconfig='<?php
+    if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        $newconfig = '<?php
 	$db[\'type\']=\''.$_POST['dbtype'].'\';
 	$db[\'host\']=\''.$_POST['dbhost'].'\';
 	$db[\'user\']=\''.$_POST['dbuser'].'\';
 	$db[\'pass\']=\''.$_POST['dbpass'].'\';
 	$db[\'dbname\']=\''.$_POST['dbname'].'\';
 	?>';
-		$dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'].';charset=utf8mb4';
-		try {
-			$mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass']);
-			$handle=fopen('../other/dbconfig.php','w');
-			if(!fwrite($handle,$newconfig))
-			{
-				$err_msg = sprintf($lang['widbcfgerr']);
-				$err_lvl = 3;
-			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
+        $dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'].';charset=utf8mb4';
+        try {
+            $mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass']);
+            $handle = fopen('../other/dbconfig.php', 'w');
+            if (! fwrite($handle, $newconfig)) {
+                $err_msg = sprintf($lang['widbcfgerr']);
+                $err_lvl = 3;
+            } else {
+                $err_msg = $lang['wisvsuc'].' '.sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button
 			type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
-				$err_lvl = 0;
-				$db['type']	= $_POST['dbtype'];
-				$db['host']	= $_POST['dbhost'];
-				$dbname		= $_POST['dbname'];
-				$db['user']	= $_POST['dbuser'];
-				$db['pass']	= $_POST['dbpass'];
-			}
-			fclose($handle);
-		} catch (PDOException $e) {
-			$err_msg = sprintf($lang['widbcfgerr']);
-			$err_lvl = 3;
-		}
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+                $err_lvl = 0;
+                $db['type'] = $_POST['dbtype'];
+                $db['host'] = $_POST['dbhost'];
+                $dbname = $_POST['dbname'];
+                $db['user'] = $_POST['dbuser'];
+                $db['pass'] = $_POST['dbpass'];
+            }
+            fclose($handle);
+        } catch (PDOException $e) {
+            $err_msg = sprintf($lang['widbcfgerr']);
+            $err_lvl = 3;
+        }
+    } elseif (isset($_POST['update'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_db">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					<div class="row">
 						<div class="col-lg-12">
@@ -62,7 +63,7 @@ try {
 						</div>
 					</div>
 					<form class="form-horizontal" data-toggle="validator" name="update" method="POST">
-					<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+					<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-3">
 							</div>
@@ -75,20 +76,56 @@ try {
 												<select class="selectpicker show-tick form-control required" id="basic" name="dbtype" required>
 												<option disabled value=""> -- select database -- </option>
 												<option data-divider="true"></option>
-												<?PHP
-												echo '<option data-subtext="Cubrid" value="cubrid"'; if($db['type']=="cubrid") echo " selected=selected"; echo '>cubrid</option>';
-												echo '<option data-subtext="FreeTDS / Microsoft SQL Server / Sybase" value="dblib"'; if($db['type']=="dblib") echo " selected=selected"; echo '>dblib</option>';
-												echo '<option data-subtext="Firebird/Interbase 6" value="firebird"'; if($db['type']=="firebird") echo " selected=selected"; echo '>firebird</option>';
-												echo '<option data-subtext="IBM DB2" value="ibm"'; if($db['type']=="ibm") echo " selected=selected"; echo '>ibm</option>';
-												echo '<option data-subtext="IBM Informix Dynamic Server" value="informix"'; if($db['type']=="informix") echo " selected=selected"; echo '>informix</option>';
-												echo '<option data-subtext="MySQL 3.x/4.x/5.x [recommended]" value="mysql"'; if($db['type']=="mysql") echo " selected=selected"; echo '>mysql</option>';
-												echo '<option data-subtext="Oracle Call Interface" value="oci"'; if($db['type']=="oci") echo " selected=selected"; echo '>oci</option>';
-												echo '<option data-subtext="ODBC v3 (IBM DB2, unixODBC und win32 ODBC)" value="odbc"'; if($db['type']=="odbc") echo " selected=selected"; echo '>odbc</option>';
-												echo '<option data-subtext="PostgreSQL" value="pgsql"'; if($db['type']=="pgsql") echo " selected=selected"; echo '>pgsql</option>';
-												echo '<option data-subtext="SQLite 3 und SQLite 2" value="sqlite"'; if($db['type']=="sqlite") echo " selected=selected"; echo '>sqlite</option>';
-												echo '<option data-subtext="Microsoft SQL Server / SQL Azure" value="sqlsrv"'; if($db['type']=="sqlsrv") echo " selected=selected"; echo '>sqlsrv</option>';
-												echo '<option data-subtext="4D" value="4d"'; if($db['type']=="4d") echo " selected=selected"; echo '>4d</option>';
-												?>
+												<?php
+                                                echo '<option data-subtext="Cubrid" value="cubrid"';
+    if ($db['type'] == 'cubrid') {
+        echo ' selected=selected';
+    } echo '>cubrid</option>';
+    echo '<option data-subtext="FreeTDS / Microsoft SQL Server / Sybase" value="dblib"';
+    if ($db['type'] == 'dblib') {
+        echo ' selected=selected';
+    } echo '>dblib</option>';
+    echo '<option data-subtext="Firebird/Interbase 6" value="firebird"';
+    if ($db['type'] == 'firebird') {
+        echo ' selected=selected';
+    } echo '>firebird</option>';
+    echo '<option data-subtext="IBM DB2" value="ibm"';
+    if ($db['type'] == 'ibm') {
+        echo ' selected=selected';
+    } echo '>ibm</option>';
+    echo '<option data-subtext="IBM Informix Dynamic Server" value="informix"';
+    if ($db['type'] == 'informix') {
+        echo ' selected=selected';
+    } echo '>informix</option>';
+    echo '<option data-subtext="MySQL 3.x/4.x/5.x [recommended]" value="mysql"';
+    if ($db['type'] == 'mysql') {
+        echo ' selected=selected';
+    } echo '>mysql</option>';
+    echo '<option data-subtext="Oracle Call Interface" value="oci"';
+    if ($db['type'] == 'oci') {
+        echo ' selected=selected';
+    } echo '>oci</option>';
+    echo '<option data-subtext="ODBC v3 (IBM DB2, unixODBC und win32 ODBC)" value="odbc"';
+    if ($db['type'] == 'odbc') {
+        echo ' selected=selected';
+    } echo '>odbc</option>';
+    echo '<option data-subtext="PostgreSQL" value="pgsql"';
+    if ($db['type'] == 'pgsql') {
+        echo ' selected=selected';
+    } echo '>pgsql</option>';
+    echo '<option data-subtext="SQLite 3 und SQLite 2" value="sqlite"';
+    if ($db['type'] == 'sqlite') {
+        echo ' selected=selected';
+    } echo '>sqlite</option>';
+    echo '<option data-subtext="Microsoft SQL Server / SQL Azure" value="sqlsrv"';
+    if ($db['type'] == 'sqlsrv') {
+        echo ' selected=selected';
+    } echo '>sqlsrv</option>';
+    echo '<option data-subtext="4D" value="4d"';
+    if ($db['type'] == '4d') {
+        echo ' selected=selected';
+    } echo '>4d</option>';
+    ?>
 												</select>
 											</div>
 											<div class="help-block with-errors"></div>
@@ -157,7 +194,7 @@ try {
 			<?php echo sprintf($lang['isntwidbtypedesc'], '<a href="https://ts-ranksystem.com/#linux" target="_blank">https://ts-ranksystem.com/#linux</a>'); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -173,7 +210,7 @@ try {
 			<?php echo $lang['isntwidbhostdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -189,7 +226,7 @@ try {
 			<?php echo $lang['isntwidbusrdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -205,7 +242,7 @@ try {
 			<?php echo $lang['isntwidbpassdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -221,7 +258,7 @@ try {
 			<?php echo $lang['isntwidbnamedesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -242,6 +279,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>

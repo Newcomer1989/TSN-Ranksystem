@@ -1,63 +1,75 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
+    require_once '_nav.php';
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if(($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($channellist = $mysqlcon->query("SELECT * FROM `$dbname`.`channel` ORDER BY `pid`,`channel_order`,`channel_name` ASC")->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(is_array($_POST['channelid'])) $_POST['channelid'] = $_POST['channelid'][0];
+    if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        if (is_array($_POST['channelid'])) {
+            $_POST['channelid'] = $_POST['channelid'][0];
+        }
 
-		$old_nav = $cfg['stats_show_site_navigation_switch'];
-		if (isset($_POST['stats_show_site_navigation_switch'])) $cfg['stats_show_site_navigation_switch'] = 1; else $cfg['stats_show_site_navigation_switch'] = 0;
-		if (isset($_POST['teamspeak_verification_channel_id'])) $cfg['teamspeak_verification_channel_id'] = $_POST['teamspeak_verification_channel_id']; else $cfg['teamspeak_verification_channel_id'] = 0;
-		$cfg['stats_show_maxclientsline_switch'] = $_POST['stats_show_maxclientsline_switch'];
-		$cfg['stats_time_bronze'] = $_POST['stats_time_bronze'];
-		$cfg['stats_time_silver'] = $_POST['stats_time_silver'];
-		$cfg['stats_time_gold'] = $_POST['stats_time_gold'];
-		$cfg['stats_time_legend'] = $_POST['stats_time_legend'];
-		$cfg['stats_connects_bronze'] = $_POST['stats_connects_bronze'];
-		$cfg['stats_connects_silver'] = $_POST['stats_connects_silver'];
-		$cfg['stats_connects_gold'] = $_POST['stats_connects_gold'];
-		$cfg['stats_connects_legend'] = $_POST['stats_connects_legend'];
-		$cfg['stats_server_news'] = addslashes($_POST['stats_server_news']);
-		$cfg['teamspeak_verification_channel_id'] = $_POST['channelid'];
+        $old_nav = $cfg['stats_show_site_navigation_switch'];
+        if (isset($_POST['stats_show_site_navigation_switch'])) {
+            $cfg['stats_show_site_navigation_switch'] = 1;
+        } else {
+            $cfg['stats_show_site_navigation_switch'] = 0;
+        }
+        if (isset($_POST['teamspeak_verification_channel_id'])) {
+            $cfg['teamspeak_verification_channel_id'] = $_POST['teamspeak_verification_channel_id'];
+        } else {
+            $cfg['teamspeak_verification_channel_id'] = 0;
+        }
+        $cfg['stats_show_maxclientsline_switch'] = $_POST['stats_show_maxclientsline_switch'];
+        $cfg['stats_time_bronze'] = $_POST['stats_time_bronze'];
+        $cfg['stats_time_silver'] = $_POST['stats_time_silver'];
+        $cfg['stats_time_gold'] = $_POST['stats_time_gold'];
+        $cfg['stats_time_legend'] = $_POST['stats_time_legend'];
+        $cfg['stats_connects_bronze'] = $_POST['stats_connects_bronze'];
+        $cfg['stats_connects_silver'] = $_POST['stats_connects_silver'];
+        $cfg['stats_connects_gold'] = $_POST['stats_connects_gold'];
+        $cfg['stats_connects_legend'] = $_POST['stats_connects_legend'];
+        $cfg['stats_server_news'] = addslashes($_POST['stats_server_news']);
+        $cfg['teamspeak_verification_channel_id'] = $_POST['channelid'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}'),('stats_show_maxclientsline_switch','{$cfg['stats_show_maxclientsline_switch']}'),('stats_time_bronze','{$cfg['stats_time_bronze']}'),('stats_time_silver','{$cfg['stats_time_silver']}'),('stats_time_gold','{$cfg['stats_time_gold']}'),('stats_time_legend','{$cfg['stats_time_legend']}'),('stats_connects_bronze','{$cfg['stats_connects_bronze']}'),('stats_connects_silver','{$cfg['stats_connects_silver']}'),('stats_connects_gold','{$cfg['stats_connects_gold']}'),('stats_connects_legend','{$cfg['stats_connects_legend']}'),('teamspeak_verification_channel_id','{$cfg['teamspeak_verification_channel_id']}'),('stats_server_news','{$cfg['stats_server_news']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
-			$err_msg = print_r($mysqlcon->errorInfo(), true);
-			$err_lvl = 3;
-		} else {
-			$err_msg = $lang['wisvsuc'];
-			$err_lvl = 0;
-			$url = 'https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#embed-the-statistic-page-with-an-iframe';
-			if($old_nav != $cfg['stats_show_site_navigation_switch'] && $old_nav == 1) {
-				$err_msg .= '#####'.$lang['winav14'].'<br><a href="'.$url.'" target="_blank">'.$url.'</a>';
-				$err_lvl .= "#1";
-			}
-		}
-		$cfg['stats_server_news'] = $_POST['stats_server_news'];
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_show_site_navigation_switch','{$cfg['stats_show_site_navigation_switch']}'),('stats_show_maxclientsline_switch','{$cfg['stats_show_maxclientsline_switch']}'),('stats_time_bronze','{$cfg['stats_time_bronze']}'),('stats_time_silver','{$cfg['stats_time_silver']}'),('stats_time_gold','{$cfg['stats_time_gold']}'),('stats_time_legend','{$cfg['stats_time_legend']}'),('stats_connects_bronze','{$cfg['stats_connects_bronze']}'),('stats_connects_silver','{$cfg['stats_connects_silver']}'),('stats_connects_gold','{$cfg['stats_connects_gold']}'),('stats_connects_legend','{$cfg['stats_connects_legend']}'),('teamspeak_verification_channel_id','{$cfg['teamspeak_verification_channel_id']}'),('stats_server_news','{$cfg['stats_server_news']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+            $err_msg = print_r($mysqlcon->errorInfo(), true);
+            $err_lvl = 3;
+        } else {
+            $err_msg = $lang['wisvsuc'];
+            $err_lvl = 0;
+            $url = 'https://github.com/Newcomer1989/TSN-Ranksystem/wiki/FAQ#embed-the-statistic-page-with-an-iframe';
+            if ($old_nav != $cfg['stats_show_site_navigation_switch'] && $old_nav == 1) {
+                $err_msg .= '#####'.$lang['winav14'].'<br><a href="'.$url.'" target="_blank">'.$url.'</a>';
+                $err_lvl .= '#1';
+            }
+        }
+        $cfg['stats_server_news'] = $_POST['stats_server_news'];
+    } elseif (isset($_POST['update'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_stats">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					<div class="row">
 						<div class="col-lg-12">
@@ -67,7 +79,7 @@ try {
 						</div>
 					</div>
 					<form class="form-horizontal" name="update" method="POST">
-					<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+					<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-6">
 								<div class="panel panel-default">
@@ -192,10 +204,10 @@ try {
 								<div class="form-group">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishnavdesc"><?php echo $lang['wishnav']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<?PHP if ($cfg['stats_show_site_navigation_switch'] == 1) {
-											echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
+										<?php if ($cfg['stats_show_site_navigation_switch'] == 1) {
+										    echo '<input class="switch-animate" type="checkbox" checked data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
 										} else {
-											echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
+										    echo '<input class="switch-animate" type="checkbox" data-size="mini" name="stats_show_site_navigation_switch" value="',$cfg['stats_show_site_navigation_switch'],'">';
 										} ?>
 									</div>
 								</div>
@@ -204,9 +216,9 @@ try {
 								<div class="form-group expertelement">
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiverifydesc"><?php echo $lang['wiverify']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
-										<?PHP
+										<?php
 										echo select_channel($channellist, $cfg['teamspeak_verification_channel_id']);
-										?>
+    ?>
 									</div>
 								</div>
 								<div class="row">&nbsp;</div>
@@ -214,12 +226,24 @@ try {
 									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wishmaxdesc"><?php echo $lang['wishmax']; ?><i class="help-hover fas fa-question-circle"></i></label>
 									<div class="col-sm-8">
 										<select class="selectpicker show-tick form-control basic" name="stats_show_maxclientsline_switch">
-										<?PHP
-										echo '<option data-subtext="[default]" value="0"'; if($cfg['stats_show_maxclientsline_switch']=="0") echo " selected=selected"; echo '>',$lang['wishmax0'],'</option>';
-										echo '<option value="1"'; if($cfg['stats_show_maxclientsline_switch']=="1") echo " selected=selected"; echo '>',$lang['wishmax1'],'</option>';
-										echo '<option value="2"'; if($cfg['stats_show_maxclientsline_switch']=="2") echo " selected=selected"; echo '>',$lang['wishmax2'],'</option>';
-										echo '<option value="3"'; if($cfg['stats_show_maxclientsline_switch']=="3") echo " selected=selected"; echo '>',$lang['wishmax3'],'</option>';
-										?>
+										<?php
+    echo '<option data-subtext="[default]" value="0"';
+    if ($cfg['stats_show_maxclientsline_switch'] == '0') {
+        echo ' selected=selected';
+    } echo '>',$lang['wishmax0'],'</option>';
+    echo '<option value="1"';
+    if ($cfg['stats_show_maxclientsline_switch'] == '1') {
+        echo ' selected=selected';
+    } echo '>',$lang['wishmax1'],'</option>';
+    echo '<option value="2"';
+    if ($cfg['stats_show_maxclientsline_switch'] == '2') {
+        echo ' selected=selected';
+    } echo '>',$lang['wishmax2'],'</option>';
+    echo '<option value="3"';
+    if ($cfg['stats_show_maxclientsline_switch'] == '3') {
+        echo ' selected=selected';
+    } echo '>',$lang['wishmax3'],'</option>';
+    ?>
 										</select>
 									</div>
 								</div>
@@ -256,7 +280,7 @@ try {
 			<?php echo $lang['wishnavdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -272,7 +296,7 @@ try {
 			<?php echo $lang['wishmaxdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -288,7 +312,7 @@ try {
 			<?php echo $lang['wisttidesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -304,7 +328,7 @@ try {
 			<?php echo $lang['wistcodesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -320,7 +344,7 @@ try {
 			<?php echo $lang['wiverifydesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -336,7 +360,7 @@ try {
 			<?php echo $lang['wimsgsndesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -346,6 +370,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>

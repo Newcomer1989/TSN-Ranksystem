@@ -1,149 +1,149 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
+    require_once '_nav.php';
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if(($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($groupslist = $mysqlcon->query("SELECT * FROM `$dbname`.`groups` ORDER BY `sortid`,`sgidname` ASC")->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if(!isset($groupslist) || $groupslist == NULL) {
-		$err_msg = '<b>No servergroups found inside the Ranksystem cache!</b><br><br>Please connect the Ranksystem Bot to the TS server. The Ranksystem will download the servergroups when it is connected to the server.<br>Give it a few minutes and reload this page. The dropdown field should contain your groups after.';
-		$err_lvl = 1;
-	}
+    if (! isset($groupslist) || $groupslist == null) {
+        $err_msg = '<b>No servergroups found inside the Ranksystem cache!</b><br><br>Please connect the Ranksystem Bot to the TS server. The Ranksystem will download the servergroups when it is connected to the server.<br>Give it a few minutes and reload this page. The dropdown field should contain your groups after.';
+        $err_lvl = 1;
+    }
 
-	if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
-		if(empty($_POST['rankup_boost_definition'])) {
-			$grouparr_old = null;
-		} else {
-			foreach (explode(',', $_POST['rankup_boost_definition']) as $entry) {
-				list($key, $value1, $value2) = explode('=>', $entry);
-				$grouparr_old[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
-				$cfg['rankup_boost_definition'] = $grouparr_old;
-			}
-		}
-		
-		if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
-			foreach($cfg['rankup_boost_definition'] as $groupid => $value) {
-				if(!isset($groupslist[$groupid]) && $groupid != NULL) {
-					$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']).'<br>';
-					$err_lvl = 3;
-					$errcnf++;
-				}
-			}
-		}
-		
-		$cfg['rankup_boost_definition'] = $_POST['rankup_boost_definition'];
+    if (isset($_POST['update_old']) && isset($db_csrf[$_POST['csrf_token']])) {
+        if (empty($_POST['rankup_boost_definition'])) {
+            $grouparr_old = null;
+        } else {
+            foreach (explode(',', $_POST['rankup_boost_definition']) as $entry) {
+                list($key, $value1, $value2) = explode('=>', $entry);
+                $grouparr_old[$key] = ['group'=>$key, 'factor'=>$value1, 'time'=>$value2];
+                $cfg['rankup_boost_definition'] = $grouparr_old;
+            }
+        }
 
-		if($errcnf == 0) {
-			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
-				$err_msg = print_r($mysqlcon->errorInfo(), true);
-				$err_lvl = 3;
-			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
-				$err_lvl = NULL;
-			}
-		} else {
-			$err_msg .= "<br>".$lang['errgrpid'];
-		}
-		
-		if(empty($_POST['rankup_boost_definition'])) {
-			$cfg['rankup_boost_definition'] = NULL;
-		} else {
-			foreach (explode(',', $_POST['rankup_boost_definition']) as $entry) {
-				list($key, $value1, $value2) = explode('=>', $entry);
-				$addnewvalue2[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
-				$cfg['rankup_boost_definition'] = $addnewvalue2;
-			}
-		}
+        if (isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != null) {
+            foreach ($cfg['rankup_boost_definition'] as $groupid => $value) {
+                if (! isset($groupslist[$groupid]) && $groupid != null) {
+                    $err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wiboost']).'<br>';
+                    $err_lvl = 3;
+                    $errcnf++;
+                }
+            }
+        }
 
-	} elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$rankup_boost_definition = $err_msg = "";
-		$errcnf = 0;
+        $cfg['rankup_boost_definition'] = $_POST['rankup_boost_definition'];
 
-		if (isset($_POST['boostduration']) && !isset($_POST['boostgroup']) && isset($_POST['boostfactor'])) {
-			$errcnf++;
-			$err_msg = "<b>Missing servergroup in your defintion!</b><br>";
-			$err_lvl = 3;
-			$cfg['rankup_boost_definition'] = null;
-		} elseif (isset($_POST['boostduration']) && isset($_POST['boostgroup']) && isset($_POST['boostfactor'])) {
-			$boostdefinition = [];
-			foreach($_POST['boostgroup'] as $rowid => $groupid) {
-				$factor = isset($_POST["boostfactor"][$rowid]) ? floatval($_POST["boostfactor"][$rowid]) : 1;
-				$duration = isset($_POST["boostduration"][$rowid]) ? intval($_POST["boostduration"][$rowid]) : 1;
-				$boostdefinition[] = "$groupid=>$factor=>$duration";
-			}
+        if ($errcnf == 0) {
+            if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+                $err_msg = print_r($mysqlcon->errorInfo(), true);
+                $err_lvl = 3;
+            } else {
+                $err_msg = $lang['wisvsuc'].' '.sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
+                $err_lvl = null;
+            }
+        } else {
+            $err_msg .= '<br>'.$lang['errgrpid'];
+        }
 
-			$rankup_boost_definition = implode(",", $boostdefinition);
+        if (empty($_POST['rankup_boost_definition'])) {
+            $cfg['rankup_boost_definition'] = null;
+        } else {
+            foreach (explode(',', $_POST['rankup_boost_definition']) as $entry) {
+                list($key, $value1, $value2) = explode('=>', $entry);
+                $addnewvalue2[$key] = ['group'=>$key, 'factor'=>$value1, 'time'=>$value2];
+                $cfg['rankup_boost_definition'] = $addnewvalue2;
+            }
+        }
+    } elseif (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        $rankup_boost_definition = $err_msg = '';
+        $errcnf = 0;
 
-			$grouparr = [];
-			foreach(explode(',', $rankup_boost_definition) as $entry) {
-				list($groupid, $factor, $duration) = explode('=>', $entry);
-				$grouparr[$groupid] = $factor;
-			}
+        if (isset($_POST['boostduration']) && ! isset($_POST['boostgroup']) && isset($_POST['boostfactor'])) {
+            $errcnf++;
+            $err_msg = '<b>Missing servergroup in your defintion!</b><br>';
+            $err_lvl = 3;
+            $cfg['rankup_boost_definition'] = null;
+        } elseif (isset($_POST['boostduration']) && isset($_POST['boostgroup']) && isset($_POST['boostfactor'])) {
+            $boostdefinition = [];
+            foreach ($_POST['boostgroup'] as $rowid => $groupid) {
+                $factor = isset($_POST['boostfactor'][$rowid]) ? floatval($_POST['boostfactor'][$rowid]) : 1;
+                $duration = isset($_POST['boostduration'][$rowid]) ? intval($_POST['boostduration'][$rowid]) : 1;
+                $boostdefinition[] = "$groupid=>$factor=>$duration";
+            }
 
-			if(isset($groupslist) && $groupslist != NULL) {
-				foreach($grouparr as $groupid => $time) {
-					if((!isset($groupslist[$groupid]) && $groupid != NULL) || $groupid == 0) {
-						$err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']).'<br>';
-						$err_lvl = 3;
-						$errcnf++;
-					}
-				}
-			}
+            $rankup_boost_definition = implode(',', $boostdefinition);
 
-			$cfg['rankup_boost_definition'] = $rankup_boost_definition;
-		} else {
-			$cfg['rankup_boost_definition'] = null;
-			if ($mysqlcon->exec("UPDATE `$dbname`.`user` SET `boosttime`=0;") === false) {
-				$err_msg = print_r($mysqlcon->errorInfo(), true);
-				$err_lvl = 3;
-			}
-		}
+            $grouparr = [];
+            foreach (explode(',', $rankup_boost_definition) as $entry) {
+                list($groupid, $factor, $duration) = explode('=>', $entry);
+                $grouparr[$groupid] = $factor;
+            }
 
-		if($errcnf == 0) {
-			if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
-				$err_msg = print_r($mysqlcon->errorInfo(), true);
-				$err_lvl = 3;
-			} else {
-				$err_msg = $lang['wisvsuc']." ".sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
-				$err_lvl = NULL;
-			}
-		} else {
-			$err_msg .= "<br>".$lang['errgrpid'];
-		}
+            if (isset($groupslist) && $groupslist != null) {
+                foreach ($grouparr as $groupid => $time) {
+                    if ((! isset($groupslist[$groupid]) && $groupid != null) || $groupid == 0) {
+                        $err_msg .= sprintf($lang['upgrp0001'], $groupid, $lang['wigrptime']).'<br>';
+                        $err_lvl = 3;
+                        $errcnf++;
+                    }
+                }
+            }
 
-		if(empty($rankup_boost_definition)) {
-			$cfg['rankup_boost_definition'] = NULL;
-		} else {
-			$boostexp = explode(',', $rankup_boost_definition);
-			foreach ($boostexp as $entry) {
-				list($key, $value1, $value2) = explode('=>', $entry);
-				$addnewvalue2[$key] = array("group"=>$key,"factor"=>$value1,"time"=>$value2);
-				$cfg['rankup_boost_definition'] = $addnewvalue2;
-			}
-		}
+            $cfg['rankup_boost_definition'] = $rankup_boost_definition;
+        } else {
+            $cfg['rankup_boost_definition'] = null;
+            if ($mysqlcon->exec("UPDATE `$dbname`.`user` SET `boosttime`=0;") === false) {
+                $err_msg = print_r($mysqlcon->errorInfo(), true);
+                $err_lvl = 3;
+            }
+        }
 
-	} elseif(isset($_POST['update']) || isset($_POST['update_old'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+        if ($errcnf == 0) {
+            if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('rankup_boost_definition','{$cfg['rankup_boost_definition']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+                $err_msg = print_r($mysqlcon->errorInfo(), true);
+                $err_lvl = 3;
+            } else {
+                $err_msg = $lang['wisvsuc'].' '.sprintf($lang['wisvres'], '<span class="item-margin"><form class="btn-group" name="restart" action="bot.php" method="POST"><input type="hidden" name="csrf_token" value="'.$csrf_token.'"><button type="submit" class="btn btn-primary" name="restart"><i class="fas fa-sync"></i><span class="item-margin">'.$lang['wibot7'].'</span></button></form></span>');
+                $err_lvl = null;
+            }
+        } else {
+            $err_msg .= '<br>'.$lang['errgrpid'];
+        }
+
+        if (empty($rankup_boost_definition)) {
+            $cfg['rankup_boost_definition'] = null;
+        } else {
+            $boostexp = explode(',', $rankup_boost_definition);
+            foreach ($boostexp as $entry) {
+                list($key, $value1, $value2) = explode('=>', $entry);
+                $addnewvalue2[$key] = ['group'=>$key, 'factor'=>$value1, 'time'=>$value2];
+                $cfg['rankup_boost_definition'] = $addnewvalue2;
+            }
+        }
+    } elseif (isset($_POST['update']) || isset($_POST['update_old'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_boost">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					
 					<form class="form-horizontal" data-toggle="validator" name="update" method="POST" id="new">
@@ -157,7 +157,7 @@ try {
 								</h1>
 							</div>
 						</div>
-						<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+						<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
@@ -180,17 +180,31 @@ try {
 										<div class="form-group hidden" name="template">
 											<div class="col-sm-5">
 												<select class="selectpicker show-tick form-control" data-live-search="true" name="tempboostgroup[]">
-												<?PHP
-												foreach ($groupslist as $groupID => $groupParam) {
-													if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-													if($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-													if($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-													if($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-													if ($groupID != 0) {
-													echo '<option data-content="<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
-													}
-												}
-												?>
+												<?php
+                                                foreach ($groupslist as $groupID => $groupParam) {
+                                                    if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+                                                        $iconid = $groupParam['iconid'].'.';
+                                                    } else {
+                                                        $iconid = 'placeholder.png';
+                                                    }
+                                                    if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+                                                        $disabled = ' disabled';
+                                                    } else {
+                                                        $disabled = '';
+                                                    }
+                                                    if ($groupParam['type'] == 0) {
+                                                        $grouptype = ' [TEMPLATE GROUP]';
+                                                    } else {
+                                                        $grouptype = '';
+                                                    }
+                                                    if ($groupParam['type'] == 2) {
+                                                        $grouptype = ' [QUERY GROUP]';
+                                                    }
+                                                    if ($groupID != 0) {
+                                                        echo '<option data-content="<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$disabled,'></option>';
+                                                    }
+                                                }
+    ?>
 												</select>
 											</div>
 											<div class="col-sm-3">
@@ -203,48 +217,66 @@ try {
 											<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
 											<div class="col-sm-2"></div>
 										</div>
-									<?PHP
-									if(isset($cfg['rankup_boost_definition'])) {
-									foreach($cfg['rankup_boost_definition'] as $boost) {
-										?>
+									<?php
+                                    if (isset($cfg['rankup_boost_definition'])) {
+                                        foreach ($cfg['rankup_boost_definition'] as $boost) {
+                                            ?>
 											<div class="form-group" name="boostgroup">
 												<div class="col-sm-5">
 													<select class="selectpicker show-tick form-control" data-live-search="true" name="boostgroup[]">
-													<?PHP
-													foreach ($groupslist as $groupID => $groupParam) {
-														if ($groupID == $boost['group']) $selected=" selected"; else $selected="";
-														if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) $iconid=$groupParam['iconid']."."; else $iconid="placeholder.png";
-														if ($groupParam['type'] == 0 || $groupParam['type'] == 2) $disabled=" disabled"; else $disabled="";
-														if ($groupParam['type'] == 0) $grouptype=" [TEMPLATE GROUP]"; else $grouptype="";
-														if ($groupParam['type'] == 2) $grouptype=" [QUERY GROUP]";
-														if ($groupID != 0) {
-															echo '<option data-content="<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
-														}
-													}
-													?>
+													<?php
+                                                        foreach ($groupslist as $groupID => $groupParam) {
+                                                            if ($groupID == $boost['group']) {
+                                                                $selected = ' selected';
+                                                            } else {
+                                                                $selected = '';
+                                                            }
+                                                            if (isset($groupParam['iconid']) && $groupParam['iconid'] != 0) {
+                                                                $iconid = $groupParam['iconid'].'.';
+                                                            } else {
+                                                                $iconid = 'placeholder.png';
+                                                            }
+                                                            if ($groupParam['type'] == 0 || $groupParam['type'] == 2) {
+                                                                $disabled = ' disabled';
+                                                            } else {
+                                                                $disabled = '';
+                                                            }
+                                                            if ($groupParam['type'] == 0) {
+                                                                $grouptype = ' [TEMPLATE GROUP]';
+                                                            } else {
+                                                                $grouptype = '';
+                                                            }
+                                                            if ($groupParam['type'] == 2) {
+                                                                $grouptype = ' [QUERY GROUP]';
+                                                            }
+                                                            if ($groupID != 0) {
+                                                                echo '<option data-content="<img src=\'../tsicons/',$iconid,$groupParam['ext'],'\' width=\'16\' height=\'16\'><span class=\'item-margin\'>',$groupParam['sgidname'],'</span><span class=\'text-muted small item-margin\'>SGID:&nbsp;',$groupID,$grouptype,'</span>" value="',$groupID,'"',$selected,$disabled,'></option>';
+                                                            }
+                                                        }
+                                            ?>
 													</select>
 												</div>
 												<div class="col-sm-3">
-													<input type="text" data-pattern="^[0-9]{0,9}\.?[0-9]+$" data-error="Only decimal numbers are allowed. As seperator use a dot!" class="form-control boostfactor" name="boostfactor[]" value="<?PHP echo $boost['factor']; ?>">
+													<input type="text" data-pattern="^[0-9]{0,9}\.?[0-9]+$" data-error="Only decimal numbers are allowed. As seperator use a dot!" class="form-control boostfactor" name="boostfactor[]" value="<?php echo $boost['factor']; ?>">
 													<div class="help-block with-errors"></div>
 												</div>
 												<div class="col-sm-3">
-													<input type="text" class="form-control boostduration" name="boostduration[]" value="<?PHP echo $boost['time']; ?>">
+													<input type="text" class="form-control boostduration" name="boostduration[]" value="<?php echo $boost['time']; ?>">
 												</div>
 												<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
 												<div class="col-sm-2"></div>
 											</div>
-										<?PHP
-										}
-									}
-										?>
+										<?php
+                                        }
+                                    }
+    ?>
 										<div class="form-group" id="addboostgroup">
-											<?PHP
-											if(!isset($cfg['rankup_boost_definition'])) {
-												echo '<div class="col-sm-11"><div id="noentry"><i>',$lang['wiboostempty'],'</i></div></div>';
-											} else { 
-												echo '<div class="col-sm-11"></div>';
-											}?>
+											<?php
+        if (! isset($cfg['rankup_boost_definition'])) {
+            echo '<div class="col-sm-11"><div id="noentry"><i>',$lang['wiboostempty'],'</i></div></div>';
+        } else {
+            echo '<div class="col-sm-11"></div>';
+        }?>
 											<div class="col-sm-1 text-center">
 												<span class="d-inline-block" ata-toggle="tooltip" title="Add new line">
 													<button class="btn btn-primary" onclick="addboostgroup()" style="margin-top: 5px;" type="button"><i class="fas fa-plus"></i></button>
@@ -277,7 +309,7 @@ try {
 							</div>
 						</div>
 
-						<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+						<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
@@ -289,15 +321,15 @@ try {
 									<label class="col-sm-2 control-label"><?php echo $lang['wiboost']; ?></label>
 									<div class="col-sm-10">
 										<textarea class="form-control" data-pattern="^([1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9},)*[1-9][0-9]{0,9}=>[0-9]{0,9}\.?[0-9]+=>[1-9][0-9]{0,9}$" data-error="Wrong definition, please look at description for more details. No comma at ending!" rows="15" name="rankup_boost_definition" maxlength="21588"><?php
-										$implode_boost = '';
-										if(isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != NULL) {
-											foreach ($cfg['rankup_boost_definition'] as $r) {
-												$implode_boost .= $r['group']."=>".$r['factor']."=>".$r['time'].",";
-											}
-											$implode_boost = substr($implode_boost, 0, -1);
-										}
-										echo $implode_boost;
-										?></textarea>
+                                        $implode_boost = '';
+    if (isset($cfg['rankup_boost_definition']) && $cfg['rankup_boost_definition'] != null) {
+        foreach ($cfg['rankup_boost_definition'] as $r) {
+            $implode_boost .= $r['group'].'=>'.$r['factor'].'=>'.$r['time'].',';
+        }
+        $implode_boost = substr($implode_boost, 0, -1);
+    }
+    echo $implode_boost;
+    ?></textarea>
 										<div class="help-block with-errors"></div>
 									</div>
 								</div>
@@ -326,7 +358,7 @@ try {
 			<?php echo $lang['wiboost2desc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -342,7 +374,7 @@ try {
 			<?php echo $lang['wiboostdesc']; ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -410,6 +442,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>
