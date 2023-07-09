@@ -220,6 +220,18 @@ try {
 						</div>
 					</div>
 					<div class="row">
+						<div class="col-lg-3">
+							<div class="panel panel-lime-green">
+								<div class="panel-heading">
+									<h3 class="panel-title"><i class="fas fa-chart-bar"></i><span class="item-margin"><?PHP echo $lang['stix0065']; ?></span></h3>
+								</div>
+								<div class="panel-body">
+									<div id="user-ip-version-donut"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
 						<div class="col-lg-3 col-md-6">
 							<div class="panel panel-primary">
 								<div class="panel-heading">

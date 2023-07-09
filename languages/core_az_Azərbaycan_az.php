@@ -270,6 +270,7 @@ $lang['stix0061']			= "Bütün versiyaları bax";
 $lang['stix0062']			= "Bütün millətlərə bax";
 $lang['stix0063']			= "Bütün platformlara baxın";
 $lang['stix0064']			= "Son 3 ay";
+$lang['stix0065']			= "IP Versions (bütün istifadəçilərin)";
 $lang['stmy0001']			= "Mənim statistikalarım";
 $lang['stmy0002']			= "Dərəcə";
 $lang['stmy0003']			= "Database ID:";

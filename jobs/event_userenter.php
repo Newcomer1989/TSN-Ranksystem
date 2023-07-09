@@ -15,8 +15,10 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 				if($client['client_database_id'] == $event['client_database_id']) {
 					if(strstr($client['connection_client_ip'], '[')) {
 						$ip = str_replace(array('[',']'),'',$client['connection_client_ip']);
+						$is_ipv4 = false; // IPv6
 					} else {
 						$ip = $client['connection_client_ip'];
+						$is_ipv4 = true; // IPv4
 					}
 					break;
 				}
@@ -46,12 +48,13 @@ function event_userenter(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3
 				}
 				
 				$uuid = htmlspecialchars($event['client_unique_identifier'], ENT_QUOTES);
+				$is_ipv4 = (isset($is_ipv4)) ? $is_ipv4 : true; // default IPv4, if it couldn't be detected
 				if(isset($sqlhashs[$uuid])) {
-					$sqlexec3 .= "UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip' WHERE `uuid`='{$event['client_unique_identifier']}'; ";
-					enter_logfile(6,"Userenter: UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip' WHERE `uuid`='{$event['client_unique_identifier']}'; ");
+					$sqlexec3 .= "UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip',`is_ipv4`=$is_ipv4 WHERE `uuid`='{$event['client_unique_identifier']}'; ";
+					enter_logfile(6,"Userenter: UPDATE `$dbname`.`user_iphash` SET `iphash`='$hash',`ip`='$ip',`is_ipv4`=$is_ipv4 WHERE `uuid`='{$event['client_unique_identifier']}'; ");
 				} else {
-					$sqlexec3 .= "INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip'); ";
-					enter_logfile(6,"Userenter: INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip'); ");
+					$sqlexec3 .= "INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`,`is_ipv4`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip',$is_ipv4); ";
+					enter_logfile(6,"Userenter: INSERT INTO `$dbname`.`user_iphash` (`uuid`,`iphash`,`ip`,`is_ipv4`) VALUES ('{$event['client_unique_identifier']}','$hash','$ip',$is_ipv4); ");
 				}
 				if($mysqlcon->exec($sqlexec3) === false) {
 					enter_logfile(2,"event_userenter 3:".print_r($mysqlcon->errorInfo(), true));

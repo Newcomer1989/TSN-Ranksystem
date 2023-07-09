@@ -270,6 +270,7 @@ $lang['stix0061']			= "Ukaž všechny verze";
 $lang['stix0062']			= "Ukaž všechny národnosti";
 $lang['stix0063']			= "Ukaž všechny platformy";
 $lang['stix0064']			= "Za poslední čtvrtletí";
+$lang['stix0065']			= "IP Versions (všech Uživatelů)";
 $lang['stmy0001']			= "Mé statistiky";
 $lang['stmy0002']			= "Moje pořadí";
 $lang['stmy0003']			= "Pořadí v databázi (ID):";

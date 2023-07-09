@@ -270,6 +270,7 @@ $lang['stix0061']			= "Minden verzió megtekintése";
 $lang['stix0062']			= "Minden nemzetiség megtekintése";
 $lang['stix0063']			= "Minden platform megtekintése";
 $lang['stix0064']			= "Az utolsó 90 napban";
+$lang['stix0065']			= "IP Versions (összesítve)";
 $lang['stmy0001']			= "Saját statisztikám";
 $lang['stmy0002']			= "Helyezés";
 $lang['stmy0003']			= "Adatbázis ID:";

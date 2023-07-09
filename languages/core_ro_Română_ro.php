@@ -270,6 +270,7 @@ $lang['stix0061']			= "Vezi versiuni";
 $lang['stix0062']			= "Vezi natiuni";
 $lang['stix0063']			= "Vezi platforme";
 $lang['stix0064']			= "Last 3 months";
+$lang['stix0065']			= "IP Versions (tuturor clien?ilor)";
 $lang['stmy0001']			= "Statisticile mele";
 $lang['stmy0002']			= "Grad";
 $lang['stmy0003']			= "ID baza de date:";

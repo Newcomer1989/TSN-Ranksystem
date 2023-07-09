@@ -549,6 +549,12 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			$updatedone = TRUE;
 		}
 
+		if(version_compare($cfg['version_current_using'], '1.3.24', '<')) {
+			if($mysqlcon->exec("ALTER TABLE `$dbname`.`user_iphash` ADD COLUMN `is_ipv4` tinyint(1) NOT NULL;") === false) { } else {
+				enter_logfile(4,"    [1.3.24] Successfully added the new `is_ipv4` column to the table `user_iphash`.");
+			}
+		}
+
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}
 	enter_logfile(5,"Check Ranksystem database for updates [done]");
