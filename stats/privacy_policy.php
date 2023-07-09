@@ -1,37 +1,40 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	?>
+    ?>
 			<div id="page-wrapper" class="stats_privacy_policy">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					<div class="row">
 						<div class="col-lg-12">
 							<h1 class="page-header">
-								<?PHP echo $lang['privacy']; ?>
+								<?php echo $lang['privacy']; ?>
 							</h1>
 						</div>
 					</div>
-					<?PHP if ($cfg['stats_imprint_switch'] == 1) { ?>
+					<?php if ($cfg['stats_imprint_switch'] == 1) { ?>
 						<div class="row">
 							<div class="col-lg-12">
-								<?PHP echo $cfg['stats_imprint_privacypolicy']; ?>
+								<?php echo $cfg['stats_imprint_privacypolicy']; ?>
 							</div>
 						</div>
-					<?PHP } else { ?>
+					<?php } else { ?>
 						<div class="row">
 							<div class="col-lg-12">
-								<h5><strong><span class="text-danger"><?PHP echo $lang['module_disabled']; ?></span></strong></h5>
+								<h5><strong><span class="text-danger"><?php echo $lang['module_disabled']; ?></span></strong></h5>
 							</div>
 						</div>
-					<?PHP } ?>
+					<?php } ?>
 				</div>
 			</div>
 		</div>
-		<?PHP require_once('_footer.php'); ?>
+		<?php require_once '_footer.php'; ?>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>
