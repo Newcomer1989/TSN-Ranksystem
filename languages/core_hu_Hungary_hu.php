@@ -109,7 +109,7 @@ $lang['insterr1']			= "FIGYELEM: Megpróbálta telepíteni a Ranksystem rendszer
 $lang['insterr2']			= "%1\$s szükséges, de úgy tűnik, hogy nincs telepítve. Telepítsd <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> és próbáld újra!<br>A PHP konfigurációs fájl elérési útja, ha az definiálva és aktiválva van: %3\$s";
 $lang['insterr3']			= "PHP %1\$s funkciónak engedélyezve kell lennie, de úgy tűnik, hogy nincs. Engedélyezd PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> funkciót és próbáld újra!<br>A PHP konfigurációs fájl elérési útja, ha az definiálva és aktiválva van: %3\$s";
 $lang['insterr4']			= "A te PHP verziód (%s) 5.5.0 alatt van. Frissítsd a PHP-t és próbáld újra!";
-$lang['isntwicfg']			= "Nem menthető az adatbázis-konfiguráció! Kérjük, rendeljen hozzá teljes kiírási engedélyt az 'other / dbconfig.php' fájlhoz (Linux: chmod 740; Windows: 'full access'), majd próbálja újra.";
+$lang['isntwicfg']			= "Nem menthető az adatbázis-konfiguráció! Kérjük, rendeljen hozzá teljes kiírási engedélyt az 'configs/dbconfig.php' fájlhoz (Linux: chmod 740; Windows: 'full access'), majd próbálja újra.";
 $lang['isntwicfg2']			= "A webinterfész konfigurálása";
 $lang['isntwichm']			= "A kiírási engedély erre a mappára \"%s\" hiányzik. Kérjük, adjon teljes jogokat (Linux: chmod 740; Windows: 'full access'), és próbálja újra elindítani a Ranksystem-t.";
 $lang['isntwiconf']			= "Nyisd meg a %s a RankSystem konfigurálásához!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "Hiba történt a Ranksystem konfigurációjában. Kérjük, lépjen a webes felületre, és javítsa ki a Core beállításokat. Különösen ellenőrizze a 'rangsor meghatározását'!";
 $lang['widaform']			= "Dátum forma";
 $lang['widaformdesc']		= "Válassza ki a megjelenő dátumformátumot.<br><br>Példa:<br>%a nap, %h óra, %i perc, %s másodperc";
-$lang['widbcfgerr']			= "Hiba az adatbázis-konfigurációk mentése közben! A kapcsolat meghiúsult, vagy kiírási hiba történt a 'other / dbconfig.php' számára";
+$lang['widbcfgerr']			= "Hiba az adatbázis-konfigurációk mentése közben! A kapcsolat meghiúsult, vagy kiírási hiba történt a 'configs/dbconfig.php' számára";
 $lang['widbcfgsuc']			= "Az adatbázis-konfigurációk sikeresen mentve.";
 $lang['widbg']				= "Naplófájl-Szint";
 $lang['widbgdesc']			= "Állítsa be a Ranksystem naplózási szintjét. Ezzel eldöntheti, mennyi információt kell írni a \"ranksystem.log\" fájlba.\"<br><br>Minél magasabb a naplózási szint, annál több információt kap.<br><br>A Naplószint megváltoztatása a Ranksystem bot következő újraindításával lép hatályba.<br><br>Kérjük, ne hagyja, hogy a Ranksystem hosszabb ideig működjön a \"6 - DEBUG\" endszeren, mert ez ronthatja a fájlrendszert!";

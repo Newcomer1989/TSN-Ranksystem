@@ -109,7 +109,7 @@ $lang['insterr1']			= "ACHTUNG: Du versuchst gerade das Ranksystem zu installier
 $lang['insterr2']			= "%1\$s wird benötigt, scheint jedoch nicht installiert zu sein. Installiere <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> und versuche es erneut!<br>Pfad zur PHP Konfig-Datei, sofern definiert und diese geladen wurde: %3\$s";
 $lang['insterr3']			= "Die PHP Funktion %1\$s wird benötigt, scheint jedoch deaktiviert zu sein. Bitte aktiviere PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> und versuche es erneut!<br>Pfad zur PHP Konfig-Datei, sofern definiert und diese geladen wurde: %3\$s";
 $lang['insterr4']			= "Deine PHP Version (%s) ist unter 5.5.0. Aktualisiere dein PHP und versuche es erneut!";
-$lang['isntwicfg']			= "Die Datenbankkonfigurationen konnten nicht gespeichert werden! Bitte versehe die 'other/dbconfig.php' mit einem chmod 740 (für Windows 'Vollzugriff') und versuche es anschließend erneut.";
+$lang['isntwicfg']			= "Die Datenbankkonfigurationen konnten nicht gespeichert werden! Bitte versehe die 'configs/dbconfig.php' mit einem chmod 740 (für Windows 'Vollzugriff') und versuche es anschließend erneut.";
 $lang['isntwicfg2']			= "Konfiguriere Webinterface";
 $lang['isntwichm']			= "Schreibrechte fehlen für Verzeichnis \"%s\". Bitte setze auf dieses einen chmod 740 (für Windows 'Vollzugriff') und starte anschließend das Ranksystem erneut.";
 $lang['isntwiconf']			= "Öffne das %s um das Ranksystem zu konfigurieren!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "Der Ranksystem Bot hat einen Sicherheitscheck, dass
 $lang['wiconferr']			= "Es ist ein Fehler in der Konfiguration des Ranksystems. Bitte prüfe im Webinterface die Rank-Einstellungen auf Richtigkeit!";
 $lang['widaform']			= "Datumsformat";
 $lang['widaformdesc']		= "Gebe ein Datumsformat zur Anzeige vor.<br><br>Beispiel:<br>%a Tage, %h Std., %i Min., %s Sek.";
-$lang['widbcfgerr']			= "Fehler beim Speichern der Datenbank Einstellungen! Verbindung zur Datenbank oder speichern der 'other/dbconfig.php' nicht möglich.";
+$lang['widbcfgerr']			= "Fehler beim Speichern der Datenbank Einstellungen! Verbindung zur Datenbank oder speichern der 'configs/dbconfig.php' nicht möglich.";
 $lang['widbcfgsuc']			= "Datenbank Einstellungen erfolgreich gespeichert.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Bestimme das Log-Level des Ranksystems. Damit wird festgelegt, wie viele Informationen in die Datei \"ranksystem.log\" geschrieben werden sollen.<br><br>Je höher das Log-Level, desto mehr Informationen werden ausgegeben.<br><br>Ein Wechsel des Log-Levels wird mit dem nächsten Neustart des Ranksystem Bots wirksam.<br><br>Bitte lasse das Ranksystem nicht längere Zeit unter \"6 - DEBUG\" laufen. Dies könnte das Dateisystem beeinträchtigen!";

@@ -46,12 +46,12 @@ try {
 		$output = '';
 		foreach($phpversioncheck as $line) $output .= print_r($line, true).'<br>';
 		if(empty($phpversioncheck) || strtoupper(substr($phpversioncheck[0], 0, 3)) != "PHP") {
-			$err_msg = sprintf($lang['chkphpcmd'], "\"other/phpcommand.php\"", "<u>\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>');
+			$err_msg = sprintf($lang['chkphpcmd'], "\"configs/phpcommand.php\"", "<u>\"configs/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>');
 			$err_lvl = 3; $dis_login = 1;
 		} else {
 			$exploded = explode(' ',$phpversioncheck[0]);
 			if($exploded[1] != phpversion()) {
-				$err_msg = sprintf($lang['chkphpmulti'], phpversion(), "<u>\"other/phpcommand.php\"</u>", $exploded[1], "\"other/phpcommand.php\"</u>", "\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
+				$err_msg = sprintf($lang['chkphpmulti'], phpversion(), "<u>\"configs/phpcommand.php\"</u>", $exploded[1], "\"configs/phpcommand.php\"</u>", "\"configs/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
 				if(getenv('PATH')!='') {
 					$err_msg .= "<br><br>".sprintf($lang['chkphpmulti2'], '<br>'.getenv('PATH'));
 				}			

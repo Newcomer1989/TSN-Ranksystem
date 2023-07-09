@@ -111,7 +111,7 @@ function update_rs($mysqlcon,$lang,$cfg,$dbname,$norotate=NULL) {
 			if(!is_dir(dirname(__DIR__).DIRECTORY_SEPARATOR.$thisFileName)) {
 				$contents = $zip->getFromName($thisFileName);
 				$updateThis = '';
-				if($thisFileName == 'other/dbconfig.php' || $thisFileName == 'install.php' || $thisFileName == 'other/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
+				if($thisFileName == 'configs/dbconfig.php' || $thisFileName == 'install.php' || $thisFileName == 'configs/phpcommand.php' || $thisFileName == 'logs/autostart_deactivated') {
 					enter_logfile(5,"      Did not touch ".$thisFileName,$norotate);
 				} else {
 					if(($updateThis = fopen(dirname(__DIR__).DIRECTORY_SEPARATOR.$thisFileName, 'w')) === false) {
@@ -139,6 +139,33 @@ function update_rs($mysqlcon,$lang,$cfg,$dbname,$norotate=NULL) {
 	} else {
 		enter_logfile(2,"      Error with downloaded Zip file happened. Is the file inside the folder 'update' valid and readable?",$norotate);
 		$countwrongfiles++;
+	}
+
+	/**
+	 * Migrate config files when necessary from `other/` to `configs/`.
+	 */
+	foreach (['dbconfig.php', 'phpcommand.php'] as $config_file) {
+		$config_file_source_path = dirname(__DIR__).DIRECTORY_SEPARATOR.'other'.DIRECTORY_SEPARATOR.$config_file;
+		$config_file_destination_path = dirname(__DIR__).DIRECTORY_SEPARATOR.'configs'.DIRECTORY_SEPARATOR.$config_file;
+
+		enter_logfile(4,"    Migrating config file '$config_file_source_path' to '$config_file_destination_path'...",$norotate);
+
+		if (! is_file($config_file_source_path)) {
+			enter_logfile(4,"    The config file '$config_file' is already migrated. Nothing todo.",$norotate);
+			continue;
+		}
+
+		if (! copy($config_file_source_path, $config_file_destination_path)) {
+			enter_logfile(3,"    Failed to copy the config file '$config_file' to the new target directory (see above). Please move this file manually.",$norotate);
+			continue;
+		}
+
+		if (! unlink($config_file_source_path)) {
+			enter_logfile(3,"    Failed to delete the config file '$config_file' from the old directory (see above). Please delete this file manually.",$norotate);
+			continue;
+		}
+
+		enter_logfile(5,"    Successfully migrated the config file '$config_file'.",$norotate);
 	}
 
 	if(!unlink(dirname(__DIR__).DIRECTORY_SEPARATOR.'update'.DIRECTORY_SEPARATOR.'ranksystem_'.$cfg['version_latest_available'].'.zip')) {
