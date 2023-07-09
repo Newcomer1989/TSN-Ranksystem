@@ -270,6 +270,7 @@ $lang['stix0061']			= "View all versions";
 $lang['stix0062']			= "View all nations";
 $lang['stix0063']			= "View all platforms";
 $lang['stix0064']			= "Last 3 months";
+$lang['stix0065']			= "(لكل المستخدمين) IP Versions";
 $lang['stmy0001']			= "العضوية";
 $lang['stmy0002']			= "رتبة";
 $lang['stmy0003']			= "Database ID:";

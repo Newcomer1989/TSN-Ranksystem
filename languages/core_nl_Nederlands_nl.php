@@ -270,6 +270,7 @@ $lang['stix0061']			= "View all versions";
 $lang['stix0062']			= "View all nations";
 $lang['stix0063']			= "View all platforms";
 $lang['stix0064']			= "Last 3 months";
+$lang['stix0065']			= "IP Versions (van alle clients)";
 $lang['stmy0001']			= "Mijn statistieken";
 $lang['stmy0002']			= "Rang";
 $lang['stmy0003']			= "Database ID:";

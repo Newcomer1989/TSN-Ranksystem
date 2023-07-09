@@ -289,7 +289,8 @@ $db[\'dbname\']=\''.$dbname.'\';
 		if($mysqlcon->exec("CREATE TABLE `$dbname`.`user_iphash` (
 			`uuid` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci PRIMARY KEY,
 			`iphash` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
-			`ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_unicode_ci
+			`ip` varchar(39) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+			`is_ipv4` tinyint(1) NOT NULL
 		);") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
