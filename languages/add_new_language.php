@@ -1,4 +1,5 @@
-<?PHP
+<?php
+
 // Open this site on your webserver for a better readable
 echo 'When you want to add a new language, you can take the current<br>';
 echo 'language file like "core_en_english_gb.php".<br><br>';
@@ -18,4 +19,3 @@ echo 'Send the translated file to admin@ts-n.net<br>';
 echo 'We will implement it with the next release!<br><br>';
 echo '<b>Thx for all who supports this project!!!</b><br>';
 echo 'We will honor you and name you on the info page.';
-?>
