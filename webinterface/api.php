@@ -1,63 +1,69 @@
-<?PHP
-require_once('_preload.php');
+<?php
+require_once '_preload.php';
 
 try {
-	require_once('_nav.php');
+    require_once '_nav.php';
 
-	if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if ($mysqlcon->exec("INSERT INTO `$dbname`.`csrf_token` (`token`,`timestamp`,`sessionid`) VALUES ('$csrf_token','".time()."','".session_id()."')") === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE|PDO::FETCH_ASSOC)) === false) {
-		$err_msg = print_r($mysqlcon->errorInfo(), true);
-		$err_lvl = 3;
-	}
+    if (($db_csrf = $mysqlcon->query("SELECT * FROM `$dbname`.`csrf_token` WHERE `sessionid`='".session_id()."'")->fetchALL(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC)) === false) {
+        $err_msg = print_r($mysqlcon->errorInfo(), true);
+        $err_lvl = 3;
+    }
 
-	if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
-		$stats_api_keys = $err_msg = "";
+    if (isset($_POST['update']) && isset($db_csrf[$_POST['csrf_token']])) {
+        $stats_api_keys = $err_msg = '';
 
-		if (isset($_POST['apikey']) && isset($_POST['desc'])) {
-			$apidefinition = [];
-			foreach($_POST['apikey'] as $rowid => $apikey) {
-				$desc = isset($_POST["desc"][$rowid]) ? $_POST["desc"][$rowid] : null;
-				if(isset($_POST["perm_bot"]) && in_array($rowid,$_POST["perm_bot"])) $perm_bot = 1; else $perm_bot = 0;
-				$apidefinition[] = "$apikey=>$desc=>$perm_bot";
-			}
+        if (isset($_POST['apikey']) && isset($_POST['desc'])) {
+            $apidefinition = [];
+            foreach ($_POST['apikey'] as $rowid => $apikey) {
+                $desc = isset($_POST['desc'][$rowid]) ? $_POST['desc'][$rowid] : null;
+                if (isset($_POST['perm_bot']) && in_array($rowid, $_POST['perm_bot'])) {
+                    $perm_bot = 1;
+                } else {
+                    $perm_bot = 0;
+                }
+                $apidefinition[] = "$apikey=>$desc=>$perm_bot";
+            }
 
-			$stats_api_keys = implode(",", $apidefinition);
+            $stats_api_keys = implode(',', $apidefinition);
 
-			$cfg['stats_api_keys'] = $stats_api_keys;
-		} else {
-			$cfg['stats_api_keys'] = NULL;
-		}
+            $cfg['stats_api_keys'] = $stats_api_keys;
+        } else {
+            $cfg['stats_api_keys'] = null;
+        }
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_api_keys',".$mysqlcon->quote($cfg['stats_api_keys']).") ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
-			$err_msg = print_r($mysqlcon->errorInfo(), true);
-			$err_lvl = 3;
-		} else {
-			$err_msg = $lang['wisvsuc'];
-			$err_lvl = NULL;
-		}
+        if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('stats_api_keys',".$mysqlcon->quote($cfg['stats_api_keys']).") ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+            $err_msg = print_r($mysqlcon->errorInfo(), true);
+            $err_lvl = 3;
+        } else {
+            $err_msg = $lang['wisvsuc'];
+            $err_lvl = null;
+        }
 
-		if(empty($stats_api_keys)) {
-			$cfg['stats_api_keys'] = NULL;
-		} else {
-			$keyarr = explode(',', $stats_api_keys);
-			foreach ($keyarr as $entry) {
-				list($key, $desc, $perm_bot) = explode('=>', $entry);
-				$addnewvalue[$key] = array("key"=>$key,"desc"=>$desc,"perm_bot"=>$perm_bot);
-				$cfg['stats_api_keys'] = $addnewvalue;
-			}
-		}
-	} elseif(isset($_POST['update'])) {
-		echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
-		rem_session_ts3();
-		exit;
-	}
-	?>
+        if (empty($stats_api_keys)) {
+            $cfg['stats_api_keys'] = null;
+        } else {
+            $keyarr = explode(',', $stats_api_keys);
+            foreach ($keyarr as $entry) {
+                list($key, $desc, $perm_bot) = explode('=>', $entry);
+                $addnewvalue[$key] = ['key'=>$key, 'desc'=>$desc, 'perm_bot'=>$perm_bot];
+                $cfg['stats_api_keys'] = $addnewvalue;
+            }
+        }
+    } elseif (isset($_POST['update'])) {
+        echo '<div class="alert alert-danger alert-dismissible">',$lang['errcsrf'],'</div>';
+        rem_session_ts3();
+        exit;
+    }
+    ?>
 			<div id="page-wrapper" class="webinterface_api">
-	<?PHP if(isset($err_msg)) error_handling($err_msg, $err_lvl); ?>
+	<?php if (isset($err_msg)) {
+	    error_handling($err_msg, $err_lvl);
+	} ?>
 				<div class="container-fluid">
 					
 					<form class="form-horizontal" data-toggle="validator" name="update" method="POST" id="new">
@@ -68,7 +74,7 @@ try {
 								</h1>
 							</div>
 						</div>
-						<input type="hidden" name="csrf_token" value="<?PHP echo $csrf_token; ?>">
+						<input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
 						<div class="row">
 							<div class="col-md-12">
 								<div class="form-group">
@@ -84,7 +90,7 @@ try {
 												<b><?php echo $lang['permission'] ?></b>
 											</div>
 											<div class="col-sm-1">
-												<b><?php echo "" ?></b>
+												<b><?php echo '' ?></b>
 											</div>
 											<div class="col-sm-5">
 												<b><?php echo $lang['descr']; ?></b>
@@ -93,7 +99,8 @@ try {
 										</div>
 										<div class="form-group hidden" name="template">
 											<div class="col-sm-4">
-												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="tempapikey[]" value="<?PHP $apikey= bin2hex(openssl_random_pseudo_bytes(32)); echo $apikey; ?>">
+												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="tempapikey[]" value="<?php $apikey = bin2hex(openssl_random_pseudo_bytes(32));
+    echo $apikey; ?>">
 												<div class="help-block with-errors"></div>
 											</div>
 											<div class="col-sm-1">
@@ -107,46 +114,46 @@ try {
 											<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
 											<div class="col-sm-2"></div>
 										</div>
-									<?PHP
-									$rowid = 0;
-									if(isset($cfg['stats_api_keys']) && $cfg['stats_api_keys'] != '') {
-										foreach($cfg['stats_api_keys'] as $apikey) {
-										?>
+									<?php
+                                    $rowid = 0;
+    if (isset($cfg['stats_api_keys']) && $cfg['stats_api_keys'] != '') {
+        foreach ($cfg['stats_api_keys'] as $apikey) {
+            ?>
 										<div class="form-group" name="apidef">
 											<div class="col-sm-4">
-												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="apikey[]" value="<?PHP echo $apikey['key']; ?>">
+												<input type="text" data-pattern="^[a-zA-Z0-9]{1,64}$" data-error="No special characters allowed and maximum 64 characters!" maxlength="64" class="form-control" name="apikey[]" value="<?php echo $apikey['key']; ?>">
 												<div class="help-block with-errors"></div>
 											</div>
 											<div class="col-sm-1">
-												<?PHP if ($apikey['perm_bot'] == 1) {
-													echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" checked data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
+												<?php if ($apikey['perm_bot'] == 1) {
+												    echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" checked data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
 												} else {
-													echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
+												    echo '<span class="d-inline-block" data-toggle="tooltip" title="'.$lang['apiperm001'].' - '.$lang['apipermdesc'].'"><input class="switch-animate" type="checkbox" data-size="mini" name="perm_bot[]" value="',$rowid,'"></span>';
 												} ?>
 											</div>
 											<div class="col-sm-1 text-left">
-												<span class="item-margin"><i class="fas fa-link" onclick="openurl('../api/?apikey=<?PHP echo $apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="open URL"></i></span>
-												<span class="item-margin"><i class="fas fa-copy" onclick="copyurl('<?PHP echo $_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']),0,-12),'api/?apikey=',$apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="copy URL to clipboard"></i></span>
+												<span class="item-margin"><i class="fas fa-link" onclick="openurl('../api/?apikey=<?php echo $apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="open URL"></i></span>
+												<span class="item-margin"><i class="fas fa-copy" onclick="copyurl('<?php echo $_SERVER['SERVER_NAME'],substr(dirname($_SERVER['SCRIPT_NAME']), 0, -12),'api/?apikey=',$apikey['key']; ?>')" style="margin-top:10px;cursor:pointer;" title="copy URL to clipboard"></i></span>
 											</div>
 											<div class="col-sm-5">
-												<input type="text" data-pattern="^[^,=>]{1,128}$" data-error="No comma, equal sign or greater-than sign allowed and maximum 128 characters!" maxlength="128" class="form-control" name="desc[]" value="<?PHP echo $apikey['desc']; ?>" placeholder="set a description..">
+												<input type="text" data-pattern="^[^,=>]{1,128}$" data-error="No comma, equal sign or greater-than sign allowed and maximum 128 characters!" maxlength="128" class="form-control" name="desc[]" value="<?php echo $apikey['desc']; ?>" placeholder="set a description..">
 												<div class="help-block with-errors"></div>
 											</div>
 											<div class="col-sm-1 text-center delete" name="delete"><i class="fas fa-trash" style="margin-top:10px;cursor:pointer;" title="delete line"></i></div>
 											<div class="col-sm-2"></div>
 										</div>
-										<?PHP
-										$rowid++;
-										}
-									}
-									?>
+										<?php
+                                        $rowid++;
+        }
+    }
+    ?>
 										<div class="form-group" id="addapikey">
-											<?PHP
-											if(!isset($cfg['stats_api_keys'])) {
-												echo '<div class="col-sm-11"><div id="noentry"><i>',$lang['wiboostempty'],'</i></div></div>';
-											} else { 
-												echo '<div class="col-sm-11"></div>';
-											}?>
+											<?php
+            if (! isset($cfg['stats_api_keys'])) {
+                echo '<div class="col-sm-11"><div id="noentry"><i>',$lang['wiboostempty'],'</i></div></div>';
+            } else {
+                echo '<div class="col-sm-11"></div>';
+            }?>
 											<div class="col-sm-1 text-center">
 												<span class="d-inline-block" data-toggle="tooltip" title="Add new line">
 													<button class="btn btn-primary" onclick="addapikey()" style="margin-top: 5px;" type="button"><i class="fas fa-plus"></i></button>
@@ -178,12 +185,12 @@ try {
 			<h4 class="modal-title"><?php echo $lang['api']; ?></h4>
 		  </div>
 		  <div class="modal-body">
-			<?php 
-			$host = "<a href=\"//".$_SERVER['HTTP_HOST'].substr(rtrim(dirname($_SERVER['PHP_SELF']), '/\\'),0,-12)."api\" target=\"_blank\">".$_SERVER['HTTP_HOST'].substr(rtrim(dirname($_SERVER['PHP_SELF']), '/\\'),0,-12)."api</a>";
-			echo sprintf($lang['wiapidesc'], $host); ?>
+			<?php
+            $host = '<a href="//'.$_SERVER['HTTP_HOST'].substr(rtrim(dirname($_SERVER['PHP_SELF']), '/\\'), 0, -12).'api" target="_blank">'.$_SERVER['HTTP_HOST'].substr(rtrim(dirname($_SERVER['PHP_SELF']), '/\\'), 0, -12).'api</a>';
+    echo sprintf($lang['wiapidesc'], $host); ?>
 		  </div>
 		  <div class="modal-footer">
-			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?php echo $lang['stnv0002']; ?></button>
 		  </div>
 		</div>
 	  </div>
@@ -266,6 +273,7 @@ try {
 	</script>
 	</body>
 	</html>
-<?PHP
-} catch(Throwable $ex) { }
+<?php
+} catch(Throwable $ex) {
+}
 ?>
