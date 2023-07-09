@@ -109,7 +109,7 @@ $lang['insterr1']			= "ATTENZIONE: Il database selezionato per il Ranksystem esi
 $lang['insterr2']			= "%1\$s è necessario ma non sembra essere installato. Installa <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> e riprova!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "La funzione PHP %1\$s deve essere abilitata, ma sembra non lo sia. Per favore, abilita la funzione PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> e riprova!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "La tua versione PHP (%s) is antecedente alla 5.5.0. Aggiorna la tua PHP e prova ancora!";
-$lang['isntwicfg']			= "Impossibile salvare la configurazione del database! Modifica il file 'other/dbconfig.php' dandogli i permessi 740 (chmod 740 nomefile on windows 'full access') e riprova.";
+$lang['isntwicfg']			= "Impossibile salvare la configurazione del database! Modifica il file 'configs/dbconfig.php' dandogli i permessi 740 (chmod 740 nomefile on windows 'full access') e riprova.";
 $lang['isntwicfg2']			= "Configura Webinterface";
 $lang['isntwichm']			= "Permessi di scrittura negati per la cartella \"%s\". Per favore dai i permessi chmod 740 (on windows 'full access') e prova ad avviare il Ranksystem di nuovo.";
 $lang['isntwiconf']			= "Apri la %s per configurare il Ranksystem!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "C'è un errore nella configurazione del RankSystem. Vai nell'interfaccia web i sistema le Impostazioni rank!";
 $lang['widaform']			= "Formato data";
 $lang['widaformdesc']		= "scegli il formato della data.<br><br>Esempio:<br>%a Giorni, %h Ore, %i Min, %s Sec";
-$lang['widbcfgerr']			= "Errore nel salvataggio della configurazione del database! Connessione fallita o errore nella sovrascrittura del file 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Errore nel salvataggio della configurazione del database! Connessione fallita o errore nella sovrascrittura del file 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Configurazione del database salvata con successo.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";

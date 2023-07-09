@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__.'/other/_functions.php');
 require_once(__DIR__.'/other/config.php');
-require_once(__DIR__.'/other/phpcommand.php');
+require_once(__DIR__.'/configs/phpcommand.php');
 
 $GLOBALS['exec'] = FALSE;
 if($cfg['logs_path'] == NULL) { $cfg['logs_path'] = ".".DIRECTORY_SEPARATOR."logs".DIRECTORY_SEPARATOR; }

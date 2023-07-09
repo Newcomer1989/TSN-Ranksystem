@@ -25,7 +25,7 @@ try {
 		$dbserver = $_POST['dbtype'].':host='.$_POST['dbhost'].';dbname='.$_POST['dbname'].';charset=utf8mb4';
 		try {
 			$mysqlcon = new PDO($dbserver, $_POST['dbuser'], $_POST['dbpass']);
-			$handle=fopen('../other/dbconfig.php','w');
+			$handle=fopen('../configs/dbconfig.php','w');
 			if(!fwrite($handle,$newconfig))
 			{
 				$err_msg = sprintf($lang['widbcfgerr']);

@@ -109,7 +109,7 @@ $lang['insterr1']			= "UWAGA: Probujesz zainstalować Ranksystem, ale istnieje j
 $lang['insterr2']			= "%1\$s jest potrzebny, ale wydaje się, ze nie jest zainstalowany. Zainstaluj <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> i sprobuj ponownie!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "Funkcja PHP %1\$s musi byc włączona, ale wydaje się byc wyłączona. Włącz funkcje PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> i sprobuj ponownie!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Twoja wersja PHP (%s) jest starsza niz 5.5.0. Zaktualizuj PHP i sprobuj ponownie!";
-$lang['isntwicfg']			= "Nie można zapisać konfiguracji bazy danych! Proszę przypisać pełne prawa do  'other/dbconfig.php' (Linux: chmod 740; Windows: 'pełny dostep') i sprobowac ponownie ponownie.";
+$lang['isntwicfg']			= "Nie można zapisać konfiguracji bazy danych! Proszę przypisać pełne prawa do  'configs/dbconfig.php' (Linux: chmod 740; Windows: 'pełny dostep') i sprobowac ponownie ponownie.";
 $lang['isntwicfg2']			= "Skonfiguruj interfejs WWW";
 $lang['isntwichm']			= "Zapisywanie uprawnien do folderu \"%s\" jest nieobecne. Przydziel pełne prawa (Linux: chmod 740; Windows: 'pełny dostep') i sprobuj ponownie uruchomic system Ranksystem.";
 $lang['isntwiconf']			= "Otworz %s aby skonfigurowac system rang!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "Wystąpił błąd w konfiguracji systemu Ranksystem. Przejdz do interfejsu sieciowego i popraw ustawienia podstawowe. Szczegolnie sprawdz konfiguracje 'rank up'!";
 $lang['widaform']			= "Format daty";
 $lang['widaformdesc']		= "Wybierz format wyświetlania daty.<br><br>Przykład:<br>%a days, %h hours, %i mins, %s secs";
-$lang['widbcfgerr']			= "Błąd podczas zapisywania konfiguracji bazy danych! Połączenie nie powiodło się lub błąd zapisu dla 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Błąd podczas zapisywania konfiguracji bazy danych! Połączenie nie powiodło się lub błąd zapisu dla 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Konfiguracje bazy danych zostały pomyślnie zapisane.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";

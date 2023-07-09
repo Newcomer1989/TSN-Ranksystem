@@ -109,7 +109,7 @@ $lang['insterr1']			= "LET OP: Je probeert de Ranksysteem te installeren, maar e
 $lang['insterr2']			= "%1\$s is nodig maar is niet geinstalleerd. Installeer <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> en probeer nogmaals!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "PHP %1\$s function moet zijn ingeschakeld maar is uitgeschakeld. Schakel A.U.B. PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> functie en probeer nogmaals!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Je PHP versie (%s) is onder 5.5.0. Update je PHP en probeer nogmaals!";
-$lang['isntwicfg']			= "Kan de database configuratie niet opslaan! Bewerk A.U.B de 'other/dbconfig.php' met chmod 740 (op windows 'full access') en probeer nogmaals.";
+$lang['isntwicfg']			= "Kan de database configuratie niet opslaan! Bewerk A.U.B de 'configs/dbconfig.php' met chmod 740 (op windows 'full access') en probeer nogmaals.";
 $lang['isntwicfg2']			= "Configuratie Webinterface";
 $lang['isntwichm']			= "Schrijven toestemming mislukt op map \"%s\". Geef A.U.B. chmod 740 (op windows 'full access') en probeer de Ranksysteem nogmaals te starten.";
 $lang['isntwiconf']			= "Open de %s om het Ranksysteem te configureren!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "There is an error in the configuration of the Ranksystem. Please go to the webinterface and correct the rank settings!";
 $lang['widaform']			= "Date format";
 $lang['widaformdesc']		= "Choose the showing date format.<br><br>Example:<br>%a days, %h hours, %i mins, %s secs";
-$lang['widbcfgerr']			= "Error while saving the database configurations! Connection failed or writeout error for 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Error while saving the database configurations! Connection failed or writeout error for 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Database configurations saved successfully.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";

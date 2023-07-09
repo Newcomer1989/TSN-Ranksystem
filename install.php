@@ -74,7 +74,7 @@ $db[\'pass\']=\''.$pass.'\';
 $db[\'dbname\']=\''.$dbname.'\';
 ?>';
 	
-	if(!is_writable('./other/dbconfig.php')) {
+	if(!is_writable('./configs/dbconfig.php')) {
 		$err_msg = $lang['isntwicfg'];
 		$err_lvl = 2;
 	} else {
@@ -483,7 +483,7 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			$err_msg = sprintf($lang['instdbsuc'], $dbname); $err_lvl = NULL;
 			$install_webuser = 1;
 			
-			$dbconfig = fopen('./other/dbconfig.php','w');
+			$dbconfig = fopen('./configs/dbconfig.php','w');
 			if(!fwrite($dbconfig, $newconfig)) {
 				$err_msg = $lang['isntwicfg'];
 				$err_lvl = 2;
@@ -520,7 +520,7 @@ if (isset($_POST['install'])) {
 			}
 		}
 		
-		if(!is_writable('./other/dbconfig.php')) {
+		if(!is_writable('./configs/dbconfig.php')) {
 			$err_msg = $lang['isntwicfg'];
 			$err_lvl = 2;
 		}
@@ -540,7 +540,7 @@ if (isset($_POST['install'])) {
 }
 
 if(isset($_POST['confweb'])) {
-	require_once('other/dbconfig.php');
+	require_once('configs/dbconfig.php');
 	$user=$_POST['user'];
 	$pass=password_hash($_POST['pass'], PASSWORD_DEFAULT);
 	$logpath = addslashes(__DIR__.DIRECTORY_SEPARATOR."logs".DIRECTORY_SEPARATOR);
@@ -688,7 +688,7 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 	unset($err_msg);
 	unset($err_lvl);
 	$err_msg = '';
-	if(!is_writable('./other/dbconfig.php')) {
+	if(!is_writable('./configs/dbconfig.php')) {
 		$err_msg = $lang['isntwicfg']; $err_lvl = 3;
 	}
 
@@ -753,16 +753,16 @@ if (!isset($_POST['install']) && !isset($_POST['confweb'])) {
 		unset($err_msg); $err_msg = sprintf($lang['insterr3'],'exec','//php.net/manual/en/book.exec.php',get_cfg_var('cfg_file_path')); $err_lvl = 3;
 	} else {
 		if ($err_msg == NULL) {
-			require_once('other/phpcommand.php');
+			require_once('configs/phpcommand.php');
 			exec("$phpcommand -v", $phpversioncheck);
 			$output = '';
 			foreach($phpversioncheck as $line) $output .= print_r($line, true).'<br>';
 			if(empty($phpversioncheck) || strtoupper(substr($phpversioncheck[0], 0, 3)) != "PHP") {
-				$err_msg .= sprintf($lang['chkphpcmd'], "\"other/phpcommand.php\"", "<u>\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>'); $err_lvl = 3;
+				$err_msg .= sprintf($lang['chkphpcmd'], "\"configs/phpcommand.php\"", "<u>\"configs/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>', '<pre>'.$output.'</pre><br><br>', '<pre>php -v</pre>'); $err_lvl = 3;
 			} else {
 				$exploded = explode(' ',$phpversioncheck[0]);
 				if($exploded[1] != phpversion()) {
-					$err_msg .= sprintf($lang['chkphpmulti'], phpversion(), "<u>\"other/phpcommand.php\"</u>", $exploded[1], "\"other/phpcommand.php\"</u>", "\"other/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
+					$err_msg .= sprintf($lang['chkphpmulti'], phpversion(), "<u>\"configs/phpcommand.php\"</u>", $exploded[1], "\"configs/phpcommand.php\"</u>", "\"configs/phpcommand.php\"</u>", '<pre>'.$phpcommand.'</pre>');
 					if(getenv('PATH')!='') {
 						$err_msg .= "<br><br>".sprintf($lang['chkphpmulti2'], '<br>'.getenv('PATH')); $err_lvl = 2;
 					}

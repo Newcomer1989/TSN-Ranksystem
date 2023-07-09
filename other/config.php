@@ -1,5 +1,5 @@
 <?PHP
-require_once(__DIR__.DIRECTORY_SEPARATOR.'dbconfig.php');
+require_once(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'configs'.DIRECTORY_SEPARATOR.'dbconfig.php');
 
 $rspathhex = get_rspath();
 
@@ -105,6 +105,6 @@ $GLOBALS['stylepath'] = dirname(__DIR__).DIRECTORY_SEPARATOR.'styles'.DIRECTORY_
 if(isset($cfg['default_style'])) $GLOBALS['style'] = get_style($cfg['default_style']);
 $GLOBALS['avatarpath'] = dirname(__DIR__).DIRECTORY_SEPARATOR.'avatars'.DIRECTORY_SEPARATOR;
 
-require_once(__DIR__.DIRECTORY_SEPARATOR.'phpcommand.php');
+require_once(__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'configs'.DIRECTORY_SEPARATOR.'phpcommand.php');
 $GLOBALS['phpcommand'] = $phpcommand;
 ?>
