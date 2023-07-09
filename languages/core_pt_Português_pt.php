@@ -109,7 +109,7 @@ $lang['insterr1']			= "ATENÇÃO: Você está tentando instalar o Sistema de ran
 $lang['insterr2']			= "%1\$s é necessário, mas parece que não está instalado. Instalar <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> e tente novamente!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "A função PHP %1\$s precisa ser ativada, mas parece estar desativada. Por favor, ative o PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> e tente novamente!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Sua versão PHP (%s) está abaixo de 5.5.0. Atualize seu PHP e tente novamente!";
-$lang['isntwicfg']			= "Não é possível salvar a configuração do banco de dados! Edite o 'other/dbconfig.php' com um chmod 740 (no windows 'acesso total') e tente novamente após.";
+$lang['isntwicfg']			= "Não é possível salvar a configuração do banco de dados! Edite o 'configs/dbconfig.php' com um chmod 740 (no windows 'acesso total') e tente novamente após.";
 $lang['isntwicfg2']			= "Configure a Interface da Web";
 $lang['isntwichm']			= "Permissões de gravação falhou na pasta \"%s\". Por favor, dê a permissão chmod 740 (no windows 'acesso total') e tente iniciar o Sistema de ranking novamente.";
 $lang['isntwiconf']			= "Abra o %s para configurar o Sistema de ranking!";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "Há um erro na configuração do Sistema de ranking. Acesse a interface da web e corrija as Configurações do núcleo. Especialmente verifique o config 'Classificações'!!";
 $lang['widaform']			= "Formato de data";
 $lang['widaformdesc']		= "Escolha o formato da data de exibição.<br><br>Exemplo:<br>%a Dias, %h horas, %i minutos, %s segundos";
-$lang['widbcfgerr']			= "Erro ao salvar as configurações do banco de dados! A conexão falhou ou escreveu erro para 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Erro ao salvar as configurações do banco de dados! A conexão falhou ou escreveu erro para 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Configurações de banco de dados salvas com sucesso.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Configurar o nível de log do sistema de ranking. Com isso, você pode decidir quanta informação deve ser gravada no arquivo \"ranksystem.log\"<br><br>Quanto maior o nível de log, mais informações você obterá.<br><br>Alterar o nível de log entrará em vigor com a próxima reinicialização do sistema de ranking.<br><br>Por favor, não deixe o Ranksystem funcionando por muito tempo com \"6 - DEBUG\" isso pode prejudicar seu sistema de arquivos!";

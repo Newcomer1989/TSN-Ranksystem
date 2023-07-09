@@ -109,7 +109,7 @@ $lang['insterr1']			= "ATTENTION: Vous essayez d'installer le Ranksystem, mais i
 $lang['insterr2']			= "%1\$s est nécessaire, mais semble ne pas être installé. Installez <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> et essayez à nouveau !<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "La fonction PHP %1\$s doit être activé, mais semble être désactivé. Veuillez activer la fonction PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> et essayez à nouveau !<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Votre version PHP (%s) est inférieure à 5.5.0. Mettez à jour votre version de PHP et essayez à nouveau !";
-$lang['isntwicfg']			= "Impossible d'enregistrer la configuration de la base de données ! Veuillez modifier le fichier 'other/dbconfig.php' avec un chmod 740 (dans la fênetre 'accès complet') et essayez de nouveau après.";
+$lang['isntwicfg']			= "Impossible d'enregistrer la configuration de la base de données ! Veuillez modifier le fichier 'configs/dbconfig.php' avec un chmod 740 (dans la fênetre 'accès complet') et essayez de nouveau après.";
 $lang['isntwicfg2']			= "Configurer l'interface Web";
 $lang['isntwichm']			= "Échec des autorisations d'écriture sur le dossier \"%s\".  Veuillez modifier le dossier avec un chmod 740 (dans la fênetre 'accès complet') et essayez de nouveau après de démarer le ranksystem.";
 $lang['isntwiconf']			= "Ouvrez le %s pour configurer le système de classement !";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "Il y a une erreur dans la configuration du Ranksystem. Veuillez aller à l'interface Web et corriger les paramètres de rank (coeur)!";
 $lang['widaform']			= "Format de date";
 $lang['widaformdesc']		= "Choisissez le format de date à afficher.<br><br>Exemple:<br>%a jours, %h heures, %i minutes, %s secondes";
-$lang['widbcfgerr']			= "Erreur lors de l'enregistrement des configurations de base de données ! Échec de la connexion ou erreur d'écriture pour le fichier 'other/dbconfig.php'";
+$lang['widbcfgerr']			= "Erreur lors de l'enregistrement des configurations de base de données ! Échec de la connexion ou erreur d'écriture pour le fichier 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Configuration de la base de données enregistrée avec succès.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";

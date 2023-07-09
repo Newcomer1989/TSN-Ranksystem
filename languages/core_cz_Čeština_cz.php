@@ -109,7 +109,7 @@ $lang['insterr1']			= "VAROVÁNÍ: Pokoušíte se nainstalovat Ranksystem, ale d
 $lang['insterr2']			= "%1\$s je potřebný k instalaci, ale není nainstalován! Nainstalujte ho pomocí <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> a zkuste to znovu!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr3']			= "PHP %1\$s function is needed to be enabled but seems to be disabled. Please enable the PHP <a href=\"%2\$s\" target=\"_blank\">%1\$s</a> function and try it again!<br>Path to your PHP config file, if one is defined and loaded: %3\$s";
 $lang['insterr4']			= "Vaše PHP verze (%s) je nižší než 5.5.0. Prosím aktulizujte PHP a zkuste to znovu!";
-$lang['isntwicfg']			= "Nemohu uložit konfiguraci do databáze! Prosím přidělte všechna práva souboru 'other/dbconfig.php' (Linux: chmod 740; Windows: 'full access') a zkuste to znovu!";
+$lang['isntwicfg']			= "Nemohu uložit konfiguraci do databáze! Prosím přidělte všechna práva souboru 'configs/dbconfig.php' (Linux: chmod 740; Windows: 'full access') a zkuste to znovu!";
 $lang['isntwicfg2']			= "Nakonfigurujte webinterface";
 $lang['isntwichm']			= "Práva pro zápis do složky \"%s\" nejsou plná! Prosím přidělte všechna práva pomocí (Linux: chmod 740; Windows: 'full access') a aktulizujte (obnovte- F5) stránku.";
 $lang['isntwiconf']			= "Otevřete %s pro nastavení Ranksystemu.";
@@ -461,7 +461,7 @@ $lang['wicmdlinesecdesc']	= "The Ranksystem bot has a security check to be able 
 $lang['wiconferr']			= "Došlo k chybě v konfiguraci systému Ranks. Přejděte na webové rozhraní a opravte nastavení jádra. Zvláště zkontrolujte konfiguraci 'rank'!";
 $lang['widaform']			= "Časový formát";
 $lang['widaformdesc']		= "Vyberte formát zobrazení data.<br><br>Příklad:<br>% a dny,% h hodiny,% i mins,% s secs";
-$lang['widbcfgerr']			= "Chyba při ukládání konfigurací databáze! Připojení selhalo nebo chyba zápisu pro 'other / dbconfig.php'";
+$lang['widbcfgerr']			= "Chyba při ukládání konfigurací databáze! Připojení selhalo nebo chyba zápisu pro 'configs/dbconfig.php'";
 $lang['widbcfgsuc']			= "Databázové konfigurace byly úspěšně uloženy.";
 $lang['widbg']				= "Log-Level";
 $lang['widbgdesc']			= "Set up the Log-Level of the Ranksystem. With this you can decide, how much information should be written to the file \"ranksystem.log\"<br><br>The higher the Log-Level, the more information you'll get.<br><br>Changing the Log-Level will take effect with the next restart of the Ranksystem bot.<br><br>Please don't let the Ranksystem running longer on \"6 - DEBUG\" this could impair your filesystem!";
