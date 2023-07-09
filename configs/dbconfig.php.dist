@@ -1,0 +1,7 @@
+<?php
+$db['type'] = "mysql";
+$db['host'] = "localhost";
+$db['user'] = "dbuser";
+$db['pass'] = "dbpass";
+$db['dbname'] = "ts3_ranksystem";
+?>
