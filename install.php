@@ -86,6 +86,7 @@ $db[\'dbname\'] = \''.$dbname.'\';
 		return;
 	}
 
+	$dbExists = false;
 	$count = 1;
 	$stmt = $mysqlcon->query('SHOW DATABASES');
 	while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -97,7 +98,7 @@ $db[\'dbname\'] = \''.$dbname.'\';
 	if ($dbExists) {
 		if(($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) { }
 	}
-	
+
 	if($mysqlcon->exec("CREATE DATABASE `$dbname`") === false) {
 		$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 		$count++;
