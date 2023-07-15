@@ -549,6 +549,12 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			$updatedone = TRUE;
 		}
 
+		if(version_compare($cfg['version_current_using'], '1.3.24', '<')) {
+			if($mysqlcon->exec("INSERT IGNORE INTO `$dbname`.`cfg_params` (`param`, `value`) VALUES ('enable_auto_updater', true)") === false) { } else {
+				enter_logfile(4,"    [1.3.24] Add option to enable/disable the auto-updater");
+			}
+		}
+
 		$cfg = set_new_version($mysqlcon,$cfg,$dbname);
 	}
 	enter_logfile(5,"Check Ranksystem database for updates [done]");

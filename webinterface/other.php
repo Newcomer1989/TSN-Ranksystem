@@ -43,7 +43,34 @@ try {
 		if (isset($_POST['rankup_clean_clients_switch'])) $cfg['rankup_clean_clients_switch'] = 1; else $cfg['rankup_clean_clients_switch'] = 0;
 		$cfg['rankup_clean_clients_period'] = $_POST['rankup_clean_clients_period'];
 
-		if ($mysqlcon->exec("INSERT INTO `$dbname`.`cfg_params` (`param`,`value`) VALUES ('logs_timezone','{$cfg['logs_timezone']}'),('default_date_format','{$cfg['default_date_format']}'),('logs_path','{$cfg['logs_path']}'),('logs_debug_level','{$cfg['logs_debug_level']}'),('logs_rotation_size','{$cfg['logs_rotation_size']}'),('default_language','{$cfg['default_language']}'),('default_style','{$cfg['default_style']}'),('version_update_channel','{$cfg['version_update_channel']}'),('rankup_hash_ip_addresses_mode','{$cfg['rankup_hash_ip_addresses_mode']}'),('default_session_sametime','{$cfg['default_session_sametime']}'),('default_header_origin','{$cfg['default_header_origin']}'),('default_header_xss','{$cfg['default_header_xss']}'),('default_header_contenttyp','{$cfg['default_header_contenttyp']}'),('default_header_frame','{$cfg['default_header_frame']}'),('default_cmdline_sec_switch','{$cfg['default_cmdline_sec_switch']}'),('rankup_client_database_id_change_switch','{$cfg['rankup_client_database_id_change_switch']}'),('rankup_clean_clients_switch','{$cfg['rankup_clean_clients_switch']}'),('rankup_clean_clients_period','{$cfg['rankup_clean_clients_period']}') ON DUPLICATE KEY UPDATE `value`=VALUES(`value`); DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'") === false) {
+		$sql_update_cfg_params = "INSERT INTO `$dbname`.`cfg_params`
+			(`param`, `value`)
+			VALUES
+			('logs_timezone', '{$cfg['logs_timezone']}'),
+			('default_date_format', '{$cfg['default_date_format']}'),
+			('logs_path', '{$cfg['logs_path']}'),
+			('logs_debug_level', '{$cfg['logs_debug_level']}'),
+			('logs_rotation_size', '{$cfg['logs_rotation_size']}'),
+			('default_language', '{$cfg['default_language']}'),
+			('default_style', '{$cfg['default_style']}'),
+			('enable_auto_updater', {$_POST['enable_auto_updater']}),
+			('version_update_channel', '{$cfg['version_update_channel']}'),
+			('rankup_hash_ip_addresses_mode', '{$cfg['rankup_hash_ip_addresses_mode']}'),
+			('default_session_sametime', '{$cfg['default_session_sametime']}'),
+			('default_header_origin', '{$cfg['default_header_origin']}'),
+			('default_header_xss', '{$cfg['default_header_xss']}'),
+			('default_header_contenttyp', '{$cfg['default_header_contenttyp']}'),
+			('default_header_frame', '{$cfg['default_header_frame']}'),
+			('default_cmdline_sec_switch', '{$cfg['default_cmdline_sec_switch']}'),
+			('rankup_client_database_id_change_switch', '{$cfg['rankup_client_database_id_change_switch']}'),
+			('rankup_clean_clients_switch', '{$cfg['rankup_clean_clients_switch']}'),
+			('rankup_clean_clients_period', '{$cfg['rankup_clean_clients_period']}')
+			ON DUPLICATE KEY UPDATE `value`=VALUES(`value`);
+
+			DELETE FROM `$dbname`.`csrf_token` WHERE `token`='{$_POST['csrf_token']}'
+		";
+
+		if ($mysqlcon->exec($sql_update_cfg_params) === false) {
 			$err_msg = print_r($mysqlcon->errorInfo(), true);
 			$err_lvl = 3;
 		} else {
@@ -180,6 +207,13 @@ try {
 										}
 										?>
 										</select>
+									</div>
+								</div>
+								<div class="row">&nbsp;</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label" data-toggle="modal" data-target="#wiautoupdaterdesc"><?= $lang['wiautoupdater'] ?><i class="help-hover fas fa-question-circle"></i></label>
+									<div class="col-sm-8">
+										<input class="switch-animate" type="checkbox" data-size="mini" name="enable_auto_updater" value="<?= $cfg['enable_auto_updater'] ?>" <?php ($cfg['enable_auto_updater']) ?? "checked"; ?>>
 									</div>
 								</div>
 								<div class="row">&nbsp;</div>
@@ -547,6 +581,22 @@ try {
 		</div>
 	  </div>
 	</div>
+	<div class="modal fade" id="wiautoupdaterdesc" tabindex="-1">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title"><?php echo $lang['wiautoupdater']; ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<?php echo $lang['wiautoupdaterdesc']; ?>
+		  </div>
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal"><?PHP echo $lang['stnv0002']; ?></button>
+		  </div>
+		</div>
+	  </div>
+	</div>
 	<div class="modal fade" id="wiupchdesc" tabindex="-1">
 	  <div class="modal-dialog">
 		<div class="modal-content">
@@ -666,6 +716,7 @@ try {
 	$("[name='default_cmdline_sec_switch']").bootstrapSwitch();
 	$("[name='rankup_client_database_id_change_switch']").bootstrapSwitch();
 	$("[name='rankup_clean_clients_switch']").bootstrapSwitch();
+	$("[name='enable_auto_updater']").bootstrapSwitch();
 	</script>
 	</body>
 	</html>

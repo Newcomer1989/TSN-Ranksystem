@@ -662,6 +662,7 @@ if(isset($_POST['confweb'])) {
 			('teamspeak_voice_port', '9987'),
 			('version_current_using', '{$rsversion}'),
 			('version_latest_available', '{$rsversion}'),
+			('enable_auto_updater', 'true'),
 			('version_update_channel', 'stable'),
 			('webinterface_access_count', '0'),
 			('webinterface_access_last', '0'),

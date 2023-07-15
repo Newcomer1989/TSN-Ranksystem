@@ -1,5 +1,5 @@
 <?PHP
-function update_rs($mysqlcon,$lang,$cfg,$dbname,$norotate=NULL) {
+function update_rs($mysqlcon,$cfg,$dbname,$norotate=NULL) {
 	$nowtime = time();
 	$sqlexec = '';
 	$norotate = true;
