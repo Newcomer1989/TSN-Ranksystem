@@ -60,7 +60,9 @@ require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/clean.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/check_db.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/handle_messages.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/event_userenter.php');
-require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/update_rs.php');
+if ($cfg['enable_auto_updater']) {
+	require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/update_rs.php');
+}
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/reset_rs.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/db_ex_imp.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'libs/smarty/Smarty.class.php');
@@ -73,27 +75,34 @@ if(version_compare(PHP_VERSION, '8.0.0', '<')) {
 }
 enter_logfile(9,"Database Version: ".$mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION));
 
-enter_logfile(9,"Starting connection test to the Ranksystem update-server (may need a few seconds)...");
-$update_server = fsockopen('193.70.102.252', 443, $errno, $errstr, 10);
-if(!$update_server) {
-	enter_logfile(2,"  Connection to Ranksystem update-server failed: $errstr ($errno)");
-	enter_logfile(3,"    This connection is neccessary to receive updates for the Ranksystem!");
-	enter_logfile(3,"    Please whitelist the IP 193.70.102.252 (TCP port 443) on your network (firewall)");
-} else {
-	enter_logfile(9,"  Connection test successful");
+if ($cfg['enable_auto_updater']) {
+	enter_logfile(9,"Starting connection test to the Ranksystem update-server (may need a few seconds)...");
+	$update_server = fsockopen('ts-n.net', 443, $errno, $errstr, 10);
+	if(!$update_server) {
+		enter_logfile(2,"  Connection to Ranksystem update-server failed: $errstr ($errno)");
+		enter_logfile(3,"    This connection is neccessary to receive updates for the Ranksystem!");
+		enter_logfile(3,"    Please whitelist the IP 193.70.102.252 (TCP port 443) on your network (firewall).");
+		enter_logfile(3,"    Alternative, disable the auto-updater in the settings and manually update the Ranksystem.");
+	} else {
+		enter_logfile(9,"  Connection test successful");
+	}
+	enter_logfile(9,"Starting connection test to the Ranksystem update-server [done]");
 }
-enter_logfile(9,"Starting connection test to the Ranksystem update-server [done]");
 
 $cfg['temp_updatedone'] = check_db($mysqlcon,$lang,$cfg,$dbname);
 $cfg['temp_db_version'] = $mysqlcon->getAttribute(PDO::ATTR_SERVER_VERSION);
 $cfg['temp_last_botstart'] = time();
 $cfg['temp_reconnect_attempts'] = 0;
 $cfg['temp_ts_no_reconnection'] = 0;
-enter_logfile(4,"Check Ranksystem files for updates...");
-if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available']) && $cfg['version_latest_available'] != NULL && version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>')) {
-	update_rs($mysqlcon,$lang,$cfg,$dbname);
+
+if ($cfg['enable_auto_updater']) {
+	enter_logfile(4,"Check Ranksystem files for updates...");
+	if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available']) && $cfg['version_latest_available'] != NULL && version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>')) {
+		update_rs($mysqlcon,$lang,$cfg,$dbname);
+	}
+	enter_logfile(4,"Check Ranksystem files for updates [done]");
 }
-enter_logfile(4,"Check Ranksystem files for updates [done]");
+
 enter_logfile(9,"Ranksystem Version: ".$cfg['version_current_using']." (on Update-Channel: ".$cfg['version_update_channel'].")");
 enter_logfile(4,"Loading addons...");
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'other/load_addons_config.php');

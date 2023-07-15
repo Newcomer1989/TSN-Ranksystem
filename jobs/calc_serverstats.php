@@ -465,7 +465,10 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 						}
 					}
 				}
-				$sqlexec .= update_rs($mysqlcon,$lang,$cfg,$dbname);
+
+				if ($cfg['enable_auto_updater']) {
+					$sqlexec .= update_rs($mysqlcon,$lang,$cfg,$dbname);
+				}
 			}
 			$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='get_version';\nUPDATE `$dbname`.`cfg_params` SET `value`='{$cfg['version_latest_available']}' WHERE `param`='version_latest_available';\n";
 		}
