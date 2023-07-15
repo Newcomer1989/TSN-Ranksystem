@@ -98,7 +98,7 @@ $cfg['temp_ts_no_reconnection'] = 0;
 if ($cfg['enable_auto_updater']) {
 	enter_logfile(4,"Check Ranksystem files for updates...");
 	if(isset($cfg['version_current_using']) && isset($cfg['version_latest_available']) && $cfg['version_latest_available'] != NULL && version_compare($cfg['version_latest_available'], $cfg['version_current_using'], '>')) {
-		update_rs($mysqlcon,$lang,$cfg,$dbname);
+		update_rs($mysqlcon,$cfg,$dbname);
 	}
 	enter_logfile(4,"Check Ranksystem files for updates [done]");
 }
