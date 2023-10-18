@@ -1,5 +1,5 @@
 ﻿<?PHP
-$rsversion = '1.3.22';
+$rsversion = '1.3.23';
 
 require_once('other/_functions.php');
 require_once('other/config.php');
@@ -475,6 +475,16 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			`channel_order` int(10) UNSIGNED NOT NULL default '0',
 			`channel_name` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 		);") === false) {
+			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+			$count++;
+		}
+
+		if($mysqlcon->exec("CREATE TABLE IF NOT EXISTS `$dbname`.`admin_mrgclient` (
+				`uuid_source` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+				`uuid_target` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+				`timestamp` int(10) UNSIGNED NOT NULL default '0',
+				PRIMARY KEY (`uuid_source`)
+			);") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}

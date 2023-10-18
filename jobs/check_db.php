@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,&$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.22';
+	$cfg['version_latest_available'] = '1.3.23';
 	enter_logfile(5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -489,9 +489,6 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 			} else {
 				enter_logfile(4,"    [1.3.18] Updated new addons_config values.");
 			}
-
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
-			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 		}
 		
 		if(version_compare($cfg['version_current_using'], '1.3.19', '<')) {
@@ -533,8 +530,23 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 				$cfg['stats_news_html'] = 'New Feature <a href="https://ts-ranksystem.com#voting" target="_blank">VOTING!</a> for the Ranksystem';
 				$cfg['teamspeak_news_bb'] = 'New Feature [URL=https://ts-ranksystem.com#voting]VOTING![/URL] for the Ranksystem';
 			}
+		}
+
+		if(version_compare($cfg['version_current_using'], '1.3.23', '<')) {
+			if($mysqlcon->exec("CREATE TABLE IF NOT EXISTS `$dbname`.`admin_mrgclient` (
+				`uuid_source` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+				`uuid_target` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
+				`timestamp` int(10) UNSIGNED NOT NULL default '0',
+				PRIMARY KEY (`uuid_source`)
+			);") === false) {
+				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
+				enter_logfile(2,"    [1.3.23] Created new table admin_mrgclient failed. SQL error: ".$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true));
+			} else {
+				enter_logfile(4,"    [1.3.23] Created new table admin_mrgclient successfully.");
+			}
 
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }
+			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_mrgclient`;") === false) { }
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`addon_assign_groups`;") === false) { }
 
 			try {

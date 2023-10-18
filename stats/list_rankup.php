@@ -37,17 +37,19 @@ try {
 		$order .= ", `{$cfg['stats_column_default_sort_2']}` ".$cfg['stats_column_default_order_2'];
 	}
 
-	if($cfg['stats_column_online_day_switch'] == 1 || $cfg['stats_column_idle_day_switch'] == 1 || $cfg['stats_column_active_day_switch'] == 1 || $cfg['stats_column_online_week_switch'] == 1 || $cfg['stats_column_idle_week_switch'] == 1 || $cfg['stats_column_active_week_switch'] == 1 || $cfg['stats_column_online_month_switch'] == 1 || $cfg['stats_column_idle_month_switch'] == 1 || $cfg['stats_column_active_month_switch'] == 1) {
-		$stats_user_tbl = ", `$dbname`.`stats_user`";
-		$stats_user_where = " AND `stats_user`.`uuid`=`user`.`uuid`";
-	} else {
-		$stats_user_tbl = $stats_user_where = '';
+	$arr_sort_options = sort_options($lang);
+	$columns = '`user`.`uuid` `uuid`, `except`, `count`, `idle`, `online`, ';
+	foreach ($arr_sort_options as $opt => $val) {
+		if (($cfg[$val['config']] == 1 || $adminlogin == 1) && $val['option'] != 'uuid' && $val['option'] != 'active' && $val['option'] != 'count' && $val['option'] != 'idle') {
+			$columns .= "`".$val['option']."`, ";
+		}
 	}
+	$columns = substr($columns,0,-2);
 
 	if ($searchstring == '') {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user`$stats_user_tbl WHERE 1=1$filter$stats_user_where ORDER BY $order LIMIT :start, :userproseite");
+		$dbdata = $mysqlcon->prepare("SELECT {$columns} FROM `$dbname`.`user`, `$dbname`.`stats_user` WHERE `stats_user`.`uuid`=`user`.`uuid` {$filter} ORDER BY {$order} LIMIT :start, :userproseite");
 	} else {
-		$dbdata = $mysqlcon->prepare("SELECT * FROM `$dbname`.`user`$stats_user_tbl WHERE (`user`.`uuid` LIKE :searchvalue OR `user`.`cldbid` LIKE :searchvalue OR `user`.`name` LIKE :searchvalue) $filter$stats_user_where ORDER BY $order LIMIT :start, :userproseite");
+		$dbdata = $mysqlcon->prepare("SELECT {$columns} FROM `$dbname`.`user`, `$dbname`.`stats_user` WHERE `stats_user`.`uuid`=`user`.`uuid` AND (`user`.`uuid` LIKE :searchvalue OR `user`.`cldbid` LIKE :searchvalue OR `user`.`name` LIKE :searchvalue) {$filter} ORDER BY {$order} LIMIT :start, :userproseite");
 		$dbdata->bindValue(':searchvalue', '%'.$searchstring.'%', PDO::PARAM_STR);
 	}
 
@@ -65,7 +67,7 @@ try {
 		$err_msg = print_r($mysqlcon->errorInfo(), true); $err_lvl = 3;
 	}
 
-	$sqlhis = $dbdata->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE);
+	$sqlhis = $dbdata->fetchAll(PDO::FETCH_ASSOC);
 
 	if($adminlogin == 1) {
 		switch ($keyorder) {
@@ -117,6 +119,7 @@ try {
 								$activetime = $value['count'];
 							}
 							$grpcount=0;
+
 							if($cfg['stats_column_next_server_group_switch'] != 1) {
 								echo list_rankup($cfg,$lang,$sqlhisgroup,$value,$adminlogin,$nation,$grpcount);
 							} else {

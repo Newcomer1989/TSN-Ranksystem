@@ -236,7 +236,10 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && h
 						<li class="divider"></li>
 						<li>
 							<a href="javascript:;" data-toggle="collapse" data-target="#admin"><i class="fas fa-users fa-fw"></i><span class="item-margin"><?PHP echo $lang['winav7']; ?></span><span class="item-margin"><i class="fas fa-caret-down"></i></span></a>
-							<?PHP echo '<ul id="admin" class="'.(in_array(basename($_SERVER['SCRIPT_NAME']), array("admin_addtime.php", "admin_remtime.php", "admin_delclient.php", "reset.php", "export.php")) ? 'in collapse">' : 'collapse">'); ?>
+							<?PHP echo '<ul id="admin" class="'.(in_array(basename($_SERVER['SCRIPT_NAME']), array("admin_mrgclient.php", "admin_addtime.php", "admin_remtime.php", "admin_delclient.php", "reset.php", "export.php")) ? 'in collapse">' : 'collapse">'); ?>
+								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_mrgclient.php" ? ' class="active">' : '>'); ?>
+									<a href="admin_mrgclient.php"><i class="fas fa-code-fork fa-fw"></i><span class="item-margin"><?PHP echo $lang['wihladm500']; ?></span></a>
+								</li>
 								<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "admin_addtime.php" ? ' class="active">' : '>'); ?>
 									<a href="admin_addtime.php"><i class="fas fa-plus fa-fw"></i><span class="item-margin"><?PHP echo $lang['wihladm1']; ?></span></a>
 								</li>

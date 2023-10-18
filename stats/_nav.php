@@ -45,12 +45,12 @@ if(isset($getstring) && strstr($getstring, 'filter:online:')) {
 if(isset($getstring) && strstr($getstring, 'filter:actualgroup:')) {
 	preg_match('/filter\:actualgroup\:(.*)\:/',$searchstring,$grpvalue);
 	$searchstring = preg_replace('/filter\:actualgroup\:(.*)\:/','',$searchstring);
-	$filter .= " AND `grpid`='".$grpvalue[1]."'";
+	if(isset($grpvalue[1])) $filter .= " AND `grpid`='".$grpvalue[1]."'";
 }
 if(isset($getstring) && strstr($getstring, 'filter:country:')) {
-	preg_match('/filter\:country\:(.*)\:/',$searchstring,$grpvalue);
+	preg_match('/filter\:country\:(.*)\:/',$searchstring,$country);
 	$searchstring = preg_replace('/filter\:country\:(.*)\:/','',$searchstring);
-	$filter .= " AND `nation`='".$grpvalue[1]."'";
+	if(isset($country[1])) $filter .= " AND `nation`='".$country[1]."'";
 }
 if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 	preg_match('/filter\:lastseen\:(.*)\:(.*)\:/',$searchstring,$seenvalue);

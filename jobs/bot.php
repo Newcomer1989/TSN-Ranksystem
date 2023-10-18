@@ -343,7 +343,7 @@ function run_bot(&$cfg) {
 		$looptime = $cfg['temp_count_laps'] = $cfg['temp_whole_laptime'] = $cfg['temp_count_laptime'] = 0; $cfg['temp_last_laptime'] = '';
 		usleep(3000000);
 
-		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; ")) === false) {
+		if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`user`; SELECT MAX(`timestamp`) AS `timestamp` FROM `$dbname`.`server_usage`; SELECT * FROM `$dbname`.`job_check`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`; SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`admin_mrgclient`; ")) === false) {
 			shutdown($mysqlcon,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 		}
 
@@ -374,7 +374,10 @@ function run_bot(&$cfg) {
 					break;
 				case 7:
 					$db_cache['admin_addtime'] = $fetched_array;
-					break 2;
+					break;
+				case 8:
+					$db_cache['admin_mrgclient'] = $fetched_array;
+				break 2;
 			}
 			$get_db_data->nextRowset();
 		}
@@ -392,8 +395,8 @@ function run_bot(&$cfg) {
 			}
 			
 			if(intval($db_cache['job_check']['reload_trigger']['timestamp']) == 1) {
-				unset($db_cache['addon_assign_groups'],$db_cache['admin_addtime']);
-				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`;")) === false) {
+				unset($db_cache['addon_assign_groups'],$db_cache['admin_addtime'],$db_cache['admin_mrgclient']);
+				if(($get_db_data = $mysqlcon->query("SELECT * FROM `$dbname`.`addon_assign_groups`; SELECT * FROM `$dbname`.`admin_addtime`; SELECT * FROM `$dbname`.`admin_mrgclient`; SELECT * FROM `$dbname`.`groups`; SELECT * FROM `$dbname`.`channel`;")) === false) {
 					shutdown($mysqlcon,1,"Select on DB failed: ".print_r($mysqlcon->errorInfo(), true));
 				}
 
@@ -410,11 +413,14 @@ function run_bot(&$cfg) {
 							$db_cache['admin_addtime'] = $fetched_array;
 							break;
 						case 3:
-							$db_cache['groups'] = $fetched_array;
+							$db_cache['admin_mrgclient'] = $fetched_array;
 							break;
 						case 4:
+							$db_cache['groups'] = $fetched_array;
+							break;
+						case 5:
 							$db_cache['channel'] = $fetched_array;
-							break 2;
+						break 2;
 					}
 					$get_db_data->nextRowset();
 				}

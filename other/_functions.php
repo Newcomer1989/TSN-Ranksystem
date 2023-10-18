@@ -170,6 +170,7 @@ function bot_stop() {
 }
 
 function check_bot_process($pid = NULL) {
+	enter_logfile(6, "Status check of Ranksystem Bot process..");
 	if (substr(php_uname(), 0, 7) == "Windows") {
 		if(!empty($pid)) {
 			exec("wmic process where \"processid=".$pid."\" get processid 2>nul", $result);
@@ -194,18 +195,25 @@ function check_bot_process($pid = NULL) {
 	} else {
 		if(!empty($pid)) {
 			$result = str_replace(array("\r", "\n"), '', shell_exec("ps ".$pid));
+			enter_logfile(6, "  Check process list for Ranksystem Bot with PID '".$pid."'.. Response: '".$result."'");
 			if (strstr($result, $pid)) {
+				enter_logfile(6, "Process with PID '".$pid."' found.");
 				return TRUE;
 			} else {
+				enter_logfile(6, "No process with PID '".$pid."' found.");
 				return FALSE;
 			}
 		} else {
 			if (file_exists($GLOBALS['pidfile'])) {
 				$check_pid = str_replace(array("\r", "\n"), '', file_get_contents($GLOBALS['pidfile']));
+				enter_logfile(6, "  PID file exists. Saved process ID of Ranksystem Bot: '".$check_pid."'");
 				$result = str_replace(array("\r", "\n"), '', shell_exec("ps ".$check_pid));
+				enter_logfile(6, "  Check process list for Ranksystem Bot with saved PID.. Response: '".$result."'");
 				if (strstr($result, $check_pid)) {
+					enter_logfile(6, "Process with PID '".$check_pid."' found.");
 					return TRUE;
 				} else {
+					enter_logfile(6, "No process with PID '".$check_pid."' found.");
 					return FALSE;
 				}
 			} else {
@@ -1112,7 +1120,7 @@ function sort_options($lang) {
 		array('option' => 'idle_month', 'title' => $lang['listsumi'].' '.$lang['stix0015'], 'icon' => 'fas fa-hourglass-half', 'config' => 'stats_column_idle_month_switch'),
 		array('option' => 'active_month', 'title' => $lang['listsuma'].' '.$lang['stix0015'], 'icon' => 'fas fa-hourglass-end', 'config' => 'stats_column_active_month_switch'),
 		array('option' => 'grpid', 'title' => $lang['listacsg'], 'icon' => 'fas fa-clipboard-check', 'config' => 'stats_column_current_server_group_switch'),
-		array('option' => 'grpidsince', 'title' => $lang['listgrps'], 'icon' => 'fas fa-history', 'config' => 'stats_column_current_group_since_switch'),
+		array('option' => 'grpsince', 'title' => $lang['listgrps'], 'icon' => 'fas fa-history', 'config' => 'stats_column_current_group_since_switch'),
 		array('option' => 'nextup', 'title' => $lang['listnxup'], 'icon' => 'fas fa-clock', 'config' => 'stats_column_next_rankup_switch'),
 		array('option' => 'active', 'title' => $lang['listnxsg'], 'icon' => 'fas fa-clipboard-list', 'config' => 'stats_column_next_server_group_switch')
 	);

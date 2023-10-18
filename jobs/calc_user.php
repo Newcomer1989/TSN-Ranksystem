@@ -23,6 +23,102 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 
 	$multipleonline = $updatedata = $insertdata = array();
 
+	if(isset($db_cache['admin_mrgclient']) && count($db_cache['admin_mrgclient']) != 0) {
+		foreach($db_cache['admin_mrgclient'] as $uuid_source => $value) {
+			$uuid_target = $value['uuid_target'];
+			if(isset($db_cache['all_user'][$uuid_source]) && isset($db_cache['all_user'][$uuid_target])) {
+				$source_isonline = $target_isonline = 0;
+				foreach($allclients as $client) {
+					if($client['client_unique_identifier'] == $uuid_source) {
+						$source_isonline = 1;
+						$source_cldbid = $client['client_database_id'];
+						$source_name = mb_convert_encoding($client['client_nickname'],'UTF-8','auto');
+					}
+					if($client['client_unique_identifier'] == $uuid_target) {
+						$target_isonline = 1;
+						$target_cldbid = $client['client_database_id'];
+						$target_name = mb_convert_encoding($client['client_nickname'],'UTF-8','auto');
+					}
+				}
+				$source_online = $db_cache['all_user'][$uuid_source]['count'];
+				$source_idle = $db_cache['all_user'][$uuid_source]['idle'];
+				$db_cache['all_user'][$uuid_target]['count'] += $source_online;
+				$db_cache['all_user'][$uuid_target]['idle'] += $source_idle;
+				$db_cache['all_user'][$uuid_source]['count'] = 0;
+				$db_cache['all_user'][$uuid_source]['idle'] = 0;
+
+				if($source_isonline != 1 || target_isonline != 1) {
+					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `uuid` in ('{$uuid_source}','{$uuid_target}')")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+						enter_logfile(2,"Database error on selecting source user (admin function merge clients): ".print_r($mysqlcon->errorInfo(), true));
+					} else {
+						$source_cldbid = $user[$uuid_source]['cldbid'];
+						$target_cldbid = $user[$uuid_target]['cldbid'];
+						$source_name = $user[$uuid_source]['name'];
+						$target_name = $user[$uuid_target]['name'];
+						$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='0', `idle`='0' WHERE `uuid`='{$uuid_source}';\n";
+						$sqlexec .= "UPDATE `$dbname`.`user` SET `count`='{$db_cache['all_user'][$uuid_target]['count']}', `idle`='{$db_cache['all_user'][$uuid_target]['idle']}' WHERE `uuid`='{$uuid_target}';\n";
+					}
+				}
+
+				if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_mrgclient` WHERE `timestamp`='{$value['timestamp']}' AND `uuid_source`='{$uuid_source}';") === false) {
+					enter_logfile(2,"Database error on updating user (admin function merge clients): ".print_r($mysqlcon->errorInfo(), true));
+				}
+				if(($source_usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$source_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+					enter_logfile(2,"Database error on selecting user_snapshot of source user (admin function merge clients): ".print_r($mysqlcon->errorInfo(), true));
+				} elseif(($target_usersnap = $mysqlcon->query("SELECT `id`,`cldbid`,`count`,`idle` FROM `$dbname`.`user_snapshot` WHERE `cldbid`={$target_cldbid}")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+					enter_logfile(2,"Database error on selecting user_snapshot of target user (admin function merge clients): ".print_r($mysqlcon->errorInfo(), true));
+				} else {
+					foreach($target_usersnap as $id => $target_snap) {
+						if(isset($source_usersnap[$id]) && $source_usersnap[$id]['count'] != NULL) {
+							$target_snap['count'] += $source_usersnap[$id]['count'];
+							$source_usersnap[$id]['count'] = 0;
+							$target_snap['idle'] += $source_usersnap[$id]['idle'];
+							$source_usersnap[$id]['idle'] = 0;
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$target_snap['count']}', `idle`='{$target_snap['idle']}' WHERE `cldbid`='{$target_cldbid}' AND `id`='{$id}';\n";
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='0', `idle`='0' WHERE `cldbid`='{$source_cldbid}' AND `id`='{$id}';\n";
+						}
+					}
+					foreach($source_usersnap as $id => $source_snap) {
+						if(isset($target_usersnap[$id]) && $target_usersnap[$id]['count'] != NULL) {
+							$target_usersnap[$id]['count'] += $source_snap['count'];
+							$target_usersnap[$id]['idle'] += $source_snap['idle'];
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$target_usersnap[$id]['count']}', `idle`='{$target_usersnap[$id]['idle']}' WHERE `cldbid`='{$target_cldbid}' AND `id`='{$id}';\n";
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='0', `idle`='0' WHERE `cldbid`='{$source_cldbid}' AND `id`='{$id}';\n";
+						} else {
+							$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES ('{$id}','{$target_cldbid}','{$source_snap['count']}','{$source_snap['idle']}');\n";
+							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='0', `idle`='0' WHERE `cldbid`='{$source_cldbid}' AND `id`='{$id}';\n";
+						}
+					}
+				}
+				enter_logfile(4,sprintf($lang['sccupcount3'],$source_name,$uuid_source,$source_cldbid,$target_name,$uuid_target,$target_cldbid,$source_online,$source_idle));
+				unset($user, $source_usersnap, $target_usersnap);
+				
+
+				if(isset($value['source_delete']) && $value['source_delete'] == 1) {
+					if(($user = $mysqlcon->query("SELECT `uuid`,`cldbid`,`name` FROM `$dbname`.`user` WHERE `uuid`='{$uuid_source}'")->fetchAll(PDO::FETCH_ASSOC|PDO::FETCH_UNIQUE)) === false) {
+						enter_logfile(2,"Database error on selecting user (admin function merge clients): ".print_r($mysqlcon->errorInfo(), true));
+					} else {
+						$temp_cldbid = $user[$uuid_source]['cldbid'];
+						$sqlexec .= "DELETE FROM `$dbname`.`addon_assign_groups` WHERE `uuid`='{$uuid_source}';\nDELETE FROM `$dbname`.`admin_mrgclient` WHERE `uuid_source`='{$uuid_source}';\nDELETE FROM `$dbname`.`stats_user` WHERE `uuid`='{$uuid_source}';\nDELETE FROM `$dbname`.`user` WHERE `uuid`='{$uuid_source}';\nDELETE FROM `$dbname`.`user_iphash` WHERE `uuid`='{$uuid_source}';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$temp_cldbid}';\n";
+						enter_logfile(4,sprintf($lang['wihladm45'],$user[$uuid_source]['name'],$uuid,$source_cldbid).' ('.$lang['wihladm46'].')');
+						if(isset($db_cache['all_user'][$uuid_source])) unset($db_cache['all_user'][$uuid_source]);
+						if(isset($db_cache['admin_mrgclient'][$uuid_source])) unset($db_cache['admin_mrgclient'][$uuid_source]);
+						if(isset($db_cache['addon_assign_groups'][$uuid_source])) unset($db_cache['addon_assign_groups'][$uuid_source]);
+					}
+					unset($user);
+				}
+			} else {
+				if(!isset($db_cache['all_user'][$uuid_source])) {
+					enter_logfile(3,"Function merge client from $uuid_source to $uuid_target: Missing source client in Ranksystem database.");
+				}
+				if(!isset($db_cache['all_user'][$uuid_target])) {
+					enter_logfile(3,"Function merge client from $uuid_source to $uuid_target: Missing target client in Ranksystem database.");
+				}
+			}
+		}
+		unset($db_cache['admin_mrgclient']);
+	}
+	
 	if(isset($db_cache['admin_addtime']) && count($db_cache['admin_addtime']) != 0) {
 		foreach($db_cache['admin_addtime'] as $uuid => $value) {
 			if(isset($db_cache['all_user'][$uuid])) {
@@ -84,7 +180,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 		}
 		unset($db_cache['admin_addtime']);
 	}
-	
+
 	foreach ($allclients as $client) {
 		$client_groups_rankup = array();
 		$name = $mysqlcon->quote((mb_substr(mb_convert_encoding($client['client_nickname'],'UTF-8','auto'),0,30)), ENT_QUOTES);

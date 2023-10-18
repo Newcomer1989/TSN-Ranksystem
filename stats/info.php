@@ -57,6 +57,7 @@ require_once('_preload.php');
 							<p><a href="//wenzhixin.net.cn" target="_blank" rel="noopener noreferrer">Bootstrap Show Password 1.0.3</a> - Copyright &copy; 2014 zhixin wen</p>
 							<p><a href="//github.com/1000hz/bootstrap-validator" target="_blank" rel="noopener noreferrer">Bootstrap Validator</a> - Copyright &copy; 2016 Cina Saffary</p>
 							<p><a href="//www.smarty.net/" target="_blank" rel="noopener noreferrer">Smarty PHP Template Engine 4.1.0</a> - Copyright &copy; 2002-2022 New Digital Group, Inc.</p>
+							<p><a href="//github.com/eternicode/bootstrap-datepicker" target="_blank" rel="noopener noreferrer">Datepicker for Bootstrap v1.9.0</a> - Copyright &copy; 2019 UX Solutions</p>
 							<br>
 						</div>
 					</div>
@@ -79,7 +80,6 @@ require_once('_preload.php');
 							<p><?PHP echo sprintf($lang['stri0027'], '<a href="//warriortigers.hu" target="_blank">ExXeL</a> -'); ?></p>
 							<p><?PHP echo sprintf($lang['stri0028'], '<a href="//grezhost.com" target="_blank">G. FARZALIYEV</a> -'); ?></p>
 							<p><?PHP echo sprintf($lang['stri0029'], '<a href="//nick-slowinski.de" target="_blank">Nick Slowinski</a> -'); ?></p>
-							<p><?PHP echo sprintf($lang['stri0030'], '<a href="//terrabot.de" target="_blank">JimmyNail</a> -'); ?></p>
 							<br>
 						</div>
 					</div>
