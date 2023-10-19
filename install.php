@@ -79,18 +79,8 @@ $db[\'dbname\']=\''.$dbname.'\';
 		$err_lvl = 2;
 	} else {
 		$count = 1;
-		$stmt = $mysqlcon->query('SHOW DATABASES');
-		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			if ($row['Database'] == $dbname) {
-				$dbExists = true;
-				break;
-			}
-		}
-		if ($dbExists) {
-			if(($mysqlcon->exec("DROP DATABASE `$dbname`")) === false) { }
-		}
-		
-		if($mysqlcon->exec("CREATE DATABASE `$dbname`") === false) {
+
+		if($mysqlcon->exec("CREATE DATABASE IF NOT EXISTS `$dbname`") === false) {
 			$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
 			$count++;
 		}
