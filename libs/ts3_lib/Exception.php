@@ -161,3 +161,9 @@ class TeamSpeak3_Exception extends Exception
     return (isset($trace[0]["class"])) ? $trace[0]["class"] : "{main}";
   }
 }
+
+/**
+ * @class TeamSpeak3_Helper_Exception
+ * @brief Enhanced exception class for TeamSpeak3_Helper_* objects.
+ */
+class TeamSpeak3_Helper_Exception extends TeamSpeak3_Exception {}
