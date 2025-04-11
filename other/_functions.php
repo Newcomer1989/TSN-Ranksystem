@@ -1130,7 +1130,6 @@ function sort_options($lang) {
 function start_session($cfg) {
 	ini_set('session.cookie_httponly', 1);
 	ini_set('session.use_strict_mode', 1);
-	ini_set('session.sid_length', 128);
 	if(isset($cfg['default_header_xss'])) {
 		header("X-XSS-Protection: ".$cfg['default_header_xss']);
 	} else {
