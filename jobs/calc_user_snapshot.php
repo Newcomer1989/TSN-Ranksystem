@@ -19,7 +19,7 @@ function calc_user_snapshot($cfg,$dbname,&$db_cache) {
 			}
 			$allinsertsnap = substr($allinsertsnap, 0, -1);
 			if ($allinsertsnap != '') {
-				$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `id`={$nextid};\nINSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsertsnap;\nUPDATE `$dbname`.`job_check` SET `timestamp`={$nextid} WHERE `job_name`='last_snapshot_id';\nUPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='last_snapshot_time';\n";
+				$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `id`={$nextid};\nINSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsertsnap ON DUPLICATE KEY UPDATE `count`=VALUES(`count`),`idle`=VALUES(`idle`);\nUPDATE `$dbname`.`job_check` SET `timestamp`={$nextid} WHERE `job_name`='last_snapshot_id';\nUPDATE `$dbname`.`job_check` SET `timestamp`={$nowtime} WHERE `job_name`='last_snapshot_time';\n";
 			}
 			unset($allinsertsnap);
 		}

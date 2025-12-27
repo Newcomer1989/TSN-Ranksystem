@@ -57,7 +57,7 @@ class TeamSpeak3_Adapter_ServerQuery_Event implements ArrayAccess
    * @throws TeamSpeak3_Adapter_Exception
    * @return TeamSpeak3_Adapter_ServerQuery_Event
    */
-  public function __construct(TeamSpeak3_Helper_String $evt, TeamSpeak3_Node_Host $con = null)
+  public function __construct(TeamSpeak3_Helper_String $evt, ?TeamSpeak3_Node_Host $con = null)
   {
     if(!$evt->startsWith(TeamSpeak3::EVENT))
     {

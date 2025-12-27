@@ -79,7 +79,7 @@ class TeamSpeak3_Adapter_ServerQuery_Reply
    * @param  TeamSpeak3_Node_Host $con
    * @return TeamSpeak3_Adapter_ServerQuery_Reply
    */
-  public function __construct(array $rpl, $cmd = null, TeamSpeak3_Node_Host $con = null, $exp = TRUE)
+  public function __construct(array $rpl, ?string $cmd = null, ?TeamSpeak3_Node_Host $con = null, bool $exp = TRUE)
   {
     $this->cmd = new TeamSpeak3_Helper_String($cmd);
     $this->con = $con;

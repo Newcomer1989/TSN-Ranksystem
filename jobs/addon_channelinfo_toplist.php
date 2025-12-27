@@ -3,7 +3,7 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 	$sqlexec = '';
 	$nowtime = time();
 
-	$smarty = new Smarty();
+	$smarty = new Smarty\Smarty;
 
 	$smarty->setTemplateDir($GLOBALS['logpath'].'smarty/templates');
 	$smarty->setCompileDir($GLOBALS['logpath'].'smarty/templates_c');

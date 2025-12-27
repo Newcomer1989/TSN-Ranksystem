@@ -85,7 +85,7 @@ function calc_user($ts3,$mysqlcon,$lang,$cfg,$dbname,$allclients,$phpcommand,&$d
 							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='{$target_usersnap[$id]['count']}', `idle`='{$target_usersnap[$id]['idle']}' WHERE `cldbid`='{$target_cldbid}' AND `id`='{$id}';\n";
 							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='0', `idle`='0' WHERE `cldbid`='{$source_cldbid}' AND `id`='{$id}';\n";
 						} else {
-							$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES ('{$id}','{$target_cldbid}','{$source_snap['count']}','{$source_snap['idle']}');\n";
+							$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES ('{$id}','{$target_cldbid}','{$source_snap['count']}','{$source_snap['idle']}') ON DUPLICATE KEY UPDATE `count`=VALUES(`count`),`idle`=VALUES(`idle`);\n";
 							$sqlexec .= "UPDATE `$dbname`.`user_snapshot` SET `count`='0', `idle`='0' WHERE `cldbid`='{$source_cldbid}' AND `id`='{$id}';\n";
 						}
 					}

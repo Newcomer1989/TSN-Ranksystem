@@ -63,7 +63,7 @@ require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/event_userenter.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/update_rs.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/reset_rs.php');
 require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'jobs/db_ex_imp.php');
-require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'libs/smarty/Smarty.class.php');
+require_once(dirname(__DIR__).DIRECTORY_SEPARATOR.'libs/smarty/libs/Smarty.class.php');
 
 enter_logfile(9,"Running on OS: ".php_uname("s")." ".php_uname("r"));
 enter_logfile(9,"Installation Path: ".__DIR__);

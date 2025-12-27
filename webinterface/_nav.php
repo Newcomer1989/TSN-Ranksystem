@@ -103,6 +103,9 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && h
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+					<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+				</button>
 				<a class="navbar-brand" href="index.php">TSN Ranksystem - Webinterface <?PHP echo $cfg['version_current_using'];?></a>
 				<?PHP if(isset($_SESSION[$rspathhex.'newversion']) && version_compare($_SESSION[$rspathhex.'newversion'], $cfg['version_current_using'], '>') && $_SESSION[$rspathhex.'newversion'] != '') {
 					echo '<a class="navbar-brand" href="//ts-ranksystem.com/?changelog" target="_blank">'.$lang['winav9'].' ['.$_SESSION[$rspathhex.'newversion'].']</a>';
@@ -186,7 +189,7 @@ if(isset($_POST['switchexpert']) && isset($_SESSION[$rspathhex.'username']) && h
 					</ul>
 				</li>
 			</ul>
-			<div class="collapse navbar-collapse">
+			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<?PHP echo '<li'.(basename($_SERVER['SCRIPT_NAME']) == "ts.php" ? ' class="active">' : '>'); ?>
 						<a href="ts.php"><i class="fas fa-headset fa-fw"></i><span class="item-margin"><?PHP echo $lang['winav1']; ?></span></a>

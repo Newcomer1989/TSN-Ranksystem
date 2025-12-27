@@ -1,6 +1,6 @@
 <?PHP
 function check_db($mysqlcon,$lang,&$cfg,$dbname) {
-	$cfg['version_latest_available'] = '1.3.23';
+	$cfg['version_latest_available'] = '1.3.24';
 	enter_logfile(5,"Check Ranksystem database for updates...");
 
 	function check_double_cldbid($mysqlcon,$cfg,$dbname) {
@@ -531,8 +531,8 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 				$cfg['teamspeak_news_bb'] = 'New Feature [URL=https://ts-ranksystem.com#voting]VOTING![/URL] for the Ranksystem';
 			}
 		}
-
-		if(version_compare($cfg['version_current_using'], '1.3.23', '<')) {
+		
+		if(version_compare($cfg['version_current_using'], '1.3.24', '<')) {
 			if($mysqlcon->exec("CREATE TABLE IF NOT EXISTS `$dbname`.`admin_mrgclient` (
 				`uuid_source` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
 				`uuid_target` char(28) CHARACTER SET utf8 COLLATE utf8_unicode_ci,
@@ -540,9 +540,9 @@ last seen  {$CLIENT_LAST_SEEN_10|date_format:"%d.%m.%Y %H:%M:%S"}{/if}[/SIZE]
 				PRIMARY KEY (`uuid_source`)
 			);") === false) {
 				$err_msg .= $lang['isntwidbmsg'].$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true).'<br>'; $err_lvl = 2;
-				enter_logfile(2,"    [1.3.23] Created new table admin_mrgclient failed. SQL error: ".$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true));
+				enter_logfile(2,"    [1.3.24] Created new table admin_mrgclient failed. SQL error: ".$mysqlcon->errorCode()." ".print_r($mysqlcon->errorInfo(), true));
 			} else {
-				enter_logfile(4,"    [1.3.23] Created new table admin_mrgclient successfully.");
+				enter_logfile(4,"    [1.3.24] Created new table admin_mrgclient successfully.");
 			}
 
 			if($mysqlcon->exec("DELETE FROM `$dbname`.`admin_addtime`;") === false) { }

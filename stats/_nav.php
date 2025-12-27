@@ -74,7 +74,7 @@ if(isset($getstring) && strstr($getstring, 'filter:lastseen:')) {
 	}
 	$filter .= " AND `lastseen`".$operator."'".$lastseen."'";
 }
-$searchstring = htmlspecialchars_decode($searchstring);
+if($searchstring !== NULL) $searchstring = htmlspecialchars_decode($searchstring);
 
 if(isset($getstring)) {
 	$dbdata_full = $mysqlcon->prepare("SELECT COUNT(*) FROM `$dbname`.`user` WHERE (`uuid` LIKE :searchvalue OR `cldbid` LIKE :searchvalue OR `name` LIKE :searchvalue)$filter");
@@ -315,6 +315,9 @@ if(!isset($_GET["user"])) {
 	<div id="wrapper">
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+					<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+				</button>
 				<a class="navbar-brand" href="index.php"><?PHP echo $lang['stnv0024']; ?></a>
 			</div>
 			<?PHP if(basename($_SERVER['SCRIPT_NAME']) == "list_rankup.php") { ?>

@@ -53,9 +53,9 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 						$count_day = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keyday]['count'];
 						$idle_day = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keyday]['idle'];
 						$active_day = $count_day - $idle_day;
-						if($count_day < 0 || $count_day < $idle_day) $count_day = 0;
-						if($idle_day < 0 || $count_day < $idle_day) $idle_day = 0;
-						if($active_day < 0 || $count_day < $idle_day) $active_day = 0;
+						if($count_day < 0 || $count_day < $idle_day || $count_day > 16777215) $count_day = 0;
+						if($idle_day < 0 || $count_day < $idle_day || $idle_day > 16777215) $idle_day = 0;
+						if($active_day < 0 || $count_day < $idle_day || $active_day > 16777215) $active_day = 0;
 					} else {
 						$count_day = $idle_day = $active_day = 0;
 					}
@@ -63,9 +63,9 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 						$count_week = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keyweek]['count'];
 						$idle_week = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keyweek]['idle'];
 						$active_week = $count_week - $idle_week;
-						if($count_week < 0 || $count_week < $idle_week) $count_week = 0;
-						if($idle_week < 0 || $count_week < $idle_week) $idle_week = 0;
-						if($active_week < 0 || $count_week < $idle_week) $active_week = 0;
+						if($count_week < 0 || $count_week < $idle_week || $count_week > 16777215) $count_week = 0;
+						if($idle_week < 0 || $count_week < $idle_week || $idle_week > 16777215) $idle_week = 0;
+						if($active_week < 0 || $count_week < $idle_week || $active_week > 16777215) $active_week = 0;
 					} else {
 						$count_week = $idle_week = $active_week = 0;
 					}
@@ -73,9 +73,9 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 						$count_month = $userdata[$userstats['cldbid']][$keybase]['count'] - $userdata[$userstats['cldbid']][$keymonth]['count'];
 						$idle_month = $userdata[$userstats['cldbid']][$keybase]['idle'] - $userdata[$userstats['cldbid']][$keymonth]['idle'];
 						$active_month = $count_month - $idle_month;
-						if($idle_month < 0 || $count_month < $idle_month) $idle_month = 0;
-						if($count_month < 0 || $count_month < $idle_month) $count_month = 0;
-						if($active_month < 0 || $count_month < $idle_month) $active_month = 0;
+						if($idle_month < 0 || $count_month < $idle_month || $idle_month > 16777215) $idle_month = 0;
+						if($count_month < 0 || $count_month < $idle_month || $count_month > 16777215) $count_month = 0;
+						if($active_month < 0 || $count_month < $idle_month || $active_month > 16777215) $active_month = 0;
 					} else {
 						$count_month = $idle_month = $active_month = 0;
 					}
@@ -93,14 +93,21 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 					if($clientinfo['client_totalconnections'] > 16777215) $clientinfo['client_totalconnections'] = 16777215;
 				} catch (Exception $e) {
 					if($e->getCode() == 512 || $e->getCode() == 1281) {
-						enter_logfile(6,"Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by Ranksystem is missing in TS database, perhaps its already deleted or cldbid changed. Try to search for client by uuid.");
+						enter_logfile(6,"Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by Ranksystem is missing in TS database, perhaps its already deleted or cldbid changed. Searching for client by uuid.");
 						try {
 							$getcldbid = $ts3->clientFindDb($uuid, TRUE);
 							if($getcldbid[0] != $userstats['cldbid']) {
 								enter_logfile(4,"  Client (uuid: ".$uuid." cldbid: ".$userstats['cldbid'].") known by the Ranksystem changed its cldbid. New cldbid is ".$getcldbid[0]."."); 
 								$db_cache['all_user'][$uuid]['cldbid'] = $getcldbid[0];
+								$sqlexec .= "DELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid` IN ('{$userstats['cldbid']}','{$getcldbid[0]}');\n";
+								try {
+									$clientinfo = $ts3->clientInfoDb($getcldbid[0]);
+								} catch (Exception $e) {
+									enter_logfile(2,$lang['errorts3'].$e->getCode().': '.$e->getMessage()."; Error due command clientdbinfo for client-database-ID {$getcldbid[0]} (permission: b_virtualserver_client_dbinfo needed).");
+								}
 								if($cfg['rankup_client_database_id_change_switch'] == 1) {
-									$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=0,`idle`=0 WHERE `uuid`='$uuid';\nUPDATE `$dbname`.`stats_user` SET `count_day`=0,`count_week`=0,`count_month`=0,`idle_day`=0,`idle_week`=0,`idle_month`=0,`active_day`=0,`active_week`=0,`active_month`=0 WHERE `uuid`='$uuid';\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
+									$sqlexec .= "UPDATE `$dbname`.`user` SET `count`=0,`idle`=0 WHERE `uuid`='$uuid';\n";
+									$sqlexec .= "UPDATE `$dbname`.`stats_user` SET `count_day`=0,`count_week`=0,`count_month`=0,`idle_day`=0,`idle_week`=0,`idle_month`=0,`active_day`=0,`active_week`=0,`active_month`=0 WHERE `uuid`='$uuid';\n";
 									enter_logfile(4,"    ".sprintf($lang['changedbid'], $userstats['name'], $uuid, $userstats['cldbid'], $getcldbid[0]));
 								} else {
 									$sqlexec .= "UPDATE `$dbname`.`user` SET `cldbid`={$getcldbid[0]} WHERE `uuid`='$uuid';\n";
@@ -112,7 +119,7 @@ function calc_userstats($ts3,$mysqlcon,$cfg,$dbname,&$db_cache) {
 										}
 										if ($allinsert != '') {
 											$allinsert = substr($allinsert, 0, -1);
-											$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsert ON DUPLICATE KEY UPDATE `count`=VALUES(`count`),`idle`=VALUES(`idle`);\nDELETE FROM `$dbname`.`user_snapshot` WHERE `cldbid`='{$userstats['cldbid']}';\n";
+											$sqlexec .= "INSERT INTO `$dbname`.`user_snapshot` (`id`,`cldbid`,`count`,`idle`) VALUES $allinsert ON DUPLICATE KEY UPDATE `count`=VALUES(`count`),`idle`=VALUES(`idle`);\n";
 										}
 										unset($allinsert);
 									}

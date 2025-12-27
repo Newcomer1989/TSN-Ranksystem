@@ -414,7 +414,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 			$cfg['version_latest_available'] = curl_exec($ch);
-			curl_close($ch); unset($ch);
+			unset($ch);
 
 			if(!isset($cfg['stats_news_html']) || $cfg['stats_news_html'] != '') {
 				$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`='0' WHERE `job_name`='news_html';\nUPDATE `$dbname`.`cfg_params` SET `value`='' WHERE `param`='stats_news_html';\n";
@@ -427,7 +427,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 			curl_setopt($newh, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($newh, CURLOPT_CONNECTTIMEOUT, 5);
 			$cfg['stats_news_html'] = curl_exec($newh);
-			curl_close($newh); unset($newh);
+			unset($newh);
 			if($cfg['stats_news_html'] != '') {
 				$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='news_html';\nUPDATE `$dbname`.`cfg_params` SET `value`='{$cfg['stats_news_html']}' WHERE `param`='stats_news_html';\n";
 			}
@@ -443,7 +443,7 @@ function calc_serverstats($ts3,$mysqlcon,&$cfg,$dbname,$dbtype,$serverinfo,&$db_
 			curl_setopt($newb, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($newb, CURLOPT_CONNECTTIMEOUT, 5);
 			$cfg['teamspeak_news_bb'] = curl_exec($newb);
-			curl_close($newb); unset($newb);
+			unset($newb);
 			if($cfg['teamspeak_news_bb'] != '') {
 				$sqlexec .= "UPDATE `$dbname`.`job_check` SET `timestamp`=$nowtime WHERE `job_name`='news_bb';\nUPDATE `$dbname`.`cfg_params` SET `value`='{$cfg['teamspeak_news_bb']}' WHERE `param`='teamspeak_news_bb';\n";
 			}
