@@ -69,7 +69,9 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 				$smarty->assign('CLIENT_DESCRIPTION_'.($nr + 1),$userdata[$nr]['client_description']);
 				$smarty->assign('CLIENT_CURRENT_CHANNEL_ID_'.($nr + 1),$userdata[$nr]['cid']);
 				if(isset($db_cache['channel'][$userdata[$nr]['cid']]['channel_name'])) {
-					$smarty->assign('CLIENT_CURRENT_CHANNEL_NAME_'.($nr + 1),substr($db_cache['channel'][$userdata[$nr]['cid']]['channel_name'],1,-1));
+					$channel_name = substr($db_cache['channel'][$userdata[$nr]['cid']]['channel_name'],1,-1);
+					$channel_name = preg_replace("/^binary'?/i", '', $channel_name);
+					$smarty->assign('CLIENT_CURRENT_CHANNEL_NAME_'.($nr + 1),$channel_name);
 				} else {
 					$smarty->assign('CLIENT_CURRENT_CHANNEL_NAME_'.($nr + 1),$lang['unknown']);
 				}
@@ -93,7 +95,9 @@ function addon_channelinfo_toplist(&$addons_config,$ts3,$mysqlcon,$cfg,$dbname,$
 				
 				$smarty->assign('CLIENT_CURRENT_RANK_GROUP_ID_'.($nr + 1),$userdata[$nr]['grpid']);
 				if(isset($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname']) && $userdata[$nr]['grpid'] != 0) {
-					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_NAME_'.($nr + 1),substr($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname'],1,-1));
+					$group_name = substr($db_cache['groups'][$userdata[$nr]['grpid']]['sgidname'],1,-1);
+					$group_name = preg_replace("/^binary'?/i", '', $group_name);
+					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_NAME_'.($nr + 1),$group_name);
 				} else {
 					$smarty->assign('CLIENT_CURRENT_RANK_GROUP_NAME_'.($nr + 1),'unknown_group');
 				}
